@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { ApiError, describeError } from "@/lib/api/errors";
 import type { MatchReport } from "@/lib/api/match-types";
-import { clockText } from "@/lib/match/live";
+import { clockText, decisionKeys } from "@/lib/match/live";
 import { useT, useTd } from "@/i18n/provider";
 import { useFormat } from "@/i18n/format";
 import { PageHeader } from "@/components/shell/PageHeader";
@@ -74,6 +74,7 @@ export default function MatchReportPage() {
     [t("stats.punts"), (s) => String(s.punts)],
     [t("stats.possessionTime"), (s) => clockText(s.timeOfPossessionSeconds)],
   ];
+  const keys = decisionKeys(r.decisions);
   const decisionLabel = (code: string) => (code === "TIMEOUT" ? t("report.decision.TIMEOUT") : code === "PLAN_CHANGE" ? t("report.decision.PLAN_CHANGE") : td("match", `play.${code}`));
 
   return (
@@ -199,8 +200,8 @@ export default function MatchReportPage() {
         <Card title={t("report.decisions")}>
           {r.decisions.length ? (
             <ul className="grid gap-1.5">
-              {r.decisions.map((d) => (
-                <li key={`${d.decisionId}-${d.atSeq}`} className="flex flex-wrap items-center gap-2 text-[0.88rem]">
+              {r.decisions.map((d, i) => (
+                <li key={keys[i]} className="flex flex-wrap items-center gap-2 text-[0.88rem]">
                   <span className="font-heading">{decisionLabel(d.optionCode)}</span>
                   {d.situation && <span className="text-text-dim">· {td("enums", `decisionSituation.${d.situation}`)}</span>}
                   <span className="text-text-dim">· {clubName(d.clubId)}</span>

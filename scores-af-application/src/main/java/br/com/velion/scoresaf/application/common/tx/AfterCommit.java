@@ -12,19 +12,30 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  *
  * <p>Uma falha no efeito não desfaz o commit (a fonte da verdade já está gravada): fica registrada como WARN e a projeção
  * é reconstruída pelo leitor (ex.: cache vazio → lê do MySQL). Por isso os efeitos agendados aqui devem ser idempotentes.
+ *
+ * <p>Um efeito agendado de dentro de outro efeito (já no {@code afterCommit}, ex.: o editor de mundos agenda a auditoria e o
+ * {@code audit.ok} agenda de novo) executa na hora: ali a transação ainda parece ativa, e uma sincronização nova nunca seria
+ * chamada (D-91).
  */
 public final class AfterCommit {
   private static final Logger log = LoggerFactory.getLogger(AfterCommit.class);
+  /** Esta thread está rodando os efeitos de um commit que já aconteceu. */
+  private static final ThreadLocal<Boolean> COMMITTED = ThreadLocal.withInitial(() -> false);
 
   private AfterCommit() {}
 
   /** Agenda {@code action} para depois do commit da transação corrente (ou executa já, sem transação). */
   public static void run(String what, Runnable action) {
-    if (TransactionSynchronizationManager.isSynchronizationActive() && TransactionSynchronizationManager.isActualTransactionActive()) {
+    if (!COMMITTED.get() && TransactionSynchronizationManager.isSynchronizationActive() && TransactionSynchronizationManager.isActualTransactionActive()) {
       TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
         @Override
         public void afterCommit() {
-          safely(what, action);
+          COMMITTED.set(true);
+          try {
+            safely(what, action);
+          } finally {
+            COMMITTED.remove();
+          }
         }
       });
     } else {

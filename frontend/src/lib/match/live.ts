@@ -5,7 +5,7 @@
  * de partida (recarregar o estado, avisar que a IA chamou, etc.).
  */
 import { ApiError } from "@/lib/api/problem";
-import type { LiveMatch, MatchSessionStatus, MatchState, PlayEvent } from "@/lib/api/match-types";
+import type { DecisionRecord, LiveMatch, MatchSessionStatus, MatchState, PlayEvent } from "@/lib/api/match-types";
 import { downMarkers, fieldPosition, FIELD, YARD_M, type FieldPosition } from "@/lib/field/geometry";
 
 /* ───────────────────────── play-by-play ───────────────────────── */
@@ -36,6 +36,17 @@ export function mergeEvents(existing: PlayEvent[], incoming: PlayEvent[], max = 
 /** Cursor para o próximo `/events?after=`: o maior `seq` já recebido (0 sem lances). */
 export function lastSeqOf(events: PlayEvent[]): number {
   return events.reduce((m, e) => (e.seq > m ? e.seq : m), 0);
+}
+
+/**
+ * Um estado que chega do servidor ainda vale para a tela? Não quando é de outra partida (a tela já trocou) nem quando a versão do
+ * snapshot (`live.version`) é menor que a da tela: uma resposta atrasada (o refresh do fim do prazo que volta depois do avanço)
+ * não pode voltar o placar, o relógio e a decisão (D-93). A mesma versão vale (o prazo e os modos de avanço podem mudar sem lance).
+ */
+export function isFresh(screenMatchId: string | null, current: MatchState | null, next: MatchState): boolean {
+  if (screenMatchId != null && next.matchId !== screenMatchId) return false;
+  if (current && current.matchId === next.matchId && next.live.version < current.live.version) return false;
+  return true;
 }
 
 /* ───────────────────────── chamada de jogada ───────────────────────── */
@@ -169,6 +180,8 @@ export function reactionTo(err: unknown): ErrorReaction {
     case "DECISION_CLOSED":
       return { reload: true, notice: "aiCalled", showError: false };
     case "MATCH_VERSION_CONFLICT":
+    // outra escrita na mesma partida ganhou a corrida (trava ou chave única no servidor, D-91): o estado na tela ficou velho
+    case "CONCURRENT_UPDATE":
       return { reload: true, notice: "stale", showError: false };
     case "DECISION_PENDING":
       return { reload: true, notice: "decisionOpen", showError: false };
@@ -185,4 +198,14 @@ export function reactionTo(err: unknown): ErrorReaction {
     default:
       return { reload: false, notice: null, showError: true };
   }
+}
+
+/* ───────────────────────── relatório ───────────────────────── */
+
+/**
+ * Chaves de render das linhas do log de decisões do relatório. `TIMEOUT` e `PLAN_CHANGE` não têm `decisionId` e dois deles podem
+ * cair no mesmo lance (`atSeq`): a posição na lista entra na chave para ela nunca se repetir (D-94).
+ */
+export function decisionKeys(decisions: DecisionRecord[]): string[] {
+  return decisions.map((d, i) => `${i}-${d.decisionId ?? d.optionCode}-${d.atSeq}`);
 }

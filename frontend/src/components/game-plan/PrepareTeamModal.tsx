@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { ApiError, describeError } from "@/lib/api/errors";
 import { issuesFromDetails } from "@/lib/api/live-career";
+import { playToMatch } from "@/lib/match/play";
 import type { DepthIssue } from "@/lib/api/career-types";
 import type { Matchup, PlayerRef, Preparation } from "@/lib/api/match-types";
 import { useT, useTd } from "@/i18n/provider";
@@ -96,7 +97,8 @@ function IssueList({ issues, tone }: { issues: DepthIssue[]; tone: "bad" | "warn
 /**
  * "Preparar e jogar" (RF7): adversário, campanhas, clima, comparação por unidade, confrontos-chave (WR × CB, OL × DL, QB × pass rush,
  * dos dois lados), jogadores-chave, prontidão do depth chart e resumo do plano. "Jogar" chama `POST /weeks/current/play` e abre a
- * partida ao vivo; 422 DEPTH_CHART_INVALID mostra o que corrigir e 409 NO_NEXT_GAME encerra a temporada regular.
+ * partida ao vivo (na semana de folga, encerra a folga e joga a semana seguinte, avisando: D-92); 422 DEPTH_CHART_INVALID mostra o
+ * que corrigir e 409 NO_NEXT_GAME encerra a temporada regular.
  */
 export function PrepareTeamModal(props: PrepareTeamModalProps) {
   // o conteúdo monta ao abrir (estado novo a cada abertura) e desmonta ao fechar
@@ -115,6 +117,7 @@ function PrepareDialog({ open, onClose, careerId, onPlayed }: PrepareTeamModalPr
   const [playing, setPlaying] = useState(false);
   const [playError, setPlayError] = useState<string | null>(null);
   const [blocking, setBlocking] = useState<DepthIssue[]>([]);
+  const [byeWeeks, setByeWeeks] = useState<number[]>([]);
   const [tab, setTab] = useState<"OUR_OFFENSE" | "THEIR_OFFENSE">("OUR_OFFENSE");
 
   useEffect(() => {
@@ -134,12 +137,13 @@ function PrepareDialog({ open, onClose, careerId, onPlayed }: PrepareTeamModalPr
     setPlayError(null);
     setBlocking([]);
     try {
-      const board = await api.weeks.playCurrent(careerId);
+      // semana de folga: o primeiro "Jogar" só encerra a folga; joga de novo para entrar na partida que a preparação mostra (D-92)
+      const { board, byeWeeks: byes } = await playToMatch(api.weeks, careerId, (w) => setByeWeeks((prev) => [...prev, w]));
       onPlayed?.();
       if (board.matchId) {
         onClose();
-        router.push(`/c/${careerId}/match?m=${board.matchId}`);
-      } else {
+        router.push(`/c/${careerId}/match?m=${board.matchId}${byes.length ? `&bye=${byes.join(",")}` : ""}`);
+      } else if (!byes.length) {
         onClose();
       }
     } catch (e) {
@@ -293,6 +297,7 @@ function PrepareDialog({ open, onClose, careerId, onPlayed }: PrepareTeamModalPr
             </Section>
           </div>
 
+          {byeWeeks.length > 0 && <InlineAlert tone="info">{t("prepare.byeClosed", { week: byeWeeks.join(", ") })}</InlineAlert>}
           {playError && (
             <InlineAlert tone="bad">
               <p>{playError}</p>

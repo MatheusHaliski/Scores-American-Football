@@ -17,6 +17,7 @@ import {
   weekBoardFromDto,
 } from "@/lib/api/live-match";
 import { SHAPES, dashboardFromDto, type Raw } from "@/lib/api/live-career";
+import { decisionKeys } from "@/lib/match/live";
 import { ApiError, problemFromBody } from "@/lib/api/problem";
 import { describeError } from "@/lib/api/errors";
 import { setRuntimeLocale } from "@/i18n/runtime";
@@ -252,6 +253,16 @@ test("match-report: lados, box score, líderes, drives, jogadas de pontuação e
   assert.equal(r.winnerClubId, winner);
   assert.ok(r.scoringPlays.every((e) => e.points > 0));
   assert.ok(r.leaders.length > 0);
+  // TIMEOUT e PLAN_CHANGE não têm decisionId nem situação (DecisionRecord do motor): a API omite os nulos (non_null)
+  const adj = { clubId: r.home.club.id, optionCode: "PLAN_CHANGE", auto: false, atSeq: 90 };
+  assertShape(adj, "decisionRecord", "match-report.decisions[] (PLAN_CHANGE)");
+  assertShape({ ...adj, optionCode: "TIMEOUT" }, "decisionRecord", "match-report.decisions[] (TIMEOUT)");
+  const withAdj = matchReportFromDto({ ...report, decisions: [...each(report.decisions), adj, { ...adj }] });
+  assert.equal(withAdj.decisions.at(-1)!.decisionId, null, "decisionId ausente vira null, não string vazia");
+  assert.equal(withAdj.decisions.at(-1)!.situation, null);
+  // dois ajustes no mesmo lance não repetem a chave da linha no relatório
+  const keys = decisionKeys(withAdj.decisions);
+  assert.equal(new Set(keys).size, keys.length, "chaves únicas");
   // sem partida ao vivo (jogo da IA) e com empate: matchId e vencedor somem e viram null
   const ai = matchReportFromDto({ ...report, matchId: undefined, winnerClubId: undefined });
   assert.equal(ai.matchId, null);

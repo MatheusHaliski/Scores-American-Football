@@ -44,11 +44,11 @@ Fonte: [`RF23-stm.puml`](RF23-stm.puml)
 
 | Estado | Método | Rota | Caso de uso | Autorização | Descrição |
 |---|---|---|---|---|---|
-| ⛔ alvo | `GET` | `/api/v1/careers/{id}/players/{pid}` | `GetPlayerExpandedUseCase` | JWT · dono do save | model3dUrl, posição, altura e peso, estilos ativos e animationId de cada um |
+| ✅ | `GET` | `/api/v1/careers/{id}/players/{pid}` | `GetPlayerExpandedUseCase` | JWT · dono do save | model3dUrl, posição, altura e peso, estilos ativos e animationId de cada um |
 | ⛔ alvo | `GET` | `/api/v1/animations` | `ListAnimationClipsUseCase` | JWT | Clipes PUBLISHED por target=POSITION\|PLAY_STYLE\|LOCOMOTION e code (locomoção herdada das 37 do basquete) |
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/clubs/{cid}/identity` | `GetClubIdentityUseCase` | JWT · dono do save | Uniforme ativo e capacete (cores, faixa, decal, grade) para vestir o modelo |
 | ⛔ alvo | `GET` | `/api/v1/me/inventory` | `GetInventoryUseCase` | JWT | Animações 3D compradas na loja (RF32) aplicadas ao jogador |
-| ⛔ alvo | `GET` | `/api/v1/me/settings` | `GetUserSettingsUseCase` | JWT | reducedMotion (RNF9) |
+| ✅ | `GET` | `/api/v1/me/settings` | `GetUserSettingsUseCase` | JWT | reducedMotion (RNF9) |
 
 ## Pontos de decisão
 

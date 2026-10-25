@@ -50,18 +50,18 @@ Fonte: [`RF3-stm-dataexportjob-status.puml`](RF3-stm-dataexportjob-status.puml)
 
 | Estado | Método | Rota | Caso de uso | Autorização | Descrição |
 |---|---|---|---|---|---|
-| ⛔ alvo | `GET` | `/api/v1/me` | `AccountUseCases.profile` | JWT | Perfil (e-mail decifrado só para o titular), locale, status, visibilidade |
-| ⛔ alvo | `PUT` | `/api/v1/me` | `AccountUseCases.updateProfile` | JWT | displayName, avatar, visibilidade, data de nascimento · SENSITIVE_DATA_CHANGED |
-| ⛔ alvo | `PUT` | `/api/v1/me/email` | `EmailChangeUseCases.request` | JWT · senha atual (step-up) · 30 por IP/h | pendingEmail + token; conclui em POST /auth/email/verify |
-| ⛔ alvo | `PUT` | `/api/v1/me/password` | `AccountUseCases.changePassword` | JWT · senha atual (step-up) · 20 por IP/h | Novo hash fora da transação; revoga as outras famílias de sessão |
-| ⛔ alvo | `GET` | `/api/v1/me/sessions` | `AccountUseCases.sessions` | JWT | Famílias de sessão ativas (dispositivo, IP, última atividade, atual) |
-| ⛔ alvo | `DELETE` | `/api/v1/me/sessions/{id}` | `AccountUseCases.revokeSession` | JWT | Revoga uma família do próprio usuário · SESSION_REVOKED |
-| ⛔ alvo | `GET` | `/api/v1/me/consents` | `PrivacyUseCases.view` | JWT | Consentimento por finalidade (ANALYTICS, MARKETING_EMAIL, PUBLIC_RANKING, AI_ANALYST, BIOMETRIC_AVATAR) |
-| ⛔ alvo | `PUT` | `/api/v1/me/consents` | `PrivacyUseCases.update` | JWT | Concede ou revoga (append-only); revogar biometria apaga a mídia do Meu jogador |
-| ⛔ alvo | `POST` | `/api/v1/me/export` | `DataExportUseCases.request` | JWT | Portabilidade assíncrona: DataExportJob (JSON + CSV, 24 h) |
-| ⛔ alvo | `GET` | `/api/v1/me/export/{jobId}/download` | `DataExportUseCases.download` | JWT · dono do job | Download do pacote · DATA_EXPORT_DOWNLOADED |
-| ⛔ alvo | `DELETE` | `/api/v1/me` | `AccountDeletionUseCases.request` | JWT · senha + palavra (step-up) · 10 por IP/h | PENDING_DELETION, sessões encerradas, 7 dias de arrependimento |
-| ⛔ alvo | `POST` | `/api/v1/me/deletion/cancel` | `AccountDeletionUseCases.cancel` | JWT | Cancela dentro do prazo |
+| ✅ | `GET` | `/api/v1/me` | `AccountUseCases.profile` | JWT | Perfil (e-mail decifrado só para o titular), locale, status, visibilidade |
+| ✅ | `PUT` | `/api/v1/me` | `AccountUseCases.updateProfile` | JWT | displayName, avatar, visibilidade, data de nascimento · SENSITIVE_DATA_CHANGED |
+| ✅ | `PUT` | `/api/v1/me/email` | `EmailChangeUseCases.request` | JWT · senha atual (step-up) · 30 por IP/h | pendingEmail + token; conclui em POST /auth/email/verify |
+| ✅ | `PUT` | `/api/v1/me/password` | `AccountUseCases.changePassword` | JWT · senha atual (step-up) · 20 por IP/h | Novo hash fora da transação; revoga as outras famílias de sessão |
+| ✅ | `GET` | `/api/v1/me/sessions` | `AccountUseCases.sessions` | JWT | Famílias de sessão ativas (dispositivo, IP, última atividade, atual) |
+| ✅ | `DELETE` | `/api/v1/me/sessions/{id}` | `AccountUseCases.revokeSession` | JWT | Revoga uma família do próprio usuário · SESSION_REVOKED |
+| ✅ | `GET` | `/api/v1/me/consents` | `PrivacyUseCases.view` | JWT | Consentimento por finalidade (ANALYTICS, MARKETING_EMAIL, PUBLIC_RANKING, AI_ANALYST, BIOMETRIC_AVATAR) |
+| ✅ | `PUT` | `/api/v1/me/consents` | `PrivacyUseCases.update` | JWT | Concede ou revoga (append-only); revogar biometria apaga a mídia do Meu jogador |
+| ✅ | `POST` | `/api/v1/me/export` | `DataExportUseCases.request` | JWT | Portabilidade assíncrona: DataExportJob (JSON + CSV, 24 h) |
+| ✅ | `GET` | `/api/v1/me/export/{jobId}/download` | `DataExportUseCases.download` | JWT · dono do job | Download do pacote · DATA_EXPORT_DOWNLOADED |
+| ✅ | `DELETE` | `/api/v1/me` | `AccountDeletionUseCases.request` | JWT · senha + palavra (step-up) · 10 por IP/h | PENDING_DELETION, sessões encerradas, 7 dias de arrependimento |
+| ✅ | `POST` | `/api/v1/me/deletion/cancel` | `AccountDeletionUseCases.cancel` | JWT | Cancela dentro do prazo |
 | ⛔ alvo | `PUT` | `/api/v1/me/notification-preferences` | `NotificationPreferenceUseCases.update` | JWT | Liga/desliga por tipo (resultado da semana, lesão, proposta, prazo de trocas, draft) |
 
 ## Pontos de decisão

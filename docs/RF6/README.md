@@ -45,10 +45,10 @@ Fonte: [`RF6-stm.puml`](RF6-stm.puml)
 | Estado | Método | Rota | Caso de uso | Autorização | Descrição |
 |---|---|---|---|---|---|
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/next-game/preparation` | `GetGamePreparationUseCase` | JWT · dono do save | Próximo jogo da semana, adversário, 46 ativos disponíveis, depth chart e plano atuais, relatório de lesões, fit e sugestão do analista |
-| ⛔ alvo | `GET` | `/api/v1/careers/{id}/depth-chart` | `GetDepthChartUseCase` | JWT · dono do save | Slots por unidade e posição (depth 1, 2, 3) e papéis (KR, PR, 3RD_DOWN_BACK, HOLDER, SNAPPER) |
-| ⛔ alvo | `PUT` | `/api/v1/careers/{id}/depth-chart` | `SaveDepthChartUseCase` | JWT · dono do save | Salva depth chart validado (version otimista) |
+| ✅ | `GET` | `/api/v1/careers/{id}/depth-chart` | `GetDepthChartUseCase` | JWT · dono do save | Slots por unidade e posição (depth 1, 2, 3) e papéis (KR, PR, 3RD_DOWN_BACK, HOLDER, SNAPPER) |
+| ✅ | `PUT` | `/api/v1/careers/{id}/depth-chart` | `SaveDepthChartUseCase` | JWT · dono do save | Salva depth chart validado (version otimista) |
 | ⛔ alvo | `POST` | `/api/v1/careers/{id}/depth-chart/auto` | `AutoFillDepthChartUseCase` | JWT · dono do save | Preenche pelo overall na posição, condição e lesões (ClubAnalyst) |
-| ⛔ alvo | `GET` | `/api/v1/careers/{id}/game-plan` | `GetGamePlanUseCase` | JWT · dono do save | GamePlan atual e playbook ativo |
+| ✅ | `GET` | `/api/v1/careers/{id}/game-plan` | `GetGamePlanUseCase` | JWT · dono do save | GamePlan atual e playbook ativo |
 | ⛔ alvo | `PUT` | `/api/v1/careers/{id}/game-plan` | `SaveGamePlanUseCase` | JWT · dono do save | runPassBalance, fourthDownAggression, tempo, foco ofensivo e defensivo, blitz, defesa base 4-3/3-4, jogadores-chave, tendências por situação |
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/analysis` | `GetAnalysisUseCase` | JWT · dono do save | Relatório do ClubAnalyst: depth chart sugerido, gamePlanFit, alertas (fora de posição, fadiga, lesão) |
 

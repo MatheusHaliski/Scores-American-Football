@@ -44,8 +44,8 @@ Fonte: [`RF60-stm.puml`](RF60-stm.puml)
 
 | Estado | Método | Rota | Caso de uso | Autorização | Descrição |
 |---|---|---|---|---|---|
-| ⛔ alvo | `GET` | `/api/v1/careers/{id}/depth-chart` | `GetDepthChartUseCase` | JWT · dono do save | Slots por unidade e posição, overall na posição, avisos |
-| ⛔ alvo | `PUT` | `/api/v1/careers/{id}/depth-chart` | `UpdateDepthChartUseCase` | JWT · dono do save | Grava slots (expectedVersion) |
+| ✅ | `GET` | `/api/v1/careers/{id}/depth-chart` | `GetDepthChartUseCase` | JWT · dono do save | Slots por unidade e posição, overall na posição, avisos |
+| ✅ | `PUT` | `/api/v1/careers/{id}/depth-chart` | `UpdateDepthChartUseCase` | JWT · dono do save | Grava slots (expectedVersion) |
 | ⛔ alvo | `POST` | `/api/v1/careers/{id}/depth-chart/auto` | `AutoFillDepthChartUseCase` | JWT · dono do save | Sugestão pelo overall na posição e condição |
 | ⛔ alvo | `POST` | `/api/v1/careers/{id}/depth-chart/validate` | `ValidateDepthChartUseCase` | JWT · dono do save | Valida sem gravar |
 

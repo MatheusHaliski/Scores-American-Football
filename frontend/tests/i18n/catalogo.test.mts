@@ -43,9 +43,10 @@ test("toda chave literal usada nas telas existe no catálogo", () => {
   assert.deepEqual(missing, []);
 });
 
+// "carreira"/"career" saiu da lista no bloco 6a: o modo carreira passou a existir (RF11, /careers).
 test("marca e termos do esporte: nada de basquete nos textos da plataforma", () => {
   for (const loc of LOCALES)
     for (const ns of NAMESPACES)
-      for (const [k, v] of Object.entries(MESSAGES[loc][ns] as Record<string, string>)) assert.ok(!/basquete|basketball|baloncesto|quadra|cancha|carreira|career\b|posse de bola/i.test(v), `${loc}/${ns}:${k} = ${v}`);
+      for (const [k, v] of Object.entries(MESSAGES[loc][ns] as Record<string, string>)) assert.ok(!/basquete|basketball|baloncesto|quadra|cancha|posse de bola/i.test(v), `${loc}/${ns}:${k} = ${v}`);
   assert.equal(translateIn("en-US", "common", "app.sport"), "American Football");
 });

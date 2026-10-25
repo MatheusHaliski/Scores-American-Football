@@ -49,7 +49,7 @@ database "MySQL 8" as s1
 database "S3/MinIO" as s2
 database "Redis 7" as s3
 c1 --> c2 : usa
-c2 --> c9 : GET /careers/{id}/players/{pid} (alvo)\nGET /animations (alvo)\nGET /careers/{id}/clubs/{cid}/identity (alvo)\n…
+c2 --> c9 : GET /careers/{id}/players/{pid}\nGET /animations (alvo)\nGET /careers/{id}/clubs/{cid}/identity (alvo)\n…
 c2 --> c10
 c2 --> c11
 c2 --> c12

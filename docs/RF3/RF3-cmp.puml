@@ -57,7 +57,7 @@ database "Redis 7" as s2
 database "S3/MinIO" as s3
 c1 --> c3 : usa
 c2 --> c15 : dispara
-c3 --> c10 : GET /me (alvo)\nPUT /me (alvo)\nPUT /me/email (alvo)\n…
+c3 --> c10 : GET /me\nPUT /me\nPUT /me/email\n…
 c3 --> c11
 c3 --> c12
 c3 --> c13

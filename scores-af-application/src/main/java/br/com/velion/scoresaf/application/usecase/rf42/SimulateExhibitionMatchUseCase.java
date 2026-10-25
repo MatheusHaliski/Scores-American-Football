@@ -21,11 +21,17 @@ import org.springframework.transaction.annotation.Transactional;
 public class SimulateExhibitionMatchUseCase {
   private final ClubRepository clubs;
   private final PlayerRepository players;
+  private final SavedDepthCharts depthCharts;
   private final MatchSimulator simulator = new DefaultMatchSimulator();
 
-  public SimulateExhibitionMatchUseCase(ClubRepository clubs, PlayerRepository players) {
+  public SimulateExhibitionMatchUseCase(ClubRepository clubs, PlayerRepository players) { this(clubs, players, SavedDepthCharts.NONE); }
+
+  /** Com o depth chart salvo das franquias (RF60): o motor usa o salvo quando existe. */
+  @org.springframework.beans.factory.annotation.Autowired
+  public SimulateExhibitionMatchUseCase(ClubRepository clubs, PlayerRepository players, SavedDepthCharts depthCharts) {
     this.clubs = clubs;
     this.players = players;
+    this.depthCharts = depthCharts;
   }
 
   @Transactional(readOnly = true)
@@ -36,8 +42,8 @@ public class SimulateExhibitionMatchUseCase {
     if (home.getWorld() == null || away.getWorld() == null || !home.getWorld().getId().equals(away.getWorld().getId())) {
       throw new BusinessRuleException("MATCH_DIFFERENT_WORLDS", "As duas franquias precisam ser do mesmo mundo");
     }
-    MatchSetup setup = MatchTeams.setup(fixtureId(homeClubId, awayClubId, seed), home, players.findByClubIdOrderByOverallDesc(homeClubId), away,
-        players.findByClubIdOrderByOverallDesc(awayClubId), seed);
+    MatchSetup setup = MatchTeams.setup(fixtureId(homeClubId, awayClubId, seed), home, players.findByClubIdOrderByOverallDesc(homeClubId),
+        depthCharts.forClub(homeClubId), away, players.findByClubIdOrderByOverallDesc(awayClubId), depthCharts.forClub(awayClubId), seed);
     return simulator.simulate(setup);
   }
 

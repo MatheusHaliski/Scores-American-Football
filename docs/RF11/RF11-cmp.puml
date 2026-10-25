@@ -47,7 +47,7 @@ database "Redis 7" as s2
 database "Cassandra 4.1" as s3
 database "OpenSearch 2" as s4
 c1 --> c2 : usa
-c2 --> c8 : GET /careers (alvo)\nPOST /careers (alvo)\nGET /careers/{id} (alvo)\n…
+c2 --> c8 : GET /careers\nPOST /careers\nGET /careers/{id}\n…
 c8 --> c9
 c9 ..> pkg_app : orquestra
 pkg_app --> pkg_ports : depende (DIP)

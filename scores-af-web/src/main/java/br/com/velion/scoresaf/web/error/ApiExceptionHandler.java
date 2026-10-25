@@ -147,8 +147,10 @@ public class ApiExceptionHandler {
 
   private ProblemDetail problem(HttpStatus status, ScoresException e, String fallback) {
     boolean pt = "pt".equals(LocaleContextHolder.getLocale().getLanguage());
-    if (pt && GENERIC_CODES.contains(e.code()) && fallback != null) return base(status, e.code(), fallback);
-    return base(status, e.code(), text("error." + e.code(), e.args(), fallback));
+    ProblemDetail p = pt && GENERIC_CODES.contains(e.code()) && fallback != null ? base(status, e.code(), fallback)
+        : base(status, e.code(), text("error." + e.code(), e.args(), fallback));
+    e.details().forEach((k, v) -> detail(p, k, v));
+    return p;
   }
 
   private ProblemDetail base(HttpStatus status, String code, String detail) {

@@ -6,16 +6,17 @@ import { useT } from "@/i18n/provider";
 import { cn } from "@/lib/utils/cn";
 import { useSession } from "@/store/session";
 import { BrandMark } from "@/components/brand/BrandMark";
-import { IconHome, IconLogout, IconSettings } from "@/components/ui/icons";
+import { IconFlag, IconHome, IconLogout, IconSettings } from "@/components/ui/icons";
 
 const LINKS = [
   { href: "/", key: "section.home", icon: IconHome },
+  { href: "/careers", key: "section.careers", icon: IconFlag },
   { href: "/settings", key: "section.settings", icon: IconSettings },
 ] as const;
 
 /**
  * Shell da plataforma comum: barra superior com a marca, os atalhos (início e configurações) e a conta. Mobile-first,
- * alvos ≥ 44 px, foco visível. A navegação da franquia (sidebar com elenco, partida etc.) chega com os blocos de jogo.
+ * alvos ≥ 44 px, foco visível. Dentro de uma carreira, a navegação da franquia fica no `CareerShell`.
  */
 export function AppShell({ children }: { children: ReactNode }) {
   const t = useT("nav");

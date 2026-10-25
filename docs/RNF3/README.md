@@ -44,10 +44,10 @@ Fonte: [`RNF3-stm.puml`](RNF3-stm.puml)
 
 | Estado | Método | Rota | Caso de uso | Autorização | Descrição |
 |---|---|---|---|---|---|
-| ⛔ alvo | `GET` | `/api/v1/careers/{id}/dashboard` | `GetClubDashboardUseCase` | JWT · dono do save | Recurso do save: CareerAccess.requireOwner(saveId, userId) no caso de uso |
-| ⛔ alvo | `GET` | `/api/v1/me` | `AccountUseCases.profile` | JWT | Recurso do próprio usuário: sempre jwt.sub, nunca id vindo do cliente |
+| ✅ | `GET` | `/api/v1/careers/{id}/dashboard` | `GetClubDashboardUseCase` | JWT · dono do save | Recurso do save: CareerAccess.requireOwner(saveId, userId) no caso de uso |
+| ✅ | `GET` | `/api/v1/me` | `AccountUseCases.profile` | JWT | Recurso do próprio usuário: sempre jwt.sub, nunca id vindo do cliente |
 | ⛔ alvo | `GET` | `/api/v1/admin/audit` | `QueryAuditLogUseCase` | JWT · ADMIN | Rota administrativa: /api/v1/admin/** exige ADMIN |
-| ⛔ alvo | `POST` | `/api/v1/auth/login` | `LoginUseCase` | público | Rota pública explícita na allowlist (/auth/**, /actuator/health, /api-docs/**, /error) |
+| ✅ | `POST` | `/api/v1/auth/login` | `LoginUseCase` | público | Rota pública explícita na allowlist (/auth/**, /actuator/health, /api-docs/**, /error) |
 
 ## Pontos de decisão
 

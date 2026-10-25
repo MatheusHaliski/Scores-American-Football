@@ -44,11 +44,11 @@ Fonte: [`RNF4-stm.puml`](RNF4-stm.puml)
 
 | Estado | Método | Rota | Caso de uso | Autorização | Descrição |
 |---|---|---|---|---|---|
-| ⛔ alvo | `POST` | `/api/v1/auth/login` | `LoginUseCase` | público · rate limit por IP | Corpo: accessToken (memória). Set-Cookie: __Host-scores_af_rt HttpOnly Secure SameSite=Strict Path=/ Max-Age 7 d |
-| ⛔ alvo | `POST` | `/api/v1/auth/refresh` | `RefreshTokenUseCase` | cookie __Host- · Origin conferido | Rotaciona o refresh na mesma família e devolve novo access · reuso revoga a família |
-| ⛔ alvo | `POST` | `/api/v1/auth/logout` | `LogoutUseCase` | JWT | Revoga a família e apaga o cookie (Max-Age=0) · outras abas saem via BroadcastChannel |
-| ⛔ alvo | `GET` | `/api/v1/me/sessions` | `AccountUseCases.sessions` | JWT | Famílias ativas (ip, userAgent, criada, expira, atual) |
-| ⛔ alvo | `DELETE` | `/api/v1/me/sessions/{id}` | `AccountUseCases.revokeSession` | JWT | Revoga outra família do próprio usuário · SESSION_REVOKED |
+| ✅ | `POST` | `/api/v1/auth/login` | `LoginUseCase` | público · rate limit por IP | Corpo: accessToken (memória). Set-Cookie: __Host-scores_af_rt HttpOnly Secure SameSite=Strict Path=/ Max-Age 7 d |
+| ✅ | `POST` | `/api/v1/auth/refresh` | `RefreshTokenUseCase` | cookie __Host- · Origin conferido | Rotaciona o refresh na mesma família e devolve novo access · reuso revoga a família |
+| ✅ | `POST` | `/api/v1/auth/logout` | `LogoutUseCase` | JWT | Revoga a família e apaga o cookie (Max-Age=0) · outras abas saem via BroadcastChannel |
+| ✅ | `GET` | `/api/v1/me/sessions` | `AccountUseCases.sessions` | JWT | Famílias ativas (ip, userAgent, criada, expira, atual) |
+| ✅ | `DELETE` | `/api/v1/me/sessions/{id}` | `AccountUseCases.revokeSession` | JWT | Revoga outra família do próprio usuário · SESSION_REVOKED |
 
 ## Pontos de decisão
 

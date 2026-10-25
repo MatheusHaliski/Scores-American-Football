@@ -44,11 +44,11 @@ Fonte: [`RF11-stm.puml`](RF11-stm.puml)
 
 | Estado | Método | Rota | Caso de uso | Autorização | Descrição |
 |---|---|---|---|---|---|
-| ⛔ alvo | `GET` | `/api/v1/careers` | `ListCareersUseCase` | JWT | Slots do usuário: nome, franquia, liga, temporada/semana, campanha (V-D-E), status, lastPlayedAt |
-| ⛔ alvo | `POST` | `/api/v1/careers` | `CreateCareerUseCase` | JWT | Nova carreira (assistente RF34): clona o mundo, cria head coach, temporada e contrato |
-| ⛔ alvo | `GET` | `/api/v1/careers/{id}` | `GetCareerUseCase` | JWT · dono do save | Detalhe do save |
-| ⛔ alvo | `PATCH` | `/api/v1/careers/{id}` | `UpdateCareerUseCase` | JWT · dono do save | Renomeia, muda slot, arquiva/reativa |
-| ⛔ alvo | `DELETE` | `/api/v1/careers/{id}` | `DeleteCareerUseCase` | JWT · dono do save | Exclui save, mundo SAVE e projeções (play-by-play, inbox, cache, índice) |
+| ✅ | `GET` | `/api/v1/careers` | `ListCareersUseCase` | JWT | Slots do usuário: nome, franquia, liga, temporada/semana, campanha (V-D-E), status, lastPlayedAt |
+| ✅ | `POST` | `/api/v1/careers` | `CreateCareerUseCase` | JWT | Nova carreira (assistente RF34): clona o mundo, cria head coach, temporada e contrato |
+| ✅ | `GET` | `/api/v1/careers/{id}` | `GetCareerUseCase` | JWT · dono do save | Detalhe do save |
+| ✅ | `PATCH` | `/api/v1/careers/{id}` | `UpdateCareerUseCase` | JWT · dono do save | Renomeia, muda slot, arquiva/reativa |
+| ✅ | `DELETE` | `/api/v1/careers/{id}` | `DeleteCareerUseCase` | JWT · dono do save | Exclui save, mundo SAVE e projeções (play-by-play, inbox, cache, índice) |
 
 ## Pontos de decisão
 

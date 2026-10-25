@@ -4,12 +4,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 
 import br.com.velion.scoresaf.application.seed.DefaultWorldSeeder;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.regex.Pattern;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -35,6 +40,11 @@ import tools.jackson.databind.node.ObjectNode;
  * <p>Valores que mudam a cada execução (ids, instantes, token, e-mail gerado) são trocados por valores fixos do mesmo formato
  * antes de gravar e de comparar ({@link #STABLE}); as chaves, os tipos e os demais valores são os reais. A senha da conta de
  * teste é gerada na execução e nunca aparece na resposta.
+ *
+ * <p>Bloco 6a: a carreira (lista, central, calendário), o elenco, o jogador, o depth chart e o 409 do depth chart. A carreira é
+ * criada com semente fixa na franquia PAV do mundo padrão, então o conteúdo é determinístico; os ids (todos novos, do mundo copiado)
+ * viram UUIDs sequenciais na ordem em que aparecem no arquivo ({@link #stableCareer}), o que preserva as referências internas
+ * (ex.: {@code homeClubId} do jogo aponta para um {@code clubs[].id}).
  */
 @SpringBootTest(properties = {"scores.app.version=0.0.0-golden", "scores.security.rate-limit.limits.password-forgot=1"})
 @AutoConfigureMockMvc
@@ -140,6 +150,89 @@ class ApiGoldenTest {
     MvcResult limited = mvc.perform(forgot).andReturn();
     assertThat(limited.getResponse().getStatus()).isEqualTo(429);
     assertGolden("problem-429.json", limited);
+  }
+
+  private static final Pattern UUID_TEXT = Pattern.compile("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}");
+  private static final Set<String> INSTANTS = Set.of("createdAt", "lastPlayedAt", "updatedAt", "at");
+
+  /** Amostra da carreira: ids sequenciais na ordem de aparição e instantes fixos (ver o javadoc da classe). */
+  private void assertCareerGolden(String file, MvcResult result) throws Exception {
+    Path golden = DIR.resolve(file);
+    JsonNode now = stableCareer(json.readTree(result.getResponse().getContentAsString()), new LinkedHashMap<>());
+    if (Boolean.getBoolean("golden.update") || "1".equals(System.getenv("GOLDEN_UPDATE"))) {
+      Files.writeString(golden, json.writerWithDefaultPrettyPrinter().writeValueAsString(now) + "\n");
+    }
+    assertThat(golden).as("amostra %s (rodar a partir do módulo; regenerar com -Dgolden.update=true)", file).exists();
+    if (!json.readTree(Files.readString(golden)).equals(now)) {
+      fail("docs/validation/golden/" + file + " diverge da API: regenere com -Dgolden.update=true e rode o teste do front");
+    }
+  }
+
+  static JsonNode stableCareer(JsonNode node, Map<String, String> ids) {
+    if (node instanceof ObjectNode o) {
+      for (String name : o.propertyNames()) {
+        JsonNode v = o.get(name);
+        if (v != null && v.isString() && INSTANTS.contains(name)) o.put(name, "2026-01-01T00:00:00Z");
+        else if (v != null && v.isString() && UUID_TEXT.matcher(v.asString()).find()) o.put(name, replaceIds(ids, v.asString()));
+        else stableCareer(v, ids);
+      }
+    } else if (node instanceof tools.jackson.databind.node.ArrayNode a) {
+      for (int i = 0; i < a.size(); i++) {
+        JsonNode v = a.get(i);
+        if (v.isString() && UUID_TEXT.matcher(v.asString()).find()) a.set(i, tools.jackson.databind.node.StringNode.valueOf(replaceIds(ids, v.asString())));
+        else stableCareer(v, ids);
+      }
+    }
+    return node;
+  }
+
+  /** Troca cada UUID do texto (valor inteiro ou dentro dele, como o {@code instance} do erro) pelo sequencial. */
+  private static String replaceIds(Map<String, String> ids, String text) {
+    return UUID_TEXT.matcher(text).replaceAll(m -> seq(ids, m.group()));
+  }
+
+  private static String seq(Map<String, String> ids, String uuid) {
+    return ids.computeIfAbsent(uuid, k -> String.format("00000000-0000-4000-8000-%012d", ids.size() + 1));
+  }
+
+  /** Carreira dourada: semente 2026, franquia PAV do mundo padrão, head coach com nome fixo. Devolve o id. */
+  private String goldenCareer(String auth) throws Exception {
+    Map<String, Object> body = new HashMap<>(Map.of("name", "Dinastia Dourada", "clubId", defaultClub(auth).get("id").asString(), "coachName", "Treinadora Dourada",
+        "coachNationality", "BRA", "coachStyle", "OFFENSIVE", "difficulty", "NORMAL", "seed", 2026L));
+    MvcResult r = mvc.perform(post("/api/v1/careers").header("Authorization", auth).contentType(MediaType.APPLICATION_JSON)
+        .content(json.writeValueAsString(body))).andReturn();
+    assertThat(r.getResponse().getStatus()).as(r.getResponse().getContentAsString()).isEqualTo(201);
+    return json.readTree(r.getResponse().getContentAsString()).get("id").asString();
+  }
+
+  @Test
+  void carreiras_central_e_calendario_batem_com_as_amostras_douradas() throws Exception {
+    String auth = bearer();
+    String career = goldenCareer(auth);
+    assertCareerGolden("careers-list.json", mvc.perform(get("/api/v1/careers").header("Authorization", auth)).andReturn());
+    assertCareerGolden("career-dashboard.json", mvc.perform(get("/api/v1/careers/" + career + "/dashboard").header("Authorization", auth)).andReturn());
+    assertCareerGolden("career-calendar.json", mvc.perform(get("/api/v1/careers/" + career + "/calendar").header("Authorization", auth)).andReturn());
+  }
+
+  @Test
+  void elenco_jogador_e_depth_chart_batem_com_as_amostras_douradas() throws Exception {
+    String auth = bearer();
+    String career = goldenCareer(auth);
+    MvcResult roster = mvc.perform(get("/api/v1/careers/" + career + "/roster").header("Authorization", auth)).andReturn();
+    assertCareerGolden("roster.json", roster);
+    String qb = null;
+    for (JsonNode c : json.readTree(roster.getResponse().getContentAsString()).get("units").get("OFFENSE")) {
+      if ("QB".equals(c.get("position").asString())) { qb = c.get("id").asString(); break; }
+    }
+    assertThat(qb).isNotNull();
+    assertCareerGolden("roster-player.json", mvc.perform(get("/api/v1/careers/" + career + "/players/" + qb).header("Authorization", auth)).andReturn());
+    MvcResult chart = mvc.perform(get("/api/v1/careers/" + career + "/depth-chart").header("Authorization", auth)).andReturn();
+    assertCareerGolden("depth-chart.json", chart);
+    // 409: versão desatualizada no PUT
+    MvcResult conflict = mvc.perform(put("/api/v1/careers/" + career + "/depth-chart").header("Authorization", auth).header("X-Correlation-Id", "golden-409")
+        .header("Accept-Language", "pt-BR").contentType(MediaType.APPLICATION_JSON).content("{\"version\":7,\"slots\":[]}")).andReturn();
+    assertThat(conflict.getResponse().getStatus()).as(conflict.getResponse().getContentAsString()).isEqualTo(409);
+    assertCareerGolden("problem-409-depth-chart.json", conflict);
   }
 
   /** Franquia "PAV" do mundo padrão, pela lista da liga (mesmas rotas que o front do editor usa). */

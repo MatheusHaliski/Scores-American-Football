@@ -4,6 +4,7 @@ import type { AuthResponse, UserAccount } from "../types";
 import { getLocale, translate } from "@/i18n/runtime";
 import { matchLocale } from "@/i18n/config";
 import { mockAccount } from "./account";
+import { mockCareers } from "./career";
 import { uuidFrom } from "./rng";
 import { getUser, setUser } from "./state";
 
@@ -26,6 +27,11 @@ function requireUser(): UserAccount {
 /** Conta mock do usuário da sessão (RF46); alterações de nome/idioma voltam para o resumo da sessão. */
 function acct() {
   return mockAccount(requireUser(), (u) => setUser(u));
+}
+
+/** Carreiras mock do usuário da sessão (bloco 6a). */
+function careers() {
+  return mockCareers(requireUser());
 }
 
 /** Tokens de mentira gerados na hora (o modo mock não manda Bearer a lugar nenhum). */
@@ -110,6 +116,31 @@ export function createMockApi(): ScoresApi {
       deleteAccount: (req) => later(() => acct().deleteAccount(req.currentPassword, req.confirmation), 400),
       deletionStatus: () => later(() => acct().deletionStatus()),
       cancelDeletion: () => later(() => acct().cancelDeletion(), 300),
+    },
+    worlds: {
+      list: () => later(() => careers().worlds()),
+      leagues: (worldId) => later(() => careers().leagues(worldId)),
+      leagueClubs: (worldId, leagueId) => later(() => careers().leagueClubs(worldId, leagueId)),
+    },
+    careers: {
+      list: () => later(() => careers().list()),
+      create: (req) => later(() => careers().create(req), 600),
+      get: (id) => later(() => careers().get(id)),
+      update: (id, req) => later(() => careers().update(id, req), 200),
+      remove: (id, confirm) => later(() => careers().remove(id, confirm), 300),
+      dashboard: (id) => later(() => careers().dashboard(id)),
+      calendar: (id, week) => later(() => careers().calendar(id, week)),
+    },
+    roster: {
+      get: (careerId) => later(() => careers().roster(careerId)),
+      player: (careerId, playerId) => later(() => careers().player(careerId, playerId)),
+      changeStatus: (careerId, playerId, status) => later(() => careers().changeStatus(careerId, playerId, status), 200),
+      release: (careerId, playerId) => later(() => careers().release(careerId, playerId), 250),
+    },
+    depthChart: {
+      get: (careerId) => later(() => careers().depthChart(careerId)),
+      save: (careerId, req) => later(() => careers().saveDepthChart(careerId, req), 250),
+      setRole: (careerId, playerId, req) => later(() => careers().setRole(careerId, playerId, req), 200),
     },
   };
 }

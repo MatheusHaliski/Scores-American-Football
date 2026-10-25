@@ -43,7 +43,7 @@ database "Cassandra 4.1" as s2
 c1 --> c4 : usa
 c2 --> c4 : usa
 c3 --> c13 : dispara
-c4 --> c9 : GET /me/settings (alvo)\nPUT /me/settings (alvo)\n* /** (Accept-Language)
+c4 --> c9 : GET /me/settings\nPUT /me/settings\n* /** (Accept-Language)
 c4 --> c10
 c4 --> c11
 c4 --> c12

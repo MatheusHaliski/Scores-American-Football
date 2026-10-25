@@ -17,7 +17,7 @@
     "usecase": "RegisterUserUseCase",
     "auth": "público · 10 por IP/hora",
     "desc": "Cria UserAccount (e-mail AES-GCM + emailHash HMAC, senha Argon2id fora da transação, status ACTIVE), UserSettings padrão do futebol americano (jardas, controle KEY_MOMENTS) e consentimento de processamento; envia e-mail de verificação (token 24 h)",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "POST",
@@ -25,7 +25,7 @@
     "usecase": "EmailChangeUseCases.verify",
     "auth": "público · 40 por IP/hora",
     "desc": "Confirma a posse do e-mail (cadastro ou troca) com token de uso único",
-    "implemented": false
+    "implemented": true
    }
   ],
   "entities": [
@@ -673,7 +673,7 @@
     "usecase": "LoginUseCase",
     "auth": "público · 30 por IP/10 min",
     "desc": "Reserva atômica de tentativa por e-mail ANTES do hash (5 em 15 min); mesmo 401 AUTH_FAILED para todos os casos; access RS256 15 min no corpo (fica só em memória) + refresh opaco 7 dias em cookie __Host- HttpOnly Secure SameSite=Strict (D-5)",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "POST",
@@ -681,7 +681,7 @@
     "usecase": "RefreshTokenUseCase",
     "auth": "cookie __Host-refresh · Origin conferida · 120 por IP/10 min",
     "desc": "Rotaciona o refresh (replacedBy) e regrava o cookie; reuso de token antigo revoga a família inteira",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "POST",
@@ -689,7 +689,7 @@
     "usecase": "LogoutUseCase",
     "auth": "JWT",
     "desc": "Revoga a família de sessão, apaga o cookie e avisa as outras abas (logout entre abas, D-5)",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "POST",
@@ -697,7 +697,7 @@
     "usecase": "ForgotPasswordUseCase",
     "auth": "público · 10 por IP/hora",
     "desc": "Token de redefinição (30 min) por e-mail · 202 sempre (não revela existência)",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "POST",
@@ -705,7 +705,7 @@
     "usecase": "ResetPasswordUseCase",
     "auth": "público · 20 por IP/hora",
     "desc": "Novo hash fora da transação; limpa o bloqueio por e-mail; revoga todas as famílias de sessão",
-    "implemented": false
+    "implemented": true
    }
   ],
   "entities": [
@@ -1582,7 +1582,7 @@
     "usecase": "AccountUseCases.profile",
     "auth": "JWT",
     "desc": "Perfil (e-mail decifrado só para o titular), locale, status, visibilidade",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "PUT",
@@ -1590,7 +1590,7 @@
     "usecase": "AccountUseCases.updateProfile",
     "auth": "JWT",
     "desc": "displayName, avatar, visibilidade, data de nascimento · SENSITIVE_DATA_CHANGED",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "PUT",
@@ -1598,7 +1598,7 @@
     "usecase": "EmailChangeUseCases.request",
     "auth": "JWT · senha atual (step-up) · 30 por IP/h",
     "desc": "pendingEmail + token; conclui em POST /auth/email/verify",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "PUT",
@@ -1606,7 +1606,7 @@
     "usecase": "AccountUseCases.changePassword",
     "auth": "JWT · senha atual (step-up) · 20 por IP/h",
     "desc": "Novo hash fora da transação; revoga as outras famílias de sessão",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "GET",
@@ -1614,7 +1614,7 @@
     "usecase": "AccountUseCases.sessions",
     "auth": "JWT",
     "desc": "Famílias de sessão ativas (dispositivo, IP, última atividade, atual)",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "DELETE",
@@ -1622,7 +1622,7 @@
     "usecase": "AccountUseCases.revokeSession",
     "auth": "JWT",
     "desc": "Revoga uma família do próprio usuário · SESSION_REVOKED",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "GET",
@@ -1630,7 +1630,7 @@
     "usecase": "PrivacyUseCases.view",
     "auth": "JWT",
     "desc": "Consentimento por finalidade (ANALYTICS, MARKETING_EMAIL, PUBLIC_RANKING, AI_ANALYST, BIOMETRIC_AVATAR)",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "PUT",
@@ -1638,7 +1638,7 @@
     "usecase": "PrivacyUseCases.update",
     "auth": "JWT",
     "desc": "Concede ou revoga (append-only); revogar biometria apaga a mídia do Meu jogador",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "POST",
@@ -1646,7 +1646,7 @@
     "usecase": "DataExportUseCases.request",
     "auth": "JWT",
     "desc": "Portabilidade assíncrona: DataExportJob (JSON + CSV, 24 h)",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "GET",
@@ -1654,7 +1654,7 @@
     "usecase": "DataExportUseCases.download",
     "auth": "JWT · dono do job",
     "desc": "Download do pacote · DATA_EXPORT_DOWNLOADED",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "DELETE",
@@ -1662,7 +1662,7 @@
     "usecase": "AccountDeletionUseCases.request",
     "auth": "JWT · senha + palavra (step-up) · 10 por IP/h",
     "desc": "PENDING_DELETION, sessões encerradas, 7 dias de arrependimento",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "POST",
@@ -1670,7 +1670,7 @@
     "usecase": "AccountDeletionUseCases.cancel",
     "auth": "JWT",
     "desc": "Cancela dentro do prazo",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "PUT",
@@ -2482,7 +2482,7 @@
     "usecase": "GetRosterUseCase",
     "auth": "JWT · dono do save",
     "desc": "Cards compactos por unidade (unit=OFFENSE|DEFENSE|SPECIAL): posição, overall na posição, macros da família (D-6), condição, moral, lesão, rosterStatus, contrato e cap hit; contadores 53/46/16",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "PATCH",
@@ -2490,7 +2490,7 @@
     "usecase": "ChangeRosterStatusUseCase",
     "auth": "JWT · dono do save",
     "desc": "ACTIVE ↔ INACTIVE do dia de jogo (46 ativos) ou move ao practice squad",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "POST",
@@ -2514,7 +2514,7 @@
     "usecase": "ReleasePlayerUseCase",
     "auth": "JWT · dono do save",
     "desc": "Dispensa: vai a waivers (RF65) e gera dead money no teto (RF49)",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "POST",
@@ -3355,7 +3355,7 @@
     "usecase": "ListWorldsUseCase",
     "auth": "JWT",
     "desc": "Mundo semente fictício de 32 times + mundos TEMPLATE do usuário",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "POST",
@@ -3363,7 +3363,7 @@
     "usecase": "CloneWorldUseCase",
     "auth": "JWT",
     "desc": "Copia o mundo semente (ou outro TEMPLATE) para o usuário editar",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "POST",
@@ -3371,7 +3371,7 @@
     "usecase": "SaveLeagueUseCase",
     "auth": "JWT · dono do mundo",
     "desc": "Cria liga com ruleset PRO|COLLEGE, LeagueRules AF (quarto, relógio de jogada, prorrogação, kickoff, 53/46/16), teto e piso salarial",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "PUT",
@@ -3387,7 +3387,7 @@
     "usecase": "SaveLeagueStructureUseCase",
     "auth": "JWT · dono do mundo",
     "desc": "Conferências (1–2), divisões por conferência e franquia de cada divisão; vagas de playoff por conferência",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "DELETE",
@@ -3403,7 +3403,7 @@
     "usecase": "SaveClubUseCase",
     "auth": "JWT · dono do mundo",
     "desc": "Cria franquia (nome, cidade, divisão, cores, capacete, logo, prestígio)",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "PUT",
@@ -3419,7 +3419,7 @@
     "usecase": "SavePlayerUseCase",
     "auth": "JWT · dono do mundo",
     "desc": "Cria jogador: posição AF, unidade, ≈40 subatributos, altura/peso, college, contrato",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "PUT",
@@ -3443,7 +3443,7 @@
     "usecase": "SaveStadiumUseCase",
     "auth": "JWT · dono do mundo",
     "desc": "Estádio do catálogo: capacidade, cobertura, gramado, zona climática, arte da end zone",
-    "implemented": false
+    "implemented": true
    }
   ],
   "entities": [
@@ -4216,7 +4216,7 @@
     "usecase": "GetDepthChartUseCase",
     "auth": "JWT · dono do save",
     "desc": "Slots por unidade e posição (depth 1, 2, 3) e papéis (KR, PR, 3RD_DOWN_BACK, HOLDER, SNAPPER)",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "PUT",
@@ -4224,7 +4224,7 @@
     "usecase": "SaveDepthChartUseCase",
     "auth": "JWT · dono do save",
     "desc": "Salva depth chart validado (version otimista)",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "POST",
@@ -4240,7 +4240,7 @@
     "usecase": "GetGamePlanUseCase",
     "auth": "JWT · dono do save",
     "desc": "GamePlan atual e playbook ativo",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "PUT",
@@ -5046,7 +5046,7 @@
     "usecase": "SaveDepthChartUseCase",
     "auth": "JWT · dono do save",
     "desc": "Salva o depth chart montado no painel LED (RF6)",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "PUT",
@@ -5062,7 +5062,7 @@
     "usecase": "GetSettingsUseCase",
     "auth": "JWT",
     "desc": "simQuarterMinutes, playCallingLevel, decisionTimeoutSeconds e reducedMotion aplicados à partida (RF10)",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "POST",
@@ -7352,7 +7352,7 @@
     "usecase": "GetSettingsUseCase",
     "auth": "JWT",
     "desc": "UserSettings: simQuarterMinutes, playCallingLevel, decisionTimeoutSeconds, difficulty, units, theme, highContrast, fontScale, reducedMotion, notificationsEnabled",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "PUT",
@@ -7360,7 +7360,7 @@
     "usecase": "UpdateSettingsUseCase",
     "auth": "JWT",
     "desc": "Salva preferências validadas",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "GET",
@@ -7899,7 +7899,7 @@
     "usecase": "ListCareersUseCase",
     "auth": "JWT",
     "desc": "Slots do usuário: nome, franquia, liga, temporada/semana, campanha (V-D-E), status, lastPlayedAt",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "POST",
@@ -7907,7 +7907,7 @@
     "usecase": "CreateCareerUseCase",
     "auth": "JWT",
     "desc": "Nova carreira (assistente RF34): clona o mundo, cria head coach, temporada e contrato",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "GET",
@@ -7915,7 +7915,7 @@
     "usecase": "GetCareerUseCase",
     "auth": "JWT · dono do save",
     "desc": "Detalhe do save",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "PATCH",
@@ -7923,7 +7923,7 @@
     "usecase": "UpdateCareerUseCase",
     "auth": "JWT · dono do save",
     "desc": "Renomeia, muda slot, arquiva/reativa",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "DELETE",
@@ -7931,7 +7931,7 @@
     "usecase": "DeleteCareerUseCase",
     "auth": "JWT · dono do save",
     "desc": "Exclui save, mundo SAVE e projeções (play-by-play, inbox, cache, índice)",
-    "implemented": false
+    "implemented": true
    }
   ],
   "entities": [
@@ -11639,7 +11639,7 @@
     "usecase": "GetCalendarUseCase",
     "auth": "JWT · dono do save",
     "desc": "Semanas futuras com jogos de divisão, quinta à noite e semana de folga (RF21)",
-    "implemented": false
+    "implemented": true
    }
   ],
   "entities": [
@@ -14487,7 +14487,7 @@
     "usecase": "GetPlayerExpandedUseCase",
     "auth": "JWT · dono do save",
     "desc": "Esquema ampliado do jogador (RF22)",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "GET",
@@ -15091,7 +15091,7 @@
     "usecase": "GetCalendarUseCase",
     "auth": "JWT · dono do save",
     "desc": "Semanas da temporada (pré, 18 regulares, playoffs) com fixtures por horário (THU_NIGHT, SUN_EARLY, SUN_LATE, SUN_NIGHT, MON_NIGHT), bye, clima previsto, importance e CalendarInsight",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "GET",
@@ -15771,7 +15771,7 @@
     "usecase": "GetPlayerExpandedUseCase",
     "auth": "JWT · dono do save",
     "desc": "6 macros pela família de posição (D-6), ≈40 subatributos agrupados, overall em cada posição com aviso fora de posição, contrato (cap hit, garantia, dead money), moral e fatores, lesão e InjuryReport, estatísticas da temporada pela posição, estilos, consumíveis, slot no depth chart e card (nível Bronze…Elite)",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "GET",
@@ -15795,7 +15795,7 @@
     "usecase": "ChangeRosterStatusUseCase",
     "auth": "JWT · dono do save",
     "desc": "ACTIVE, PRACTICE_SQUAD ou IR dentro das regras 53 / 16 / IR",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "POST",
@@ -15827,7 +15827,7 @@
     "usecase": "ReleasePlayerUseCase",
     "auth": "JWT · dono do save",
     "desc": "Dispensa: vai aos waivers e o dead money entra no teto",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "POST",
@@ -16608,7 +16608,7 @@
     "usecase": "GetPlayerExpandedUseCase",
     "auth": "JWT · dono do save",
     "desc": "model3dUrl, posição, altura e peso, estilos ativos e animationId de cada um",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "GET",
@@ -16640,7 +16640,7 @@
     "usecase": "GetUserSettingsUseCase",
     "auth": "JWT",
     "desc": "reducedMotion (RNF9)",
-    "implemented": false
+    "implemented": true
    }
   ],
   "entities": [
@@ -17977,7 +17977,7 @@
     "usecase": "GetRosterUseCase",
     "auth": "JWT · dono do save",
     "desc": "Elenco com consumíveis ativos por jogador (ConsumableApplication) e semanas restantes",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "GET",
@@ -21057,7 +21057,7 @@
     "usecase": "GetGamePlanUseCase",
     "auth": "JWT · dono do save",
     "desc": "Plano padrão da franquia (RF61) para restaurar",
-    "implemented": false
+    "implemented": true
    }
   ],
   "entities": [
@@ -24527,7 +24527,7 @@
     "usecase": "ListWorldsUseCase",
     "auth": "JWT",
     "desc": "Mundo padrão (32 franquias fictícias) e mundos editados do usuário (RF5)",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "GET",
@@ -24535,7 +24535,7 @@
     "usecase": "ListLeaguesUseCase",
     "auth": "JWT",
     "desc": "Ligas com ruleset PRO/COLLEGE, conferências, divisões, nº de franquias, teto e piso salarial",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "GET",
@@ -24543,7 +24543,7 @@
     "usecase": "ListClubsUseCase",
     "auth": "JWT",
     "desc": "Franquias por conferência e divisão (prestígio, cap space, vitórias esperadas, overall por unidade)",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "POST",
@@ -24551,7 +24551,7 @@
     "usecase": "CreateClubUseCase",
     "auth": "JWT",
     "desc": "Cria franquia (nome, cidade, cores, capacete, divisão) só em mundo editável",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "GET",
@@ -24567,7 +24567,7 @@
     "usecase": "CreateCareerUseCase",
     "auth": "JWT",
     "desc": "Cria CareerSave CREATING e agenda o bootstrap → 202 {saveId}",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "GET",
@@ -24575,7 +24575,7 @@
     "usecase": "GetCareerUseCase",
     "auth": "JWT · dono do save",
     "desc": "Status da criação (CREATING → ACTIVE | FAILED) para o poll do wizard",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "GET",
@@ -24583,7 +24583,7 @@
     "usecase": "ListCareersUseCase",
     "auth": "JWT",
     "desc": "Carreiras salvas e slots livres (RF11)",
-    "implemented": false
+    "implemented": true
    }
   ],
   "entities": [
@@ -26743,7 +26743,7 @@
     "usecase": "GetClubDashboardUseCase",
     "auth": "JWT · dono do save",
     "desc": "Painel espectador: classificação, placares da semana, notícias, propostas · sem cards de gestão",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "POST",
@@ -28419,7 +28419,7 @@
     "usecase": "GetClubDashboardUseCase",
     "auth": "JWT · dono do save",
     "desc": "Head coach, franquia, próximo jogo ou bye, próximos adversários da divisão, partida ao vivo, últimas semanas, divisão, cap space, lesões, alertas IA, inbox",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "GET",
@@ -28996,7 +28996,7 @@
     "usecase": "GetPlayerSheetUseCase",
     "auth": "JWT · dono do save",
     "desc": "Moral do jogador, fatores (snaps, contrato, vitórias, papel), pedido de troca, modificador de desempenho",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "POST",
@@ -33747,7 +33747,7 @@
     "usecase": "AccountUseCases.updateProfile",
     "auth": "JWT",
     "desc": "Correção de dados (Art. 18, III)",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "PUT",
@@ -33755,7 +33755,7 @@
     "usecase": "EmailChangeUseCases.request",
     "auth": "JWT · reautenticação",
     "desc": "Troca com verificação de posse",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "PUT",
@@ -33763,7 +33763,7 @@
     "usecase": "AccountUseCases.changePassword",
     "auth": "JWT · reautenticação",
     "desc": "Encerra as outras sessões",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "GET",
@@ -33771,7 +33771,7 @@
     "usecase": "PrivacyUseCases.view",
     "auth": "JWT",
     "desc": "Consentimento por finalidade",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "PUT",
@@ -33779,7 +33779,7 @@
     "usecase": "PrivacyUseCases.update",
     "auth": "JWT",
     "desc": "Conceder ou revogar · biometria apaga mídia",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "GET",
@@ -33787,7 +33787,7 @@
     "usecase": "PrivacyUseCases.history",
     "auth": "JWT",
     "desc": "Histórico append-only (versão do texto, origem, hash do IP)",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "GET",
@@ -33795,7 +33795,7 @@
     "usecase": "SettingsUseCases.get",
     "auth": "JWT",
     "desc": "Preferências atuais",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "PUT",
@@ -33803,7 +33803,7 @@
     "usecase": "SettingsUseCases.update",
     "auth": "JWT",
     "desc": "Tema, contraste, fonte, movimento, idioma, formato regional, unidade (jardas ou metros)",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "POST",
@@ -33811,7 +33811,7 @@
     "usecase": "DataExportUseCases.request",
     "auth": "JWT",
     "desc": "Exportação JSON + CSV (24 h)",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "GET",
@@ -33819,7 +33819,7 @@
     "usecase": "DataExportUseCases.download",
     "auth": "JWT · dono do job",
     "desc": "Download (DATA_EXPORT_DOWNLOADED)",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "DELETE",
@@ -33827,7 +33827,7 @@
     "usecase": "AccountDeletionUseCases.request",
     "auth": "JWT · senha + palavra (step-up)",
     "desc": "Exclusão com 7 dias de arrependimento",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "POST",
@@ -33835,7 +33835,7 @@
     "usecase": "AccountDeletionUseCases.cancel",
     "auth": "JWT",
     "desc": "Cancela dentro do prazo",
-    "implemented": false
+    "implemented": true
    }
   ],
   "entities": [
@@ -35609,7 +35609,7 @@
     "usecase": "ReleasePlayerUseCase",
     "auth": "JWT · dono do save",
     "desc": "Corta o jogador (waivers, RF65) e lança o dead money · expectedLedgerVersion",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "POST",
@@ -41950,7 +41950,7 @@
     "usecase": "GetDepthChartUseCase",
     "auth": "JWT · dono do save",
     "desc": "Slots por unidade e posição, overall na posição, avisos",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "PUT",
@@ -41958,7 +41958,7 @@
     "usecase": "UpdateDepthChartUseCase",
     "auth": "JWT · dono do save",
     "desc": "Grava slots (expectedVersion)",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "POST",
@@ -42512,7 +42512,7 @@
     "usecase": "GetGamePlanUseCase",
     "auth": "JWT · dono do save",
     "desc": "Plano da semana",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "PUT",
@@ -43030,7 +43030,7 @@
     "usecase": "UpdateUserSettingsUseCase",
     "auth": "JWT",
     "desc": "Nível de chamada (KEY_MOMENTS, ALL_PLAYS, NONE) e tempo limite (RF10)",
-    "implemented": false
+    "implemented": true
    }
   ],
   "entities": [
@@ -45899,7 +45899,7 @@
     "usecase": "CreateCareerUseCase",
     "auth": "JWT",
     "desc": "Clona o mundo TEMPLATE para um mundo SAVE e cria o salvamento numa só transação",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "GET",
@@ -45907,7 +45907,7 @@
     "usecase": "CareerQueries",
     "auth": "JWT · dono do save",
     "desc": "Retomar: lê o último commit do mundo SAVE",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "PUT",
@@ -45923,7 +45923,7 @@
     "usecase": "UpdateDepthChartUseCase",
     "auth": "JWT · dono do save",
     "desc": "Escrita típica de carreira: DepthChart com @Version (409 em conflito)",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "POST",
@@ -46547,7 +46547,7 @@
     "usecase": "UpdateUserSettingsUseCase",
     "auth": "JWT",
     "desc": "simQuarterMinutes (0 = instantâneo, 1–15) · playCallingLevel KEY_MOMENTS|ALL_PLAYS|NONE · decisionTimeoutSeconds",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "POST",
@@ -47279,7 +47279,7 @@
     "usecase": "GetClubDashboardUseCase",
     "auth": "JWT · dono do save",
     "desc": "Recurso do save: CareerAccess.requireOwner(saveId, userId) no caso de uso",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "GET",
@@ -47287,7 +47287,7 @@
     "usecase": "AccountUseCases.profile",
     "auth": "JWT",
     "desc": "Recurso do próprio usuário: sempre jwt.sub, nunca id vindo do cliente",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "GET",
@@ -47303,7 +47303,7 @@
     "usecase": "LoginUseCase",
     "auth": "público",
     "desc": "Rota pública explícita na allowlist (/auth/**, /actuator/health, /api-docs/**, /error)",
-    "implemented": false
+    "implemented": true
    }
   ],
   "entities": [
@@ -47897,7 +47897,7 @@
     "usecase": "LoginUseCase",
     "auth": "público · rate limit por IP",
     "desc": "Corpo: accessToken (memória). Set-Cookie: __Host-scores_af_rt HttpOnly Secure SameSite=Strict Path=/ Max-Age 7 d",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "POST",
@@ -47905,7 +47905,7 @@
     "usecase": "RefreshTokenUseCase",
     "auth": "cookie __Host- · Origin conferido",
     "desc": "Rotaciona o refresh na mesma família e devolve novo access · reuso revoga a família",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "POST",
@@ -47913,7 +47913,7 @@
     "usecase": "LogoutUseCase",
     "auth": "JWT",
     "desc": "Revoga a família e apaga o cookie (Max-Age=0) · outras abas saem via BroadcastChannel",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "GET",
@@ -47921,7 +47921,7 @@
     "usecase": "AccountUseCases.sessions",
     "auth": "JWT",
     "desc": "Famílias ativas (ip, userAgent, criada, expira, atual)",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "DELETE",
@@ -47929,7 +47929,7 @@
     "usecase": "AccountUseCases.revokeSession",
     "auth": "JWT",
     "desc": "Revoga outra família do próprio usuário · SESSION_REVOKED",
-    "implemented": false
+    "implemented": true
    }
   ],
   "entities": [
@@ -48594,7 +48594,7 @@
     "usecase": "RegisterUserUseCase",
     "auth": "público",
     "desc": "email → AES-GCM + emailHash HMAC-SHA256 · senha → Argon2id fora da transação, com teto de hashes simultâneos",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "PUT",
@@ -48602,7 +48602,7 @@
     "usecase": "AccountUseCases.updateProfile",
     "auth": "JWT",
     "desc": "displayName recifrado · AuditLog SENSITIVE_DATA_CHANGED sem valores",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "GET",
@@ -48610,7 +48610,7 @@
     "usecase": "AccountUseCases.profile",
     "auth": "JWT",
     "desc": "Decifra só para o titular",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "POST",
@@ -49867,7 +49867,7 @@
     "usecase": "ActivityUseCases.list",
     "auth": "JWT",
     "desc": "Atividades da própria conta",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "POST",
@@ -49875,7 +49875,7 @@
     "usecase": "LoginUseCase",
     "auth": "público",
     "desc": "LOGIN_OK / LOGIN_FAILED / LOGIN_LOCKED · o LOGIN_FAILED sobrevive ao rollback",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "POST",
@@ -50390,7 +50390,7 @@
     "usecase": "AccountUseCases.profile",
     "auth": "JWT",
     "desc": "Acesso: dados pessoais decifrados só para o titular",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "PUT",
@@ -50398,7 +50398,7 @@
     "usecase": "PrivacyUseCases.update",
     "auth": "JWT",
     "desc": "Concede ou revoga por finalidade (ConsentRecord append-only) · biometria revogada apaga a mídia",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "POST",
@@ -50406,7 +50406,7 @@
     "usecase": "DataExportUseCases.request",
     "auth": "JWT",
     "desc": "Portabilidade: DataExportJob → JSON + CSV no S3 privado por 24 h",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "GET",
@@ -50414,7 +50414,7 @@
     "usecase": "DataExportUseCases.download",
     "auth": "JWT · dono do job",
     "desc": "DATA_EXPORT_DOWNLOADED",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "DELETE",
@@ -50422,7 +50422,7 @@
     "usecase": "AccountDeletionUseCases.request",
     "auth": "JWT · senha (step-up)",
     "desc": "PENDING_DELETION, sessões revogadas, 7 dias de arrependimento, depois anonimização",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "POST",
@@ -50430,7 +50430,7 @@
     "usecase": "AccountDeletionUseCases.cancel",
     "auth": "JWT",
     "desc": "Cancela no prazo",
-    "implemented": false
+    "implemented": true
    }
   ],
   "entities": [
@@ -50992,7 +50992,7 @@
     "usecase": "GetUserSettingsUseCase",
     "auth": "JWT",
     "desc": "reducedMotion, highContrast, fontScale (preferências de desempenho e acessibilidade)",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "GET",
@@ -51000,7 +51000,7 @@
     "usecase": "GetClubDashboardUseCase",
     "auth": "JWT · dono do save",
     "desc": "Leitura crítica com p95 ≤ 300 ms (cache Redis + ETag)",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "GET",
@@ -53221,7 +53221,7 @@
     "usecase": "SettingsUseCases.get",
     "auth": "JWT",
     "desc": "Lê locale da conta, regionalFormat e units",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "PUT",
@@ -53229,7 +53229,7 @@
     "usecase": "SettingsUseCases.update",
     "auth": "JWT",
     "desc": "Salva locale (pt-BR | en-US | es-ES) · vale para e-mails e conteúdo gerado",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "*",

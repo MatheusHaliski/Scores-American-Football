@@ -1,0 +1,16 @@
+{
+  "detail" : "O depth chart foi alterado em outra sessão (versão 7, atual 0). Atualize e tente de novo.",
+  "instance" : "/api/v1/careers/00000000-0000-4000-8000-000000000001/depth-chart",
+  "status" : 409,
+  "title" : "Conflito",
+  "code" : "DEPTH_CHART_VERSION_CONFLICT",
+  "message" : "O depth chart foi alterado em outra sessão (versão 7, atual 0). Atualize e tente de novo.",
+  "details" : {
+    "currentVersion" : 0,
+    "expectedVersion" : 7
+  },
+  "correlationId" : "golden-409",
+  "locale" : "pt-BR",
+  "currentVersion" : 0,
+  "expectedVersion" : 7
+}

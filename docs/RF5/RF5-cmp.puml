@@ -67,7 +67,7 @@ database "S3/MinIO" as s2
 database "OpenSearch 2" as s3
 c1 --> c3 : usa
 c2 --> c3 : usa
-c3 --> c14 : GET /worlds (alvo)\nPOST /worlds/{id}/clone (alvo)\nPOST /worlds/{id}/leagues (alvo)\n…
+c3 --> c14 : GET /worlds\nPOST /worlds/{id}/clone\nPOST /worlds/{id}/leagues\n…
 c3 --> c15
 c3 --> c16
 c3 --> c17

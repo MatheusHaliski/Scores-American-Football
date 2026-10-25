@@ -92,6 +92,11 @@ public class Player extends AuditableEntity {
   @Column(name = "physical_condition", nullable = false) private int condition = 100;
   @Column(nullable = false) private int morale = 60;
   @Column(nullable = false) private int suspensionWeeks;
+  /**
+   * Semanas que faltam para voltar de lesão (0 = sem lesão). Bloco 6a: só o elenco lê (IR exige lesão de pelo menos
+   * {@code LeagueRules.irMinWeeks}; volta da IR só recuperado); o relatório de lesões e o motor que lesiona entram no RF64 (D-47).
+   */
+  @Column(nullable = false) private int injuryWeeksOut;
 
   @Embedded
   private PlayerContract contract;

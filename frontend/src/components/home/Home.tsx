@@ -1,7 +1,7 @@
 "use client";
 /**
  * Tela inicial: marca, campo 3D, o estado da conexão com a API ({@code GET /api/v1/meta}) e a conta (bloco 3: entrar,
- * criar conta e, logado, o atalho para as configurações). As regras mostradas e as hash marks do campo seguem o
+ * criar conta e, logado, o atalho para as configurações) e o atalho para as carreiras (bloco 6a). As regras mostradas e as hash marks do campo seguem o
  * {@code defaultRuleset} que o servidor devolve (D-4).
  */
 import dynamic from "next/dynamic";
@@ -11,7 +11,7 @@ import { API_MODE } from "@/lib/api/config";
 import { fetchMeta, type GameMeta } from "@/lib/api/meta";
 import { BrandMark } from "@/components/brand/BrandMark";
 import { Button } from "@/components/ui/Button";
-import { IconLogout, IconSettings, IconUser } from "@/components/ui/icons";
+import { IconFlag, IconLogout, IconSettings, IconUser } from "@/components/ui/icons";
 import { useSession } from "@/store/session";
 
 type ApiState = { kind: "checking" } | { kind: "online"; meta: GameMeta } | { kind: "offline" };
@@ -88,6 +88,19 @@ function AccountPanel() {
   );
 }
 
+/** Atalho para as carreiras (bloco 6a); visitante vai ao login e volta para /careers. */
+function CareersCta() {
+  const t = useT("common");
+  const user = useSession((s) => s.user);
+  const hydrated = useSession((s) => s.hydrated);
+  if (!hydrated) return null;
+  return (
+    <Button href={user ? "/careers" : "/auth?next=%2Fcareers"} variant="led" icon={<IconFlag size={18} />}>
+      {user ? t("home.cta.careers") : t("home.cta.careersLogin")}
+    </Button>
+  );
+}
+
 export function Home() {
   const t = useT("common");
   const { locale } = useI18n();
@@ -140,9 +153,7 @@ export function Home() {
           <h2 className="text-sm uppercase tracking-widest text-text-muted">{t("home.api.title")}</h2>
           <p className={api.kind === "offline" ? "text-bad" : "text-text"}>{status}</p>
         </div>
-        <button type="button" disabled className="touch rounded-[var(--radius-md)] bg-orange px-5 font-heading uppercase tracking-wider text-white opacity-60">
-          {t("home.cta.soon")}
-        </button>
+        <CareersCta />
       </section>
     </main>
   );

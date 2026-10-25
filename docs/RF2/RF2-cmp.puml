@@ -56,7 +56,7 @@ database "MySQL 8" as s1
 database "Redis 7" as s2
 c1 --> c3 : usa
 c2 --> c3 : usa
-c3 --> c10 : POST /auth/login (alvo)\nPOST /auth/refresh (alvo)\nPOST /auth/logout (alvo)\n…
+c3 --> c10 : POST /auth/login\nPOST /auth/refresh\nPOST /auth/logout\n…
 c3 --> c11
 c3 --> c12
 c3 --> c13

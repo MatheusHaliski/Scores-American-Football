@@ -43,5 +43,12 @@ public final class AuditActions {
   public static final String LEAGUE_STRUCTURE_UPDATED = "LEAGUE_STRUCTURE_UPDATED";
   /** ADMIN leu o mundo de outro usuário (suporte, D-21). */
   public static final String ADMIN_WORLD_READ = "ADMIN_WORLD_READ";
+  // RF11/RF34/RF4/RF60 — carreira, elenco e depth chart (bloco 6a). O recurso (CareerSave, Player, DepthChart) vai no campo resource.
+  public static final String CAREER_CREATED = "CAREER_CREATED";
+  public static final String CAREER_UPDATED = "CAREER_UPDATED";
+  public static final String CAREER_DELETED = "CAREER_DELETED";
+  public static final String ROSTER_MOVE = "ROSTER_MOVE";
+  public static final String PLAYER_RELEASED = "PLAYER_RELEASED";
+  public static final String DEPTH_CHART_UPDATED = "DEPTH_CHART_UPDATED";
   // As demais ações do jogo (partida, mercado, carreira, loja, Meu jogador) entram com os blocos que as usam (docs/01 §5).
 }

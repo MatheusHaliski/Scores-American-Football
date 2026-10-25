@@ -44,7 +44,7 @@ Fonte: [`RF25-stm.puml`](RF25-stm.puml)
 
 | Estado | Método | Rota | Caso de uso | Autorização | Descrição |
 |---|---|---|---|---|---|
-| ⛔ alvo | `GET` | `/api/v1/careers/{id}/roster` | `GetRosterUseCase` | JWT · dono do save | Elenco com consumíveis ativos por jogador (ConsumableApplication) e semanas restantes |
+| ✅ | `GET` | `/api/v1/careers/{id}/roster` | `GetRosterUseCase` | JWT · dono do save | Elenco com consumíveis ativos por jogador (ConsumableApplication) e semanas restantes |
 | ⛔ alvo | `GET` | `/api/v1/store/catalog` | `StoreCatalogService` | JWT | category=CONSUMABLE: efeito por atributo (ex.: +2 rota funda, +3 pass rush potência), posições compatíveis, duração em semanas, preço |
 | ⛔ alvo | `POST` | `/api/v1/careers/{id}/players/{pid}/consumables` | `ApplyConsumableUseCase` | JWT · dono do save · Idempotency-Key | Debita S$ do caixa (não conta no teto) ou Scores Points da carteira do save, cria ConsumableApplication (appliedWeek, expiresWeek) e PlayerPlayStyle CONSUMABLE se carta de estilo |
 

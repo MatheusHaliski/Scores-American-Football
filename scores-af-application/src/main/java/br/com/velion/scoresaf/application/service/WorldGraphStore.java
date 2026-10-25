@@ -109,11 +109,29 @@ public class WorldGraphStore {
    * usuário edita a cópia). Ids novos; referências internas remapeadas.
    */
   @Transactional
-  public World cloneWorld(World source, UserAccount owner, String name) {
+  public World cloneWorld(World source, UserAccount owner, String name) { return cloneGraph(source, owner, name, WorldKind.TEMPLATE).world(); }
+
+  /** Mundo copiado e o mapa id de origem → id da cópia (ligas, conferências, divisões, head coaches, estádios, franquias, jogadores). */
+  public record Cloned(World world, Map<UUID, UUID> ids) {
+    public UUID map(UUID sourceId) {
+      UUID id = ids.get(sourceId);
+      if (id == null) throw new IllegalArgumentException("id fora do mundo copiado: " + sourceId);
+      return id;
+    }
+  }
+
+  /**
+   * Cópia profunda com o tipo escolhido: TEMPLATE para o editor (RF5) ou SAVE para uma carreira nova (RF34, RNF1: o mundo da
+   * carreira é dela; editar o catálogo depois não a altera). O que é da carreira (head coach humano, franquia controlada) não é
+   * copiado: as cópias nascem com head coaches da IA e nenhuma franquia controlada.
+   */
+  @Transactional
+  public Cloned cloneGraph(World source, UserAccount owner, String name, WorldKind kind) {
     DefaultWorld src = load(source);
     World w = new World();
     w.setOwnerUser(owner); w.setName(name); w.setDescription(source.getDescription()); w.setSourceWorld(source);
-    w.setKind(WorldKind.TEMPLATE); w.setBaseYear(source.getBaseYear()); w.setSeed(source.getSeed());
+    w.setKind(kind); w.setBaseYear(source.getBaseYear()); w.setSeed(source.getSeed());
+    Map<UUID, UUID> ids = new HashMap<>();
 
     Map<UUID, League> leagueMap = new HashMap<>();
     Map<UUID, Conference> confMap = new HashMap<>();
@@ -128,20 +146,20 @@ public class WorldGraphStore {
       n.setLogoUrl(o.getLogoUrl()); n.setRuleset(o.getRuleset()); n.setRules(o.getRules().toBuilder().build()); n.setTeamCount(o.getTeamCount());
       n.setConferenceCount(o.getConferenceCount()); n.setDivisionsPerConference(o.getDivisionsPerConference()); n.setSalaryCap(o.getSalaryCap());
       n.setSalaryFloor(o.getSalaryFloor()); n.setPrestige(o.getPrestige()); n.setTvRightsPerSeason(o.getTvRightsPerSeason());
-      leagueMap.put(o.getId(), n); ls.add(n);
+      leagueMap.put(o.getId(), n); ids.put(o.getId(), n.getId()); ls.add(n);
     }
     List<Conference> cs = new ArrayList<>();
     for (Conference o : src.conferences()) {
       Conference n = new Conference();
       n.setLeague(leagueMap.get(o.getLeague().getId())); n.setName(o.getName()); n.setShortName(o.getShortName()); n.setLogoKey(o.getLogoKey());
       n.setSortOrder(o.getSortOrder());
-      confMap.put(o.getId(), n); cs.add(n);
+      confMap.put(o.getId(), n); ids.put(o.getId(), n.getId()); cs.add(n);
     }
     List<Division> ds = new ArrayList<>();
     for (Division o : src.divisions()) {
       Division n = new Division();
       n.setConference(confMap.get(o.getConference().getId())); n.setName(o.getName()); n.setSortOrder(o.getSortOrder());
-      divMap.put(o.getId(), n); ds.add(n);
+      divMap.put(o.getId(), n); ids.put(o.getId(), n.getId()); ds.add(n);
     }
     List<ManagerProfile> ms = new ArrayList<>();
     for (ManagerProfile o : src.managers()) {
@@ -150,7 +168,7 @@ public class WorldGraphStore {
       n.setCoachStyle(o.getCoachStyle()); n.setPreferredFormation(o.getPreferredFormation()); n.setPreferredDefense(o.getPreferredDefense());
       n.setReputationLeague(o.getReputationLeague()); n.setCareerTitles(o.getCareerTitles()); n.setCareerGames(o.getCareerGames());
       n.setCareerWins(o.getCareerWins()); n.setCareerPlayoffWins(o.getCareerPlayoffWins()); n.setAvatarUrl(o.getAvatarUrl());
-      managerMap.put(o.getId(), n); ms.add(n);
+      managerMap.put(o.getId(), n); ids.put(o.getId(), n.getId()); ms.add(n);
     }
     List<Stadium> ss = new ArrayList<>();
     for (Stadium o : src.stadiums()) {
@@ -160,7 +178,7 @@ public class WorldGraphStore {
       n.setMaintenanceCostPerWeek(o.getMaintenanceCostPerWeek()); n.setModel3dUrl(o.getModel3dUrl()); n.setEndZoneArtKey(o.getEndZoneArtKey());
       TicketPolicy tp = o.getTicketPolicy() == null ? new TicketPolicy() : o.getTicketPolicy();
       n.setTicketPolicy(new TicketPolicy(tp.getMemberDiscountPct(), tp.isDynamicPricing(), tp.getSeasonTicketPct()));
-      stadiumMap.put(o.getId(), n); ss.add(n);
+      stadiumMap.put(o.getId(), n); ids.put(o.getId(), n.getId()); ss.add(n);
     }
     List<StadiumSector> secs = new ArrayList<>();
     for (StadiumSector o : src.sectors()) {
@@ -182,7 +200,7 @@ public class WorldGraphStore {
       n.setStadium(o.getStadium() == null ? null : stadiumMap.get(o.getStadium().getId()));
       n.setManager(o.getManager() == null ? null : managerMap.get(o.getManager().getId()));
       n.setUserControlled(false);
-      clubMap.put(o.getId(), n); clubList.add(n);
+      clubMap.put(o.getId(), n); ids.put(o.getId(), n.getId()); clubList.add(n);
     }
     List<Uniform> us = new ArrayList<>();
     for (Uniform o : src.uniforms()) {
@@ -209,9 +227,10 @@ public class WorldGraphStore {
       n.setRosterStatus(o.getRosterStatus()); n.setCondition(o.getCondition()); n.setMorale(o.getMorale()); n.setSuspensionWeeks(o.getSuspensionWeeks());
       n.setContract(o.getContract() == null ? null : o.getContract().toBuilder().baseSalaryByYear(new ArrayList<>(o.getContract().getBaseSalaryByYear())).build());
       n.setJerseyNumber(o.getJerseyNumber()); n.setLegendary(o.isLegendary()); n.setPhotoUrl(o.getPhotoUrl()); n.setModel3dUrl(o.getModel3dUrl());
-      ps.add(n);
+      n.setInjuryWeeksOut(o.getInjuryWeeksOut());
+      ps.add(n); ids.put(o.getId(), n.getId());
     }
     persist(new DefaultWorld(w, ls, cs, ds, ms, ss, secs, clubList, us, hs, ps));
-    return w;
+    return new Cloned(w, ids);
   }
 }

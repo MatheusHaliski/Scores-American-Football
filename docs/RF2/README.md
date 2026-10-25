@@ -50,11 +50,11 @@ Fonte: [`RF2-stm-tentativas-de-login-por-e-mail.puml`](RF2-stm-tentativas-de-log
 
 | Estado | Método | Rota | Caso de uso | Autorização | Descrição |
 |---|---|---|---|---|---|
-| ⛔ alvo | `POST` | `/api/v1/auth/login` | `LoginUseCase` | público · 30 por IP/10 min | Reserva atômica de tentativa por e-mail ANTES do hash (5 em 15 min); mesmo 401 AUTH_FAILED para todos os casos; access RS256 15 min no corpo (fica só em memória) + refresh opaco 7 dias em cookie __Host- HttpOnly Secure SameSite=Strict (D-5) |
-| ⛔ alvo | `POST` | `/api/v1/auth/refresh` | `RefreshTokenUseCase` | cookie __Host-refresh · Origin conferida · 120 por IP/10 min | Rotaciona o refresh (replacedBy) e regrava o cookie; reuso de token antigo revoga a família inteira |
-| ⛔ alvo | `POST` | `/api/v1/auth/logout` | `LogoutUseCase` | JWT | Revoga a família de sessão, apaga o cookie e avisa as outras abas (logout entre abas, D-5) |
-| ⛔ alvo | `POST` | `/api/v1/auth/password/forgot` | `ForgotPasswordUseCase` | público · 10 por IP/hora | Token de redefinição (30 min) por e-mail · 202 sempre (não revela existência) |
-| ⛔ alvo | `POST` | `/api/v1/auth/password/reset` | `ResetPasswordUseCase` | público · 20 por IP/hora | Novo hash fora da transação; limpa o bloqueio por e-mail; revoga todas as famílias de sessão |
+| ✅ | `POST` | `/api/v1/auth/login` | `LoginUseCase` | público · 30 por IP/10 min | Reserva atômica de tentativa por e-mail ANTES do hash (5 em 15 min); mesmo 401 AUTH_FAILED para todos os casos; access RS256 15 min no corpo (fica só em memória) + refresh opaco 7 dias em cookie __Host- HttpOnly Secure SameSite=Strict (D-5) |
+| ✅ | `POST` | `/api/v1/auth/refresh` | `RefreshTokenUseCase` | cookie __Host-refresh · Origin conferida · 120 por IP/10 min | Rotaciona o refresh (replacedBy) e regrava o cookie; reuso de token antigo revoga a família inteira |
+| ✅ | `POST` | `/api/v1/auth/logout` | `LogoutUseCase` | JWT | Revoga a família de sessão, apaga o cookie e avisa as outras abas (logout entre abas, D-5) |
+| ✅ | `POST` | `/api/v1/auth/password/forgot` | `ForgotPasswordUseCase` | público · 10 por IP/hora | Token de redefinição (30 min) por e-mail · 202 sempre (não revela existência) |
+| ✅ | `POST` | `/api/v1/auth/password/reset` | `ResetPasswordUseCase` | público · 20 por IP/hora | Novo hash fora da transação; limpa o bloqueio por e-mail; revoga todas as famílias de sessão |
 
 ## Pontos de decisão
 

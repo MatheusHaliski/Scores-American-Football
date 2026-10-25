@@ -56,18 +56,18 @@ Fonte: [`RF46-stm-consentrecord-finalidade.puml`](RF46-stm-consentrecord-finalid
 
 | Estado | Método | Rota | Caso de uso | Autorização | Descrição |
 |---|---|---|---|---|---|
-| ⛔ alvo | `PUT` | `/api/v1/me` | `AccountUseCases.updateProfile` | JWT | Correção de dados (Art. 18, III) |
-| ⛔ alvo | `PUT` | `/api/v1/me/email` | `EmailChangeUseCases.request` | JWT · reautenticação | Troca com verificação de posse |
-| ⛔ alvo | `PUT` | `/api/v1/me/password` | `AccountUseCases.changePassword` | JWT · reautenticação | Encerra as outras sessões |
-| ⛔ alvo | `GET` | `/api/v1/me/consents` | `PrivacyUseCases.view` | JWT | Consentimento por finalidade |
-| ⛔ alvo | `PUT` | `/api/v1/me/consents` | `PrivacyUseCases.update` | JWT | Conceder ou revogar · biometria apaga mídia |
-| ⛔ alvo | `GET` | `/api/v1/me/consents/history` | `PrivacyUseCases.history` | JWT | Histórico append-only (versão do texto, origem, hash do IP) |
-| ⛔ alvo | `GET` | `/api/v1/me/settings` | `SettingsUseCases.get` | JWT | Preferências atuais |
-| ⛔ alvo | `PUT` | `/api/v1/me/settings` | `SettingsUseCases.update` | JWT | Tema, contraste, fonte, movimento, idioma, formato regional, unidade (jardas ou metros) |
-| ⛔ alvo | `POST` | `/api/v1/me/export` | `DataExportUseCases.request` | JWT | Exportação JSON + CSV (24 h) |
-| ⛔ alvo | `GET` | `/api/v1/me/export/{jobId}/download` | `DataExportUseCases.download` | JWT · dono do job | Download (DATA_EXPORT_DOWNLOADED) |
-| ⛔ alvo | `DELETE` | `/api/v1/me` | `AccountDeletionUseCases.request` | JWT · senha + palavra (step-up) | Exclusão com 7 dias de arrependimento |
-| ⛔ alvo | `POST` | `/api/v1/me/deletion/cancel` | `AccountDeletionUseCases.cancel` | JWT | Cancela dentro do prazo |
+| ✅ | `PUT` | `/api/v1/me` | `AccountUseCases.updateProfile` | JWT | Correção de dados (Art. 18, III) |
+| ✅ | `PUT` | `/api/v1/me/email` | `EmailChangeUseCases.request` | JWT · reautenticação | Troca com verificação de posse |
+| ✅ | `PUT` | `/api/v1/me/password` | `AccountUseCases.changePassword` | JWT · reautenticação | Encerra as outras sessões |
+| ✅ | `GET` | `/api/v1/me/consents` | `PrivacyUseCases.view` | JWT | Consentimento por finalidade |
+| ✅ | `PUT` | `/api/v1/me/consents` | `PrivacyUseCases.update` | JWT | Conceder ou revogar · biometria apaga mídia |
+| ✅ | `GET` | `/api/v1/me/consents/history` | `PrivacyUseCases.history` | JWT | Histórico append-only (versão do texto, origem, hash do IP) |
+| ✅ | `GET` | `/api/v1/me/settings` | `SettingsUseCases.get` | JWT | Preferências atuais |
+| ✅ | `PUT` | `/api/v1/me/settings` | `SettingsUseCases.update` | JWT | Tema, contraste, fonte, movimento, idioma, formato regional, unidade (jardas ou metros) |
+| ✅ | `POST` | `/api/v1/me/export` | `DataExportUseCases.request` | JWT | Exportação JSON + CSV (24 h) |
+| ✅ | `GET` | `/api/v1/me/export/{jobId}/download` | `DataExportUseCases.download` | JWT · dono do job | Download (DATA_EXPORT_DOWNLOADED) |
+| ✅ | `DELETE` | `/api/v1/me` | `AccountDeletionUseCases.request` | JWT · senha + palavra (step-up) | Exclusão com 7 dias de arrependimento |
+| ✅ | `POST` | `/api/v1/me/deletion/cancel` | `AccountDeletionUseCases.cancel` | JWT | Cancela dentro do prazo |
 
 ## Pontos de decisão
 

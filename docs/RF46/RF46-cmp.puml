@@ -44,7 +44,7 @@ database "S3/MinIO" as s2
 database "Redis 7" as s3
 c1 --> c3 : usa
 c2 --> c12 : dispara
-c3 --> c10 : PUT /me (alvo)\nPUT /me/email (alvo)\nPUT /me/password (alvo)\n…
+c3 --> c10 : PUT /me\nPUT /me/email\nPUT /me/password\n…
 c3 --> c11
 c10 --> c12
 c11 --> c12

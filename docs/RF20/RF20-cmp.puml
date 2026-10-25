@@ -54,7 +54,7 @@ database "OpenSearch 2" as s2
 database "Redis 7" as s3
 c1 --> c3 : usa
 c2 --> c16 : dispara
-c3 --> c12 : GET /careers/{id}/search (alvo)\nGET /careers/{id}/players/{pid} (alvo)\nGET /careers/{id}/clubs/{cid} (alvo)\n…
+c3 --> c12 : GET /careers/{id}/search (alvo)\nGET /careers/{id}/players/{pid}\nGET /careers/{id}/clubs/{cid} (alvo)\n…
 c3 --> c13
 c3 --> c14
 c3 --> c15

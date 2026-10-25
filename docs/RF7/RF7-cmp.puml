@@ -71,7 +71,7 @@ database "Cassandra 4.1" as s3
 database "S3/MinIO" as s4
 c1 --> c3 : usa
 c2 --> c16 : dispara
-c3 --> c12 : GET /careers/{id}/next-game/preparation (alvo)\nGET /careers/{id}/next-game/opponent-report (alvo)\nPUT /careers/{id}/depth-chart (alvo)\n…
+c3 --> c12 : GET /careers/{id}/next-game/preparation (alvo)\nGET /careers/{id}/next-game/opponent-report (alvo)\nPUT /careers/{id}/depth-chart\n…
 c3 --> c13
 c3 --> c14
 c3 --> c15

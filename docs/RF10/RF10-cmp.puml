@@ -45,7 +45,7 @@ database "MySQL 8" as s1
 database "Redis 7" as s2
 database "S3/MinIO" as s3
 c1 --> c2 : usa
-c2 --> c11 : GET /me/settings (alvo)\nPUT /me/settings (alvo)\nGET /me/inventory (alvo)
+c2 --> c11 : GET /me/settings\nPUT /me/settings\nGET /me/inventory (alvo)
 c2 --> c12
 c11 --> c13
 c12 --> c13

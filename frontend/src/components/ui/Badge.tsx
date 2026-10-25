@@ -7,10 +7,10 @@ const tones: Record<BadgeTone, string> = {
   neutral: "bg-arena-4 text-text-soft border-border-strong",
   orange: "bg-orange/15 text-rim border-orange/50",
   led: "bg-pitch text-led border-led/60 shadow-led",
-  good: "bg-good/15 text-[#9FE0B0] border-good/50",
+  good: "bg-good/15 text-[var(--good-text)] border-good/50",
   bad: "bg-bad/15 text-[var(--bad-text)] border-bad/60",
-  warn: "bg-warn/15 text-[#F5D98A] border-warn/50",
-  info: "bg-info/15 text-[#BBD5F5] border-info/50",
+  warn: "bg-warn/15 text-[var(--warn-text)] border-warn/50",
+  info: "bg-info/15 text-[var(--info-text)] border-info/50",
   wood: "bg-wood/20 text-wood-light border-wood/60",
 };
 

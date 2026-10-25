@@ -1,0 +1,809 @@
+{
+  "id" : "00000000-0000-4000-8000-000000000001",
+  "clubId" : "00000000-0000-4000-8000-000000000002",
+  "version" : 0,
+  "valid" : true,
+  "updatedAt" : "2026-01-01T00:00:00Z",
+  "gameDayActives" : 46,
+  "uniquePlayers" : 46,
+  "units" : [ {
+    "unit" : "OFFENSE",
+    "slots" : [ {
+      "slot" : "QB",
+      "position" : "QB",
+      "role" : false,
+      "minStarters" : 1,
+      "players" : [ {
+        "depth" : 1,
+        "playerId" : "00000000-0000-4000-8000-000000000003",
+        "name" : "Nolan Falquist",
+        "jerseyNumber" : 14,
+        "position" : "QB",
+        "overallAtSlot" : 79,
+        "overall" : 79,
+        "tier" : "GOLD",
+        "outOfPosition" : false,
+        "available" : true,
+        "rosterStatus" : "ACTIVE"
+      }, {
+        "depth" : 2,
+        "playerId" : "00000000-0000-4000-8000-000000000004",
+        "name" : "Darius Salmore",
+        "jerseyNumber" : 15,
+        "position" : "QB",
+        "overallAtSlot" : 75,
+        "overall" : 75,
+        "tier" : "GOLD",
+        "outOfPosition" : false,
+        "available" : true,
+        "rosterStatus" : "ACTIVE"
+      }, {
+        "depth" : 3,
+        "playerId" : "00000000-0000-4000-8000-000000000005",
+        "name" : "Bruno Torard",
+        "jerseyNumber" : 19,
+        "position" : "QB",
+        "overallAtSlot" : 75,
+        "overall" : 75,
+        "tier" : "GOLD",
+        "outOfPosition" : false,
+        "available" : true,
+        "rosterStatus" : "ACTIVE"
+      } ]
+    }, {
+      "slot" : "RB",
+      "position" : "RB",
+      "role" : false,
+      "minStarters" : 1,
+      "players" : [ {
+        "depth" : 1,
+        "playerId" : "00000000-0000-4000-8000-000000000006",
+        "name" : "Trey Branley",
+        "jerseyNumber" : 22,
+        "position" : "RB",
+        "overallAtSlot" : 80,
+        "overall" : 80,
+        "tier" : "GOLD",
+        "outOfPosition" : false,
+        "available" : true,
+        "rosterStatus" : "ACTIVE"
+      }, {
+        "depth" : 2,
+        "playerId" : "00000000-0000-4000-8000-000000000007",
+        "name" : "Aleksander Cormont",
+        "jerseyNumber" : 47,
+        "position" : "RB",
+        "overallAtSlot" : 78,
+        "overall" : 78,
+        "tier" : "GOLD",
+        "outOfPosition" : false,
+        "available" : true,
+        "rosterStatus" : "ACTIVE"
+      }, {
+        "depth" : 3,
+        "playerId" : "00000000-0000-4000-8000-000000000008",
+        "name" : "Diego Falane",
+        "jerseyNumber" : 24,
+        "position" : "RB",
+        "overallAtSlot" : 73,
+        "overall" : 73,
+        "tier" : "SILVER",
+        "outOfPosition" : false,
+        "available" : true,
+        "rosterStatus" : "ACTIVE"
+      } ]
+    }, {
+      "slot" : "FB",
+      "position" : "FB",
+      "role" : false,
+      "minStarters" : 0,
+      "players" : [ {
+        "depth" : 1,
+        "playerId" : "00000000-0000-4000-8000-000000000009",
+        "name" : "Isaiah Torford",
+        "jerseyNumber" : 46,
+        "position" : "FB",
+        "overallAtSlot" : 77,
+        "overall" : 77,
+        "tier" : "GOLD",
+        "outOfPosition" : false,
+        "available" : true,
+        "rosterStatus" : "ACTIVE"
+      } ]
+    }, {
+      "slot" : "WR",
+      "position" : "WR",
+      "role" : false,
+      "minStarters" : 3,
+      "players" : [ {
+        "depth" : 1,
+        "playerId" : "00000000-0000-4000-8000-000000000010",
+        "name" : "Vinícius Jorley",
+        "jerseyNumber" : 17,
+        "position" : "WR",
+        "overallAtSlot" : 84,
+        "overall" : 84,
+        "tier" : "GOLD",
+        "outOfPosition" : false,
+        "available" : true,
+        "rosterStatus" : "ACTIVE"
+      }, {
+        "depth" : 2,
+        "playerId" : "00000000-0000-4000-8000-000000000011",
+        "name" : "Andrés Faleiro",
+        "jerseyNumber" : 10,
+        "position" : "WR",
+        "overallAtSlot" : 74,
+        "overall" : 74,
+        "tier" : "SILVER",
+        "outOfPosition" : false,
+        "available" : true,
+        "rosterStatus" : "ACTIVE"
+      }, {
+        "depth" : 3,
+        "playerId" : "00000000-0000-4000-8000-000000000012",
+        "name" : "Nolan Zelwick",
+        "jerseyNumber" : 89,
+        "position" : "WR",
+        "overallAtSlot" : 72,
+        "overall" : 72,
+        "tier" : "SILVER",
+        "outOfPosition" : false,
+        "available" : true,
+        "rosterStatus" : "ACTIVE"
+      }, {
+        "depth" : 4,
+        "playerId" : "00000000-0000-4000-8000-000000000013",
+        "name" : "Théo Fenberg",
+        "jerseyNumber" : 83,
+        "position" : "WR",
+        "overallAtSlot" : 67,
+        "overall" : 67,
+        "tier" : "SILVER",
+        "outOfPosition" : false,
+        "available" : true,
+        "rosterStatus" : "ACTIVE"
+      }, {
+        "depth" : 5,
+        "playerId" : "00000000-0000-4000-8000-000000000014",
+        "name" : "Brandon Daleiro",
+        "jerseyNumber" : 11,
+        "position" : "WR",
+        "overallAtSlot" : 66,
+        "overall" : 66,
+        "tier" : "SILVER",
+        "outOfPosition" : false,
+        "available" : true,
+        "rosterStatus" : "ACTIVE"
+      } ]
+    }, {
+      "slot" : "TE",
+      "position" : "TE",
+      "role" : false,
+      "minStarters" : 1,
+      "players" : [ {
+        "depth" : 1,
+        "playerId" : "00000000-0000-4000-8000-000000000015",
+        "name" : "Gonzalo Keldell",
+        "jerseyNumber" : 42,
+        "position" : "TE",
+        "overallAtSlot" : 83,
+        "overall" : 83,
+        "tier" : "GOLD",
+        "outOfPosition" : false,
+        "available" : true,
+        "rosterStatus" : "ACTIVE"
+      }, {
+        "depth" : 2,
+        "playerId" : "00000000-0000-4000-8000-000000000016",
+        "name" : "Joaquín Fenford",
+        "jerseyNumber" : 48,
+        "position" : "TE",
+        "overallAtSlot" : 74,
+        "overall" : 74,
+        "tier" : "SILVER",
+        "outOfPosition" : false,
+        "available" : true,
+        "rosterStatus" : "ACTIVE"
+      }, {
+        "depth" : 3,
+        "playerId" : "00000000-0000-4000-8000-000000000017",
+        "name" : "Marcus Garton",
+        "jerseyNumber" : 49,
+        "position" : "TE",
+        "overallAtSlot" : 73,
+        "overall" : 73,
+        "tier" : "SILVER",
+        "outOfPosition" : false,
+        "available" : true,
+        "rosterStatus" : "ACTIVE"
+      } ]
+    }, {
+      "slot" : "LT",
+      "position" : "LT",
+      "role" : false,
+      "minStarters" : 1,
+      "players" : [ {
+        "depth" : 1,
+        "playerId" : "00000000-0000-4000-8000-000000000018",
+        "name" : "Malik Salino",
+        "jerseyNumber" : 69,
+        "position" : "LT",
+        "overallAtSlot" : 85,
+        "overall" : 85,
+        "tier" : "ICON",
+        "outOfPosition" : false,
+        "available" : true,
+        "rosterStatus" : "ACTIVE"
+      }, {
+        "depth" : 2,
+        "playerId" : "00000000-0000-4000-8000-000000000019",
+        "name" : "Enzo Albuovic",
+        "jerseyNumber" : 55,
+        "position" : "LT",
+        "overallAtSlot" : 80,
+        "overall" : 80,
+        "tier" : "GOLD",
+        "outOfPosition" : false,
+        "available" : true,
+        "rosterStatus" : "ACTIVE"
+      } ]
+    }, {
+      "slot" : "LG",
+      "position" : "LG",
+      "role" : false,
+      "minStarters" : 1,
+      "players" : [ {
+        "depth" : 1,
+        "playerId" : "00000000-0000-4000-8000-000000000020",
+        "name" : "Kyle Ivarore",
+        "jerseyNumber" : 52,
+        "position" : "LG",
+        "overallAtSlot" : 83,
+        "overall" : 83,
+        "tier" : "GOLD",
+        "outOfPosition" : false,
+        "available" : true,
+        "rosterStatus" : "ACTIVE"
+      }, {
+        "depth" : 2,
+        "playerId" : "00000000-0000-4000-8000-000000000021",
+        "name" : "Pedro Casino",
+        "jerseyNumber" : 61,
+        "position" : "LG",
+        "overallAtSlot" : 77,
+        "overall" : 77,
+        "tier" : "GOLD",
+        "outOfPosition" : false,
+        "available" : true,
+        "rosterStatus" : "ACTIVE"
+      } ]
+    }, {
+      "slot" : "C",
+      "position" : "C",
+      "role" : false,
+      "minStarters" : 1,
+      "players" : [ {
+        "depth" : 1,
+        "playerId" : "00000000-0000-4000-8000-000000000022",
+        "name" : "Mateus Normont",
+        "jerseyNumber" : 75,
+        "position" : "C",
+        "overallAtSlot" : 85,
+        "overall" : 85,
+        "tier" : "ICON",
+        "outOfPosition" : false,
+        "available" : true,
+        "rosterStatus" : "ACTIVE"
+      }, {
+        "depth" : 2,
+        "playerId" : "00000000-0000-4000-8000-000000000023",
+        "name" : "Tyler Albuales",
+        "jerseyNumber" : 77,
+        "position" : "C",
+        "overallAtSlot" : 78,
+        "overall" : 78,
+        "tier" : "GOLD",
+        "outOfPosition" : false,
+        "available" : true,
+        "rosterStatus" : "ACTIVE"
+      } ]
+    }, {
+      "slot" : "RG",
+      "position" : "RG",
+      "role" : false,
+      "minStarters" : 1,
+      "players" : [ {
+        "depth" : 1,
+        "playerId" : "00000000-0000-4000-8000-000000000024",
+        "name" : "Jordan Ulmette",
+        "jerseyNumber" : 60,
+        "position" : "RG",
+        "overallAtSlot" : 85,
+        "overall" : 85,
+        "tier" : "ICON",
+        "outOfPosition" : false,
+        "available" : true,
+        "rosterStatus" : "ACTIVE"
+      }, {
+        "depth" : 2,
+        "playerId" : "00000000-0000-4000-8000-000000000025",
+        "name" : "Renan Halaro",
+        "jerseyNumber" : 68,
+        "position" : "RT",
+        "overallAtSlot" : 86,
+        "overall" : 85,
+        "tier" : "ICON",
+        "outOfPosition" : false,
+        "available" : true,
+        "rosterStatus" : "ACTIVE"
+      } ]
+    }, {
+      "slot" : "RT",
+      "position" : "RT",
+      "role" : false,
+      "minStarters" : 1,
+      "players" : [ {
+        "depth" : 1,
+        "playerId" : "00000000-0000-4000-8000-000000000025",
+        "name" : "Renan Halaro",
+        "jerseyNumber" : 68,
+        "position" : "RT",
+        "overallAtSlot" : 85,
+        "overall" : 85,
+        "tier" : "ICON",
+        "outOfPosition" : false,
+        "available" : true,
+        "rosterStatus" : "ACTIVE"
+      }, {
+        "depth" : 2,
+        "playerId" : "00000000-0000-4000-8000-000000000026",
+        "name" : "Isaiah Garquist",
+        "jerseyNumber" : 79,
+        "position" : "RT",
+        "overallAtSlot" : 75,
+        "overall" : 75,
+        "tier" : "GOLD",
+        "outOfPosition" : false,
+        "available" : true,
+        "rosterStatus" : "ACTIVE"
+      } ]
+    }, {
+      "slot" : "THIRD_DOWN_BACK",
+      "role" : true,
+      "minStarters" : 0,
+      "players" : [ {
+        "depth" : 1,
+        "playerId" : "00000000-0000-4000-8000-000000000007",
+        "name" : "Aleksander Cormont",
+        "jerseyNumber" : 47,
+        "position" : "RB",
+        "overallAtSlot" : 78,
+        "overall" : 78,
+        "tier" : "GOLD",
+        "outOfPosition" : false,
+        "available" : true,
+        "rosterStatus" : "ACTIVE"
+      } ]
+    } ]
+  }, {
+    "unit" : "DEFENSE",
+    "slots" : [ {
+      "slot" : "DE",
+      "position" : "DE",
+      "role" : false,
+      "minStarters" : 2,
+      "players" : [ {
+        "depth" : 1,
+        "playerId" : "00000000-0000-4000-8000-000000000027",
+        "name" : "Théo Keldell",
+        "jerseyNumber" : 98,
+        "position" : "DE",
+        "overallAtSlot" : 85,
+        "overall" : 85,
+        "tier" : "ICON",
+        "outOfPosition" : false,
+        "available" : true,
+        "rosterStatus" : "ACTIVE"
+      }, {
+        "depth" : 2,
+        "playerId" : "00000000-0000-4000-8000-000000000028",
+        "name" : "Nolan Ivarwick",
+        "jerseyNumber" : 93,
+        "position" : "DE",
+        "overallAtSlot" : 78,
+        "overall" : 78,
+        "tier" : "GOLD",
+        "outOfPosition" : false,
+        "available" : true,
+        "rosterStatus" : "ACTIVE"
+      }, {
+        "depth" : 3,
+        "playerId" : "00000000-0000-4000-8000-000000000029",
+        "name" : "Felipe Zelette",
+        "jerseyNumber" : 92,
+        "position" : "DE",
+        "overallAtSlot" : 74,
+        "overall" : 74,
+        "tier" : "SILVER",
+        "outOfPosition" : false,
+        "available" : true,
+        "rosterStatus" : "ACTIVE"
+      }, {
+        "depth" : 4,
+        "playerId" : "00000000-0000-4000-8000-000000000030",
+        "name" : "Gabriel Toranski",
+        "jerseyNumber" : 76,
+        "position" : "DE",
+        "overallAtSlot" : 68,
+        "overall" : 68,
+        "tier" : "SILVER",
+        "outOfPosition" : false,
+        "available" : true,
+        "rosterStatus" : "ACTIVE"
+      } ]
+    }, {
+      "slot" : "DT",
+      "position" : "DT",
+      "role" : false,
+      "minStarters" : 2,
+      "players" : [ {
+        "depth" : 1,
+        "playerId" : "00000000-0000-4000-8000-000000000031",
+        "name" : "Mateo Vareiro",
+        "jerseyNumber" : 74,
+        "position" : "DT",
+        "overallAtSlot" : 84,
+        "overall" : 84,
+        "tier" : "GOLD",
+        "outOfPosition" : false,
+        "available" : true,
+        "rosterStatus" : "ACTIVE"
+      }, {
+        "depth" : 2,
+        "playerId" : "00000000-0000-4000-8000-000000000032",
+        "name" : "Danilo Caseiro",
+        "jerseyNumber" : 99,
+        "position" : "DT",
+        "overallAtSlot" : 74,
+        "overall" : 74,
+        "tier" : "SILVER",
+        "outOfPosition" : false,
+        "available" : true,
+        "rosterStatus" : "ACTIVE"
+      }, {
+        "depth" : 3,
+        "playerId" : "00000000-0000-4000-8000-000000000033",
+        "name" : "Emeka Ulmton",
+        "jerseyNumber" : 56,
+        "position" : "DT",
+        "overallAtSlot" : 71,
+        "overall" : 71,
+        "tier" : "SILVER",
+        "outOfPosition" : false,
+        "available" : true,
+        "rosterStatus" : "ACTIVE"
+      } ]
+    }, {
+      "slot" : "OLB",
+      "position" : "OLB",
+      "role" : false,
+      "minStarters" : 2,
+      "players" : [ {
+        "depth" : 1,
+        "playerId" : "00000000-0000-4000-8000-000000000034",
+        "name" : "Devin Ivaranski",
+        "jerseyNumber" : 40,
+        "position" : "OLB",
+        "overallAtSlot" : 78,
+        "overall" : 78,
+        "tier" : "GOLD",
+        "outOfPosition" : false,
+        "available" : true,
+        "rosterStatus" : "ACTIVE"
+      }, {
+        "depth" : 2,
+        "playerId" : "00000000-0000-4000-8000-000000000035",
+        "name" : "Nolan Penovic",
+        "jerseyNumber" : 50,
+        "position" : "OLB",
+        "overallAtSlot" : 72,
+        "overall" : 72,
+        "tier" : "SILVER",
+        "outOfPosition" : false,
+        "available" : true,
+        "rosterStatus" : "ACTIVE"
+      }, {
+        "depth" : 3,
+        "playerId" : "00000000-0000-4000-8000-000000000036",
+        "name" : "Kenji Maranski",
+        "jerseyNumber" : 94,
+        "position" : "OLB",
+        "overallAtSlot" : 72,
+        "overall" : 72,
+        "tier" : "SILVER",
+        "outOfPosition" : false,
+        "available" : true,
+        "rosterStatus" : "ACTIVE"
+      } ]
+    }, {
+      "slot" : "MLB",
+      "position" : "MLB",
+      "role" : false,
+      "minStarters" : 1,
+      "players" : [ {
+        "depth" : 1,
+        "playerId" : "00000000-0000-4000-8000-000000000037",
+        "name" : "Tomás Torford",
+        "jerseyNumber" : 97,
+        "position" : "MLB",
+        "overallAtSlot" : 81,
+        "overall" : 81,
+        "tier" : "GOLD",
+        "outOfPosition" : false,
+        "available" : true,
+        "rosterStatus" : "ACTIVE"
+      }, {
+        "depth" : 2,
+        "playerId" : "00000000-0000-4000-8000-000000000038",
+        "name" : "Noah Dalley",
+        "jerseyNumber" : 57,
+        "position" : "MLB",
+        "overallAtSlot" : 77,
+        "overall" : 77,
+        "tier" : "GOLD",
+        "outOfPosition" : false,
+        "available" : true,
+        "rosterStatus" : "ACTIVE"
+      } ]
+    }, {
+      "slot" : "CB",
+      "position" : "CB",
+      "role" : false,
+      "minStarters" : 2,
+      "players" : [ {
+        "depth" : 1,
+        "playerId" : "00000000-0000-4000-8000-000000000039",
+        "name" : "André Torard",
+        "jerseyNumber" : 37,
+        "position" : "CB",
+        "overallAtSlot" : 82,
+        "overall" : 82,
+        "tier" : "GOLD",
+        "outOfPosition" : false,
+        "available" : true,
+        "rosterStatus" : "ACTIVE"
+      }, {
+        "depth" : 2,
+        "playerId" : "00000000-0000-4000-8000-000000000040",
+        "name" : "Mason Garovic",
+        "jerseyNumber" : 21,
+        "position" : "CB",
+        "overallAtSlot" : 77,
+        "overall" : 77,
+        "tier" : "GOLD",
+        "outOfPosition" : false,
+        "available" : true,
+        "rosterStatus" : "ACTIVE"
+      }, {
+        "depth" : 3,
+        "playerId" : "00000000-0000-4000-8000-000000000041",
+        "name" : "Vinícius Jordell",
+        "jerseyNumber" : 28,
+        "position" : "CB",
+        "overallAtSlot" : 75,
+        "overall" : 75,
+        "tier" : "GOLD",
+        "outOfPosition" : false,
+        "available" : true,
+        "rosterStatus" : "ACTIVE"
+      } ]
+    }, {
+      "slot" : "FS",
+      "position" : "FS",
+      "role" : false,
+      "minStarters" : 1,
+      "players" : [ {
+        "depth" : 1,
+        "playerId" : "00000000-0000-4000-8000-000000000042",
+        "name" : "Logan Ivarane",
+        "jerseyNumber" : 38,
+        "position" : "FS",
+        "overallAtSlot" : 79,
+        "overall" : 79,
+        "tier" : "GOLD",
+        "outOfPosition" : false,
+        "available" : true,
+        "rosterStatus" : "ACTIVE"
+      }, {
+        "depth" : 2,
+        "playerId" : "00000000-0000-4000-8000-000000000043",
+        "name" : "Mason Gilvane",
+        "jerseyNumber" : 45,
+        "position" : "FS",
+        "overallAtSlot" : 79,
+        "overall" : 79,
+        "tier" : "GOLD",
+        "outOfPosition" : false,
+        "available" : true,
+        "rosterStatus" : "ACTIVE"
+      } ]
+    }, {
+      "slot" : "SS",
+      "position" : "SS",
+      "role" : false,
+      "minStarters" : 1,
+      "players" : [ {
+        "depth" : 1,
+        "playerId" : "00000000-0000-4000-8000-000000000044",
+        "name" : "Bjorn Rosovic",
+        "jerseyNumber" : 34,
+        "position" : "SS",
+        "overallAtSlot" : 81,
+        "overall" : 81,
+        "tier" : "GOLD",
+        "outOfPosition" : false,
+        "available" : true,
+        "rosterStatus" : "ACTIVE"
+      }, {
+        "depth" : 2,
+        "playerId" : "00000000-0000-4000-8000-000000000045",
+        "name" : "Lucas Ivarsby",
+        "jerseyNumber" : 27,
+        "position" : "SS",
+        "overallAtSlot" : 77,
+        "overall" : 77,
+        "tier" : "GOLD",
+        "outOfPosition" : false,
+        "available" : true,
+        "rosterStatus" : "ACTIVE"
+      } ]
+    } ]
+  }, {
+    "unit" : "SPECIAL_TEAMS",
+    "slots" : [ {
+      "slot" : "K",
+      "position" : "K",
+      "role" : false,
+      "minStarters" : 1,
+      "players" : [ {
+        "depth" : 1,
+        "playerId" : "00000000-0000-4000-8000-000000000046",
+        "name" : "Felipe Normore",
+        "jerseyNumber" : 4,
+        "position" : "K",
+        "overallAtSlot" : 84,
+        "overall" : 84,
+        "tier" : "GOLD",
+        "outOfPosition" : false,
+        "available" : true,
+        "rosterStatus" : "ACTIVE"
+      } ]
+    }, {
+      "slot" : "P",
+      "position" : "P",
+      "role" : false,
+      "minStarters" : 1,
+      "players" : [ {
+        "depth" : 1,
+        "playerId" : "00000000-0000-4000-8000-000000000047",
+        "name" : "Gabriel Ulmwick",
+        "jerseyNumber" : 6,
+        "position" : "P",
+        "overallAtSlot" : 77,
+        "overall" : 77,
+        "tier" : "GOLD",
+        "outOfPosition" : false,
+        "available" : true,
+        "rosterStatus" : "ACTIVE"
+      } ]
+    }, {
+      "slot" : "LS",
+      "position" : "LS",
+      "role" : false,
+      "minStarters" : 1,
+      "players" : [ {
+        "depth" : 1,
+        "playerId" : "00000000-0000-4000-8000-000000000048",
+        "name" : "Théo Casore",
+        "jerseyNumber" : 44,
+        "position" : "LS",
+        "overallAtSlot" : 86,
+        "overall" : 86,
+        "tier" : "ICON",
+        "outOfPosition" : false,
+        "available" : true,
+        "rosterStatus" : "ACTIVE"
+      } ]
+    }, {
+      "slot" : "KR",
+      "role" : true,
+      "minStarters" : 1,
+      "players" : [ {
+        "depth" : 1,
+        "playerId" : "00000000-0000-4000-8000-000000000006",
+        "name" : "Trey Branley",
+        "jerseyNumber" : 22,
+        "position" : "RB",
+        "overallAtSlot" : 80,
+        "overall" : 80,
+        "tier" : "GOLD",
+        "outOfPosition" : false,
+        "available" : true,
+        "rosterStatus" : "ACTIVE"
+      }, {
+        "depth" : 2,
+        "playerId" : "00000000-0000-4000-8000-000000000010",
+        "name" : "Vinícius Jorley",
+        "jerseyNumber" : 17,
+        "position" : "WR",
+        "overallAtSlot" : 84,
+        "overall" : 84,
+        "tier" : "GOLD",
+        "outOfPosition" : false,
+        "available" : true,
+        "rosterStatus" : "ACTIVE"
+      } ]
+    }, {
+      "slot" : "PR",
+      "role" : true,
+      "minStarters" : 1,
+      "players" : [ {
+        "depth" : 1,
+        "playerId" : "00000000-0000-4000-8000-000000000006",
+        "name" : "Trey Branley",
+        "jerseyNumber" : 22,
+        "position" : "RB",
+        "overallAtSlot" : 80,
+        "overall" : 80,
+        "tier" : "GOLD",
+        "outOfPosition" : false,
+        "available" : true,
+        "rosterStatus" : "ACTIVE"
+      }, {
+        "depth" : 2,
+        "playerId" : "00000000-0000-4000-8000-000000000010",
+        "name" : "Vinícius Jorley",
+        "jerseyNumber" : 17,
+        "position" : "WR",
+        "overallAtSlot" : 84,
+        "overall" : 84,
+        "tier" : "GOLD",
+        "outOfPosition" : false,
+        "available" : true,
+        "rosterStatus" : "ACTIVE"
+      } ]
+    }, {
+      "slot" : "H",
+      "role" : true,
+      "minStarters" : 1,
+      "players" : [ {
+        "depth" : 1,
+        "playerId" : "00000000-0000-4000-8000-000000000047",
+        "name" : "Gabriel Ulmwick",
+        "jerseyNumber" : 6,
+        "position" : "P",
+        "overallAtSlot" : 77,
+        "overall" : 77,
+        "tier" : "GOLD",
+        "outOfPosition" : false,
+        "available" : true,
+        "rosterStatus" : "ACTIVE"
+      }, {
+        "depth" : 2,
+        "playerId" : "00000000-0000-4000-8000-000000000004",
+        "name" : "Darius Salmore",
+        "jerseyNumber" : 15,
+        "position" : "QB",
+        "overallAtSlot" : 75,
+        "overall" : 75,
+        "tier" : "GOLD",
+        "outOfPosition" : false,
+        "available" : true,
+        "rosterStatus" : "ACTIVE"
+      } ]
+    } ]
+  } ],
+  "errors" : [ ],
+  "warnings" : [ ]
+}

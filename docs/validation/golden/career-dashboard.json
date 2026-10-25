@@ -1,0 +1,281 @@
+{
+  "career" : {
+    "id" : "00000000-0000-4000-8000-000000000001",
+    "name" : "Dinastia Dourada",
+    "slot" : 1,
+    "status" : "ACTIVE",
+    "difficulty" : "NORMAL",
+    "seed" : 2026,
+    "currentWeek" : 1,
+    "employmentStatus" : "EMPLOYED",
+    "worldId" : "00000000-0000-4000-8000-000000000002",
+    "sourceWorldId" : "00000000-0000-4000-8000-000000000003",
+    "sourceWorldName" : "Mundo Padrão Scores AF",
+    "leagueId" : "00000000-0000-4000-8000-000000000004",
+    "leagueName" : "Liga Velion de Futebol Americano",
+    "ruleset" : "PRO",
+    "clubId" : "00000000-0000-4000-8000-000000000005",
+    "clubName" : "Trovões de Porto Alvorada",
+    "clubShortName" : "PAV",
+    "clubCity" : "Porto Alvorada",
+    "clubPrimaryColor" : "#1B2A4A",
+    "clubSecondaryColor" : "#F2B705",
+    "coachId" : "00000000-0000-4000-8000-000000000006",
+    "coachName" : "Treinadora Dourada",
+    "coachNationality" : "BRA",
+    "coachStyle" : "OFFENSIVE",
+    "seasonId" : "00000000-0000-4000-8000-000000000007",
+    "seasonYear" : 2026,
+    "seasonPhase" : "REGULAR",
+    "regularSeasonWeeks" : 18,
+    "record" : {
+      "wins" : 0,
+      "losses" : 0,
+      "ties" : 0,
+      "summary" : "0-0"
+    },
+    "createdAt" : "2026-01-01T00:00:00Z",
+    "lastPlayedAt" : "2026-01-01T00:00:00Z",
+    "version" : 1
+  },
+  "club" : {
+    "id" : "00000000-0000-4000-8000-000000000005",
+    "name" : "Trovões de Porto Alvorada",
+    "shortName" : "PAV",
+    "city" : "Porto Alvorada",
+    "primaryColor" : "#1B2A4A",
+    "secondaryColor" : "#F2B705",
+    "conference" : "CAT",
+    "division" : "Atlântica Norte"
+  },
+  "coach" : {
+    "id" : "00000000-0000-4000-8000-000000000006",
+    "name" : "Treinadora Dourada",
+    "nationality" : "BRA",
+    "style" : "OFFENSIVE",
+    "overall" : 50,
+    "reputationLeague" : 50,
+    "careerGames" : 0,
+    "careerWins" : 0,
+    "careerTitles" : 0
+  },
+  "currentWeek" : 1,
+  "nextGame" : {
+    "fixture" : {
+      "id" : "00000000-0000-4000-8000-000000000008",
+      "week" : 1,
+      "date" : "2026-09-10",
+      "kickoffSlot" : "THU_NIGHT",
+      "status" : "SCHEDULED",
+      "homeClubId" : "00000000-0000-4000-8000-000000000009",
+      "awayClubId" : "00000000-0000-4000-8000-000000000005",
+      "divisional" : true,
+      "conferenceGame" : true,
+      "userGame" : true
+    },
+    "home" : false,
+    "opponent" : {
+      "id" : "00000000-0000-4000-8000-000000000009",
+      "name" : "Carcarás de Vila Aurora",
+      "shortName" : "VAU",
+      "city" : "Vila Aurora",
+      "primaryColor" : "#3B1F5C",
+      "secondaryColor" : "#F28C28",
+      "conference" : "CAT",
+      "division" : "Atlântica Norte"
+    },
+    "opponentRecord" : {
+      "wins" : 0,
+      "losses" : 0,
+      "ties" : 0,
+      "summary" : "0-0"
+    }
+  },
+  "byeWeek" : false,
+  "record" : {
+    "wins" : 0,
+    "losses" : 0,
+    "ties" : 0,
+    "summary" : "0-0"
+  },
+  "divisionRank" : 1,
+  "division" : [ {
+    "rank" : 1,
+    "club" : {
+      "id" : "00000000-0000-4000-8000-000000000005",
+      "name" : "Trovões de Porto Alvorada",
+      "shortName" : "PAV",
+      "city" : "Porto Alvorada",
+      "primaryColor" : "#1B2A4A",
+      "secondaryColor" : "#F2B705",
+      "conference" : "CAT",
+      "division" : "Atlântica Norte"
+    },
+    "record" : {
+      "wins" : 0,
+      "losses" : 0,
+      "ties" : 0,
+      "summary" : "0-0"
+    },
+    "winPct" : 0.0,
+    "pointsFor" : 0,
+    "pointsAgainst" : 0,
+    "userClub" : true
+  }, {
+    "rank" : 2,
+    "club" : {
+      "id" : "00000000-0000-4000-8000-000000000010",
+      "name" : "Lobos-Guará de Serra Alta",
+      "shortName" : "SAL",
+      "city" : "Serra Alta",
+      "primaryColor" : "#7A2E1F",
+      "secondaryColor" : "#E8C39E",
+      "conference" : "CAT",
+      "division" : "Atlântica Norte"
+    },
+    "record" : {
+      "wins" : 0,
+      "losses" : 0,
+      "ties" : 0,
+      "summary" : "0-0"
+    },
+    "winPct" : 0.0,
+    "pointsFor" : 0,
+    "pointsAgainst" : 0,
+    "userClub" : false
+  }, {
+    "rank" : 3,
+    "club" : {
+      "id" : "00000000-0000-4000-8000-000000000011",
+      "name" : "Arpões de Baía Serena",
+      "shortName" : "BSE",
+      "city" : "Baía Serena",
+      "primaryColor" : "#005B7F",
+      "secondaryColor" : "#9AD1D4",
+      "conference" : "CAT",
+      "division" : "Atlântica Norte"
+    },
+    "record" : {
+      "wins" : 0,
+      "losses" : 0,
+      "ties" : 0,
+      "summary" : "0-0"
+    },
+    "winPct" : 0.0,
+    "pointsFor" : 0,
+    "pointsAgainst" : 0,
+    "userClub" : false
+  }, {
+    "rank" : 4,
+    "club" : {
+      "id" : "00000000-0000-4000-8000-000000000009",
+      "name" : "Carcarás de Vila Aurora",
+      "shortName" : "VAU",
+      "city" : "Vila Aurora",
+      "primaryColor" : "#3B1F5C",
+      "secondaryColor" : "#F28C28",
+      "conference" : "CAT",
+      "division" : "Atlântica Norte"
+    },
+    "record" : {
+      "wins" : 0,
+      "losses" : 0,
+      "ties" : 0,
+      "summary" : "0-0"
+    },
+    "winPct" : 0.0,
+    "pointsFor" : 0,
+    "pointsAgainst" : 0,
+    "userClub" : false
+  } ],
+  "upcomingDivisionGames" : [ {
+    "id" : "00000000-0000-4000-8000-000000000008",
+    "week" : 1,
+    "date" : "2026-09-10",
+    "kickoffSlot" : "THU_NIGHT",
+    "status" : "SCHEDULED",
+    "homeClubId" : "00000000-0000-4000-8000-000000000009",
+    "awayClubId" : "00000000-0000-4000-8000-000000000005",
+    "divisional" : true,
+    "conferenceGame" : true,
+    "userGame" : true
+  }, {
+    "id" : "00000000-0000-4000-8000-000000000012",
+    "week" : 2,
+    "date" : "2026-09-20",
+    "kickoffSlot" : "SUN_EARLY",
+    "status" : "SCHEDULED",
+    "homeClubId" : "00000000-0000-4000-8000-000000000005",
+    "awayClubId" : "00000000-0000-4000-8000-000000000011",
+    "divisional" : true,
+    "conferenceGame" : true,
+    "userGame" : true
+  }, {
+    "id" : "00000000-0000-4000-8000-000000000013",
+    "week" : 3,
+    "date" : "2026-09-28",
+    "kickoffSlot" : "MON_NIGHT",
+    "status" : "SCHEDULED",
+    "homeClubId" : "00000000-0000-4000-8000-000000000010",
+    "awayClubId" : "00000000-0000-4000-8000-000000000005",
+    "divisional" : true,
+    "conferenceGame" : true,
+    "userGame" : true
+  } ],
+  "rosterHighlights" : [ {
+    "id" : "00000000-0000-4000-8000-000000000014",
+    "name" : "Théo Casore",
+    "position" : "LS",
+    "jerseyNumber" : 44,
+    "overall" : 86,
+    "tier" : "ICON"
+  }, {
+    "id" : "00000000-0000-4000-8000-000000000015",
+    "name" : "Jordan Ulmette",
+    "position" : "RG",
+    "jerseyNumber" : 60,
+    "overall" : 85,
+    "tier" : "ICON"
+  }, {
+    "id" : "00000000-0000-4000-8000-000000000016",
+    "name" : "Renan Halaro",
+    "position" : "RT",
+    "jerseyNumber" : 68,
+    "overall" : 85,
+    "tier" : "ICON"
+  }, {
+    "id" : "00000000-0000-4000-8000-000000000017",
+    "name" : "Malik Salino",
+    "position" : "LT",
+    "jerseyNumber" : 69,
+    "overall" : 85,
+    "tier" : "ICON"
+  }, {
+    "id" : "00000000-0000-4000-8000-000000000018",
+    "name" : "Mateus Normont",
+    "position" : "C",
+    "jerseyNumber" : 75,
+    "overall" : 85,
+    "tier" : "ICON"
+  } ],
+  "injuries" : [ ],
+  "cap" : {
+    "salaryCap" : 25500000000,
+    "capUsed" : 24224996068,
+    "deadMoney" : 0,
+    "capSpace" : 1275003932
+  },
+  "depthChart" : {
+    "version" : 0,
+    "valid" : true,
+    "errors" : 0,
+    "warnings" : 0,
+    "codes" : [ ]
+  },
+  "live" : null,
+  "morale" : null,
+  "analysis" : null,
+  "inbox" : null,
+  "unreadInbox" : null,
+  "scoresPoints" : null
+}

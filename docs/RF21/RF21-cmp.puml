@@ -61,7 +61,7 @@ database "S3/MinIO" as s3
 database "Anthropic Claude" as s4
 c1 --> c5 : usa
 c2 --> c16 : dispara
-c5 --> c14 : GET /careers/{id}/calendar (alvo)\nGET /careers/{id}/weeks/{n} (alvo)\nGET /careers/{id}/next-match/preparation (alvo)
+c5 --> c14 : GET /careers/{id}/calendar\nGET /careers/{id}/weeks/{n} (alvo)\nGET /careers/{id}/next-match/preparation (alvo)
 c5 --> c15
 c14 --> c16
 c15 --> c16

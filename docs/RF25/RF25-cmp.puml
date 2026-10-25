@@ -54,7 +54,7 @@ database "MySQL 8" as s1
 database "Redis 7" as s2
 c1 --> c3 : usa
 c2 --> c12 : dispara
-c3 --> c9 : GET /careers/{id}/roster (alvo)\nGET /store/catalog (alvo)\nPOST /careers/{id}/players/{pid}/consumables (alvo)
+c3 --> c9 : GET /careers/{id}/roster\nGET /store/catalog (alvo)\nPOST /careers/{id}/players/{pid}/consumables (alvo)
 c3 --> c10
 c3 --> c11
 c9 --> c12

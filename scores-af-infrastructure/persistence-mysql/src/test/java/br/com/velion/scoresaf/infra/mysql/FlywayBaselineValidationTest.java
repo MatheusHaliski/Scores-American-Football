@@ -30,12 +30,13 @@ import org.springframework.test.context.ActiveProfiles;
     "spring.jpa.hibernate.ddl-auto=validate",
     "spring.jpa.properties.hibernate.dialect=br.com.velion.scoresaf.infra.mysql.TestH2Dialect"})
 @ActiveProfiles("test")
-@Import(CatalogGraph.class)
+@Import({CatalogGraph.class, CareerGraph.class})
 class FlywayBaselineValidationTest {
 
   @Autowired UserAccountJpaRepository users;
   @Autowired UserSettingsJpaRepository settings;
   @Autowired CatalogGraph catalog;
+  @Autowired CareerGraph career;
 
   @Test
   void deve_validar_entidades_contra_schema_do_flyway_e_gravar_pela_v1() {
@@ -62,5 +63,22 @@ class FlywayBaselineValidationTest {
     assertThat(catalog.players.countByWorldId(w.world().getId())).isEqualTo(32 * 69);
     assertThat(catalog.players.countByClubIdAndRosterStatusIn(p.getClub().getId(), EnumSet.of(RosterStatus.PRACTICE_SQUAD))).isEqualTo(16);
     assertThat(catalog.leagues.findById(w.leagues().get(0).getId())).get().satisfies(l -> assertThat(l.getRules().getPracticeSquadMax()).isEqualTo(16));
+  }
+
+  /** A V3 aceita a carreira inteira (CHECKs de slot, situação, horário, vaga e profundidade; FKs) e devolve o que foi gravado. */
+  @Test
+  void carreira_grava_pela_v3_e_rele() {
+    DefaultWorld w = new DefaultWorldFactory().build(DefaultWorldFactory.DEFAULT_SEED + 2);
+    catalog.persist(w);
+    CareerGraph.Saved saved = career.persist(w, "v3-" + java.util.UUID.randomUUID() + "@example.com");
+    assertThat(career.saves.findById(saved.career().getId())).get().satisfies(c -> {
+      assertThat(c.getSlot()).isEqualTo(1);
+      assertThat(c.getSeed()).isEqualTo(42L);
+    });
+    assertThat(career.fixtures.countBySeasonId(saved.season().getId())).isEqualTo(1);
+    assertThat(career.slots.findByDepthChartId(saved.chart().getId())).hasSize(1);
+    assertThat(career.moves.findByCareerIdOrderByCreatedAtAsc(saved.career().getId())).singleElement()
+        .satisfies(m -> assertThat(m.getToStatus()).isEqualTo(RosterStatus.WAIVED));
+    assertThat(catalog.players.findById(saved.slot().getPlayer().getId())).get().satisfies(p -> assertThat(p.getInjuryWeeksOut()).isZero());
   }
 }

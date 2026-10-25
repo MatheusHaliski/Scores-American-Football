@@ -48,7 +48,7 @@ Fonte: [`RF29-stm.puml`](RF29-stm.puml)
 | ⛔ alvo | `GET` | `/api/v1/matches/{mid}/playbook` | `GetMatchPlaybookUseCase` | JWT · dono do save | Plano de jogo vigente, pesos de formações e conceitos, coberturas e blitz, tendências do adversário no jogo (corrida/passe por descida, cobertura mais usada) e sugestões do analista |
 | ⛔ alvo | `POST` | `/api/v1/matches/{mid}/adjustments` | `SubmitPlaybookAdjustmentsUseCase` | JWT · dono do save | Ajustes validados: GAME_PLAN (corrida/passe, ritmo, 4ª descida), FORMATION_WEIGHTS, CONCEPT_WEIGHTS, COVERAGE_WEIGHTS, BLITZ_FREQUENCY, DEPTH_SWAP |
 | ⛔ alvo | `POST` | `/api/v1/matches/{mid}/advance` | `AdvanceMatchUseCase` | JWT · dono do save | mode=QUARTER: retoma com os ajustes no próximo snap ou kickoff |
-| ⛔ alvo | `GET` | `/api/v1/careers/{id}/game-plan` | `GetGamePlanUseCase` | JWT · dono do save | Plano padrão da franquia (RF61) para restaurar |
+| ✅ | `GET` | `/api/v1/careers/{id}/game-plan` | `GetGamePlanUseCase` | JWT · dono do save | Plano padrão da franquia (RF61) para restaurar |
 
 ## Pontos de decisão
 

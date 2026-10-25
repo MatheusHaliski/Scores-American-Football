@@ -46,9 +46,9 @@ Fonte: [`RF7-stm.puml`](RF7-stm.puml)
 |---|---|---|---|---|---|
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/next-game/preparation` | `GetGamePreparationUseCase` | JWT · dono do save | Dados do modal: fixture, adversário, ativos, depth chart, plano, clima e modelos 3D |
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/next-game/opponent-report` | `GetOpponentReportUseCase` | JWT · dono do save | Relatório do adversário por unidade (ataque, defesa, especiais): tendências, formações e coberturas mais usadas, lesões e confrontos-chave WR × CB, OL × DL, TE × LB |
-| ⛔ alvo | `PUT` | `/api/v1/careers/{id}/depth-chart` | `SaveDepthChartUseCase` | JWT · dono do save | Salva o depth chart montado no painel LED (RF6) |
+| ✅ | `PUT` | `/api/v1/careers/{id}/depth-chart` | `SaveDepthChartUseCase` | JWT · dono do save | Salva o depth chart montado no painel LED (RF6) |
 | ⛔ alvo | `PUT` | `/api/v1/careers/{id}/game-plan` | `SaveGamePlanUseCase` | JWT · dono do save | Salva o plano de jogo (RF6) |
-| ⛔ alvo | `GET` | `/api/v1/me/settings` | `GetSettingsUseCase` | JWT | simQuarterMinutes, playCallingLevel, decisionTimeoutSeconds e reducedMotion aplicados à partida (RF10) |
+| ✅ | `GET` | `/api/v1/me/settings` | `GetSettingsUseCase` | JWT | simQuarterMinutes, playCallingLevel, decisionTimeoutSeconds e reducedMotion aplicados à partida (RF10) |
 | ⛔ alvo | `POST` | `/api/v1/careers/{id}/weeks/current/play` | `PlayWeekUseCase` | JWT · dono do save | Jogar partida: cria MatchSession (seed derivada) e dispara a simulação dos outros jogos da semana |
 | ⛔ alvo | `GET` | `/api/v1/matches/{mid}` | `GetMatchStateUseCase` | JWT · dono do save | Estado vivo (quarto, relógio, descida e distância, posse, placar) para retomar a partida |
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/weeks/{n}` | `GetWeekBoardUseCase` | JWT · dono do save | Painel da semana com todos os placares (RF16/RF27) |

@@ -51,7 +51,7 @@ database "Redis 7" as s2
 database "Cofre de segredos do provedor (Railway Variables / GitHub Secrets)" as s3
 c1 --> c3 : usa
 c2 --> c16 : dispara
-c3 --> c9 : POST /auth/register (alvo)\nPOST /auth/email/verify (alvo)
+c3 --> c9 : POST /auth/register\nPOST /auth/email/verify
 c3 --> c10
 c3 --> c11
 c3 --> c12

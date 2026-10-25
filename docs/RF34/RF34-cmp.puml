@@ -70,7 +70,7 @@ database "Redis 7" as s2
 database "OpenSearch 2" as s3
 c1 --> c4 : usa
 c2 --> c18 : dispara
-c4 --> c13 : GET /worlds (alvo)\nGET /worlds/{id}/leagues (alvo)\nGET /leagues/{id}/clubs (alvo)\n…
+c4 --> c13 : GET /worlds\nGET /worlds/{id}/leagues\nGET /leagues/{id}/clubs\n…
 c4 --> c14
 c4 --> c15
 c4 --> c16

@@ -152,4 +152,18 @@ class FlywayBaselineValidationTest {
     assertThat(season.reports.findFirstByCareerIdOrderByCreatedAtDesc(saved.career().getId())).get().satisfies(x -> assertThat(x.getWeek()).isEqualTo(3));
     assertThat(season.moves.findById(s.expired().getId())).get().satisfies(x -> assertThat(x.getKind()).isEqualTo(RosterMoveKind.CONTRACT_EXPIRED));
   }
+
+  /** A V7 (D-123) aceita a semana da rodada PRELIMINARY, a primeira das chaves de 5 rodadas, e devolve o que foi gravado. */
+  @Test
+  void rodada_preliminar_grava_pela_v7_e_rele() {
+    DefaultWorld w = new DefaultWorldFactory().build(DefaultWorldFactory.DEFAULT_SEED + 6);
+    catalog.persist(w);
+    CareerGraph.Saved saved = career.persist(w, "v7-" + java.util.UUID.randomUUID() + "@example.com");
+    br.com.velion.scoresaf.domain.season.Week wk = new br.com.velion.scoresaf.domain.season.Week();
+    wk.setSeason(saved.season()); wk.setNumber(19); wk.setKind(br.com.velion.scoresaf.domain.shared.WeekKind.PRELIMINARY);
+    wk.setStartsOn(java.time.LocalDate.of(2027, 1, 7)); wk.setStatus(br.com.velion.scoresaf.domain.shared.WeekStatus.CURRENT);
+    career.weeks.saveAndFlush(wk);
+    assertThat(career.weeks.findById(wk.getId())).get()
+        .satisfies(x -> assertThat(x.getKind()).isEqualTo(br.com.velion.scoresaf.domain.shared.WeekKind.PRELIMINARY));
+  }
 }

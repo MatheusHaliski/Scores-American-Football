@@ -75,7 +75,7 @@ export interface Standings {
 
 /* ───────────────────────── RF66 — playoffs e chave ───────────────────────── */
 
-export const PLAYOFF_ROUNDS = ["WILD_CARD", "DIVISIONAL", "CONFERENCE", "FINAL"] as const;
+export const PLAYOFF_ROUNDS = ["PRELIMINARY", "WILD_CARD", "DIVISIONAL", "CONFERENCE", "FINAL"] as const;
 export type PlayoffRound = (typeof PLAYOFF_ROUNDS)[number];
 export type PlayoffsStatus = "NOT_STARTED" | "IN_PROGRESS" | "FINISHED";
 export type SeedStatus = "PROJECTED" | "ALIVE" | "ELIMINATED" | "CHAMPION";
@@ -204,7 +204,7 @@ export interface WeekNews {
 
 export const AWARD_TYPES = ["MVP", "OPOY", "DPOY", "OROY", "DROY", "COACH"] as const;
 export const LEADER_CATEGORIES = ["PASS_YARDS", "PASS_TOUCHDOWNS", "RUSH_YARDS", "RUSH_TOUCHDOWNS", "RECEIVING_YARDS", "RECEPTIONS", "SACKS", "INTERCEPTIONS", "TACKLES"] as const;
-export type PlayoffResult = "CHAMPION" | "RUNNER_UP" | "CONFERENCE" | "DIVISIONAL" | "WILD_CARD" | "MISSED" | "IN_PROGRESS";
+export type PlayoffResult = "CHAMPION" | "RUNNER_UP" | "CONFERENCE" | "DIVISIONAL" | "WILD_CARD" | "PRELIMINARY" | "MISSED" | "IN_PROGRESS";
 
 /** Prêmio: jogador (ou head coach, sem `playerId`/`position`), franquia, nota e a linha de estatísticas. */
 export interface Award {

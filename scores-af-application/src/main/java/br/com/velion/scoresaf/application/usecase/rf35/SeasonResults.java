@@ -45,7 +45,7 @@ public class SeasonResults {
 
     /**
      * Resultado nos playoffs: IN_PROGRESS (temporada regular ou ainda viva), MISSED, CHAMPION, RUNNER_UP ou a rodada em que caiu
-     * (WILD_CARD, DIVISIONAL, CONFERENCE).
+     * (PRELIMINARY, WILD_CARD, DIVISIONAL, CONFERENCE).
      */
     public String playoffResult(UUID club) {
       if (club == null) return null;

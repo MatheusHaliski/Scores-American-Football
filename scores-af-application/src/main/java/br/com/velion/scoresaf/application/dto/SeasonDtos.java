@@ -91,7 +91,7 @@ public final class SeasonDtos {
 
   public record LeaderDto(UUID playerId, String name, String position, ClubRefDto club, int value, int games) {}
 
-  /** Campanha do usuário: temporada regular, posições, semente e o resultado nos playoffs (CHAMPION, RUNNER_UP, CONFERENCE, DIVISIONAL, WILD_CARD, MISSED, IN_PROGRESS). */
+  /** Campanha do usuário: temporada regular, posições, semente e o resultado nos playoffs (CHAMPION, RUNNER_UP, CONFERENCE, DIVISIONAL, WILD_CARD, PRELIMINARY, MISSED, IN_PROGRESS). */
   public record CampaignDto(RecordDto record, int pointsFor, int pointsAgainst, Integer divisionRank, Integer conferenceRank, Integer seed, String playoffResult) {}
 
   /** Contrato que termina na temporada (pendência de renovação do bloco 7). */

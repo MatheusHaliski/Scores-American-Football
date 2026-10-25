@@ -34,7 +34,7 @@ test("chaves dinâmicas da temporada traduzidas nos 3 idiomas", () => {
   add("stat", arr(sum.awards).flatMap((a) => Object.keys(a.statLine as R)));
   add("leader", LEADER_CATEGORIES);
   add("leader", Object.keys(sum.leaders as R));
-  add("result", ["CHAMPION", "RUNNER_UP", "CONFERENCE", "DIVISIONAL", "WILD_CARD", "MISSED", "IN_PROGRESS"]);
+  add("result", ["CHAMPION", "RUNNER_UP", "CONFERENCE", "DIVISIONAL", "WILD_CARD", "PRELIMINARY", "MISSED", "IN_PROGRESS"]);
   const off = sum.offseason as R;
   const adv = g("season-advance.json");
   add("step", [...arr(off.steps), ...arr(adv.steps)].map((s) => s.phase));

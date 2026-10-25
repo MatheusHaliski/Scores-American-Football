@@ -4,6 +4,9 @@ skinparam StateBackgroundColor #FFF7EE
 skinparam StateBorderColor #DC5B26
 state "PROJECAO" as PROJECAO
 PROJECAO : seeds se a temporada acabasse hoje
+state "PRELIMINARY" as PRELIMINARY
+PRELIMINARY : só em chaves de 5 rodadas
+PRELIMINARY : ex.: 8 seeds e 1 folga (D-123)
 state "WILD_CARD" as WILD_CARD
 WILD_CARD : 2×7, 3×6, 4×5
 WILD_CARD : seed 1 folga
@@ -20,6 +23,8 @@ CAMPEAO : phase DRAFT
 [*] --> PROJECAO
 PROJECAO --> PROJECAO : semana jogada
 PROJECAO --> WILD_CARD : fim da semana 18
+PROJECAO --> PRELIMINARY : fim da semana 18 (chave de 5 rodadas)
+PRELIMINARY --> WILD_CARD : vencedores + folgas
 WILD_CARD --> DIVISIONAL : 6 vencedores
 DIVISIONAL --> CONFERENCE : 4 vencedores
 CONFERENCE --> FINAL : 2 campeões de conferência

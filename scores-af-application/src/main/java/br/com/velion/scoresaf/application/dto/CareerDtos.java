@@ -38,7 +38,7 @@ public final class CareerDtos {
   public record WeekDto(int number, String kind, LocalDate startsOn, String status, boolean userBye, List<UUID> byeClubIds, List<FixtureDto> fixtures) {}
 
   /**
-   * Rodada de playoff planejada (RF21/RF66): número da semana, tipo (WILD_CARD, DIVISIONAL, CONFERENCE, FINAL), quinta-feira prevista e
+   * Rodada de playoff planejada (RF21/RF66): número da semana, tipo (PRELIMINARY só nas chaves de 5 rodadas, WILD_CARD, DIVISIONAL, CONFERENCE, FINAL), quinta-feira prevista e
    * situação (PENDING antes de a semana existir; depois, a da semana).
    */
   public record PlayoffWeekDto(int number, String kind, LocalDate startsOn, String status) {}

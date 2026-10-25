@@ -17,6 +17,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Predicate;
 import org.springframework.stereotype.Component;
 
 /**
@@ -81,9 +82,21 @@ public class StandingsService {
 
   /**
    * Quem já garantiu o quê com os jogos encerrados até {@code throughWeek}: pontos = 2 × vitórias + empates; o piso é o atual e o
-   * teto soma 2 por jogo que falta na temporada regular. Garante vaga quem tem menos rivais da conferência capazes de alcançar o seu
-   * piso do que as vagas (o mesmo com as folgas e com os rivais da divisão); está eliminado quem tem pelo menos tantos rivais com piso
-   * acima do seu teto quanto as vagas. Depois da temporada regular, vale a semente.
+   * teto soma 2 por jogo que falta na temporada regular. Os campeões de divisão entram nas primeiras sementes mesmo com campanha pior
+   * ({@link Standings}), então a conta (conservadora: na dúvida, não marca) é, para a franquia X e o seu piso:
+   *
+   * <ul>
+   *   <li><b>À frente no pior caso</b>: os rivais da conferência que alcançam o piso de X, mais uma por divisão rival em que ninguém
+   *   alcança (o campeão dela entra à frente com campanha pior) — D-125.</li>
+   *   <li><b>Título de divisão</b> (DIVISION): nenhum rival da divisão alcança o piso de X.</li>
+   *   <li><b>Folga</b> (BYE): título de divisão garantido e menos rivais que alcançam X do que folgas, ou menos franquias à frente no
+   *   pior caso do que folgas (o rival da própria divisão pode ganhar a divisão e levar a folga) — D-125.</li>
+   *   <li><b>Vaga</b> (PLAYOFFS): menos franquias à frente no pior caso do que vagas — D-125.</li>
+   *   <li><b>Eliminada</b> (ELIMINATED): algum rival da divisão tem piso acima do teto de X (não ganha mais a divisão, que garante
+   *   semente) e pelo menos tantos rivais da conferência com piso acima do teto de X quanto as vagas — D-124.</li>
+   * </ul>
+   * Depois da temporada regular, vale a semente. As divisões são as da {@link Standings} (franquia sem divisão fica na divisão "-" da
+   * conferência, como em {@link #teams}).
    */
   public Map<UUID, Clinch> clinches(Season season, League league, List<Fixture> all, int throughWeek, Standings.Table table, LeagueRules rules) {
     Map<UUID, Clinch> out = new HashMap<>();
@@ -111,22 +124,32 @@ public class StandingsService {
           continue;
         }
         int floor = points(table, key), max = floor + 2 * remaining.getOrDefault(c.getId(), 0);
-        long canReach = members.stream().filter(o -> !o.getId().equals(c.getId()))
-            .filter(o -> points(table, o.getId().toString()) + 2 * remaining.getOrDefault(o.getId(), 0) >= floor).count();
-        long divisionReach = members.stream().filter(o -> !o.getId().equals(c.getId()) && sameDivision(o, c))
-            .filter(o -> points(table, o.getId().toString()) + 2 * remaining.getOrDefault(o.getId(), 0) >= floor).count();
-        long above = members.stream().filter(o -> !o.getId().equals(c.getId())).filter(o -> points(table, o.getId().toString()) > max).count();
-        if (byes > 0 && canReach < byes) out.put(c.getId(), Clinch.BYE);
-        else if (divisionReach == 0 && c.getDivision() != null) out.put(c.getId(), Clinch.DIVISION);
-        else if (canReach < slots) out.put(c.getId(), Clinch.PLAYOFFS);
-        else if (above >= slots) out.put(c.getId(), Clinch.ELIMINATED);
+        String division = divisionKey(c);
+        List<Club> rivals = members.stream().filter(o -> !o.getId().equals(c.getId())).toList();
+        Predicate<Club> reaches = o -> points(table, o.getId().toString()) + 2 * remaining.getOrDefault(o.getId(), 0) >= floor;
+        long canReach = rivals.stream().filter(reaches).count();
+        long divisionReach = rivals.stream().filter(o -> divisionKey(o).equals(division)).filter(reaches).count();
+        // divisões rivais em que ninguém alcança o piso de X: o campeão delas entra à frente mesmo com campanha pior (D-125)
+        long weakDivisions = rivals.stream().map(StandingsService::divisionKey).filter(d -> !d.equals(division)).distinct()
+            .filter(d -> rivals.stream().noneMatch(o -> divisionKey(o).equals(d) && reaches.test(o))).count();
+        long ahead = canReach + weakDivisions;
+        boolean divisionClinched = divisionReach == 0;
+        // sem a divisão, só por wild card: algum rival da divisão já tem piso acima do teto de X (D-124)
+        boolean divisionLost = rivals.stream().anyMatch(o -> divisionKey(o).equals(division) && points(table, o.getId().toString()) > max);
+        long above = rivals.stream().filter(o -> points(table, o.getId().toString()) > max).count();
+        if (byes > 0 && ((divisionClinched && canReach < byes) || ahead < byes)) out.put(c.getId(), Clinch.BYE);
+        else if (divisionClinched && c.getDivision() != null) out.put(c.getId(), Clinch.DIVISION);
+        else if (ahead < slots) out.put(c.getId(), Clinch.PLAYOFFS);
+        else if (divisionLost && above >= slots) out.put(c.getId(), Clinch.ELIMINATED);
       }
     }
     return out;
   }
 
-  private static boolean sameDivision(Club a, Club b) {
-    return a.getDivision() != null && b.getDivision() != null && a.getDivision().getId().equals(b.getDivision().getId());
+  /** Divisão da franquia como a {@link Standings} a vê ({@link #teams}): sem divisão, a divisão "-" da conferência. */
+  private static String divisionKey(Club c) {
+    String conf = c.getConference() == null ? "-" : c.getConference().getId().toString();
+    return c.getDivision() == null ? conf + "/-" : c.getDivision().getId().toString();
   }
 
   private static int points(Standings.Table t, String key) {

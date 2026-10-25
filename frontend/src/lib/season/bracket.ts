@@ -6,7 +6,7 @@
 import type { Bracket, BracketGame, BracketRound, BracketTeam } from "@/lib/api/season-types";
 import { PLAYOFF_ROUNDS } from "@/lib/api/season-types";
 
-/** Semana de playoff? (o tipo da semana do calendário: WILD_CARD…FINAL) */
+/** Semana de playoff? (o tipo da semana do calendário: PRELIMINARY…FINAL; a PRELIMINARY só nas chaves de 5 rodadas, D-123) */
 export function isPlayoffKind(kind: string | null | undefined): boolean {
   return !!kind && (PLAYOFF_ROUNDS as readonly string[]).includes(kind);
 }

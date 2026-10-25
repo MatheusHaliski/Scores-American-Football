@@ -58,6 +58,6 @@ test("vencedor e link do relatório (rota do 6b) só com placar", () => {
 });
 
 test("tipos de semana de playoff", () => {
-  for (const k of ["WILD_CARD", "DIVISIONAL", "CONFERENCE", "FINAL"]) assert.ok(isPlayoffKind(k));
+  for (const k of ["PRELIMINARY", "WILD_CARD", "DIVISIONAL", "CONFERENCE", "FINAL"]) assert.ok(isPlayoffKind(k));
   for (const k of ["REGULAR", "PRESEASON", null, undefined, ""]) assert.equal(isPlayoffKind(k), false);
 });

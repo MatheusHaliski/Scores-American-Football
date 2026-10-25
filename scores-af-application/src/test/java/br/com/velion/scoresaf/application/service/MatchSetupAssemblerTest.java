@@ -22,7 +22,7 @@ class MatchSetupAssemblerTest {
   void jogo_de_playoff_e_eliminatorio_e_o_da_temporada_regular_nao() {
     assertThat(MatchSetupAssembler.knockout(in(WeekKind.REGULAR))).isFalse();
     assertThat(MatchSetupAssembler.knockout(in(WeekKind.PRESEASON))).isFalse();
-    for (WeekKind k : new WeekKind[] {WeekKind.WILD_CARD, WeekKind.DIVISIONAL, WeekKind.CONFERENCE, WeekKind.FINAL}) {
+    for (WeekKind k : new WeekKind[] {WeekKind.PRELIMINARY, WeekKind.WILD_CARD, WeekKind.DIVISIONAL, WeekKind.CONFERENCE, WeekKind.FINAL}) {
       assertThat(MatchSetupAssembler.knockout(in(k))).as(k.name()).isTrue();
     }
   }

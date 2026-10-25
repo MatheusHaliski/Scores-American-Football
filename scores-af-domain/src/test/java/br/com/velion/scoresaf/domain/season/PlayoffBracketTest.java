@@ -6,11 +6,17 @@ import br.com.velion.scoresaf.domain.season.PlayoffBracket.Matchup;
 import br.com.velion.scoresaf.domain.season.PlayoffBracket.Result;
 import br.com.velion.scoresaf.domain.season.PlayoffBracket.Round;
 import br.com.velion.scoresaf.domain.season.PlayoffBracket.Seed;
+import br.com.velion.scoresaf.domain.catalog.LeagueRules;
 import br.com.velion.scoresaf.domain.shared.WeekKind;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 /**
  * Chave do RF66 (D-96): 7 sementes por conferência com folga só da 1ª na primeira rodada, mando da melhor semente, re-seed a cada
@@ -105,5 +111,54 @@ class PlayoffBracketTest {
     Round r = PlayoffBracket.next(s, 0, true, List.of());
     assertThat(pairs(r)).containsExactly("A2xA5", "A3xA4", "N2xN5", "N3xN4");
     assertThat(r.byes()).extracting(Seed::club).containsExactly("A1", "N1");
+  }
+
+  /** Toda combinação de sementes (1–8) e folgas (0..sementes) que o editor aceita, com uma e duas conferências (D-123). */
+  static Stream<Arguments> regrasAceitas() {
+    List<Arguments> out = new ArrayList<>();
+    for (int n = 1; n <= 8; n++) {
+      for (int b = 0; b <= n; b++) {
+        LeagueRules rules = LeagueRules.pro().toBuilder().playoffSeedsPerConference(n).playoffByeSeeds(b).build();
+        if (rules.violations().contains("playoffSeedsPerConference") || rules.violations().contains("playoffByeSeeds")) continue;
+        out.add(Arguments.of(n, b, 1));
+        out.add(Arguments.of(n, b, 2));
+      }
+    }
+    return out.stream();
+  }
+
+  @ParameterizedTest(name = "{0} sementes, {1} folgas, {2} conferência(s)")
+  @MethodSource("regrasAceitas")
+  void toda_regra_aceita_pelo_editor_tem_nome_para_cada_rodada_e_chega_a_final(int perConference, int byes, int conferences) {
+    String[] confs = conferences == 1 ? new String[] {"A"} : new String[] {"A", "N"};
+    List<Seed> s = seeds(perConference, confs);
+    Map<String, Integer> perConf = new LinkedHashMap<>();
+    for (String c : confs) perConf.put(c, perConference);
+    int total = PlayoffBracket.rounds(perConf, byes);
+    List<WeekKind> kinds = PlayoffBracket.kinds(total);
+    assertThat(kinds).hasSize(total).doesNotHaveDuplicates();
+    if (total > 0) assertThat(kinds.get(total - 1)).isEqualTo(WeekKind.FINAL);
+    // a melhor semente sempre vence e, de novo, a pior sempre vence: as duas chaves chegam à campeã sem lançar exceção
+    for (boolean favorite : new boolean[] {true, false}) {
+      List<Result> results = new ArrayList<>();
+      int played = 0;
+      for (Round r = PlayoffBracket.next(s, byes, true, results); r != null; r = PlayoffBracket.next(s, byes, true, results)) {
+        assertThat(r.index()).isEqualTo(played);
+        assertThat(r.kind()).isEqualTo(kinds.get(r.index()));
+        assertThat(r.games()).isNotEmpty();
+        for (Matchup m : r.games()) results.add(new Result(r.index(), m.home(), m.away(), favorite ? m.home() : m.away()));
+        played++;
+      }
+      assertThat(played).isEqualTo(total);
+      assertThat(PlayoffBracket.champion(s, byes, results)).isNotNull();
+    }
+  }
+
+  @Test
+  void oito_sementes_e_uma_folga_em_duas_conferencias_tem_cinco_rodadas_com_a_preliminar() {
+    assertThat(PlayoffBracket.rounds(Map.of("A", 8, "N", 8), 1)).isEqualTo(5);
+    assertThat(PlayoffBracket.kinds(5)).containsExactly(WeekKind.PRELIMINARY, WeekKind.WILD_CARD, WeekKind.DIVISIONAL, WeekKind.CONFERENCE, WeekKind.FINAL);
+    Round r = PlayoffBracket.next(seeds(8, "A", "N"), 1, true, List.of());
+    assertThat(r.kind()).isEqualTo(WeekKind.PRELIMINARY);
   }
 }

@@ -16,7 +16,8 @@ import java.util.Set;
  *
  * <p>Rodada {@code r}: na primeira, as {@code byes} melhores sementes folgam (mais uma, se sobrar número ímpar de franquias); depois,
  * vivas = vencedoras da rodada anterior + as que folgaram; número ímpar de vivas dá folga à melhor semente. Uma conferência que já
- * tem campeã espera a outra. Os nomes das rodadas contam do fim: ... WILD_CARD, DIVISIONAL, CONFERENCE, FINAL.
+ * tem campeã espera a outra. Os nomes das rodadas contam do fim: PRELIMINARY (só nas chaves de 5 rodadas, D-123), WILD_CARD,
+ * DIVISIONAL, CONFERENCE, FINAL.
  */
 public final class PlayoffBracket {
   private PlayoffBracket() {}
@@ -57,11 +58,20 @@ public final class PlayoffBracket {
     return r;
   }
 
-  /** Tipo de cada rodada, contando do fim (a última é a final). */
+  /** Rodadas com nome próprio, contando do fim (a última é a final). */
+  private static final List<WeekKind> NAMED = List.of(WeekKind.WILD_CARD, WeekKind.DIVISIONAL, WeekKind.CONFERENCE, WeekKind.FINAL);
+
+  /**
+   * Tipo de cada rodada, contando do fim (a última é a final). Chave com mais rodadas que os nomes próprios (sementes e folgas do
+   * editor que deixam número ímpar de vivas em mais de uma rodada, como 8 sementes com 1 folga em duas conferências) abre com
+   * rodada(s) PRELIMINARY (D-123); nunca lança exceção.
+   */
   public static List<WeekKind> kinds(int rounds) {
-    List<WeekKind> all = List.of(WeekKind.WILD_CARD, WeekKind.DIVISIONAL, WeekKind.CONFERENCE, WeekKind.FINAL);
-    if (rounds > all.size()) throw new IllegalArgumentException("chave com rodadas demais: " + rounds);
-    return all.subList(all.size() - rounds, all.size());
+    if (rounds <= NAMED.size()) return NAMED.subList(NAMED.size() - Math.max(0, rounds), NAMED.size());
+    List<WeekKind> out = new ArrayList<>();
+    for (int i = 0; i < rounds - NAMED.size(); i++) out.add(WeekKind.PRELIMINARY);
+    out.addAll(NAMED);
+    return List.copyOf(out);
   }
 
   /**

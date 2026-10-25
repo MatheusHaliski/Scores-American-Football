@@ -75,7 +75,9 @@ function SeasonScreen() {
       toast(t("season.advance.done", { n: r.seasonNumber, year: String(r.seasonYear) }), "good");
       void api.careers.dashboard(careerId).then(setDashboard).catch(() => undefined);
       go({ number: null, tab: "summary" });
-      await q.refetch();
+      // vendo uma temporada antiga (?number=), a troca do parâmetro já recarrega (deps do useQuery); um refetch aqui seria um segundo
+      // pedido no ar ao mesmo tempo (D-126). Sem ?number=, nada muda nas deps e o recarregamento é este.
+      if (number == null) await q.refetch();
     } catch (e) {
       setConfirm(false);
       const r = seasonReaction(e);

@@ -91,11 +91,11 @@ ENTITIES = {
     "Goal": {"ctx": "career", "attrs": ["code: String", "description: String", "target: int", "progress: int", "rewardPoints: int", "status: GoalStatus"]},
     # season
     "Season": {"ctx": "season", "attrs": ["number: int", "year: int", "phase: SeasonPhase (PRESEASON|REGULAR|PLAYOFFS|DRAFT|FREE_AGENCY|OFFSEASON)", "currentWeek: int", "tradeDeadlineWeek: int", "championClub: Club?", "mvpPlayer: Player?"]},
-    "Week": {"ctx": "season", "attrs": ["number: int", "kind: WeekKind (PRESEASON|REGULAR|WILD_CARD|DIVISIONAL|CONFERENCE|FINAL)", "startsOn: LocalDate", "status: WeekStatus", "byeClubs: List<Club>"]},
+    "Week": {"ctx": "season", "attrs": ["number: int", "kind: WeekKind (PRESEASON|REGULAR|PRELIMINARY|WILD_CARD|DIVISIONAL|CONFERENCE|FINAL)", "startsOn: LocalDate", "status: WeekStatus", "byeClubs: List<Club>"]},
     "Fixture": {"ctx": "season", "attrs": ["week: int", "date: LocalDate", "slot: KickoffSlot (THU_NIGHT|SUN_EARLY|SUN_LATE|SUN_NIGHT|MON_NIGHT)", "status: FixtureStatus", "homeScore: int", "awayScore: int", "quarterScores: JSON", "overtime: boolean", "isDivisional: boolean", "isConference: boolean", "neutralSite: boolean", "weather: Weather", "attendance: int", "revenue: long", "importance: FixtureImportance", "seed: long", "isUserFixture: boolean"]},
     "Standing": {"ctx": "season", "attrs": ["wins: int", "losses: int", "ties: int", "winPct: double", "divisionRecord: String", "conferenceRecord: String", "pointsFor: int", "pointsAgainst: int", "streak: int", "last5: JSON", "divisionRank: int", "conferenceSeed: Integer", "tiebreakerNote: String"]},
     "PlayoffSeed": {"ctx": "season", "attrs": ["conference: Conference", "seed: int (1–7)", "club: Club", "divisionWinner: boolean", "hasBye: boolean (seed 1)"]},
-    "PlayoffMatchup": {"ctx": "season", "attrs": ["round: PlayoffRound (WILD_CARD|DIVISIONAL|CONFERENCE|FINAL)", "higherSeed: PlayoffSeed", "lowerSeed: PlayoffSeed", "fixture: Fixture", "winner: Club?", "neutralSite: boolean"]},
+    "PlayoffMatchup": {"ctx": "season", "attrs": ["round: PlayoffRound (PRELIMINARY|WILD_CARD|DIVISIONAL|CONFERENCE|FINAL)", "higherSeed: PlayoffSeed", "lowerSeed: PlayoffSeed", "fixture: Fixture", "winner: Club?", "neutralSite: boolean"]},
     "ChampionHistory": {"ctx": "season", "attrs": ["seasonYear: int", "managerName: String", "finalScore: String"]},
     "SeasonAward": {"ctx": "season", "attrs": ["type: AwardType (MVP|OPOY|DPOY|OROY|DROY|COACH)", "value: double"]},
     "CalendarInsight": {"ctx": "season", "attrs": ["kind: FixtureImportance", "headline: String", "body: String", "imageKey: String"]},

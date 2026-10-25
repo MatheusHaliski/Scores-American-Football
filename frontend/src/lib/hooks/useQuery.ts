@@ -1,6 +1,7 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { describeError } from "@/lib/api/errors";
+import { queryRunner } from "./queryRunner";
 
 export interface QueryState<T> {
   data: T | null;
@@ -13,7 +14,8 @@ export interface QueryState<T> {
 
 /**
  * Hook mínimo de consulta (sem react-query): executa `fn` quando `deps` mudam,
- * guarda dados/erro/carregando e evita atualizar após desmontar.
+ * guarda dados/erro/carregando e evita atualizar após desmontar. Com dois pedidos
+ * no ar, só o mais recente aplica o resultado (`queryRunner`, D-126).
  */
 export function useQuery<T>(fn: () => Promise<T>, deps: unknown[], enabled = true): QueryState<T> {
   const [data, setData] = useState<T | null>(null);
@@ -23,17 +25,23 @@ export function useQuery<T>(fn: () => Promise<T>, deps: unknown[], enabled = tru
   const fnRef = useRef(fn);
   fnRef.current = fn;
 
-  const run = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const result = await fnRef.current();
-      if (alive.current) setData(result);
-    } catch (e) {
-      if (alive.current) setError(describeError(e));
-    } finally {
-      if (alive.current) setLoading(false);
-    }
+  // um executor só por montagem: o número do pedido mais recente vive nele (D-126)
+  const runner = useRef<(() => Promise<void>) | null>(null);
+  const run = useCallback(() => {
+    runner.current ??= queryRunner<T>(
+      () => fnRef.current(),
+      {
+        start: () => {
+          setLoading(true);
+          setError(null);
+        },
+        data: (result) => setData(() => result),
+        error: (e) => setError(describeError(e)),
+        settle: () => setLoading(false),
+      },
+      () => alive.current,
+    );
+    return runner.current();
   }, []);
 
   useEffect(() => {

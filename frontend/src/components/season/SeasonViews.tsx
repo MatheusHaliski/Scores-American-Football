@@ -14,7 +14,7 @@ import { Stat } from "@/components/ui/Stat";
 import { EmptyState, InlineAlert } from "@/components/ui/States";
 import { IconShield, IconStar, IconTrophy } from "@/components/ui/icons";
 
-const RESULT_TONE: Record<string, BadgeTone> = { CHAMPION: "led", RUNNER_UP: "good", CONFERENCE: "info", DIVISIONAL: "info", WILD_CARD: "info", MISSED: "bad", IN_PROGRESS: "neutral" };
+const RESULT_TONE: Record<string, BadgeTone> = { CHAMPION: "led", RUNNER_UP: "good", CONFERENCE: "info", DIVISIONAL: "info", WILD_CARD: "info", PRELIMINARY: "info", MISSED: "bad", IN_PROGRESS: "neutral" };
 const STEP_TONE: Record<string, BadgeTone> = { DONE: "good", SKIPPED: "warn", PENDING: "neutral" };
 
 function ClubLine({ club, label, highlight }: { club: ClubRef | null; label: string; highlight?: boolean }) {

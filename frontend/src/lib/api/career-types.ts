@@ -320,7 +320,7 @@ export interface PlayoffWeek {
 
 /**
  * `CalendarDto` (RF21): franquias uma vez só e as semanas com jogos e folgas. As semanas de playoff entram em `weeks` quando a rodada
- * é criada (com `kind` WILD_CARD…FINAL); `playoffWeeks` lista as rodadas planejadas pelas regras.
+ * é criada (com `kind` PRELIMINARY…FINAL); `playoffWeeks` lista as rodadas planejadas pelas regras.
  */
 export interface SeasonCalendar {
   seasonId: UUID;

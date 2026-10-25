@@ -45763,6 +45763,14 @@
      ]
     },
     {
+     "id": "PRELIMINARY",
+     "name": "PRELIMINARY",
+     "desc": [
+      "só em chaves de 5 rodadas",
+      "ex.: 8 seeds e 1 folga (D-123)"
+     ]
+    },
+    {
      "id": "WILD_CARD",
      "name": "WILD_CARD",
      "desc": [
@@ -45811,6 +45819,16 @@
      "PROJECAO",
      "WILD_CARD",
      "fim da semana 18"
+    ],
+    [
+     "PROJECAO",
+     "PRELIMINARY",
+     "fim da semana 18 (chave de 5 rodadas)"
+    ],
+    [
+     "PRELIMINARY",
+     "WILD_CARD",
+     "vencedores + folgas"
     ],
     [
      "WILD_CARD",

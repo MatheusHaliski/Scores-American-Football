@@ -1,6 +1,6 @@
 package br.com.velion.scoresaf.application.audit;
 
-/** Ações auditadas (RNF7). Plataforma comum (bloco 3): conta, sessão, consentimento, dados do titular e configurações. */
+/** Ações auditadas (RNF7). Plataforma comum (bloco 3): conta, sessão, consentimento, dados do titular e configurações; bloco 4: editor de mundos. */
 public final class AuditActions {
   private AuditActions() {}
   public static final String REGISTER = "REGISTER";
@@ -33,5 +33,15 @@ public final class AuditActions {
   public static final String DATA_EXPORT_DOWNLOADED = "DATA_EXPORT_DOWNLOADED";
   public static final String ACCOUNT_DELETION_REQUESTED = "ACCOUNT_DELETION_REQUESTED";
   public static final String ACCOUNT_DELETION_CANCELLED = "ACCOUNT_DELETION_CANCELLED";
-  // As ações do jogo (partida, mercado, carreira, loja, Meu jogador) entram com os blocos que as usam (docs/01 §5).
+  // RF5 — editor de mundos (bloco 4). O recurso (World, League, Club, Stadium, Player) vai no campo resource.
+  public static final String WORLD_CLONED = "WORLD_CLONED";
+  public static final String WORLD_UPDATED = "WORLD_UPDATED";
+  public static final String WORLD_DELETED = "WORLD_DELETED";
+  public static final String CATALOG_CREATED = "CATALOG_CREATED";
+  public static final String CATALOG_UPDATED = "CATALOG_UPDATED";
+  public static final String CATALOG_DELETED = "CATALOG_DELETED";
+  public static final String LEAGUE_STRUCTURE_UPDATED = "LEAGUE_STRUCTURE_UPDATED";
+  /** ADMIN leu o mundo de outro usuário (suporte, D-21). */
+  public static final String ADMIN_WORLD_READ = "ADMIN_WORLD_READ";
+  // As demais ações do jogo (partida, mercado, carreira, loja, Meu jogador) entram com os blocos que as usam (docs/01 §5).
 }

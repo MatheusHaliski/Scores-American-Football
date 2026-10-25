@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.fail;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
+import br.com.velion.scoresaf.application.seed.DefaultWorldSeeder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
@@ -25,7 +26,8 @@ import tools.jackson.databind.node.ObjectNode;
 /**
  * Amostras douradas das respostas que o front lê, gravadas pela própria API (mesmo mapper, mesma serialização): o meta, o
  * corpo de erro e, desde o bloco 3, as respostas de conta (login, {@code GET /api/v1/me}, {@code GET /api/v1/me/settings} e o
- * corpo do 429 do limite). Os testes do front ({@code frontend/tests/api/*.test.mts}) leem estes arquivos, então os adaptadores
+ * corpo do 429 do limite). Bloco 4: a franquia e o jogador do editor de mundos ({@code GET /api/v1/clubs/{id}} e
+ * {@code GET /api/v1/players/{id}}) no mundo padrão, que é determinístico pela semente (os ids do catálogo são estáveis). Os testes do front ({@code frontend/tests/api/*.test.mts}) leem estes arquivos, então os adaptadores
  * de {@code src/lib/api} são conferidos contra o formato Java, não contra um JSON escrito à mão (D-5). Mudou o formato? Regenere
  * com {@code mvn -pl scores-af-bootstrap -am test -Dtest=ApiGoldenTest -Dsurefire.failIfNoSpecifiedTests=false -Dgolden.update=true}
  * e rode {@code npm run test:unit}.
@@ -52,6 +54,7 @@ class ApiGoldenTest {
 
   @Autowired MockMvc mvc;
   @Autowired JsonMapper json;
+  @Autowired DefaultWorldSeeder seeder;
 
   private void assertGolden(String file, MockHttpServletRequestBuilder request) throws Exception {
     assertGolden(file, mvc.perform(request).andReturn());
@@ -137,5 +140,32 @@ class ApiGoldenTest {
     MvcResult limited = mvc.perform(forgot).andReturn();
     assertThat(limited.getResponse().getStatus()).isEqualTo(429);
     assertGolden("problem-429.json", limited);
+  }
+
+  /** Franquia "PAV" do mundo padrão, pela lista da liga (mesmas rotas que o front do editor usa). */
+  private JsonNode defaultClub(String auth) throws Exception {
+    UUID world = seeder.seedIfMissing().getId();
+    JsonNode leagues = json.readTree(mvc.perform(get("/api/v1/worlds/" + world + "/leagues").header("Authorization", auth)).andReturn().getResponse().getContentAsString());
+    JsonNode clubs = json.readTree(mvc.perform(get("/api/v1/leagues/" + leagues.get(0).get("id").asString() + "/clubs").header("Authorization", auth))
+        .andReturn().getResponse().getContentAsString());
+    for (JsonNode c : clubs) if ("PAV".equals(c.get("shortName").asString())) return c;
+    throw new AssertionError("franquia PAV ausente do mundo padrão");
+  }
+
+  @Test
+  void franquia_do_editor_bate_com_a_amostra_dourada() throws Exception {
+    String auth = bearer();
+    assertGolden("world-editor-club.json", get("/api/v1/clubs/" + defaultClub(auth).get("id").asString()).header("Authorization", auth));
+  }
+
+  @Test
+  void jogador_do_editor_bate_com_a_amostra_dourada() throws Exception {
+    String auth = bearer();
+    String club = defaultClub(auth).get("id").asString();
+    JsonNode roster = json.readTree(mvc.perform(get("/api/v1/clubs/" + club + "/players").header("Authorization", auth)).andReturn().getResponse().getContentAsString());
+    String qb = null;
+    for (JsonNode p : roster) if ("QB".equals(p.get("position").asString())) { qb = p.get("id").asString(); break; }
+    assertThat(qb).as("QB titular da franquia").isNotNull();
+    assertGolden("world-editor-player.json", get("/api/v1/players/" + qb).header("Authorization", auth));
   }
 }

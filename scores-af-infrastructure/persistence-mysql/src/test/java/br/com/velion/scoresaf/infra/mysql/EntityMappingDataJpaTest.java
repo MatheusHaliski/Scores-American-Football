@@ -13,21 +13,40 @@ import br.com.velion.scoresaf.infra.mysql.repository.ConsentRecordJpaRepository;
 import br.com.velion.scoresaf.infra.mysql.repository.UserAccountJpaRepository;
 import br.com.velion.scoresaf.infra.mysql.repository.UserSessionJpaRepository;
 import br.com.velion.scoresaf.infra.mysql.repository.UserSettingsJpaRepository;
+import br.com.velion.scoresaf.application.seed.DefaultWorld;
+import br.com.velion.scoresaf.application.seed.DefaultWorldFactory;
+import br.com.velion.scoresaf.domain.catalog.AttributeKey;
+import br.com.velion.scoresaf.domain.catalog.Club;
+import br.com.velion.scoresaf.domain.catalog.Division;
+import br.com.velion.scoresaf.domain.catalog.League;
+import br.com.velion.scoresaf.domain.catalog.Player;
+import br.com.velion.scoresaf.domain.catalog.Uniform;
+import br.com.velion.scoresaf.domain.catalog.UniformSlot;
+import br.com.velion.scoresaf.domain.game.Ruleset;
+import br.com.velion.scoresaf.domain.shared.OvertimeFormat;
+import br.com.velion.scoresaf.domain.shared.RosterStatus;
+import br.com.velion.scoresaf.domain.shared.WorldKind;
 import java.time.Instant;
+import java.util.EnumSet;
+import java.util.List;
 import java.util.UUID;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 
 /**
  * Mapeamento JPA da plataforma sobre H2 (modo MySQL): cifra do e-mail com busca por hash, persist das entidades com UUID
  * atribuído pelo repositório base (D-9), família de sessão (D-25 do basquete) e as configurações do futebol americano (D-10).
- * Os testes das entidades do jogo (jogador, clube, carreira, partida) voltam com o domínio AF no bloco 4.
+ * Bloco 4: o catálogo do futebol americano (mundo, liga com regras embutidas, conferência, divisão, franquia, estádio, uniforme,
+ * capacete, jogador com 49 subatributos e contrato com salários por ano) — o mundo semente inteiro é gravado e relido.
  */
 @DataJpaTest
+@Import(CatalogGraph.class)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @ActiveProfiles("test")
 class EntityMappingDataJpaTest {
@@ -37,6 +56,7 @@ class EntityMappingDataJpaTest {
   @Autowired UserSessionJpaRepository sessions;
   @Autowired UserSettingsJpaRepository settings;
   @Autowired ConsentRecordJpaRepository consents;
+  @Autowired CatalogGraph catalog;
 
   @Test
   void deve_cifrar_email_e_buscar_por_hash_quando_persistir_user_account() {
@@ -114,6 +134,58 @@ class EntityMappingDataJpaTest {
     assertThat(consents.findFirstByUserIdAndPurposeOrderByRecordedAtDesc(u.getId(), ConsentPurpose.ANALYTICS)).get()
         .satisfies(r -> assertThat(r.isGranted()).isFalse());
     assertThat(consents.findByUserIdOrderByRecordedAtDesc(u.getId())).hasSize(2);
+  }
+
+  @Test
+  void mundo_semente_inteiro_grava_e_rele_com_regras_atributos_e_contrato() {
+    DefaultWorld w = new DefaultWorldFactory().build();
+    catalog.persist(w);
+    em.flush(); em.clear();
+
+    assertThat(catalog.worlds.findFirstByKindAndOwnerUserIsNullOrderByCreatedAtAsc(WorldKind.TEMPLATE)).get()
+        .satisfies(x -> assertThat(x.getSeed()).isEqualTo(DefaultWorldFactory.DEFAULT_SEED));
+    League league = catalog.leagues.findByWorldIdOrderByTierAscNameAsc(w.world().getId()).get(0);
+    assertThat(league.getRuleset()).isEqualTo(Ruleset.PRO);
+    assertThat(league.getRules().getRosterMax()).isEqualTo(53);
+    assertThat(league.getRules().getOvertimeFormat()).isEqualTo(OvertimeFormat.BOTH_POSSESS_THEN_SUDDEN_DEATH);
+    assertThat(league.getRules().getHashFromSidelineFeet()).isEqualTo(70.75);
+    List<Division> divs = catalog.divisions.findByConferenceLeagueIdOrderByConferenceSortOrderAscSortOrderAsc(league.getId());
+    assertThat(divs).hasSize(8);
+    assertThat(catalog.conferences.findByLeagueIdOrderBySortOrderAsc(league.getId())).hasSize(2);
+    assertThat(catalog.clubs.countByLeagueId(league.getId())).isEqualTo(32);
+    assertThat(catalog.clubs.countByDivisionId(divs.get(0).getId())).isEqualTo(4);
+
+    Player original = w.players().get(7);
+    Player loaded = catalog.players.findById(original.getId()).orElseThrow();
+    assertThat(loaded.getAttributes().asMap()).isEqualTo(original.getAttributes().asMap());
+    assertThat(loaded.getAttributes().get(AttributeKey.RELEASE)).isEqualTo(original.getAttributes().getRelease());
+    assertThat(loaded.getContract().getBaseSalaryByYear()).isEqualTo(original.getContract().getBaseSalaryByYear());
+    assertThat(loaded.getContract().capHitByYear()).isEqualTo(original.getContract().capHitByYear());
+    assertThat(loaded.getPosition()).isEqualTo(original.getPosition());
+    assertThat(loaded.getOverall()).isEqualTo(original.getOverall());
+
+    Club club = catalog.clubs.findById(original.getClub().getId()).orElseThrow();
+    assertThat(club.getStadium().getCapacity()).isBetween(60_000, 80_000);
+    assertThat(catalog.sectors.findByStadiumId(club.getStadium().getId())).hasSize(5);
+    assertThat(catalog.uniforms.findByClubId(club.getId())).hasSize(3);
+    assertThat(catalog.helmets.findByClubId(club.getId())).isPresent();
+    assertThat(catalog.players.countByClubIdAndRosterStatusIn(club.getId(), EnumSet.of(RosterStatus.ACTIVE, RosterStatus.INACTIVE))).isEqualTo(53);
+    assertThat(catalog.players.countByClubIdAndRosterStatusIn(club.getId(), EnumSet.of(RosterStatus.PRACTICE_SQUAD))).isEqualTo(16);
+    assertThat(catalog.players.existsByClubIdAndJerseyNumberAndIdNot(club.getId(), loaded.getJerseyNumber(), loaded.getId())).isFalse();
+    assertThat(catalog.players.countByWorldId(w.world().getId())).isEqualTo(32 * 69);
+  }
+
+  @Test
+  void dois_uniformes_no_mesmo_slot_sao_recusados_pelo_banco() {
+    DefaultWorld w = new DefaultWorldFactory().build(7L);
+    catalog.persist(w);
+    em.flush();
+    Uniform dup = new Uniform();
+    dup.setClub(w.clubs().get(0));
+    dup.setSlot(UniformSlot.HOME);
+    org.assertj.core.api.Assertions.assertThatThrownBy(() -> { catalog.uniforms.save(dup); em.flush(); })
+        .isInstanceOfAny(DataIntegrityViolationException.class, org.hibernate.exception.ConstraintViolationException.class,
+            jakarta.persistence.PersistenceException.class);
   }
 
   // ---- helpers

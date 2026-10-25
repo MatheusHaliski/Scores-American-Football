@@ -56,6 +56,7 @@ class SchemaDdlGeneratorTest {
     }
     File f = out.toFile();
     assertThat(f).exists();
-    assertThat(Files.readString(out)).contains("create table user_account").contains("create table user_session");
+    assertThat(Files.readString(out)).contains("create table user_account").contains("create table user_session")
+        .contains("create table player").contains("create table league").contains("create table division");
   }
 }

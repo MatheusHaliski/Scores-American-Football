@@ -21,6 +21,13 @@ LGPD (privacidade, consentimentos, exportação, exclusão com prazo, troca de e
 `/api/v1/auth/**` e `/api/v1/me/**`. O banco é MySQL 8 com Flyway (`V1__plataforma.sql`) no perfil `mysql`; em produção,
 `SPRING_PROFILES_ACTIVE=mysql,prod`, e o `ProductionConfigGuard` não deixa subir sem os segredos.
 
+Domínio do futebol americano (bloco 4): regras da liga em `LeagueRules` (PRO e COLLEGE), 20 posições, 49 subatributos, overall
+por posição com pesos versionados ("OVR v1", `OverallWeights`), macros do card por família e níveis Bronze → Elite. Na subida, o
+mundo padrão fictício (1 liga, 32 franquias em 2 conferências × 4 divisões, 53 + 16 jogadores por franquia) é gravado se ainda não
+existir — determinístico pela semente; desligue com `SCORES_SEED_ENABLED=false`. O editor de mundos (RF5) fica em
+`/api/v1/worlds/**`, `/api/v1/leagues/**`, `/api/v1/clubs/**` e `/api/v1/players/**`; o mundo padrão é só leitura, o usuário edita uma
+cópia. O banco ganha `V2__dominio_af.sql`.
+
 Frontend (Node 22):
 
 ```bash
@@ -34,4 +41,6 @@ npm run lint && npx tsc --noEmit && npm run i18n:check && npm run test:unit
 As variáveis de ambiente ficam listadas só pelo nome em [`.env.example`](.env.example).
 
 As amostras douradas em `docs/validation/golden/` são gravadas pelo backend (`ApiGoldenTest`) e lidas pelos testes do front.
-Se o formato de uma resposta mudar, regenere com `-Dgolden.update=true` (o comando está no Javadoc do teste).
+Se o formato de uma resposta mudar, regenere com `-Dgolden.update=true` (o comando está no Javadoc do teste). O vetor de ouro do
+overall (`overall-vectors.json`) é gravado por `OverallGoldenVectorsTest` (scores-af-domain) e prende `frontend/src/lib/ratings` ao
+cálculo Java: `mvn -pl scores-af-domain test -Dtest=OverallGoldenVectorsTest -Dgolden.update=true`, depois `npm run test:unit`.

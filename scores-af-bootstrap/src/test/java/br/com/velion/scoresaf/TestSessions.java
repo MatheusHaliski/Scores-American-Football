@@ -14,7 +14,14 @@ import java.util.UUID;
 final class TestSessions {
   private TestSessions() {}
 
+  /** Conta criada e o cabeçalho Authorization dela. */
+  record Session(UserAccount user, String bearer) {}
+
   static String bearer(UserAccountRepository users, UserSessionRepository sessions, TokenService tokens, UserRole role) {
+    return open(users, sessions, tokens, role).bearer();
+  }
+
+  static Session open(UserAccountRepository users, UserSessionRepository sessions, TokenService tokens, UserRole role) {
     UserAccount u = new UserAccount();
     u.setEmail("t-" + UUID.randomUUID() + "@scoresaf.test");
     u.setDisplayName("Teste");
@@ -27,6 +34,6 @@ final class TestSessions {
     s.setExpiresAt(Instant.now().plusSeconds(3600));
     s.setFamilyId(s.getId());
     sessions.save(s);
-    return "Bearer " + tokens.issueAccessToken(u.getId(), u.getDisplayName(), List.of(role.name()), s.family()).value();
+    return new Session(u, "Bearer " + tokens.issueAccessToken(u.getId(), u.getDisplayName(), List.of(role.name()), s.family()).value());
   }
 }

@@ -110,6 +110,9 @@ scores:
     # eliminação definitiva das contas com prazo vencido e limpeza das exportações expiradas (RF46)
     deletion-cron: "0 15 * * * *"
     export-purge-cron: "0 5 * * * *"
+  seed:
+    # mundo padrão fictício gravado na subida se ainda não existir (D-23); idempotente
+    enabled: ${SCORES_SEED_ENABLED:true}
   persistence:
     # adaptadores que ainda não existem (Redis, S3) entram nos blocos que os usam (D-8); até lá, memória e filesystem
     cache: ${SCORES_PERSISTENCE_CACHE:memory}           # memory (redis quando o cache-redis entrar)
@@ -157,6 +160,8 @@ spring:
 scores:
   auth:
     refresh-cookie-secure: false   # http://localhost: o prefixo __Host- exige HTTPS
+  seed:
+    enabled: false                 # cada teste semeia quando precisa (DefaultWorldSeeder)
   persistence:
     media-local-dir: ${java.io.tmpdir}/scoresaf-test-media-${random.uuid}
 logging:

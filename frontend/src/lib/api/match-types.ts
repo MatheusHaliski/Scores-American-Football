@@ -486,7 +486,8 @@ export interface Leader {
 
 /** Registro do log de decisões: chamadas do manager, automáticas, `TIMEOUT` e `PLAN_CHANGE` (ajuste do intervalo). */
 export interface DecisionRecord {
-  decisionId: string;
+  /** id da chamada de jogada; null em `TIMEOUT` e `PLAN_CHANGE` (o backend omite o campo) */
+  decisionId: string | null;
   situation: string | null;
   clubId: UUID | null;
   optionCode: string;

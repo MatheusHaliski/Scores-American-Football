@@ -67,6 +67,18 @@ public class MatchSupport {
     return s;
   }
 
+  /**
+   * Sessão do dono travada para escrita (avançar, chamar a jogada, ajustar): a trava é a primeira leitura da transação, então uma
+   * segunda escrita na mesma partida espera a primeira confirmar e já lê a sessão gravada (versão nova ou partida encerrada ⇒ 409),
+   * em vez de simular de novo e bater na chave única do resultado (D-91). Inexistente ou de outro usuário: 404, como em
+   * {@link #ownedSession}.
+   */
+  public MatchSession lockedSession(UUID matchId, UUID userId) {
+    MatchSession s = sessions.findByIdForUpdate(matchId).orElseThrow(() -> new NotFoundException("Partida", matchId));
+    requireOwner(s.getCareer(), userId, "MatchSession", matchId);
+    return s;
+  }
+
   /** Carreira do dono para uma rota de partida: de outro usuário ⇒ 404 + {@code ACCESS_DENIED}. */
   public void requireOwner(CareerSave save, UUID userId, String resource, UUID id) {
     if (save == null || save.getUser() == null || !save.getUser().getId().equals(userId)) {

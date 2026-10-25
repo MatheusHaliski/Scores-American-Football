@@ -3,7 +3,7 @@ import { create } from "zustand";
 import { api } from "@/lib/api";
 import { describeError } from "@/lib/api/errors";
 import type { AdvanceMode, MatchAdjustment, MatchState, PlanTendencies, PlaybookWeights, PlayEvent, UUID } from "@/lib/api/types";
-import { lastSeqOf, mergeEvents, reactionTo, type MatchNotice } from "@/lib/match/live";
+import { isFresh, lastSeqOf, mergeEvents, reactionTo, type MatchNotice } from "@/lib/match/live";
 
 /** Páginas do play-by-play ao carregar a partida (o servidor aceita até 1000 por vez). */
 const PAGE = 1000;
@@ -35,9 +35,13 @@ interface MatchStore {
  * esperados (decisão já fechada pela IA, versão velha, decisão aberta) recarregam o estado com um aviso em vez de um erro.
  */
 export const useMatch = create<MatchStore>()((set, get) => {
-  /** Busca os lances depois do último que a tela tem (sem duplicar) e junta os de `live.lastEvents`. */
+  /**
+   * Busca os lances depois do último que a tela já tem e só no fim junta os de `live.lastEvents` (sem duplicar). O cursor sai dos
+   * lances conhecidos: calculado depois de juntar os 20 últimos, ele começava no fim e `/events` voltava vazio, deixando um buraco
+   * entre o que a tela tinha e esses 20 (D-90). Pagina até o `lastSeq` da partida.
+   */
   async function syncEvents(state: MatchState): Promise<void> {
-    let events = mergeEvents(get().events, state.live.lastEvents);
+    let events = get().matchId === state.matchId ? get().events : [];
     let after = lastSeqOf(events);
     for (let i = 0; i < 20; i++) {
       const page = await api.matches.events(state.matchId, after, PAGE);
@@ -45,12 +49,20 @@ export const useMatch = create<MatchStore>()((set, get) => {
       if (!page.events.length || lastSeqOf(events) >= page.lastSeq) break;
       after = lastSeqOf(events);
     }
-    if (get().matchId === state.matchId) set({ events });
+    events = mergeEvents(events, state.live.lastEvents);
+    // outra busca pode ter trazido lances enquanto esta esperava: junta com o que a tela tem agora
+    if (get().matchId === state.matchId) set({ events: mergeEvents(get().events, events) });
   }
 
-  async function apply(next: MatchState): Promise<void> {
+  /**
+   * Aplica um estado vindo do servidor, a não ser que seja velho: de outra partida (a tela já trocou) ou de versão menor que a da
+   * tela (ex.: o refresh do fim do prazo que volta depois do avanço, D-93). Devolve se aplicou.
+   */
+  async function apply(next: MatchState): Promise<boolean> {
+    if (!isFresh(get().matchId, get().state, next)) return false;
     set({ state: next });
     await syncEvents(next);
+    return true;
   }
 
   async function fail(e: unknown): Promise<void> {

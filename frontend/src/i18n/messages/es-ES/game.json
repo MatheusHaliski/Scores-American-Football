@@ -63,6 +63,7 @@
   "prepare.warnings": "{n, plural, one {# aviso} other {# avisos}}",
   "prepare.play": "Jugar",
   "prepare.continue": "Continuar partido",
+  "prepare.byeClosed": "La semana {week} era tu semana de descanso y quedó cerrada: se simularon sus otros partidos.",
   "prepare.noNext.title": "Temporada regular terminada",
   "prepare.noNext.body": "No hay próximo partido esta temporada. Los playoffs llegan en un próximo bloque.",
   "prepare.you": "tú",

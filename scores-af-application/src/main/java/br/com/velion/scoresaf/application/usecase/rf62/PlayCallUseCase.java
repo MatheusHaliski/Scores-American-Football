@@ -47,7 +47,7 @@ public class PlayCallUseCase {
 
   @Transactional(noRollbackFor = DecisionClosedException.class)
   public MatchDtos.MatchStateDto execute(UUID matchId, UUID userId, String decisionId, Command c) {
-    MatchSession session = matches.ownedSession(matchId, userId);
+    MatchSession session = matches.lockedSession(matchId, userId);
     support.writable(session.getCareer().getId(), userId);
     MatchSnapshot snap = MatchSupport.read(session);
     PendingDecision open = snap.pendingDecision();

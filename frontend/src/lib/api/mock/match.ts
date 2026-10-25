@@ -1233,12 +1233,12 @@ export function mockMatches(user: UserAccount): MockMatches {
             checkBook(a.playbook);
             user.book = playbookWeights(playbookDraftFrom(a.playbook), META);
           }
-          s.decisions.push({ decisionId: `adj-${s.decisions.length + 1}`, situation: null, clubId: user.clubId, optionCode: "PLAN_CHANGE", auto: false, atSeq: s.events.length });
+          s.decisions.push({ decisionId: null, situation: null, clubId: user.clubId, optionCode: "PLAN_CHANGE", auto: false, atSeq: s.events.length });
         } else if (a.type === "TIMEOUT") {
           if (s.status !== "LIVE" || user.timeouts <= 0 || !!s.kickoffBy || !!s.patBy) throw ApiError.of(422, "TIMEOUT_NOT_ALLOWED");
           user.timeouts -= 1;
           push(s, { type: "TIMEOUT", result: "TIMEOUT", textKey: "match:event.timeout", params: { team: user.name, remaining: String(user.timeouts) }, clockStopped: true, callSource: "USER" });
-          s.decisions.push({ decisionId: `to-${s.decisions.length + 1}`, situation: null, clubId: user.clubId, optionCode: "TIMEOUT", auto: false, atSeq: s.events.length });
+          s.decisions.push({ decisionId: null, situation: null, clubId: user.clubId, optionCode: "TIMEOUT", auto: false, atSeq: s.events.length });
         } else {
           throw ApiError.badRequest("INVALID_ADJUSTMENT", { 0: String((a as { type?: string }).type) });
         }

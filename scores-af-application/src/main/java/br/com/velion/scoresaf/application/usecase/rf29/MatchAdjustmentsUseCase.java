@@ -45,7 +45,7 @@ public class MatchAdjustmentsUseCase {
 
   @Transactional
   public MatchDtos.MatchStateDto execute(UUID matchId, UUID userId, Command c) {
-    MatchSession session = matches.ownedSession(matchId, userId);
+    MatchSession session = matches.lockedSession(matchId, userId);
     support.writable(session.getCareer().getId(), userId);
     if (session.isFinished()) throw new ConflictException("MATCH_FINISHED", "A partida já terminou");
     MatchSupport.checkVersion(session, c.version(), true);

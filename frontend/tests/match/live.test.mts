@@ -90,6 +90,8 @@ test("erro → reação: chamada atrasada avisa que a IA chamou e recarrega; ver
   const err = (status: number, code: string) => new ApiError(problemFromBody(status, { code, message: `servidor: ${code}` }));
   assert.deepEqual(reactionTo(err(409, "DECISION_CLOSED")), { reload: true, notice: "aiCalled", showError: false });
   assert.deepEqual(reactionTo(err(409, "MATCH_VERSION_CONFLICT")), { reload: true, notice: "stale", showError: false });
+  // escrita concorrente que o servidor recusou (trava ou chave única, D-91): a tela relê o estado, como na versão velha
+  assert.deepEqual(reactionTo(err(409, "CONCURRENT_UPDATE")), { reload: true, notice: "stale", showError: false });
   assert.deepEqual(reactionTo(err(409, "DECISION_PENDING")), { reload: true, notice: "decisionOpen", showError: false });
   assert.deepEqual(reactionTo(err(409, "MATCH_FINISHED")), { reload: true, notice: "finished", showError: false });
   assert.deepEqual(reactionTo(err(404, "DECISION_NOT_FOUND")), { reload: true, notice: "stale", showError: false });

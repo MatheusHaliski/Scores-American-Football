@@ -5,6 +5,7 @@ import br.com.velion.scoresaf.application.audit.AuditService;
 import br.com.velion.scoresaf.application.common.exception.BusinessRuleException;
 import br.com.velion.scoresaf.application.common.exception.ConflictException;
 import br.com.velion.scoresaf.application.dto.MatchDtos;
+import br.com.velion.scoresaf.application.port.out.persistence.CareerSaveRepository;
 import br.com.velion.scoresaf.application.port.out.persistence.ClubRepository;
 import br.com.velion.scoresaf.application.port.out.persistence.FixtureRepository;
 import br.com.velion.scoresaf.application.port.out.persistence.MatchSessionRepository;
@@ -39,24 +40,28 @@ import org.springframework.transaction.annotation.Transactional;
  * (422 DEPTH_CHART_INVALID com {@code errors[]}), cria a partida ao vivo do usuário (MatchSession com o snapshot inicial do motor,
  * semente do jogo, nível de chamada de jogada da conta congelado) e devolve o painel da semana. Os outros jogos da semana são
  * simulados quando a semana fecha (ao fim da partida do usuário); semana de folga fecha na hora. Idempotente: partida já criada
- * não é recriada. Fim da temporada regular: 409 NO_NEXT_GAME.
+ * não é recriada. Fim da temporada regular: 409 NO_NEXT_GAME. Dois pedidos juntos da mesma carreira rodam um depois do outro (a
+ * carreira é travada antes de tudo, D-91): o segundo encontra a partida criada pelo primeiro em vez de criar outra.
  */
 @Service
 public class PlayWeekUseCase {
   private final CareerSupport support; private final MatchSupport matches; private final FixtureRepository fixtures; private final MatchSessionRepository sessions;
   private final PlayerRepository players; private final ClubRepository clubs; private final UserSettingsRepository settings; private final DepthChartService depthCharts;
   private final MatchSetupAssembler assembler; private final MatchService matchService; private final WeekProcessor weekProcessor; private final AuditService audit;
+  private final CareerSaveRepository saves;
 
   public PlayWeekUseCase(CareerSupport support, MatchSupport matches, FixtureRepository fixtures, MatchSessionRepository sessions, PlayerRepository players,
                          ClubRepository clubs, UserSettingsRepository settings, DepthChartService depthCharts, MatchSetupAssembler assembler,
-                         MatchService matchService, WeekProcessor weekProcessor, AuditService audit) {
+                         MatchService matchService, WeekProcessor weekProcessor, AuditService audit, CareerSaveRepository saves) {
     this.support = support; this.matches = matches; this.fixtures = fixtures; this.sessions = sessions; this.players = players; this.clubs = clubs;
     this.settings = settings; this.depthCharts = depthCharts; this.assembler = assembler; this.matchService = matchService; this.weekProcessor = weekProcessor;
-    this.audit = audit;
+    this.audit = audit; this.saves = saves;
   }
 
   @Transactional
   public MatchDtos.WeekBoardDto execute(UUID careerId, UUID userId) {
+    // primeira leitura da transação: trava a carreira (o dono é conferido logo abaixo; outro usuário ou id inexistente desfaz tudo)
+    saves.findByIdForUpdate(careerId);
     CareerSave save = support.writable(careerId, userId);
     Club club = support.userClub(save);
     Season season = save.getSeason();

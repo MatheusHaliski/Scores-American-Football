@@ -132,7 +132,7 @@ export const MATCH_SHAPES = {
   ),
   reportSide: shape(["club", "score", "quarters", "stats", "players"]),
   leader: shape(["category", "clubId", "playerId", "name", "position", "value"]),
-  decisionRecord: shape(["decisionId", "situation", "clubId", "optionCode", "auto", "atSeq"], ["situation", "clubId"]),
+  decisionRecord: shape(["decisionId", "situation", "clubId", "optionCode", "auto", "atSeq"], ["decisionId", "situation", "clubId"]),
   planIssue: shape(["code", "field", "value"], ["value"]),
 } as const satisfies Record<string, Shape>;
 
@@ -513,7 +513,7 @@ function leaderFromDto(r: Raw): Leader {
 }
 
 export function decisionRecordFromDto(r: Raw): DecisionRecord {
-  return { decisionId: str(r.decisionId), situation: nstr(r.situation), clubId: nstr(r.clubId), optionCode: str(r.optionCode), auto: bool(r.auto), atSeq: num(r.atSeq) };
+  return { decisionId: nstr(r.decisionId), situation: nstr(r.situation), clubId: nstr(r.clubId), optionCode: str(r.optionCode), auto: bool(r.auto), atSeq: num(r.atSeq) };
 }
 
 export function matchReportFromDto(raw: unknown): MatchReport {

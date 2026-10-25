@@ -109,6 +109,9 @@ function MatchScreen() {
   const [prepare, setPrepare] = useState(false);
   const [highlights, setHighlights] = useState(false);
   const fromUrl = search.get("m");
+  // semanas de folga que o "Jogar" da preparação encerrou antes de abrir esta partida (D-92)
+  const byeFromUrl = search.get("bye");
+  const [byeSeen, setByeSeen] = useState(false);
 
   // acha a partida: ?m= → partida em andamento na central → painel da semana atual
   useEffect(() => {
@@ -156,15 +159,17 @@ function MatchScreen() {
   const open = !!state && state.status === "AWAITING_DECISION" && !!state.live.decision;
   const now = useNow(open);
   const left = state ? secondsLeft(state.decisionDeadlineAt, now) : null;
-  // venceu o prazo: relê o estado (o servidor passa a aceitar o avanço e a IA chama)
+  // venceu o prazo: relê o estado (o servidor passa a aceitar o avanço e a IA chama). Com uma escrita em andamento, espera: a
+  // resposta dela já traz o estado novo, e o refresh sairia com o velho (D-93; o store também ignora resposta de versão menor)
   const expiredFor = useRef<string | null>(null);
+  const busy = m.busy;
   useEffect(() => {
-    if (!state || !open || left !== 0) return;
+    if (!state || !open || left !== 0 || busy) return;
     const id = state.live.decision!.id;
     if (expiredFor.current === id) return;
     expiredFor.current = id;
     void useMatch.getState().refresh();
-  }, [state, open, left]);
+  }, [state, open, left, busy]);
 
   // ao terminar, a central muda (campanha, semana): atualiza o cache do topo
   useEffect(() => {
@@ -230,6 +235,14 @@ function MatchScreen() {
         </InlineAlert>
       )}
       {m.error && <InlineAlert tone="bad">{m.error}</InlineAlert>}
+      {byeFromUrl && !byeSeen && (
+        <InlineAlert tone="info">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <span>{tg("prepare.byeClosed", { week: byeFromUrl })}</span>
+            <button type="button" className="text-[0.8rem] underline" onClick={() => setByeSeen(true)}>{t("live.notice.dismiss")}</button>
+          </div>
+        </InlineAlert>
+      )}
 
       <Scoreboard state={state} clubs={clubs} />
 

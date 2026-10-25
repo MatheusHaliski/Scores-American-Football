@@ -76,13 +76,41 @@ public class ApiExceptionHandler {
    * RNF1 CA3 — duas escritas simultâneas no mesmo agregado (ex.: a mesma carreira em duas abas): o JPA recusa a segunda
    * pela versão otimista. Nada dela foi gravado; o cliente relê o estado e tenta de novo. Antes caía no 500 genérico.
    */
-  @ExceptionHandler({org.springframework.dao.OptimisticLockingFailureException.class, jakarta.persistence.OptimisticLockException.class})
+  @ExceptionHandler({org.springframework.dao.OptimisticLockingFailureException.class, jakarta.persistence.OptimisticLockException.class,
+      org.springframework.dao.PessimisticLockingFailureException.class, jakarta.persistence.PessimisticLockException.class,
+      jakarta.persistence.LockTimeoutException.class})
   public ProblemDetail concurrentUpdate(Exception e) {
     log.info("Escrita concorrente recusada [{}]: {}", MDC.get("correlationId"), e.getClass().getSimpleName());
     return base(HttpStatus.CONFLICT, "CONCURRENT_UPDATE", text("error.CONCURRENT_UPDATE", null, "Estes dados foram alterados em outra sessão. Atualize e tente de novo."));
   }
 
+  /**
+   * Chave única repetida (D-91): a corrida que a trava da escrita não cobriu (ex.: duas transações gravando o resultado do mesmo jogo)
+   * — a segunda perdeu, nada dela ficou gravado, e o cliente relê o estado, como no {@code CONCURRENT_UPDATE} da versão otimista.
+   * As outras violações de integridade (chave estrangeira, não nulo) são defeito, não corrida: seguem para o 500.
+   */
+  @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
+  public ProblemDetail integrity(org.springframework.dao.DataIntegrityViolationException e) {
+    return duplicateKey(e) ? concurrentUpdate(e) : unexpected(e);
+  }
 
+  /** SQLState 23505 (padrão: H2, PostgreSQL) ou erro 1062/1586 do MySQL ({@code ER_DUP_ENTRY}) em qualquer causa, inclusive no lote. */
+  static boolean duplicateKey(Throwable e) {
+    java.util.Set<Throwable> seen = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+    java.util.Deque<Throwable> todo = new java.util.ArrayDeque<>();
+    todo.add(e);
+    while (!todo.isEmpty()) {
+      Throwable t = todo.poll();
+      if (!seen.add(t)) continue;
+      if (t instanceof org.springframework.dao.DuplicateKeyException) return true;
+      if (t instanceof java.sql.SQLException s) {
+        if ("23505".equals(s.getSQLState()) || s.getErrorCode() == 1062 || s.getErrorCode() == 1586) return true;
+        if (s.getNextException() != null) todo.add(s.getNextException());
+      }
+      if (t.getCause() != null) todo.add(t.getCause());
+    }
+    return false;
+  }
 
   /** Valor fora do domínio conferido no caso de uso: 400 com o código próprio (ex.: INVALID_QUARTER_DURATION). */
   @ExceptionHandler(InvalidInputException.class)

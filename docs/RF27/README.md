@@ -44,12 +44,12 @@ Fonte: [`RF27-stm.puml`](RF27-stm.puml)
 
 | Estado | Método | Rota | Caso de uso | Autorização | Descrição |
 |---|---|---|---|---|---|
-| ⛔ alvo | `POST` | `/api/v1/careers/{id}/weeks/current/play` | `PlayWeekUseCase` | JWT · dono do save | Inicia a semana: MatchSession do usuário e job das partidas da IA por horário (THU_NIGHT, SUN_EARLY, SUN_LATE, SUN_NIGHT, MON_NIGHT) |
-| ⛔ alvo | `GET` | `/api/v1/careers/{id}/weeks/{n}` | `GetWeekBoardUseCase` | JWT · dono do save | Placares da semana por horário com quarto, relógio, posse, descida e distância · byes · minha partida em destaque |
-| ⛔ alvo | `GET` | `/api/v1/matches/{mid}` | `GetMatchStateUseCase` | JWT · dono do save | Snapshot vivo: placar por quarto, relógio de jogo e de jogada, posse, descida, distância, ballOnAbsYd, drive atual, tempos técnicos, decisão pendente |
+| ✅ | `POST` | `/api/v1/careers/{id}/weeks/current/play` | `PlayWeekUseCase` | JWT · dono do save | Inicia a semana: MatchSession do usuário e job das partidas da IA por horário (THU_NIGHT, SUN_EARLY, SUN_LATE, SUN_NIGHT, MON_NIGHT) |
+| ✅ | `GET` | `/api/v1/careers/{id}/weeks/{n}` | `GetWeekBoardUseCase` | JWT · dono do save | Placares da semana por horário com quarto, relógio, posse, descida e distância · byes · minha partida em destaque |
+| ✅ | `GET` | `/api/v1/matches/{mid}` | `GetMatchStateUseCase` | JWT · dono do save | Snapshot vivo: placar por quarto, relógio de jogo e de jogada, posse, descida, distância, ballOnAbsYd, drive atual, tempos técnicos, decisão pendente |
 | ⛔ alvo | `GET` | `/api/v1/matches/{mid}/plays` | `GetPlayByPlayUseCase` | JWT · dono do save | Play-by-play incremental (?after=seq) do Cassandra |
 | ⛔ alvo | `GET` | `/api/v1/matches/{mid}/drives` | `GetDrivesUseCase` | JWT · dono do save | Drives: jogadas, jardas, tempo de posse, resultado (TD, FG, PUNT, TURNOVER, DOWNS) |
-| ⛔ alvo | `POST` | `/api/v1/matches/{mid}/advance` | `AdvanceMatchUseCase` | JWT · dono do save | Avança PLAY (assistir), DRIVE, QUARTER ou FULL (simular), no ritmo de simQuarterMinutes |
+| ✅ | `POST` | `/api/v1/matches/{mid}/advance` | `AdvanceMatchUseCase` | JWT · dono do save | Avança PLAY (assistir), DRIVE, QUARTER ou FULL (simular), no ritmo de simQuarterMinutes |
 
 ## Pontos de decisão
 

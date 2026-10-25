@@ -41,5 +41,22 @@ public record MatchSetup(
 
   public MatchSetup withSeed(long s) { return new MatchSetup(fixtureId, home, away, rules, weather, s, playCallingLevel, userClubId, neutralSite, knockout); }
 
+  /**
+   * Troca o plano de jogo (com o playbook) de uma das franquias (RF29, ajustes no intervalo): o motor relê o plano do setup a cada
+   * avanço, então vale a partir do próximo snap.
+   */
+  public MatchSetup withTeamPlan(UUID clubId, GamePlan plan) {
+    if (home.clubId().equals(clubId)) return new MatchSetup(fixtureId, home.withGamePlan(plan), away, rules, weather, seed, playCallingLevel, userClubId, neutralSite, knockout);
+    if (away.clubId().equals(clubId)) return new MatchSetup(fixtureId, home, away.withGamePlan(plan), rules, weather, seed, playCallingLevel, userClubId, neutralSite, knockout);
+    throw new IllegalArgumentException("franquia " + clubId + " não está nesta partida");
+  }
+
+  /** Plano de jogo vigente da franquia nesta partida. */
+  public GamePlan planOf(UUID clubId) {
+    if (home.clubId().equals(clubId)) return home.gamePlan();
+    if (away.clubId().equals(clubId)) return away.gamePlan();
+    throw new IllegalArgumentException("franquia " + clubId + " não está nesta partida");
+  }
+
   public MatchSetup asKnockout() { return new MatchSetup(fixtureId, home, away, rules, weather, seed, playCallingLevel, userClubId, neutralSite, true); }
 }

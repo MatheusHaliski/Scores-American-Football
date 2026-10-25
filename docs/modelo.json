@@ -4248,7 +4248,7 @@
     "usecase": "SaveGamePlanUseCase",
     "auth": "JWT · dono do save",
     "desc": "runPassBalance, fourthDownAggression, tempo, foco ofensivo e defensivo, blitz, defesa base 4-3/3-4, jogadores-chave, tendências por situação",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "GET",
@@ -5054,7 +5054,7 @@
     "usecase": "SaveGamePlanUseCase",
     "auth": "JWT · dono do save",
     "desc": "Salva o plano de jogo (RF6)",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "GET",
@@ -5070,7 +5070,7 @@
     "usecase": "PlayWeekUseCase",
     "auth": "JWT · dono do save",
     "desc": "Jogar partida: cria MatchSession (seed derivada) e dispara a simulação dos outros jogos da semana",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "GET",
@@ -5078,7 +5078,7 @@
     "usecase": "GetMatchStateUseCase",
     "auth": "JWT · dono do save",
     "desc": "Estado vivo (quarto, relógio, descida e distância, posse, placar) para retomar a partida",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "GET",
@@ -5086,7 +5086,7 @@
     "usecase": "GetWeekBoardUseCase",
     "auth": "JWT · dono do save",
     "desc": "Painel da semana com todos os placares (RF16/RF27)",
-    "implemented": false
+    "implemented": true
    }
   ],
   "entities": [
@@ -11623,7 +11623,7 @@
     "usecase": "GetWeekPanelUseCase",
     "auth": "JWT · dono do save",
     "desc": "Placares da semana n (passada: finais por quarto e prorrogação · atual: ao vivo · futura: agendados e horários), times de folga e destaques (líderes em passe, corrida, recepção e defesa, jogador da semana)",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "GET",
@@ -15099,7 +15099,7 @@
     "usecase": "GetWeekBoardUseCase",
     "auth": "JWT · dono do save",
     "desc": "Detalhe da semana ao clicar (placares, destaques ou prévia)",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "GET",
@@ -15107,7 +15107,7 @@
     "usecase": "GetNextMatchPreparationUseCase",
     "auth": "JWT · dono do save",
     "desc": "Atalho para preparar o time a partir do próximo jogo (RF6/RF7)",
-    "implemented": false
+    "implemented": true
    }
   ],
   "entities": [
@@ -19426,7 +19426,7 @@
     "usecase": "PlayWeekUseCase",
     "auth": "JWT · dono do save",
     "desc": "Inicia a semana: MatchSession do usuário e job das partidas da IA por horário (THU_NIGHT, SUN_EARLY, SUN_LATE, SUN_NIGHT, MON_NIGHT)",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "GET",
@@ -19434,7 +19434,7 @@
     "usecase": "GetWeekBoardUseCase",
     "auth": "JWT · dono do save",
     "desc": "Placares da semana por horário com quarto, relógio, posse, descida e distância · byes · minha partida em destaque",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "GET",
@@ -19442,7 +19442,7 @@
     "usecase": "GetMatchStateUseCase",
     "auth": "JWT · dono do save",
     "desc": "Snapshot vivo: placar por quarto, relógio de jogo e de jogada, posse, descida, distância, ballOnAbsYd, drive atual, tempos técnicos, decisão pendente",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "GET",
@@ -19466,7 +19466,7 @@
     "usecase": "AdvanceMatchUseCase",
     "auth": "JWT · dono do save",
     "desc": "Avança PLAY (assistir), DRIVE, QUARTER ou FULL (simular), no ritmo de simQuarterMinutes",
-    "implemented": false
+    "implemented": true
    }
   ],
   "entities": [
@@ -21025,7 +21025,7 @@
     "usecase": "GetMatchStateUseCase",
     "auth": "JWT · dono do save",
     "desc": "Snapshot em BREAK ou HALFTIME: placar, tempos técnicos, estatísticas do time, fadiga, lesões e depth chart em uso",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "GET",
@@ -21049,7 +21049,7 @@
     "usecase": "AdvanceMatchUseCase",
     "auth": "JWT · dono do save",
     "desc": "mode=QUARTER: retoma com os ajustes no próximo snap ou kickoff",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "GET",
@@ -21876,7 +21876,7 @@
     "usecase": "GetWeekBoardUseCase",
     "auth": "JWT · dono do save",
     "desc": "Placares da semana n (passada, atual ou futura com prévia)",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "GET",
@@ -22600,7 +22600,7 @@
     "usecase": "GetMatchReportUseCase",
     "auth": "JWT · dono do save",
     "desc": "attendance, revenue, ocupação e receita por setor, fatores (prestígio, campanha, rival de divisão, horário prime time, clima, importância, preço)",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "GET",
@@ -26751,7 +26751,7 @@
     "usecase": "PlayWeekUseCase",
     "auth": "JWT · dono do save",
     "desc": "Espectador: simula a semana inteira e publica WeekCompleted",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "GET",
@@ -29004,7 +29004,7 @@
     "usecase": "PlayWeekUseCase",
     "auth": "JWT · dono do save",
     "desc": "Ao fechar a semana publica WeekCompleted → MoraleWeekJob",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "POST",
@@ -29791,7 +29791,7 @@
     "usecase": "PlayWeekUseCase",
     "auth": "JWT · dono do save",
     "desc": "Inicia a semana: MatchSession do usuário (seed derivada) e jogos da IA em job",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "POST",
@@ -29799,7 +29799,7 @@
     "usecase": "AdvanceMatchUseCase",
     "auth": "JWT · dono do save",
     "desc": "Avança PLAY | DRIVE | QUARTER | TO_DECISION | FULL até o próximo momento decisivo ou intervalo",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "GET",
@@ -29807,7 +29807,7 @@
     "usecase": "GetMatchStateUseCase",
     "auth": "JWT · dono do save",
     "desc": "Estado vivo: quarto, relógio, play clock, posse, down, distance, ballOnAbsYd, tempos, placar, decisão aberta, versão",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "POST",
@@ -29815,7 +29815,7 @@
     "usecase": "SubmitPlayCallUseCase",
     "auth": "JWT · dono do save",
     "desc": "Chamada de jogada no momento decisivo: PlayDefinition escolhida (ou ir para a 4ª, FG, punt, 2 pontos) · expectedVersion",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "POST",
@@ -29847,7 +29847,7 @@
     "usecase": "GetMatchReportUseCase",
     "auth": "JWT · dono do save",
     "desc": "Box score por jogador e equipe (§3.6), fatores decisivos, líderes, confrontos-chave, público e renda",
-    "implemented": false
+    "implemented": true
    }
   ],
   "entities": [
@@ -31196,7 +31196,7 @@
     "usecase": "MatchQueryUseCases.state",
     "auth": "JWT · dono do save",
     "desc": "Estado vivo + snapshot tático: 11 por lado, depth chart em campo, fadiga, lesões, uniformes e capacetes fixados, versão",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "GET",
@@ -31212,7 +31212,7 @@
     "usecase": "AdvanceMatchUseCase.decisions",
     "auth": "JWT · dono do save",
     "desc": "Lote do intervalo: DEPTH_SWAP, GAME_PLAN, PLAYBOOK_EMPHASIS · tudo ou nada · recusa com código",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "POST",
@@ -31220,7 +31220,7 @@
     "usecase": "AdvanceMatchUseCase",
     "auth": "JWT · dono do save",
     "desc": "Confirma e inicia o próximo quarto (snapshotVersion confere)",
-    "implemented": false
+    "implemented": true
    }
   ],
   "entities": [
@@ -38972,7 +38972,7 @@
     "usecase": "ListMatchEventsUseCase",
     "auth": "JWT · dono do save",
     "desc": "Play-by-play paginado (quarto, drive, tipo, só faltas, só pontuação)",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "POST",
@@ -41526,7 +41526,7 @@
     "usecase": "ListMatchEventsUseCase",
     "auth": "JWT · dono do save",
     "desc": "Jogadas do drive escolhido (RF54)",
-    "implemented": false
+    "implemented": true
    }
   ],
   "entities": [
@@ -42520,7 +42520,7 @@
     "usecase": "UpdateGamePlanUseCase",
     "auth": "JWT · dono do save",
     "desc": "Grava tendências, 4ª descida, ritmo, foco, blitz, jogadores-chave",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "GET",
@@ -45931,7 +45931,7 @@
     "usecase": "AdvanceMatchUseCase",
     "auth": "JWT · dono do save",
     "desc": "MatchSession com @Version · play-by-play no Cassandra e estado no Redis só depois do commit",
-    "implemented": false
+    "implemented": true
    }
   ],
   "entities": [
@@ -46555,7 +46555,7 @@
     "usecase": "PlayWeekUseCase",
     "auth": "JWT · dono do save",
     "desc": "Cria a MatchSession com orçamento de tempo congelado no snapshot das configurações",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "POST",
@@ -46563,7 +46563,7 @@
     "usecase": "AdvanceMatchUseCase",
     "auth": "JWT · dono do save",
     "desc": "PLAY | DRIVE | QUARTER | FULL · para no próximo momento decisivo",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "POST",
@@ -46579,7 +46579,7 @@
     "usecase": "GetMatchEventsUseCase",
     "auth": "JWT · dono do save",
     "desc": "Play-by-play paginado (after=seq) no ritmo calculado",
-    "implemented": false
+    "implemented": true
    }
   ],
   "entities": [
@@ -49883,7 +49883,7 @@
     "usecase": "PlayWeekUseCase",
     "auth": "JWT · dono do save",
     "desc": "MATCH_SIMULATED com seed e placar · replay verificável",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "GET",
@@ -51008,7 +51008,7 @@
     "usecase": "GetMatchEventsUseCase",
     "auth": "JWT · dono do save",
     "desc": "Poll incremental leve (after=seq, 204 sem novidade)",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "GET",

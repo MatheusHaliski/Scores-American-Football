@@ -62,14 +62,14 @@ Fonte: [`RF42-stm-drive-result.puml`](RF42-stm-drive-result.puml)
 
 | Estado | Método | Rota | Caso de uso | Autorização | Descrição |
 |---|---|---|---|---|---|
-| ⛔ alvo | `POST` | `/api/v1/careers/{id}/weeks/current/play` | `PlayWeekUseCase` | JWT · dono do save | Inicia a semana: MatchSession do usuário (seed derivada) e jogos da IA em job |
-| ⛔ alvo | `POST` | `/api/v1/matches/{mid}/advance` | `AdvanceMatchUseCase` | JWT · dono do save | Avança PLAY \| DRIVE \| QUARTER \| TO_DECISION \| FULL até o próximo momento decisivo ou intervalo |
-| ⛔ alvo | `GET` | `/api/v1/matches/{mid}` | `GetMatchStateUseCase` | JWT · dono do save | Estado vivo: quarto, relógio, play clock, posse, down, distance, ballOnAbsYd, tempos, placar, decisão aberta, versão |
-| ⛔ alvo | `POST` | `/api/v1/matches/{mid}/play-calls/{did}` | `SubmitPlayCallUseCase` | JWT · dono do save | Chamada de jogada no momento decisivo: PlayDefinition escolhida (ou ir para a 4ª, FG, punt, 2 pontos) · expectedVersion |
+| ✅ | `POST` | `/api/v1/careers/{id}/weeks/current/play` | `PlayWeekUseCase` | JWT · dono do save | Inicia a semana: MatchSession do usuário (seed derivada) e jogos da IA em job |
+| ✅ | `POST` | `/api/v1/matches/{mid}/advance` | `AdvanceMatchUseCase` | JWT · dono do save | Avança PLAY \| DRIVE \| QUARTER \| TO_DECISION \| FULL até o próximo momento decisivo ou intervalo |
+| ✅ | `GET` | `/api/v1/matches/{mid}` | `GetMatchStateUseCase` | JWT · dono do save | Estado vivo: quarto, relógio, play clock, posse, down, distance, ballOnAbsYd, tempos, placar, decisão aberta, versão |
+| ✅ | `POST` | `/api/v1/matches/{mid}/play-calls/{did}` | `SubmitPlayCallUseCase` | JWT · dono do save | Chamada de jogada no momento decisivo: PlayDefinition escolhida (ou ir para a 4ª, FG, punt, 2 pontos) · expectedVersion |
 | ⛔ alvo | `POST` | `/api/v1/matches/{mid}/timeouts` | `CallTimeoutUseCase` | JWT · dono do save | Tempo técnico da franquia do usuário (máx. 3 por tempo) |
 | ⛔ alvo | `GET` | `/api/v1/matches/{mid}/plays` | `GetPlayByPlayUseCase` | JWT · dono do save | Play-by-play paginado por seq (Cassandra) |
 | ⛔ alvo | `GET` | `/api/v1/matches/{mid}/drives` | `GetDrivesUseCase` | JWT · dono do save | Drives: início, jogadas, jardas, tempo de posse, resultado |
-| ⛔ alvo | `GET` | `/api/v1/matches/{mid}/report` | `GetMatchReportUseCase` | JWT · dono do save | Box score por jogador e equipe (§3.6), fatores decisivos, líderes, confrontos-chave, público e renda |
+| ✅ | `GET` | `/api/v1/matches/{mid}/report` | `GetMatchReportUseCase` | JWT · dono do save | Box score por jogador e equipe (§3.6), fatores decisivos, líderes, confrontos-chave, público e renda |
 
 ## Pontos de decisão
 

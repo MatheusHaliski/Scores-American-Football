@@ -1,0 +1,167 @@
+{
+  "id" : "00000000-0000-4000-8000-000000000001",
+  "clubId" : "00000000-0000-4000-8000-000000000002",
+  "version" : 0,
+  "minWeight" : 0,
+  "maxWeight" : 200,
+  "neutralWeight" : 100,
+  "runConcepts" : [ "INSIDE_RUN", "OUTSIDE_RUN", "QB_SNEAK" ],
+  "passConcepts" : [ "SCREEN", "SHORT_PASS", "MEDIUM_PASS", "DEEP_PASS", "PLAY_ACTION" ],
+  "situations" : [ {
+    "situation" : "EARLY_DOWN",
+    "concepts" : [ {
+      "item" : "INSIDE_RUN",
+      "weight" : 100
+    }, {
+      "item" : "OUTSIDE_RUN",
+      "weight" : 100
+    }, {
+      "item" : "QB_SNEAK",
+      "weight" : 100
+    }, {
+      "item" : "SCREEN",
+      "weight" : 100
+    }, {
+      "item" : "SHORT_PASS",
+      "weight" : 100
+    }, {
+      "item" : "MEDIUM_PASS",
+      "weight" : 100
+    }, {
+      "item" : "DEEP_PASS",
+      "weight" : 100
+    }, {
+      "item" : "PLAY_ACTION",
+      "weight" : 100
+    } ]
+  }, {
+    "situation" : "THIRD_DOWN",
+    "concepts" : [ {
+      "item" : "INSIDE_RUN",
+      "weight" : 100
+    }, {
+      "item" : "OUTSIDE_RUN",
+      "weight" : 100
+    }, {
+      "item" : "QB_SNEAK",
+      "weight" : 100
+    }, {
+      "item" : "SCREEN",
+      "weight" : 100
+    }, {
+      "item" : "SHORT_PASS",
+      "weight" : 100
+    }, {
+      "item" : "MEDIUM_PASS",
+      "weight" : 100
+    }, {
+      "item" : "DEEP_PASS",
+      "weight" : 100
+    }, {
+      "item" : "PLAY_ACTION",
+      "weight" : 100
+    } ]
+  }, {
+    "situation" : "THIRD_AND_LONG",
+    "concepts" : [ {
+      "item" : "INSIDE_RUN",
+      "weight" : 100
+    }, {
+      "item" : "OUTSIDE_RUN",
+      "weight" : 100
+    }, {
+      "item" : "QB_SNEAK",
+      "weight" : 100
+    }, {
+      "item" : "SCREEN",
+      "weight" : 100
+    }, {
+      "item" : "SHORT_PASS",
+      "weight" : 100
+    }, {
+      "item" : "MEDIUM_PASS",
+      "weight" : 100
+    }, {
+      "item" : "DEEP_PASS",
+      "weight" : 100
+    }, {
+      "item" : "PLAY_ACTION",
+      "weight" : 100
+    } ]
+  }, {
+    "situation" : "RED_ZONE",
+    "concepts" : [ {
+      "item" : "INSIDE_RUN",
+      "weight" : 100
+    }, {
+      "item" : "OUTSIDE_RUN",
+      "weight" : 100
+    }, {
+      "item" : "QB_SNEAK",
+      "weight" : 100
+    }, {
+      "item" : "SCREEN",
+      "weight" : 100
+    }, {
+      "item" : "SHORT_PASS",
+      "weight" : 100
+    }, {
+      "item" : "MEDIUM_PASS",
+      "weight" : 100
+    }, {
+      "item" : "DEEP_PASS",
+      "weight" : 100
+    }, {
+      "item" : "PLAY_ACTION",
+      "weight" : 100
+    } ]
+  }, {
+    "situation" : "TWO_MINUTE",
+    "concepts" : [ {
+      "item" : "INSIDE_RUN",
+      "weight" : 100
+    }, {
+      "item" : "OUTSIDE_RUN",
+      "weight" : 100
+    }, {
+      "item" : "QB_SNEAK",
+      "weight" : 100
+    }, {
+      "item" : "SCREEN",
+      "weight" : 100
+    }, {
+      "item" : "SHORT_PASS",
+      "weight" : 100
+    }, {
+      "item" : "MEDIUM_PASS",
+      "weight" : 100
+    }, {
+      "item" : "DEEP_PASS",
+      "weight" : 100
+    }, {
+      "item" : "PLAY_ACTION",
+      "weight" : 100
+    } ]
+  } ],
+  "coverages" : [ {
+    "item" : "COVER_0",
+    "weight" : 100
+  }, {
+    "item" : "COVER_1",
+    "weight" : 100
+  }, {
+    "item" : "COVER_2",
+    "weight" : 100
+  }, {
+    "item" : "COVER_3",
+    "weight" : 100
+  }, {
+    "item" : "COVER_4",
+    "weight" : 100
+  }, {
+    "item" : "COVER_6",
+    "weight" : 100
+  } ],
+  "customWeights" : 0,
+  "updatedAt" : "2026-01-01T00:00:00Z"
+}

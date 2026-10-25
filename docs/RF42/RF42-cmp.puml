@@ -77,7 +77,7 @@ database "Cassandra 4.1" as s3
 database "OpenSearch 2" as s4
 c1 --> c4 : usa
 c2 --> c13 : dispara
-c4 --> c11 : POST /careers/{id}/weeks/current/play (alvo)\nPOST /matches/{mid}/advance (alvo)\nGET /matches/{mid} (alvo)\n…
+c4 --> c11 : POST /careers/{id}/weeks/current/play\nPOST /matches/{mid}/advance\nGET /matches/{mid}\n…
 c4 --> c12
 c11 --> c13
 c12 --> c13

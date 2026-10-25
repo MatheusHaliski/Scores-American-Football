@@ -18,3 +18,6 @@ export function loadAccountGolden(file: (typeof ACCOUNT_GOLDENS)[number]): unkno
 
 /** Amostras da carreira (bloco 6a) e a franquia do editor usada na nova carreira. */
 export const CAREER_GOLDENS = ["careers-list.json", "career-dashboard.json", "career-calendar.json", "roster.json", "roster-player.json", "depth-chart.json", "problem-409-depth-chart.json", "world-editor-club.json"] as const;
+
+/** Amostras do bloco 6b: plano de jogo, playbook, preparação, semana, partida ao vivo, play-by-play e relatório. */
+export const MATCH_GOLDENS = ["game-plan.json", "playbook.json", "problem-409-game-plan.json", "preparation.json", "week.json", "match-state.json", "match-events.json", "match-report.json", "live-match.json"] as const;

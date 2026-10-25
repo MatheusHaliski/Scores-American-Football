@@ -105,7 +105,7 @@ const weekStart = (week: number) => addDays(SEASON_START, (week - 1) * 7);
 
 /* ───────────────────────── estado ───────────────────────── */
 
-interface StoredCareer {
+export interface StoredCareer {
   summary: Omit<CareerSummary, "record">;
   clubIndex: number;
   coachStyle: CoachStyle;
@@ -114,6 +114,12 @@ interface StoredCareer {
   chartVersion: number;
   chartUpdatedAt: string;
   moves: (RosterMove & { playerId: string; capHitRemoved: number })[];
+  /** bloco 6b: placar de cada jogo encerrado (id do jogo → [casa, visitante]) */
+  results?: Record<string, [number, number]>;
+  /** bloco 6b: jogo do usuário com partida ao vivo em andamento */
+  liveFixtureId?: string | null;
+  /** bloco 6b: plano, playbook e partida do mock (tipados em `match.ts`) */
+  ext?: Record<string, unknown>;
 }
 
 interface UserStore {
@@ -148,26 +154,27 @@ function save(userId: string, st: UserStore): void {
 
 /* ───────────────────────── leituras derivadas ───────────────────────── */
 
-const ZERO: TeamRecord = { wins: 0, losses: 0, ties: 0, summary: "0-0" };
 
 function clubRef(c: WorldClub): ClubRef {
   return { id: c.id, name: c.name, shortName: c.shortName, city: c.city, primaryColor: c.primaryColor, secondaryColor: c.secondaryColor, conference: c.conference, division: c.division };
 }
 
-function fixtures(careerId: string, userClub: WorldClub): Fixture[] {
+function fixtures(careerId: string, userClub: WorldClub, c?: StoredCareer): Fixture[] {
   return RAW_FIXTURES.map((f, i) => {
     const home = WORLD_CLUBS[f.home];
     const away = WORLD_CLUBS[f.away];
+    const id = uuidFrom("fixture", `${careerId}:${i}`);
+    const score = c?.results?.[id];
     return {
-      id: uuidFrom("fixture", `${careerId}:${i}`),
+      id,
       week: f.week,
       date: addDays(weekStart(f.week), f.day),
       kickoffSlot: KICKOFF_SLOTS[f.slot],
-      status: "SCHEDULED",
+      status: score ? "FINISHED" : c?.liveFixtureId === id ? "LIVE" : "SCHEDULED",
       homeClubId: home.id,
       awayClubId: away.id,
-      homeScore: null,
-      awayScore: null,
+      homeScore: score ? score[0] : null,
+      awayScore: score ? score[1] : null,
       divisional: home.division === away.division,
       conferenceGame: home.conference === away.conference,
       userGame: home.id === userClub.id || away.id === userClub.id,
@@ -175,8 +182,28 @@ function fixtures(careerId: string, userClub: WorldClub): Fixture[] {
   });
 }
 
+/** Campanha de uma franquia pelos placares gravados (D-48: a tabela sai dos placares, sem tabela materializada). */
+function recordOf(c: StoredCareer, clubIdOf: string): TeamRecord & { pointsFor: number; pointsAgainst: number } {
+  let wins = 0, losses = 0, ties = 0, pointsFor = 0, pointsAgainst = 0;
+  for (const f of fixtures(c.summary.id, WORLD_CLUBS[c.clubIndex], c)) {
+    if (f.homeScore == null || f.awayScore == null || (f.homeClubId !== clubIdOf && f.awayClubId !== clubIdOf)) continue;
+    const mine = f.homeClubId === clubIdOf ? f.homeScore : f.awayScore;
+    const theirs = f.homeClubId === clubIdOf ? f.awayScore : f.homeScore;
+    pointsFor += mine;
+    pointsAgainst += theirs;
+    if (mine > theirs) wins++;
+    else if (mine < theirs) losses++;
+    else ties++;
+  }
+  return { wins, losses, ties, summary: ties > 0 ? `${wins}-${losses}-${ties}` : `${wins}-${losses}`, pointsFor, pointsAgainst };
+}
+
+function plainRecord(r: TeamRecord): TeamRecord {
+  return { wins: r.wins, losses: r.losses, ties: r.ties, summary: r.summary };
+}
+
 function summaryOf(c: StoredCareer): CareerSummary {
-  return { ...c.summary, record: { ...ZERO } };
+  return { ...c.summary, record: plainRecord(recordOf(c, WORLD_CLUBS[c.clubIndex].id)) };
 }
 
 function playersById(c: StoredCareer): Map<string, MockPlayer> {
@@ -470,11 +497,13 @@ export function mockCareers(user: UserAccount): MockCareers {
       const c = find(id);
       const wc = WORLD_CLUBS[c.clubIndex];
       const week = c.summary.currentWeek;
-      const all = fixtures(c.summary.id, wc).filter((f) => f.userGame);
+      const all = fixtures(c.summary.id, wc, c).filter((f) => f.userGame);
       const next = all.find((f) => f.week >= week) ?? null;
+      const pct = (r: TeamRecord) => (r.wins + r.losses + r.ties ? (r.wins + r.ties / 2) / (r.wins + r.losses + r.ties) : 0);
       const division: StandingRow[] = WORLD_CLUBS.filter((x) => x.division === wc.division)
-        .sort((a, b) => b.prestige - a.prestige || a.name.localeCompare(b.name))
-        .map((x, i) => ({ rank: i + 1, club: clubRef(x), record: { ...ZERO }, winPct: 0, pointsFor: 0, pointsAgainst: 0, userClub: x.id === wc.id }));
+        .map((x) => ({ x, r: recordOf(c, x.id) }))
+        .sort((a, b) => pct(b.r) - pct(a.r) || b.r.pointsFor - b.r.pointsAgainst - (a.r.pointsFor - a.r.pointsAgainst) || b.x.prestige - a.x.prestige || a.x.name.localeCompare(b.x.name))
+        .map(({ x, r }, i) => ({ rank: i + 1, club: clubRef(x), record: plainRecord(r), winPct: Math.round(pct(r) * 1000) / 1000, pointsFor: r.pointsFor, pointsAgainst: r.pointsAgainst, userClub: x.id === wc.id }));
       const mine = club(c);
       const v = validate(c.chart, playersById(c), RULES.gameDayActives);
       const opponent = next ? CLUB_BY_ID.get(next.homeClubId === wc.id ? next.awayClubId : next.homeClubId)! : null;
@@ -483,9 +512,9 @@ export function mockCareers(user: UserAccount): MockCareers {
         club: clubRef(wc),
         coach: { id: c.summary.coachId!, name: c.summary.coachName!, nationality: c.summary.coachNationality!, style: c.coachStyle, overall: 50, reputationLeague: 50, careerGames: 0, careerWins: 0, careerTitles: 0 },
         currentWeek: week,
-        nextGame: next && opponent ? { fixture: next, home: next.homeClubId === wc.id, opponent: clubRef(opponent), opponentRecord: { ...ZERO } } : null,
+        nextGame: next && opponent ? { fixture: next, home: next.homeClubId === wc.id, opponent: clubRef(opponent), opponentRecord: plainRecord(recordOf(c, opponent.id)) } : null,
         byeWeek: !all.some((f) => f.week === week),
-        record: { ...ZERO },
+        record: plainRecord(recordOf(c, wc.id)),
         divisionRank: division.find((r) => r.userClub)?.rank ?? null,
         division,
         upcomingDivisionGames: all.filter((f) => f.week >= week && f.divisional).slice(0, 3),
@@ -510,7 +539,7 @@ export function mockCareers(user: UserAccount): MockCareers {
       const c = find(id);
       const wc = WORLD_CLUBS[c.clubIndex];
       if (week != null && (!Number.isInteger(week) || week < 1 || week > REGULAR_WEEKS)) throw ApiError.badRequest("INVALID_WEEK", { 0: week, 1: REGULAR_WEEKS });
-      const fx = fixtures(c.summary.id, wc);
+      const fx = fixtures(c.summary.id, wc, c);
       const weeks: CalendarWeek[] = [];
       for (let n = 1; n <= REGULAR_WEEKS; n++) {
         if (week != null && n !== week) continue;
@@ -670,5 +699,74 @@ export function mockCareers(user: UserAccount): MockCareers {
     c.chartUpdatedAt = new Date().toISOString();
     touch(c);
     commit();
+  }
+}
+
+/* ───────────────────────── acesso do bloco 6b (partida no mock) ───────────────────────── */
+
+export interface MockCareerAccess {
+  all(): StoredCareer[];
+  find(id: string): StoredCareer;
+  writable(id: string): StoredCareer;
+  commit(): void;
+  club(c: StoredCareer): ClubRef & { prestige: number };
+  clubById(id: string): (ClubRef & { prestige: number }) | null;
+  fixtures(c: StoredCareer): Fixture[];
+  record(c: StoredCareer, clubId: string): TeamRecord;
+  players(c: StoredCareer): MockPlayer[];
+  validation(c: StoredCareer): ReturnType<typeof validate>;
+  rules: typeof RULES;
+  seasonId(c: StoredCareer): string;
+  /** fecha a semana (D-63): grava o placar do usuário, simula os outros jogos e passa para a próxima */
+  closeWeek(c: StoredCareer, week: number, scores: Record<string, [number, number]>, rng: () => number): void;
+}
+
+/** O que a partida do mock lê e grava da carreira do usuário (mesmo armazenamento do 6a). */
+export function mockCareerAccess(user: UserAccount): MockCareerAccess {
+  const st = load(user.id);
+  const find = (id: string): StoredCareer => {
+    const c = st.careers.find((x) => x.summary.id === id);
+    if (!c) throw ApiError.notFound("career");
+    return c;
+  };
+  const withPrestige = (x: WorldClub) => ({ ...clubRef(x), prestige: x.prestige });
+  return {
+    all: () => st.careers,
+    find,
+    writable(id) {
+      const c = find(id);
+      if (c.summary.status !== "ACTIVE") throw ApiError.of(422, "CAREER_ARCHIVED");
+      return c;
+    },
+    commit: () => save(user.id, st),
+    club: (c) => withPrestige(WORLD_CLUBS[c.clubIndex]),
+    clubById: (id) => {
+      const x = CLUB_BY_ID.get(id);
+      return x ? withPrestige(x) : null;
+    },
+    fixtures: (c) => fixtures(c.summary.id, WORLD_CLUBS[c.clubIndex], c),
+    record: (c, id) => plainRecord(recordOf(c, id)),
+    players: (c) => club(c),
+    validation: (c) => validate(c.chart, playersById(c), RULES.gameDayActives),
+    rules: RULES,
+    seasonId: (c) => c.summary.seasonId ?? uuidFrom("season", c.summary.id),
+    closeWeek(c, week, scores, rng) {
+      c.results = { ...(c.results ?? {}), ...scores };
+      for (const f of fixtures(c.summary.id, WORLD_CLUBS[c.clubIndex], c)) {
+        if (f.week !== week || c.results[f.id]) continue;
+        const pts = () => [0, 3, 6, 7, 10, 13, 14, 17, 20, 21, 24, 27, 28, 31, 34, 38][Math.floor(rng() * 16)];
+        const a = pts();
+        let h = pts();
+        if (h === a) h += 3;
+        c.results[f.id] = [h, a];
+      }
+      if (c.liveFixtureId && c.results[c.liveFixtureId]) c.liveFixtureId = null;
+      c.summary.currentWeek = Math.min(REGULAR_WEEKS + 1, week + 1);
+      touch(c);
+      save(user.id, st);
+    },
+  };
+  function touch(c: StoredCareer) {
+    c.summary.lastPlayedAt = new Date().toISOString();
   }
 }

@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import { api } from "@/lib/api";
@@ -12,6 +13,7 @@ import { ClubBadge } from "@/components/career/ClubBadge";
 import { Badge } from "@/components/ui/Badge";
 import { Toggle } from "@/components/ui/Field";
 import { ErrorState, PageSkeleton } from "@/components/ui/States";
+import { IconChevronRight } from "@/components/ui/icons";
 
 function GameLine({ f, clubs, userClubId }: { f: Fixture; clubs: Map<string, ClubRef>; userClubId: string }) {
   const tc = useT("common");
@@ -31,7 +33,7 @@ function GameLine({ f, clubs, userClubId }: { f: Fixture; clubs: Map<string, Clu
   );
 }
 
-/** Calendário da temporada (RF21): semanas com o jogo da franquia ou o bye; a liga inteira sob demanda. */
+/** Calendário da temporada (RF21): semanas com o jogo da franquia ou o bye; a liga inteira sob demanda; relatório dos jogos encerrados (6b). */
 export default function CalendarPage() {
   const t = useT("career");
   const tc = useT("common");
@@ -81,7 +83,18 @@ export default function CalendarPage() {
                     <div className="ml-auto flex shrink-0 gap-1">
                       {mine.divisional && <Badge tone="led" size="xs">{t("hub.next.divisional")}</Badge>}
                       {mine.homeScore != null && mine.awayScore != null && <Badge size="xs">{home ? `${mine.homeScore}–${mine.awayScore}` : `${mine.awayScore}–${mine.homeScore}`}</Badge>}
+                      {mine.status === "LIVE" && <Badge tone="led" size="xs">{t("calendar.live")}</Badge>}
                     </div>
+                    {mine.status === "FINISHED" && (
+                      <Link href={`/c/${careerId}/match/${mine.id}/report`} className="touch inline-flex shrink-0 items-center gap-1 rounded-md px-2 text-[0.8rem] text-led underline-offset-2 hover:underline">
+                        {t("calendar.report")} <IconChevronRight size={14} />
+                      </Link>
+                    )}
+                    {mine.status === "LIVE" && (
+                      <Link href={`/c/${careerId}/match`} className="touch inline-flex shrink-0 items-center gap-1 rounded-md px-2 text-[0.8rem] text-led underline-offset-2 hover:underline">
+                        {t("calendar.continue")} <IconChevronRight size={14} />
+                      </Link>
+                    )}
                   </div>
                 ) : (
                   <div className="flex-1 text-text-muted">—</div>

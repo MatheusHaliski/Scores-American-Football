@@ -48,7 +48,7 @@ database "Redis 7" as s2
 database "Cassandra 4.1" as s3
 database "S3/MinIO" as s4
 c1 --> c2 : usa
-c2 --> c10 : GET /me/settings\nGET /careers/{id}/dashboard\nGET /matches/{mid}/events (alvo)\n…
+c2 --> c10 : GET /me/settings\nGET /careers/{id}/dashboard\nGET /matches/{mid}/events\n…
 c2 --> c11
 c2 --> c12
 c2 --> c13

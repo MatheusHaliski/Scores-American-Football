@@ -7,6 +7,7 @@
 import type { CardTier } from "@/lib/ratings/tier";
 import type { Position } from "@/lib/ratings/overall";
 import type { Difficulty, ISODate, UUID } from "./types";
+import type { LiveMatchRef } from "./match-types";
 
 export type { CardTier, Position };
 
@@ -264,8 +265,8 @@ export interface DepthChartAlert {
 }
 
 /**
- * `DashboardDto` (RF40). `live`, `morale`, `analysis`, `inbox`, `unreadInbox` e `scoresPoints` chegam nulos até os blocos que os
- * criam: a tela mostra "—" ou esconde, nunca zero.
+ * `DashboardDto` (RF40). `morale`, `analysis`, `inbox`, `unreadInbox` e `scoresPoints` chegam nulos até os blocos que os criam: a
+ * tela mostra "—" ou esconde, nunca zero. `live` é a partida ao vivo em andamento (bloco 6b) ou null.
  */
 export interface CareerDashboard {
   career: CareerSummary;
@@ -282,7 +283,7 @@ export interface CareerDashboard {
   injuries: InjuryEntry[];
   cap: CapSummary | null;
   depthChart: DepthChartAlert | null;
-  live: unknown;
+  live: LiveMatchRef | null;
   morale: unknown;
   analysis: unknown;
   inbox: unknown[] | null;

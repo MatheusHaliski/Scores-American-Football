@@ -1,7 +1,7 @@
 /**
  * Adaptadores das respostas da carreira (bloco 6a) para os tipos do front. Puros (sem rede), testados contra as amostras gravadas
  * pela API em docs/validation/golden/ (careers-list, career-dashboard, career-calendar, roster, roster-player, depth-chart e
- * world-editor-club). A API omite campos nulos (`non_null`), menos no `DashboardDto`, que manda os nulos explícitos: aqui todo
+ * world-editor-club). `dashboard.live` (partida em andamento) chega com o bloco 6b. A API omite campos nulos (`non_null`), menos no `DashboardDto`, que manda os nulos explícitos: aqui todo
  * anulável ausente vira `null`, e nunca zero.
  *
  * `SHAPES` lista, por objeto, os campos que o front conhece e quais podem faltar; o teste de contrato confere cada golden contra
@@ -47,6 +47,7 @@ import type {
   WorldSummary,
 } from "./career-types";
 import { COACH_STYLES, DIFFICULTIES, UNITS } from "./career-types";
+import type { LiveMatchRef, MatchSessionStatus } from "./match-types";
 import type { CardTier } from "@/lib/ratings/tier";
 import type { Position } from "@/lib/ratings/overall";
 import type { Difficulty } from "./types";
@@ -92,6 +93,8 @@ export const SHAPES = {
   injury: shape(["playerId", "name", "position", "rosterStatus", "weeksOut"]),
   cap: shape(["salaryCap", "capUsed", "deadMoney", "capSpace"]),
   depthChartAlert: shape(["version", "valid", "errors", "warnings", "codes"]),
+  /** `dashboard.live` (bloco 6b): partida ao vivo em andamento */
+  liveRef: shape(["matchId", "fixtureId", "week", "status", "homeScore", "awayScore"]),
   calendar: shape(["seasonId", "seasonYear", "phase", "currentWeek", "regularSeasonWeeks", "gamesPerTeam", "userClubId", "clubs", "weeks"]),
   week: shape(["number", "kind", "startsOn", "status", "userBye", "byeClubIds", "fixtures"]),
   roster: shape(["clubId", "clubName", "seasonYear", "currentWeek", "rules", "counts", "cap", "units", "practiceSquad", "injuredReserve"]),
@@ -260,6 +263,14 @@ function alertFromDto(raw: unknown): DepthChartAlert {
   return { version: num(r.version), valid: bool(r.valid), errors: num(r.errors), warnings: num(r.warnings), codes: strs(r.codes) };
 }
 
+const LIVE_STATUSES: MatchSessionStatus[] = ["NOT_STARTED", "LIVE", "BREAK", "HALFTIME", "AWAITING_DECISION", "FINISHED"];
+
+/** `dashboard.live` (`LiveMatchRefDto`, bloco 6b) ou null. */
+export function liveRefFromDto(raw: unknown): LiveMatchRef | null {
+  if (!isObj(raw)) return null;
+  return { matchId: str(raw.matchId), fixtureId: str(raw.fixtureId), week: num(raw.week, 1), status: oneOf<MatchSessionStatus>(raw.status, LIVE_STATUSES, "LIVE"), homeScore: num(raw.homeScore), awayScore: num(raw.awayScore) };
+}
+
 export function dashboardFromDto(raw: unknown): CareerDashboard {
   const r = obj(raw);
   return {
@@ -277,7 +288,7 @@ export function dashboardFromDto(raw: unknown): CareerDashboard {
     injuries: list(r.injuries, injuryFromDto),
     cap: isObj(r.cap) ? capFromDto(r.cap) : null,
     depthChart: isObj(r.depthChart) ? alertFromDto(r.depthChart) : null,
-    live: r.live ?? null,
+    live: liveRefFromDto(r.live),
     morale: r.morale ?? null,
     analysis: r.analysis ?? null,
     inbox: Array.isArray(r.inbox) ? r.inbox : null,

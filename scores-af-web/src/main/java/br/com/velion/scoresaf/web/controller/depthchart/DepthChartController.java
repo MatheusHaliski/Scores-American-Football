@@ -18,10 +18,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/** RF60 — depth chart (TacticsController → DepthChartController) e o plano de jogo padrão, só leitura no bloco 6a. */
+/** RF60 — depth chart (TacticsController → DepthChartController). O plano de jogo e o playbook estão no {@code GamePlanController} (RF61). */
 @RestController
 @RequestMapping("/api/v1/careers/{id}")
-@Tag(name = "RF60 — Depth chart e plano de jogo")
+@Tag(name = "RF60 — Depth chart")
 public class DepthChartController {
   public record SlotRequest(@NotBlank @Size(max = 32) String slot, @NotNull @Size(max = 10) List<@NotNull UUID> playerIds) {}
   public record PutRequest(@NotNull Long version, @NotNull @Size(max = 40) List<@Valid @NotNull SlotRequest> slots) {}
@@ -42,8 +42,4 @@ public class DepthChartController {
     return depthChart.put(id, current.requireId(), new DepthChartUseCases.PutCommand(r.version(),
         r.slots().stream().map(s -> new DepthChartUseCases.SlotCommand(s.slot(), s.playerIds())).toList()));
   }
-
-  @GetMapping("/game-plan")
-  @Operation(summary = "RF61 — Plano de jogo (padrão, só leitura)", description = "O plano que o motor usa: o padrão do estilo do head coach. Edição no bloco 6b.")
-  public DepthChartDtos.GamePlanDto gamePlan(@PathVariable UUID id) { return depthChart.gamePlan(id, current.requireId()); }
 }

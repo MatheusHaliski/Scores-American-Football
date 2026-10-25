@@ -31,7 +31,7 @@ import org.testcontainers.mysql.MySQLContainer;
 @Tag("it")
 @Testcontainers
 @SpringBootTest(classes = PersistenceTestApplication.class)
-@Import({CatalogGraph.class, CareerGraph.class})
+@Import({CatalogGraph.class, CareerGraph.class, MatchGraph.class})
 class FlywayMySqlValidationTest {
   @Container static final MySQLContainer MYSQL = new MySQLContainer("mysql:8.0").withDatabaseName("scoresaf");
 
@@ -51,6 +51,7 @@ class FlywayMySqlValidationTest {
   @Autowired UserSettingsJpaRepository settings;
   @Autowired CatalogGraph catalog;
   @Autowired CareerGraph career;
+  @Autowired MatchGraph match;
 
   @Test
   void schema_da_v1_valida_contra_as_entidades_no_mysql() {
@@ -92,5 +93,23 @@ class FlywayMySqlValidationTest {
     assertThat(career.moves.findByCareerIdOrderByCreatedAtAsc(saved.career().getId())).singleElement()
         .satisfies(m -> assertThat(m.getToStatus()).isEqualTo(RosterStatus.WAIVED));
     assertThat(catalog.players.findById(saved.slot().getPlayer().getId())).get().satisfies(p -> assertThat(p.getInjuryWeeksOut()).isZero());
+  }
+
+  /** A V4 aceita a partida inteira (CHECKs de situação, nível, faixa do plano e do peso; FKs) e devolve o que foi gravado. */
+  @Test
+  void partida_grava_pela_v4_e_rele() {
+    DefaultWorld w = new DefaultWorldFactory().build(DefaultWorldFactory.DEFAULT_SEED + 3);
+    catalog.persist(w);
+    CareerGraph.Saved saved = career.persist(w, "v4-" + java.util.UUID.randomUUID() + "@example.com");
+    MatchGraph.Saved m = match.persist(saved, saved.slot().getPlayer());
+    assertThat(match.plans.findByCareerIdAndClubId(saved.career().getId(), saved.fixture().getHomeClub().getId())).get()
+        .satisfies(g -> assertThat(g.getPassRatio()).isEqualTo(62));
+    assertThat(match.weights.findByPlaybookId(m.playbook().getId())).hasSize(2);
+    assertThat(match.sessions.findByFixtureId(saved.fixture().getId())).get().satisfies(s -> {
+      assertThat(s.getStatus()).isEqualTo(br.com.velion.scoresaf.domain.match.MatchSessionStatus.AWAITING_DECISION);
+      assertThat(s.getDecisionId()).isEqualTo("d-81");
+    });
+    assertThat(match.reports.findByFixtureId(saved.fixture().getId())).get().satisfies(r -> assertThat(r.getPlayCount()).isEqualTo(152));
+    assertThat(match.stats.findByFixtureId(saved.fixture().getId())).singleElement().satisfies(l -> assertThat(l.getPassYards()).isEqualTo(254));
   }
 }

@@ -14,6 +14,7 @@ import {
   rosterFromDto,
   worldFromDto,
 } from "./live-career";
+import { gamePlanFromDto, matchEventsFromDto, matchReportFromDto, matchStateFromDto, playbookFromDto, preparationFromDto, weekBoardFromDto } from "./live-match";
 import { authFromDto, profileFromDto, settingsFromDto, userFromDto, type AccountDto, type SettingsDto, type TokenResponseDto } from "./live-account";
 
 /** Implementação `live` do contrato: chama o backend Java em NEXT_PUBLIC_API_URL (rotas iguais às do Scores de basquete). */
@@ -102,6 +103,25 @@ export function createLiveApi(baseUrl: string, tokens: TokenStorage, onUnauthori
       get: async (careerId) => depthChartFromDto(await http.get(`/careers/${careerId}/depth-chart`)),
       save: async (careerId, req) => depthChartFromDto(await http.put(`/careers/${careerId}/depth-chart`, req)),
       setRole: async (careerId, playerId, req) => depthChartFromDto(await http.patch(`/careers/${careerId}/players/${playerId}/role`, req)),
+    },
+    gamePlan: {
+      get: async (careerId) => gamePlanFromDto(await http.get(`/careers/${careerId}/game-plan`)),
+      save: async (careerId, req) => gamePlanFromDto(await http.put(`/careers/${careerId}/game-plan`, req)),
+      playbook: async (careerId) => playbookFromDto(await http.get(`/careers/${careerId}/playbook`)),
+      savePlaybook: async (careerId, req) => playbookFromDto(await http.put(`/careers/${careerId}/playbook`, req)),
+      preparation: async (careerId) => preparationFromDto(await http.get(`/careers/${careerId}/next-match/preparation`)),
+    },
+    weeks: {
+      playCurrent: async (careerId) => weekBoardFromDto(await http.post(`/careers/${careerId}/weeks/current/play`)),
+      get: async (careerId, week) => weekBoardFromDto(await http.get(`/careers/${careerId}/weeks/${week}`)),
+    },
+    matches: {
+      get: async (mid) => matchStateFromDto(await http.get(`/matches/${mid}`)),
+      advance: async (mid, req) => matchStateFromDto(await http.post(`/matches/${mid}/advance`, req ?? {})),
+      decisions: async (mid, req) => matchStateFromDto(await http.post(`/matches/${mid}/decisions`, req)),
+      playCall: async (mid, decisionId, req) => matchStateFromDto(await http.post(`/matches/${mid}/play-calls/${encodeURIComponent(decisionId)}`, req)),
+      events: async (mid, after = 0, limit = 200) => matchEventsFromDto(await http.get(`/matches/${mid}/events`, { after, limit })),
+      report: async (mid) => matchReportFromDto(await http.get(`/matches/${mid}/report`)),
     },
   };
 }

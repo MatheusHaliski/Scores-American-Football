@@ -178,11 +178,6 @@
   },
   {
    "method": "GET",
-   "path": "/api/v1/careers/{id}/game-plan",
-   "controller": "DepthChartController"
-  },
-  {
-   "method": "GET",
    "path": "/api/v1/worlds",
    "controller": "WorldEditorController"
   },
@@ -335,6 +330,71 @@
    "method": "GET",
    "path": "/api/v1/careers/{id}/calendar",
    "controller": "SeasonController"
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/careers/{id}/game-plan",
+   "controller": "GamePlanController"
+  },
+  {
+   "method": "PUT",
+   "path": "/api/v1/careers/{id}/game-plan",
+   "controller": "GamePlanController"
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/careers/{id}/playbook",
+   "controller": "GamePlanController"
+  },
+  {
+   "method": "PUT",
+   "path": "/api/v1/careers/{id}/playbook",
+   "controller": "GamePlanController"
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/careers/{id}/next-match/preparation",
+   "controller": "GamePlanController"
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/careers/{id}/weeks/current/play",
+   "controller": "MatchController"
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/careers/{id}/weeks/{n}",
+   "controller": "MatchController"
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/matches/{mid}",
+   "controller": "MatchController"
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/matches/{mid}/advance",
+   "controller": "MatchController"
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/matches/{mid}/decisions",
+   "controller": "MatchController"
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/matches/{mid}/play-calls/{decisionId}",
+   "controller": "MatchController"
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/matches/{mid}/events",
+   "controller": "MatchController"
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/matches/{mid}/report",
+   "controller": "MatchController"
   }
  ]
 }

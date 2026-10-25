@@ -10,13 +10,11 @@ import br.com.velion.scoresaf.application.dto.DepthChartDtos;
 import br.com.velion.scoresaf.application.port.out.persistence.DepthChartRepository;
 import br.com.velion.scoresaf.application.port.out.persistence.PlayerRepository;
 import br.com.velion.scoresaf.application.service.DepthChartService;
-import br.com.velion.scoresaf.application.usecase.rf42.MatchTeams;
 import br.com.velion.scoresaf.application.usecase.support.CareerSupport;
 import br.com.velion.scoresaf.domain.career.CareerSave;
 import br.com.velion.scoresaf.domain.catalog.Club;
 import br.com.velion.scoresaf.domain.catalog.LeagueRules;
 import br.com.velion.scoresaf.domain.catalog.Player;
-import br.com.velion.scoresaf.domain.engine.model.GamePlan;
 import br.com.velion.scoresaf.domain.match.ChartSlot;
 import br.com.velion.scoresaf.domain.match.DepthChart;
 import br.com.velion.scoresaf.domain.match.DepthChartPolicy;
@@ -35,8 +33,8 @@ import org.springframework.transaction.annotation.Transactional;
  * RF60 — depth chart da franquia do usuário: leitura (vagas por unidade, overall na vaga, fora de posição, disponibilidade, erros e
  * avisos), gravação inteira com versão otimista (PUT; versão divergente ⇒ 409 DEPTH_CHART_VERSION_CONFLICT com a versão atual nos
  * detalhes) e definição rápida de um papel (KR, PR, holder, back de 3ª descida) a partir do elenco. Regras em {@link DepthChartPolicy}.
- * O motor passa a usar o salvo ({@code SimulateExhibitionMatchUseCase}, {@code MatchTeams}). O plano de jogo é só leitura aqui (6b
- * edita): o padrão do estilo do head coach.
+ * O motor passa a usar o salvo ({@code SimulateExhibitionMatchUseCase}, {@code MatchTeams}). O plano de jogo e o playbook ficam no
+ * RF61 ({@code GamePlanUseCases}, bloco 6b).
  */
 @Service
 public class DepthChartUseCases {
@@ -103,15 +101,6 @@ public class DepthChartUseCases {
     return dto(dc, club, service.read(dc), rules);
   }
 
-  @Transactional(readOnly = true)
-  public DepthChartDtos.GamePlanDto gamePlan(UUID careerId, UUID userId) {
-    CareerSave save = support.owned(careerId, userId);
-    Club club = support.userClub(save);
-    GamePlan g = MatchTeams.plan(club.getManager());
-    return new DepthChartDtos.GamePlanDto(g.passRatio(), g.fourthDownAggression().name(), g.tempo().name(), g.defensiveFocus().name(),
-        g.blitzFrequency().name(), g.baseDefense().name(), club.getManager() == null ? null : club.getManager().getCoachStyle().name(), "COACH_STYLE", false);
-  }
-
   private static void checkVersion(DepthChart dc, Long expected) {
     long current = dc.currentVersion();
     if (expected == null || expected != current) {
@@ -150,7 +139,7 @@ public class DepthChartUseCases {
     return m;
   }
 
-  private static List<DepthChartDtos.IssueDto> issues(List<DepthChartPolicy.Issue> list) {
+  public static List<DepthChartDtos.IssueDto> issues(List<DepthChartPolicy.Issue> list) {
     return list.stream().map(i -> new DepthChartDtos.IssueDto(i.code(), i.slot() == null ? null : i.slot().name(), i.depth(), i.playerId())).toList();
   }
 

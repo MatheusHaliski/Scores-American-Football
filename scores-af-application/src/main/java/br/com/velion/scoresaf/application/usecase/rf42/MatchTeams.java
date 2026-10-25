@@ -45,22 +45,25 @@ public final class MatchTeams {
     List<Player> eligible = roster.stream().filter(p -> p.getRosterStatus() == RosterStatus.ACTIVE && p.getSuspensionWeeks() == 0)
         .sorted(Comparator.comparingInt(Player::getOverall).reversed().thenComparing(Player::getJerseyNumber)).toList();
     int limit = Math.max(gameDayActives, 22);
+    // escolhidos por id: o equals da entidade não reconhece o próprio proxy do Hibernate (jogador carregado antes pelo depth chart
+    // salvo vem como proxy), e um contains() deixava o mesmo jogador entrar duas vezes nos ativos (bloco 6b)
     List<Player> actives = new ArrayList<>();
+    java.util.Set<UUID> chosen = new java.util.HashSet<>();
     if (saved != null) {
       Map<UUID, Player> byId = new LinkedHashMap<>();
       eligible.forEach(p -> byId.put(p.getId(), p));
       for (List<UUID> ids : saved.slots().values()) {
         for (UUID id : ids) {
           Player p = byId.get(id);
-          if (p != null && !actives.contains(p) && actives.size() < limit) actives.add(p);
+          if (p != null && actives.size() < limit && chosen.add(p.getId())) actives.add(p);
         }
       }
     }
     for (Player p : eligible) {
       boolean specialist = p.getPosition() == Position.K || p.getPosition() == Position.P || p.getPosition() == Position.LS;
-      if (specialist && !actives.contains(p) && actives.size() < limit) actives.add(p);
+      if (specialist && actives.size() < limit && chosen.add(p.getId())) actives.add(p);
     }
-    for (Player p : eligible) if (!actives.contains(p) && actives.size() < limit) actives.add(p);
+    for (Player p : eligible) if (actives.size() < limit && chosen.add(p.getId())) actives.add(p);
     List<PlayerSnapshot> players = actives.stream().map(PlayerSnapshot::of).toList();
     return new TeamSnapshot(club.getId(), club.getName(), club.getShortName(), players, saved, plan(club.getManager()));
   }

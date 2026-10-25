@@ -114,5 +114,15 @@
   "new.summary": "{club} in the {league}, with {coach} ({style}) in charge, {difficulty} difficulty.",
   "new.title": "New career",
   "new.validation.length": "{min} to {max} characters.",
-  "new.world": "World"
+  "new.world": "World",
+  "hub.live.eyebrow": "Week {week} · live",
+  "hub.live.title": "Game in progress",
+  "hub.live.continue": "Resume game",
+  "hub.next.prepare": "Prepare and play",
+  "hub.next.playbook": "Playbook",
+  "hub.next.playBye": "Advance the bye week",
+  "hub.next.byeDone": "Bye week closed.",
+  "calendar.live": "live",
+  "calendar.report": "Report",
+  "calendar.continue": "Resume"
 }

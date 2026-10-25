@@ -1,0 +1,24 @@
+{
+  "id" : "00000000-0000-4000-8000-000000000001",
+  "clubId" : "00000000-0000-4000-8000-000000000002",
+  "version" : 0,
+  "passRatio" : 58,
+  "fourthDownAggression" : "AGGRESSIVE",
+  "tempo" : "NORMAL",
+  "defensiveFocus" : "BALANCED",
+  "blitzFrequency" : "NORMAL",
+  "baseDefense" : "BASE_3_4",
+  "coachStyle" : "OFFENSIVE",
+  "source" : "COACH_STYLE",
+  "editable" : true,
+  "updatedAt" : "2026-01-01T00:00:00Z",
+  "options" : {
+    "minPassRatio" : 20,
+    "maxPassRatio" : 80,
+    "fourthDownAggression" : [ "CONSERVATIVE", "NORMAL", "AGGRESSIVE" ],
+    "tempo" : [ "HURRY_UP", "NORMAL", "MILK_CLOCK" ],
+    "defensiveFocus" : [ "STOP_RUN", "BALANCED", "STOP_PASS" ],
+    "blitzFrequency" : [ "LOW", "NORMAL", "HIGH" ],
+    "baseDefense" : [ "BASE_4_3", "BASE_3_4" ]
+  }
+}

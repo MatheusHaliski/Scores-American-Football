@@ -1,0 +1,2051 @@
+{
+  "fixtureId" : "00000000-0000-4000-8000-000000000001",
+  "matchId" : "00000000-0000-4000-8000-000000000002",
+  "week" : 1,
+  "date" : "2026-09-10",
+  "kickoffSlot" : "THU_NIGHT",
+  "userGame" : true,
+  "seed" : 8455941555810436447,
+  "engineVersion" : 1,
+  "rulesVersion" : 1,
+  "weather" : "SNOW",
+  "home" : {
+    "club" : {
+      "id" : "00000000-0000-4000-8000-000000000003",
+      "name" : "Carcarás de Vila Aurora",
+      "shortName" : "VAU",
+      "city" : "Vila Aurora",
+      "primaryColor" : "#3B1F5C",
+      "secondaryColor" : "#F28C28",
+      "conference" : "CAT",
+      "division" : "Atlântica Norte"
+    },
+    "score" : 24,
+    "quarters" : [ 7, 14, 0, 3 ],
+    "stats" : {
+      "clubId" : "00000000-0000-4000-8000-000000000003",
+      "points" : 24,
+      "pointsByQuarter" : [ 7, 14, 0, 3 ],
+      "firstDowns" : 17,
+      "firstDownsRushing" : 5,
+      "firstDownsPassing" : 8,
+      "firstDownsPenalty" : 4,
+      "thirdDownConversions" : 4,
+      "thirdDownAttempts" : 10,
+      "fourthDownConversions" : 0,
+      "fourthDownAttempts" : 0,
+      "redZoneTouchdowns" : 3,
+      "redZoneTrips" : 4,
+      "offensivePlays" : 55,
+      "totalYards" : 255,
+      "yardsPerPlay" : 4.6,
+      "rushAttempts" : 26,
+      "rushYards" : 86,
+      "passCompletions" : 17,
+      "passAttempts" : 27,
+      "passYards" : 169,
+      "sacksAllowed" : 2,
+      "sackYardsLost" : 18,
+      "interceptionsThrown" : 0,
+      "fumbles" : 1,
+      "fumblesLost" : 0,
+      "turnovers" : 0,
+      "penalties" : 5,
+      "penaltyYards" : 55,
+      "timeOfPossessionSeconds" : 1635,
+      "drives" : 10,
+      "punts" : 4,
+      "fieldGoalsMade" : 1,
+      "fieldGoalAttempts" : 2,
+      "defensiveSacks" : 2,
+      "timeoutsUsed" : 0
+    },
+    "players" : [ {
+      "playerId" : "00000000-0000-4000-8000-000000000004",
+      "clubId" : "00000000-0000-4000-8000-000000000003",
+      "name" : "Austin Ivarford",
+      "position" : "P",
+      "jerseyNumber" : 17,
+      "snaps" : 0,
+      "punting" : {
+        "punts" : 4,
+        "yards" : 124,
+        "average" : 31.0,
+        "inside20" : 2,
+        "touchbacks" : 0,
+        "longest" : 38
+      }
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000005",
+      "clubId" : "00000000-0000-4000-8000-000000000003",
+      "name" : "Renan Monmore",
+      "position" : "K",
+      "jerseyNumber" : 11,
+      "snaps" : 0,
+      "kicking" : {
+        "fgMade" : 1,
+        "fgAttempts" : 2,
+        "fgMade0to39" : 0,
+        "fgAttempts0to39" : 1,
+        "fgMade40to49" : 1,
+        "fgAttempts40to49" : 1,
+        "fgMade50plus" : 0,
+        "fgAttempts50plus" : 0,
+        "longest" : 42,
+        "patMade" : 3,
+        "patAttempts" : 3
+      }
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000006",
+      "clubId" : "00000000-0000-4000-8000-000000000003",
+      "name" : "Tyler Fensby",
+      "position" : "TE",
+      "jerseyNumber" : 84,
+      "snaps" : 60,
+      "receiving" : {
+        "targets" : 5,
+        "receptions" : 4,
+        "yards" : 63,
+        "yardsAfterCatch" : 12,
+        "touchdowns" : 1,
+        "drops" : 0,
+        "longest" : 19
+      }
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000007",
+      "clubId" : "00000000-0000-4000-8000-000000000003",
+      "name" : "Emeka Garard",
+      "position" : "DE",
+      "jerseyNumber" : 96,
+      "snaps" : 77,
+      "defense" : {
+        "soloTackles" : 4,
+        "tacklesForLoss" : 1,
+        "sacks" : 0,
+        "interceptions" : 0,
+        "passesDefended" : 0,
+        "forcedFumbles" : 0,
+        "fumbleRecoveries" : 0,
+        "touchdowns" : 0
+      }
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000008",
+      "clubId" : "00000000-0000-4000-8000-000000000003",
+      "name" : "Hugo Belmore",
+      "position" : "CB",
+      "jerseyNumber" : 23,
+      "snaps" : 82,
+      "defense" : {
+        "soloTackles" : 6,
+        "tacklesForLoss" : 0,
+        "sacks" : 0,
+        "interceptions" : 0,
+        "passesDefended" : 1,
+        "forcedFumbles" : 0,
+        "fumbleRecoveries" : 0,
+        "touchdowns" : 0
+      },
+      "returns" : {
+        "kickReturns" : 1,
+        "kickReturnYards" : 20,
+        "puntReturns" : 1,
+        "puntReturnYards" : 10,
+        "touchdowns" : 0,
+        "longest" : 20
+      }
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000009",
+      "clubId" : "00000000-0000-4000-8000-000000000003",
+      "name" : "Emeka Salmore",
+      "position" : "FB",
+      "jerseyNumber" : 32,
+      "snaps" : 11
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000010",
+      "clubId" : "00000000-0000-4000-8000-000000000003",
+      "name" : "Tunde Salford",
+      "position" : "LT",
+      "jerseyNumber" : 55,
+      "snaps" : 60
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000011",
+      "clubId" : "00000000-0000-4000-8000-000000000003",
+      "name" : "Renan Kelette",
+      "position" : "SS",
+      "jerseyNumber" : 28,
+      "snaps" : 82,
+      "defense" : {
+        "soloTackles" : 4,
+        "tacklesForLoss" : 0,
+        "sacks" : 0,
+        "interceptions" : 0,
+        "passesDefended" : 0,
+        "forcedFumbles" : 0,
+        "fumbleRecoveries" : 0,
+        "touchdowns" : 0
+      }
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000012",
+      "clubId" : "00000000-0000-4000-8000-000000000003",
+      "name" : "Vinícius Dorford",
+      "position" : "QB",
+      "jerseyNumber" : 12,
+      "snaps" : 60,
+      "passing" : {
+        "completions" : 17,
+        "attempts" : 27,
+        "yards" : 187,
+        "touchdowns" : 2,
+        "interceptions" : 0,
+        "sacked" : 2,
+        "sackYards" : 18,
+        "rating" : 108.1,
+        "longest" : 35
+      },
+      "rushing" : {
+        "attempts" : 5,
+        "yards" : 35,
+        "average" : 7.0,
+        "touchdowns" : 0,
+        "fumbles" : 0,
+        "fumblesLost" : 0,
+        "longest" : 13
+      }
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000013",
+      "clubId" : "00000000-0000-4000-8000-000000000003",
+      "name" : "Otávio Albuado",
+      "position" : "WR",
+      "jerseyNumber" : 15,
+      "snaps" : 60,
+      "receiving" : {
+        "targets" : 8,
+        "receptions" : 6,
+        "yards" : 48,
+        "yardsAfterCatch" : 10,
+        "touchdowns" : 0,
+        "drops" : 0,
+        "longest" : 14
+      }
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000014",
+      "clubId" : "00000000-0000-4000-8000-000000000003",
+      "name" : "Bruno Noranski",
+      "position" : "FS",
+      "jerseyNumber" : 24,
+      "snaps" : 81,
+      "defense" : {
+        "soloTackles" : 5,
+        "tacklesForLoss" : 0,
+        "sacks" : 0,
+        "interceptions" : 0,
+        "passesDefended" : 0,
+        "forcedFumbles" : 0,
+        "fumbleRecoveries" : 0,
+        "touchdowns" : 0
+      }
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000015",
+      "clubId" : "00000000-0000-4000-8000-000000000003",
+      "name" : "Bruno Torane",
+      "position" : "RG",
+      "jerseyNumber" : 68,
+      "snaps" : 60
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000016",
+      "clubId" : "00000000-0000-4000-8000-000000000003",
+      "name" : "Caio Ulmelli",
+      "position" : "DT",
+      "jerseyNumber" : 79,
+      "snaps" : 77,
+      "defense" : {
+        "soloTackles" : 5,
+        "tacklesForLoss" : 1,
+        "sacks" : 1,
+        "interceptions" : 0,
+        "passesDefended" : 0,
+        "forcedFumbles" : 0,
+        "fumbleRecoveries" : 0,
+        "touchdowns" : 0
+      }
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000017",
+      "clubId" : "00000000-0000-4000-8000-000000000003",
+      "name" : "Malik Fenales",
+      "position" : "DE",
+      "jerseyNumber" : 93,
+      "snaps" : 75,
+      "defense" : {
+        "soloTackles" : 4,
+        "tacklesForLoss" : 0,
+        "sacks" : 0,
+        "interceptions" : 0,
+        "passesDefended" : 0,
+        "forcedFumbles" : 0,
+        "fumbleRecoveries" : 0,
+        "touchdowns" : 0
+      }
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000018",
+      "clubId" : "00000000-0000-4000-8000-000000000003",
+      "name" : "Caio Cordell",
+      "position" : "RB",
+      "jerseyNumber" : 22,
+      "snaps" : 58,
+      "rushing" : {
+        "attempts" : 21,
+        "yards" : 51,
+        "average" : 2.4,
+        "touchdowns" : 1,
+        "fumbles" : 0,
+        "fumblesLost" : 0,
+        "longest" : 7
+      },
+      "receiving" : {
+        "targets" : 1,
+        "receptions" : 1,
+        "yards" : 5,
+        "yardsAfterCatch" : 6,
+        "touchdowns" : 0,
+        "drops" : 0,
+        "longest" : 5
+      }
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000019",
+      "clubId" : "00000000-0000-4000-8000-000000000003",
+      "name" : "Noah Dalino",
+      "position" : "RT",
+      "jerseyNumber" : 52,
+      "snaps" : 60
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000020",
+      "clubId" : "00000000-0000-4000-8000-000000000003",
+      "name" : "Garrett Penwick",
+      "position" : "WR",
+      "jerseyNumber" : 87,
+      "snaps" : 60,
+      "receiving" : {
+        "targets" : 9,
+        "receptions" : 4,
+        "yards" : 19,
+        "yardsAfterCatch" : 5,
+        "touchdowns" : 1,
+        "drops" : 0,
+        "longest" : 8
+      }
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000021",
+      "clubId" : "00000000-0000-4000-8000-000000000003",
+      "name" : "Vinícius Albuard",
+      "position" : "LG",
+      "jerseyNumber" : 53,
+      "snaps" : 60
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000022",
+      "clubId" : "00000000-0000-4000-8000-000000000003",
+      "name" : "Eduardo Pensby",
+      "position" : "C",
+      "jerseyNumber" : 67,
+      "snaps" : 60
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000023",
+      "clubId" : "00000000-0000-4000-8000-000000000003",
+      "name" : "Corey Ulmberg",
+      "position" : "CB",
+      "jerseyNumber" : 38,
+      "snaps" : 82,
+      "defense" : {
+        "soloTackles" : 2,
+        "tacklesForLoss" : 0,
+        "sacks" : 0,
+        "interceptions" : 0,
+        "passesDefended" : 2,
+        "forcedFumbles" : 0,
+        "fumbleRecoveries" : 0,
+        "touchdowns" : 0
+      }
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000024",
+      "clubId" : "00000000-0000-4000-8000-000000000003",
+      "name" : "Jordan Ivarsen",
+      "position" : "MLB",
+      "jerseyNumber" : 90,
+      "snaps" : 82,
+      "defense" : {
+        "soloTackles" : 11,
+        "tacklesForLoss" : 4,
+        "sacks" : 1,
+        "interceptions" : 0,
+        "passesDefended" : 1,
+        "forcedFumbles" : 0,
+        "fumbleRecoveries" : 0,
+        "touchdowns" : 0
+      }
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000025",
+      "clubId" : "00000000-0000-4000-8000-000000000003",
+      "name" : "Kyle Falmont",
+      "position" : "DT",
+      "jerseyNumber" : 92,
+      "snaps" : 76,
+      "defense" : {
+        "soloTackles" : 7,
+        "tacklesForLoss" : 0,
+        "sacks" : 0,
+        "interceptions" : 0,
+        "passesDefended" : 0,
+        "forcedFumbles" : 0,
+        "fumbleRecoveries" : 0,
+        "touchdowns" : 0
+      }
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000026",
+      "clubId" : "00000000-0000-4000-8000-000000000003",
+      "name" : "Enzo Marley",
+      "position" : "OLB",
+      "jerseyNumber" : 95,
+      "snaps" : 79,
+      "defense" : {
+        "soloTackles" : 4,
+        "tacklesForLoss" : 0,
+        "sacks" : 0,
+        "interceptions" : 0,
+        "passesDefended" : 0,
+        "forcedFumbles" : 0,
+        "fumbleRecoveries" : 0,
+        "touchdowns" : 0
+      }
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000027",
+      "clubId" : "00000000-0000-4000-8000-000000000003",
+      "name" : "Thiago Dorford",
+      "position" : "OLB",
+      "jerseyNumber" : 48,
+      "snaps" : 31,
+      "defense" : {
+        "soloTackles" : 2,
+        "tacklesForLoss" : 0,
+        "sacks" : 0,
+        "interceptions" : 0,
+        "passesDefended" : 0,
+        "forcedFumbles" : 0,
+        "fumbleRecoveries" : 0,
+        "touchdowns" : 0
+      }
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000028",
+      "clubId" : "00000000-0000-4000-8000-000000000003",
+      "name" : "Garrett Coreiro",
+      "position" : "TE",
+      "jerseyNumber" : 80,
+      "snaps" : 8
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000029",
+      "clubId" : "00000000-0000-4000-8000-000000000003",
+      "name" : "Bjorn Fenberg",
+      "position" : "CB",
+      "jerseyNumber" : 26,
+      "snaps" : 51,
+      "defense" : {
+        "soloTackles" : 2,
+        "tacklesForLoss" : 0,
+        "sacks" : 0,
+        "interceptions" : 0,
+        "passesDefended" : 1,
+        "forcedFumbles" : 0,
+        "fumbleRecoveries" : 0,
+        "touchdowns" : 0
+      }
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000030",
+      "clubId" : "00000000-0000-4000-8000-000000000003",
+      "name" : "Emiliano Branmore",
+      "position" : "RB",
+      "jerseyNumber" : 37,
+      "snaps" : 1
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000031",
+      "clubId" : "00000000-0000-4000-8000-000000000003",
+      "name" : "Renan Dalane",
+      "position" : "MLB",
+      "jerseyNumber" : 57,
+      "snaps" : 0,
+      "defense" : {
+        "soloTackles" : 1,
+        "tacklesForLoss" : 0,
+        "sacks" : 0,
+        "interceptions" : 0,
+        "passesDefended" : 0,
+        "forcedFumbles" : 0,
+        "fumbleRecoveries" : 0,
+        "touchdowns" : 0
+      }
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000032",
+      "clubId" : "00000000-0000-4000-8000-000000000003",
+      "name" : "Kenji Corley",
+      "position" : "WR",
+      "jerseyNumber" : 16,
+      "snaps" : 41,
+      "receiving" : {
+        "targets" : 4,
+        "receptions" : 2,
+        "yards" : 52,
+        "yardsAfterCatch" : 3,
+        "touchdowns" : 0,
+        "drops" : 0,
+        "longest" : 35
+      }
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000033",
+      "clubId" : "00000000-0000-4000-8000-000000000003",
+      "name" : "Gabriel Penino",
+      "position" : "SS",
+      "jerseyNumber" : 31,
+      "snaps" : 0,
+      "defense" : {
+        "soloTackles" : 1,
+        "tacklesForLoss" : 0,
+        "sacks" : 0,
+        "interceptions" : 0,
+        "passesDefended" : 0,
+        "forcedFumbles" : 0,
+        "fumbleRecoveries" : 0,
+        "touchdowns" : 0
+      }
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000034",
+      "clubId" : "00000000-0000-4000-8000-000000000003",
+      "name" : "Hugo Dorsen",
+      "position" : "DT",
+      "jerseyNumber" : 69,
+      "snaps" : 12,
+      "defense" : {
+        "soloTackles" : 1,
+        "tacklesForLoss" : 0,
+        "sacks" : 0,
+        "interceptions" : 0,
+        "passesDefended" : 0,
+        "forcedFumbles" : 0,
+        "fumbleRecoveries" : 0,
+        "touchdowns" : 0
+      }
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000035",
+      "clubId" : "00000000-0000-4000-8000-000000000003",
+      "name" : "Mateus Monovic",
+      "position" : "WR",
+      "jerseyNumber" : 19,
+      "snaps" : 1
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000036",
+      "clubId" : "00000000-0000-4000-8000-000000000003",
+      "name" : "Tomás Kelton",
+      "position" : "DE",
+      "jerseyNumber" : 77,
+      "snaps" : 8
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000037",
+      "clubId" : "00000000-0000-4000-8000-000000000003",
+      "name" : "Tyler Zeleiro",
+      "position" : "DT",
+      "jerseyNumber" : 64,
+      "snaps" : 4,
+      "defense" : {
+        "soloTackles" : 1,
+        "tacklesForLoss" : 0,
+        "sacks" : 0,
+        "interceptions" : 0,
+        "passesDefended" : 0,
+        "forcedFumbles" : 0,
+        "fumbleRecoveries" : 0,
+        "touchdowns" : 0
+      }
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000038",
+      "clubId" : "00000000-0000-4000-8000-000000000003",
+      "name" : "Felipe Joraro",
+      "position" : "CB",
+      "jerseyNumber" : 33,
+      "snaps" : 3
+    } ]
+  },
+  "away" : {
+    "club" : {
+      "id" : "00000000-0000-4000-8000-000000000039",
+      "name" : "Trovões de Porto Alvorada",
+      "shortName" : "PAV",
+      "city" : "Porto Alvorada",
+      "primaryColor" : "#1B2A4A",
+      "secondaryColor" : "#F2B705",
+      "conference" : "CAT",
+      "division" : "Atlântica Norte"
+    },
+    "score" : 21,
+    "quarters" : [ 7, 3, 3, 8 ],
+    "stats" : {
+      "clubId" : "00000000-0000-4000-8000-000000000039",
+      "points" : 21,
+      "pointsByQuarter" : [ 7, 3, 3, 8 ],
+      "firstDowns" : 20,
+      "firstDownsRushing" : 5,
+      "firstDownsPassing" : 14,
+      "firstDownsPenalty" : 1,
+      "thirdDownConversions" : 6,
+      "thirdDownAttempts" : 15,
+      "fourthDownConversions" : 2,
+      "fourthDownAttempts" : 4,
+      "redZoneTouchdowns" : 2,
+      "redZoneTrips" : 3,
+      "offensivePlays" : 76,
+      "totalYards" : 360,
+      "yardsPerPlay" : 4.7,
+      "rushAttempts" : 32,
+      "rushYards" : 121,
+      "passCompletions" : 25,
+      "passAttempts" : 42,
+      "passYards" : 239,
+      "sacksAllowed" : 2,
+      "sackYardsLost" : 13,
+      "interceptionsThrown" : 0,
+      "fumbles" : 0,
+      "fumblesLost" : 0,
+      "turnovers" : 0,
+      "penalties" : 12,
+      "penaltyYards" : 118,
+      "timeOfPossessionSeconds" : 1965,
+      "drives" : 10,
+      "punts" : 3,
+      "fieldGoalsMade" : 2,
+      "fieldGoalAttempts" : 2,
+      "defensiveSacks" : 2,
+      "timeoutsUsed" : 6
+    },
+    "players" : [ {
+      "playerId" : "00000000-0000-4000-8000-000000000040",
+      "clubId" : "00000000-0000-4000-8000-000000000039",
+      "name" : "Nolan Falquist",
+      "position" : "QB",
+      "jerseyNumber" : 14,
+      "snaps" : 82,
+      "passing" : {
+        "completions" : 25,
+        "attempts" : 42,
+        "yards" : 252,
+        "touchdowns" : 2,
+        "interceptions" : 0,
+        "sacked" : 2,
+        "sackYards" : 13,
+        "rating" : 92.6,
+        "longest" : 21
+      },
+      "rushing" : {
+        "attempts" : 4,
+        "yards" : 18,
+        "average" : 4.5,
+        "touchdowns" : 0,
+        "fumbles" : 0,
+        "fumblesLost" : 0,
+        "longest" : 9
+      }
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000041",
+      "clubId" : "00000000-0000-4000-8000-000000000039",
+      "name" : "Trey Branley",
+      "position" : "RB",
+      "jerseyNumber" : 22,
+      "snaps" : 71,
+      "rushing" : {
+        "attempts" : 27,
+        "yards" : 103,
+        "average" : 3.8,
+        "touchdowns" : 0,
+        "fumbles" : 0,
+        "fumblesLost" : 0,
+        "longest" : 10
+      },
+      "receiving" : {
+        "targets" : 3,
+        "receptions" : 1,
+        "yards" : 6,
+        "yardsAfterCatch" : 1,
+        "touchdowns" : 0,
+        "drops" : 1,
+        "longest" : 6
+      },
+      "returns" : {
+        "kickReturns" : 2,
+        "kickReturnYards" : 40,
+        "puntReturns" : 1,
+        "puntReturnYards" : 4,
+        "touchdowns" : 0,
+        "longest" : 21
+      }
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000042",
+      "clubId" : "00000000-0000-4000-8000-000000000039",
+      "name" : "Aleksander Cormont",
+      "position" : "RB",
+      "jerseyNumber" : 47,
+      "snaps" : 6,
+      "rushing" : {
+        "attempts" : 1,
+        "yards" : 0,
+        "average" : 0.0,
+        "touchdowns" : 0,
+        "fumbles" : 0,
+        "fumblesLost" : 0,
+        "longest" : 0
+      }
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000043",
+      "clubId" : "00000000-0000-4000-8000-000000000039",
+      "name" : "Isaiah Torford",
+      "position" : "FB",
+      "jerseyNumber" : 46,
+      "snaps" : 11
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000044",
+      "clubId" : "00000000-0000-4000-8000-000000000039",
+      "name" : "Vinícius Jorley",
+      "position" : "WR",
+      "jerseyNumber" : 17,
+      "snaps" : 82,
+      "receiving" : {
+        "targets" : 12,
+        "receptions" : 9,
+        "yards" : 76,
+        "yardsAfterCatch" : 23,
+        "touchdowns" : 0,
+        "drops" : 0,
+        "longest" : 17
+      }
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000045",
+      "clubId" : "00000000-0000-4000-8000-000000000039",
+      "name" : "Andrés Faleiro",
+      "position" : "WR",
+      "jerseyNumber" : 10,
+      "snaps" : 81,
+      "receiving" : {
+        "targets" : 5,
+        "receptions" : 2,
+        "yards" : 31,
+        "yardsAfterCatch" : 10,
+        "touchdowns" : 0,
+        "drops" : 0,
+        "longest" : 18
+      }
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000046",
+      "clubId" : "00000000-0000-4000-8000-000000000039",
+      "name" : "Nolan Zelwick",
+      "position" : "WR",
+      "jerseyNumber" : 89,
+      "snaps" : 67,
+      "receiving" : {
+        "targets" : 10,
+        "receptions" : 6,
+        "yards" : 63,
+        "yardsAfterCatch" : 24,
+        "touchdowns" : 1,
+        "drops" : 0,
+        "longest" : 21
+      }
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000047",
+      "clubId" : "00000000-0000-4000-8000-000000000039",
+      "name" : "Théo Fenberg",
+      "position" : "WR",
+      "jerseyNumber" : 83,
+      "snaps" : 5,
+      "receiving" : {
+        "targets" : 1,
+        "receptions" : 0,
+        "yards" : 0,
+        "yardsAfterCatch" : 0,
+        "touchdowns" : 0,
+        "drops" : 0,
+        "longest" : 0
+      }
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000048",
+      "clubId" : "00000000-0000-4000-8000-000000000039",
+      "name" : "Gonzalo Keldell",
+      "position" : "TE",
+      "jerseyNumber" : 42,
+      "snaps" : 82,
+      "receiving" : {
+        "targets" : 10,
+        "receptions" : 7,
+        "yards" : 76,
+        "yardsAfterCatch" : 21,
+        "touchdowns" : 1,
+        "drops" : 0,
+        "longest" : 20
+      }
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000049",
+      "clubId" : "00000000-0000-4000-8000-000000000039",
+      "name" : "Joaquín Fenford",
+      "position" : "TE",
+      "jerseyNumber" : 48,
+      "snaps" : 5
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000050",
+      "clubId" : "00000000-0000-4000-8000-000000000039",
+      "name" : "Malik Salino",
+      "position" : "LT",
+      "jerseyNumber" : 69,
+      "snaps" : 82
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000051",
+      "clubId" : "00000000-0000-4000-8000-000000000039",
+      "name" : "Kyle Ivarore",
+      "position" : "LG",
+      "jerseyNumber" : 52,
+      "snaps" : 82
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000052",
+      "clubId" : "00000000-0000-4000-8000-000000000039",
+      "name" : "Mateus Normont",
+      "position" : "C",
+      "jerseyNumber" : 75,
+      "snaps" : 82
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000053",
+      "clubId" : "00000000-0000-4000-8000-000000000039",
+      "name" : "Jordan Ulmette",
+      "position" : "RG",
+      "jerseyNumber" : 60,
+      "snaps" : 82
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000054",
+      "clubId" : "00000000-0000-4000-8000-000000000039",
+      "name" : "Renan Halaro",
+      "position" : "RT",
+      "jerseyNumber" : 68,
+      "snaps" : 82
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000055",
+      "clubId" : "00000000-0000-4000-8000-000000000039",
+      "name" : "Théo Keldell",
+      "position" : "DE",
+      "jerseyNumber" : 98,
+      "snaps" : 59,
+      "defense" : {
+        "soloTackles" : 3,
+        "tacklesForLoss" : 0,
+        "sacks" : 0,
+        "interceptions" : 0,
+        "passesDefended" : 0,
+        "forcedFumbles" : 0,
+        "fumbleRecoveries" : 0,
+        "touchdowns" : 0
+      }
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000056",
+      "clubId" : "00000000-0000-4000-8000-000000000039",
+      "name" : "Nolan Ivarwick",
+      "position" : "DE",
+      "jerseyNumber" : 93,
+      "snaps" : 58,
+      "defense" : {
+        "soloTackles" : 2,
+        "tacklesForLoss" : 1,
+        "sacks" : 0,
+        "interceptions" : 0,
+        "passesDefended" : 0,
+        "forcedFumbles" : 0,
+        "fumbleRecoveries" : 0,
+        "touchdowns" : 0
+      }
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000057",
+      "clubId" : "00000000-0000-4000-8000-000000000039",
+      "name" : "Felipe Zelette",
+      "position" : "DE",
+      "jerseyNumber" : 92,
+      "snaps" : 3
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000058",
+      "clubId" : "00000000-0000-4000-8000-000000000039",
+      "name" : "Mateo Vareiro",
+      "position" : "DT",
+      "jerseyNumber" : 74,
+      "snaps" : 59,
+      "defense" : {
+        "soloTackles" : 6,
+        "tacklesForLoss" : 0,
+        "sacks" : 0,
+        "interceptions" : 0,
+        "passesDefended" : 0,
+        "forcedFumbles" : 0,
+        "fumbleRecoveries" : 0,
+        "touchdowns" : 0
+      }
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000059",
+      "clubId" : "00000000-0000-4000-8000-000000000039",
+      "name" : "Danilo Caseiro",
+      "position" : "DT",
+      "jerseyNumber" : 99,
+      "snaps" : 30,
+      "defense" : {
+        "soloTackles" : 1,
+        "tacklesForLoss" : 1,
+        "sacks" : 1,
+        "interceptions" : 0,
+        "passesDefended" : 0,
+        "forcedFumbles" : 0,
+        "fumbleRecoveries" : 0,
+        "touchdowns" : 0
+      }
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000060",
+      "clubId" : "00000000-0000-4000-8000-000000000039",
+      "name" : "Emeka Ulmton",
+      "position" : "DT",
+      "jerseyNumber" : 56,
+      "snaps" : 1
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000061",
+      "clubId" : "00000000-0000-4000-8000-000000000039",
+      "name" : "Devin Ivaranski",
+      "position" : "OLB",
+      "jerseyNumber" : 40,
+      "snaps" : 59,
+      "defense" : {
+        "soloTackles" : 8,
+        "tacklesForLoss" : 2,
+        "sacks" : 1,
+        "interceptions" : 0,
+        "passesDefended" : 0,
+        "forcedFumbles" : 0,
+        "fumbleRecoveries" : 0,
+        "touchdowns" : 0
+      }
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000062",
+      "clubId" : "00000000-0000-4000-8000-000000000039",
+      "name" : "Nolan Penovic",
+      "position" : "OLB",
+      "jerseyNumber" : 50,
+      "snaps" : 32,
+      "defense" : {
+        "soloTackles" : 3,
+        "tacklesForLoss" : 0,
+        "sacks" : 0,
+        "interceptions" : 0,
+        "passesDefended" : 0,
+        "forcedFumbles" : 0,
+        "fumbleRecoveries" : 0,
+        "touchdowns" : 0
+      }
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000063",
+      "clubId" : "00000000-0000-4000-8000-000000000039",
+      "name" : "Tomás Torford",
+      "position" : "MLB",
+      "jerseyNumber" : 97,
+      "snaps" : 60,
+      "defense" : {
+        "soloTackles" : 3,
+        "tacklesForLoss" : 0,
+        "sacks" : 0,
+        "interceptions" : 0,
+        "passesDefended" : 0,
+        "forcedFumbles" : 0,
+        "fumbleRecoveries" : 0,
+        "touchdowns" : 0
+      }
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000064",
+      "clubId" : "00000000-0000-4000-8000-000000000039",
+      "name" : "Noah Dalley",
+      "position" : "MLB",
+      "jerseyNumber" : 57,
+      "snaps" : 31,
+      "defense" : {
+        "soloTackles" : 3,
+        "tacklesForLoss" : 0,
+        "sacks" : 0,
+        "interceptions" : 0,
+        "passesDefended" : 0,
+        "forcedFumbles" : 0,
+        "fumbleRecoveries" : 0,
+        "touchdowns" : 0
+      }
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000065",
+      "clubId" : "00000000-0000-4000-8000-000000000039",
+      "name" : "André Torard",
+      "position" : "CB",
+      "jerseyNumber" : 37,
+      "snaps" : 60,
+      "defense" : {
+        "soloTackles" : 6,
+        "tacklesForLoss" : 0,
+        "sacks" : 0,
+        "interceptions" : 0,
+        "passesDefended" : 1,
+        "forcedFumbles" : 0,
+        "fumbleRecoveries" : 0,
+        "touchdowns" : 0
+      }
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000066",
+      "clubId" : "00000000-0000-4000-8000-000000000039",
+      "name" : "Mason Garovic",
+      "position" : "CB",
+      "jerseyNumber" : 21,
+      "snaps" : 60,
+      "defense" : {
+        "soloTackles" : 2,
+        "tacklesForLoss" : 0,
+        "sacks" : 0,
+        "interceptions" : 0,
+        "passesDefended" : 4,
+        "forcedFumbles" : 0,
+        "fumbleRecoveries" : 0,
+        "touchdowns" : 0
+      }
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000067",
+      "clubId" : "00000000-0000-4000-8000-000000000039",
+      "name" : "Vinícius Jordell",
+      "position" : "CB",
+      "jerseyNumber" : 28,
+      "snaps" : 28,
+      "defense" : {
+        "soloTackles" : 2,
+        "tacklesForLoss" : 0,
+        "sacks" : 0,
+        "interceptions" : 0,
+        "passesDefended" : 0,
+        "forcedFumbles" : 0,
+        "fumbleRecoveries" : 0,
+        "touchdowns" : 0
+      }
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000068",
+      "clubId" : "00000000-0000-4000-8000-000000000039",
+      "name" : "Logan Ivarane",
+      "position" : "FS",
+      "jerseyNumber" : 38,
+      "snaps" : 59,
+      "defense" : {
+        "soloTackles" : 4,
+        "tacklesForLoss" : 1,
+        "sacks" : 0,
+        "interceptions" : 0,
+        "passesDefended" : 0,
+        "forcedFumbles" : 1,
+        "fumbleRecoveries" : 0,
+        "touchdowns" : 0
+      }
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000069",
+      "clubId" : "00000000-0000-4000-8000-000000000039",
+      "name" : "Mason Gilvane",
+      "position" : "FS",
+      "jerseyNumber" : 45,
+      "snaps" : 1
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000070",
+      "clubId" : "00000000-0000-4000-8000-000000000039",
+      "name" : "Bjorn Rosovic",
+      "position" : "SS",
+      "jerseyNumber" : 34,
+      "snaps" : 60
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000071",
+      "clubId" : "00000000-0000-4000-8000-000000000039",
+      "name" : "Felipe Normore",
+      "position" : "K",
+      "jerseyNumber" : 4,
+      "snaps" : 0,
+      "kicking" : {
+        "fgMade" : 2,
+        "fgAttempts" : 2,
+        "fgMade0to39" : 1,
+        "fgAttempts0to39" : 1,
+        "fgMade40to49" : 1,
+        "fgAttempts40to49" : 1,
+        "fgMade50plus" : 0,
+        "fgAttempts50plus" : 0,
+        "longest" : 46,
+        "patMade" : 1,
+        "patAttempts" : 1
+      }
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000072",
+      "clubId" : "00000000-0000-4000-8000-000000000039",
+      "name" : "Gabriel Ulmwick",
+      "position" : "P",
+      "jerseyNumber" : 6,
+      "snaps" : 0,
+      "punting" : {
+        "punts" : 3,
+        "yards" : 71,
+        "average" : 23.7,
+        "inside20" : 0,
+        "touchbacks" : 0,
+        "longest" : 45
+      }
+    } ]
+  },
+  "overtime" : false,
+  "winnerClubId" : "00000000-0000-4000-8000-000000000003",
+  "playCount" : 167,
+  "leaders" : [ {
+    "category" : "PASSING",
+    "clubId" : "00000000-0000-4000-8000-000000000039",
+    "playerId" : "00000000-0000-4000-8000-000000000040",
+    "name" : "Nolan Falquist",
+    "position" : "QB",
+    "value" : 252
+  }, {
+    "category" : "RUSHING",
+    "clubId" : "00000000-0000-4000-8000-000000000039",
+    "playerId" : "00000000-0000-4000-8000-000000000041",
+    "name" : "Trey Branley",
+    "position" : "RB",
+    "value" : 103
+  }, {
+    "category" : "RECEIVING",
+    "clubId" : "00000000-0000-4000-8000-000000000039",
+    "playerId" : "00000000-0000-4000-8000-000000000044",
+    "name" : "Vinícius Jorley",
+    "position" : "WR",
+    "value" : 76
+  }, {
+    "category" : "TACKLES",
+    "clubId" : "00000000-0000-4000-8000-000000000003",
+    "playerId" : "00000000-0000-4000-8000-000000000024",
+    "name" : "Jordan Ivarsen",
+    "position" : "MLB",
+    "value" : 11
+  }, {
+    "category" : "SACKS",
+    "clubId" : "00000000-0000-4000-8000-000000000039",
+    "playerId" : "00000000-0000-4000-8000-000000000061",
+    "name" : "Devin Ivaranski",
+    "position" : "OLB",
+    "value" : 1
+  } ],
+  "drives" : [ {
+    "seq" : 1,
+    "clubId" : "00000000-0000-4000-8000-000000000003",
+    "quarter" : 1,
+    "startClockSeconds" : 900,
+    "startAbsYd" : 25,
+    "endAbsYd" : 100,
+    "plays" : 9,
+    "yards" : 75,
+    "timeOfPossessionSeconds" : 287,
+    "reachedRedZone" : true,
+    "result" : "TD"
+  }, {
+    "seq" : 2,
+    "clubId" : "00000000-0000-4000-8000-000000000039",
+    "quarter" : 1,
+    "startClockSeconds" : 613,
+    "startAbsYd" : 75,
+    "endAbsYd" : 0,
+    "plays" : 9,
+    "yards" : 75,
+    "timeOfPossessionSeconds" : 299,
+    "reachedRedZone" : true,
+    "result" : "TD"
+  }, {
+    "seq" : 3,
+    "clubId" : "00000000-0000-4000-8000-000000000003",
+    "quarter" : 1,
+    "startClockSeconds" : 307,
+    "startAbsYd" : 28,
+    "endAbsYd" : 35,
+    "plays" : 4,
+    "yards" : 7,
+    "timeOfPossessionSeconds" : 124,
+    "reachedRedZone" : false,
+    "result" : "PUNT"
+  }, {
+    "seq" : 4,
+    "clubId" : "00000000-0000-4000-8000-000000000039",
+    "quarter" : 1,
+    "startClockSeconds" : 183,
+    "startAbsYd" : 65,
+    "endAbsYd" : 29,
+    "plays" : 10,
+    "yards" : 36,
+    "timeOfPossessionSeconds" : 223,
+    "reachedRedZone" : false,
+    "result" : "FG"
+  }, {
+    "seq" : 5,
+    "clubId" : "00000000-0000-4000-8000-000000000003",
+    "quarter" : 2,
+    "startClockSeconds" : 860,
+    "startAbsYd" : 25,
+    "endAbsYd" : 100,
+    "plays" : 9,
+    "yards" : 75,
+    "timeOfPossessionSeconds" : 257,
+    "reachedRedZone" : true,
+    "result" : "TD"
+  }, {
+    "seq" : 6,
+    "clubId" : "00000000-0000-4000-8000-000000000039",
+    "quarter" : 2,
+    "startClockSeconds" : 596,
+    "startAbsYd" : 73,
+    "endAbsYd" : 65,
+    "plays" : 4,
+    "yards" : 8,
+    "timeOfPossessionSeconds" : 46,
+    "reachedRedZone" : false,
+    "result" : "PUNT"
+  }, {
+    "seq" : 7,
+    "clubId" : "00000000-0000-4000-8000-000000000003",
+    "quarter" : 2,
+    "startClockSeconds" : 550,
+    "startAbsYd" : 30,
+    "endAbsYd" : 16,
+    "plays" : 4,
+    "yards" : -14,
+    "timeOfPossessionSeconds" : 87,
+    "reachedRedZone" : false,
+    "result" : "PUNT"
+  }, {
+    "seq" : 8,
+    "clubId" : "00000000-0000-4000-8000-000000000039",
+    "quarter" : 2,
+    "startClockSeconds" : 463,
+    "startAbsYd" : 50,
+    "endAbsYd" : 59,
+    "plays" : 6,
+    "yards" : -9,
+    "timeOfPossessionSeconds" : 116,
+    "reachedRedZone" : false,
+    "result" : "PUNT"
+  }, {
+    "seq" : 9,
+    "clubId" : "00000000-0000-4000-8000-000000000003",
+    "quarter" : 2,
+    "startClockSeconds" : 347,
+    "startAbsYd" : 67,
+    "endAbsYd" : 80,
+    "plays" : 7,
+    "yards" : 13,
+    "timeOfPossessionSeconds" : 168,
+    "reachedRedZone" : true,
+    "result" : "MISSED_FG"
+  }, {
+    "seq" : 10,
+    "clubId" : "00000000-0000-4000-8000-000000000039",
+    "quarter" : 2,
+    "startClockSeconds" : 179,
+    "startAbsYd" : 73,
+    "endAbsYd" : 67,
+    "plays" : 4,
+    "yards" : 6,
+    "timeOfPossessionSeconds" : 82,
+    "reachedRedZone" : false,
+    "result" : "PUNT"
+  }, {
+    "seq" : 11,
+    "clubId" : "00000000-0000-4000-8000-000000000003",
+    "quarter" : 2,
+    "startClockSeconds" : 97,
+    "startAbsYd" : 41,
+    "endAbsYd" : 100,
+    "plays" : 7,
+    "yards" : 59,
+    "timeOfPossessionSeconds" : 56,
+    "reachedRedZone" : true,
+    "result" : "TD"
+  }, {
+    "seq" : 12,
+    "clubId" : "00000000-0000-4000-8000-000000000039",
+    "quarter" : 2,
+    "startClockSeconds" : 41,
+    "startAbsYd" : 75,
+    "endAbsYd" : 36,
+    "plays" : 7,
+    "yards" : 39,
+    "timeOfPossessionSeconds" : 41,
+    "reachedRedZone" : false,
+    "result" : "END_HALF"
+  }, {
+    "seq" : 13,
+    "clubId" : "00000000-0000-4000-8000-000000000039",
+    "quarter" : 3,
+    "startClockSeconds" : 900,
+    "startAbsYd" : 75,
+    "endAbsYd" : 20,
+    "plays" : 13,
+    "yards" : 55,
+    "timeOfPossessionSeconds" : 439,
+    "reachedRedZone" : true,
+    "result" : "FG"
+  }, {
+    "seq" : 14,
+    "clubId" : "00000000-0000-4000-8000-000000000003",
+    "quarter" : 3,
+    "startClockSeconds" : 461,
+    "startAbsYd" : 25,
+    "endAbsYd" : 59,
+    "plays" : 10,
+    "yards" : 34,
+    "timeOfPossessionSeconds" : 266,
+    "reachedRedZone" : false,
+    "result" : "PUNT"
+  }, {
+    "seq" : 15,
+    "clubId" : "00000000-0000-4000-8000-000000000039",
+    "quarter" : 3,
+    "startClockSeconds" : 195,
+    "startAbsYd" : 91,
+    "endAbsYd" : 0,
+    "plays" : 18,
+    "yards" : 91,
+    "timeOfPossessionSeconds" : 542,
+    "reachedRedZone" : true,
+    "result" : "TD"
+  }, {
+    "seq" : 16,
+    "clubId" : "00000000-0000-4000-8000-000000000003",
+    "quarter" : 4,
+    "startClockSeconds" : 553,
+    "startAbsYd" : 25,
+    "endAbsYd" : 75,
+    "plays" : 11,
+    "yards" : 50,
+    "timeOfPossessionSeconds" : 343,
+    "reachedRedZone" : false,
+    "result" : "FG"
+  }, {
+    "seq" : 17,
+    "clubId" : "00000000-0000-4000-8000-000000000039",
+    "quarter" : 4,
+    "startClockSeconds" : 205,
+    "startAbsYd" : 78,
+    "endAbsYd" : 71,
+    "plays" : 7,
+    "yards" : 7,
+    "timeOfPossessionSeconds" : 78,
+    "reachedRedZone" : false,
+    "result" : "DOWNS"
+  }, {
+    "seq" : 18,
+    "clubId" : "00000000-0000-4000-8000-000000000003",
+    "quarter" : 4,
+    "startClockSeconds" : 127,
+    "startAbsYd" : 71,
+    "endAbsYd" : 66,
+    "plays" : 4,
+    "yards" : -5,
+    "timeOfPossessionSeconds" : 23,
+    "reachedRedZone" : false,
+    "result" : "PUNT"
+  }, {
+    "seq" : 19,
+    "clubId" : "00000000-0000-4000-8000-000000000039",
+    "quarter" : 4,
+    "startClockSeconds" : 104,
+    "startAbsYd" : 90,
+    "endAbsYd" : 63,
+    "plays" : 8,
+    "yards" : 27,
+    "timeOfPossessionSeconds" : 87,
+    "reachedRedZone" : false,
+    "result" : "DOWNS"
+  }, {
+    "seq" : 20,
+    "clubId" : "00000000-0000-4000-8000-000000000003",
+    "quarter" : 4,
+    "startClockSeconds" : 17,
+    "startAbsYd" : 63,
+    "endAbsYd" : 62,
+    "plays" : 1,
+    "yards" : -1,
+    "timeOfPossessionSeconds" : 17,
+    "reachedRedZone" : false,
+    "result" : "END_HALF"
+  } ],
+  "scoringPlays" : [ {
+    "seq" : 11,
+    "drive" : 1,
+    "quarter" : 1,
+    "clockSeconds" : 619,
+    "possessionClubId" : "00000000-0000-4000-8000-000000000003",
+    "down" : 3,
+    "distance" : 8,
+    "ballOnAbsYd" : 92,
+    "type" : "PASS",
+    "concept" : "MEDIUM_PASS",
+    "formation" : "SINGLEBACK",
+    "defensePackage" : "NICKEL",
+    "coverage" : "COVER_1",
+    "blitz" : true,
+    "yards" : 8,
+    "result" : "TOUCHDOWN",
+    "firstDown" : false,
+    "turnover" : false,
+    "points" : 6,
+    "scoringClubId" : "00000000-0000-4000-8000-000000000003",
+    "playerIds" : [ "00000000-0000-4000-8000-000000000012", "00000000-0000-4000-8000-000000000020" ],
+    "textKey" : "match:event.pass.touchdown",
+    "params" : {
+      "passer" : "Vinícius Dorford",
+      "receiver" : "Garrett Penwick",
+      "yards" : "8"
+    },
+    "homeScore" : 6,
+    "awayScore" : 0,
+    "clockStopped" : true,
+    "driveEnded" : "TD",
+    "callSource" : "AI"
+  }, {
+    "seq" : 12,
+    "drive" : 0,
+    "quarter" : 1,
+    "clockSeconds" : 613,
+    "possessionClubId" : "00000000-0000-4000-8000-000000000003",
+    "down" : 0,
+    "distance" : 0,
+    "ballOnAbsYd" : 85,
+    "type" : "EXTRA_POINT",
+    "blitz" : false,
+    "yards" : 0,
+    "result" : "EXTRA_POINT_GOOD",
+    "firstDown" : false,
+    "turnover" : false,
+    "points" : 1,
+    "scoringClubId" : "00000000-0000-4000-8000-000000000003",
+    "playerIds" : [ "00000000-0000-4000-8000-000000000005" ],
+    "textKey" : "match:event.extraPoint.good",
+    "params" : {
+      "kicker" : "Renan Monmore",
+      "distance" : "32"
+    },
+    "homeScore" : 7,
+    "awayScore" : 0,
+    "clockStopped" : true,
+    "callSource" : "AI"
+  }, {
+    "seq" : 23,
+    "drive" : 2,
+    "quarter" : 1,
+    "clockSeconds" : 320,
+    "possessionClubId" : "00000000-0000-4000-8000-000000000039",
+    "down" : 1,
+    "distance" : 10,
+    "ballOnAbsYd" : 20,
+    "type" : "PASS",
+    "concept" : "MEDIUM_PASS",
+    "formation" : "SHOTGUN",
+    "defensePackage" : "NICKEL",
+    "coverage" : "COVER_4",
+    "blitz" : false,
+    "yards" : 20,
+    "result" : "TOUCHDOWN",
+    "firstDown" : false,
+    "turnover" : false,
+    "points" : 6,
+    "scoringClubId" : "00000000-0000-4000-8000-000000000039",
+    "playerIds" : [ "00000000-0000-4000-8000-000000000040", "00000000-0000-4000-8000-000000000048" ],
+    "textKey" : "match:event.pass.touchdown",
+    "params" : {
+      "passer" : "Nolan Falquist",
+      "receiver" : "Gonzalo Keldell",
+      "yards" : "20"
+    },
+    "homeScore" : 7,
+    "awayScore" : 6,
+    "clockStopped" : true,
+    "driveEnded" : "TD",
+    "callSource" : "AI"
+  }, {
+    "seq" : 24,
+    "drive" : 0,
+    "quarter" : 1,
+    "clockSeconds" : 314,
+    "possessionClubId" : "00000000-0000-4000-8000-000000000039",
+    "down" : 0,
+    "distance" : 0,
+    "ballOnAbsYd" : 15,
+    "type" : "EXTRA_POINT",
+    "blitz" : false,
+    "yards" : 0,
+    "result" : "EXTRA_POINT_GOOD",
+    "firstDown" : false,
+    "turnover" : false,
+    "points" : 1,
+    "scoringClubId" : "00000000-0000-4000-8000-000000000039",
+    "playerIds" : [ "00000000-0000-4000-8000-000000000071" ],
+    "textKey" : "match:event.extraPoint.good",
+    "params" : {
+      "kicker" : "Felipe Normore",
+      "distance" : "32"
+    },
+    "homeScore" : 7,
+    "awayScore" : 7,
+    "clockStopped" : true,
+    "callSource" : "AI"
+  }, {
+    "seq" : 42,
+    "drive" : 4,
+    "quarter" : 2,
+    "clockSeconds" : 865,
+    "possessionClubId" : "00000000-0000-4000-8000-000000000039",
+    "down" : 4,
+    "distance" : 6,
+    "ballOnAbsYd" : 29,
+    "type" : "FIELD_GOAL",
+    "concept" : "FIELD_GOAL",
+    "blitz" : false,
+    "yards" : 46,
+    "result" : "FIELD_GOAL_GOOD",
+    "firstDown" : false,
+    "turnover" : false,
+    "points" : 3,
+    "scoringClubId" : "00000000-0000-4000-8000-000000000039",
+    "playerIds" : [ "00000000-0000-4000-8000-000000000071" ],
+    "textKey" : "match:event.fieldGoal.good",
+    "params" : {
+      "kicker" : "Felipe Normore",
+      "distance" : "46"
+    },
+    "homeScore" : 7,
+    "awayScore" : 10,
+    "clockStopped" : true,
+    "driveEnded" : "FG",
+    "callSource" : "USER"
+  }, {
+    "seq" : 52,
+    "drive" : 5,
+    "quarter" : 2,
+    "clockSeconds" : 606,
+    "possessionClubId" : "00000000-0000-4000-8000-000000000003",
+    "down" : 1,
+    "distance" : 1,
+    "ballOnAbsYd" : 99,
+    "type" : "RUN",
+    "concept" : "INSIDE_RUN",
+    "formation" : "I_FORM",
+    "defensePackage" : "GOAL_LINE",
+    "coverage" : "COVER_1",
+    "blitz" : false,
+    "yards" : 1,
+    "result" : "TOUCHDOWN",
+    "firstDown" : false,
+    "turnover" : false,
+    "points" : 6,
+    "scoringClubId" : "00000000-0000-4000-8000-000000000003",
+    "playerIds" : [ "00000000-0000-4000-8000-000000000018" ],
+    "textKey" : "match:event.run.touchdown",
+    "params" : {
+      "rusher" : "Caio Cordell",
+      "yards" : "1"
+    },
+    "homeScore" : 13,
+    "awayScore" : 10,
+    "clockStopped" : true,
+    "driveEnded" : "TD",
+    "callSource" : "AI"
+  }, {
+    "seq" : 53,
+    "drive" : 0,
+    "quarter" : 2,
+    "clockSeconds" : 603,
+    "possessionClubId" : "00000000-0000-4000-8000-000000000003",
+    "down" : 0,
+    "distance" : 0,
+    "ballOnAbsYd" : 85,
+    "type" : "EXTRA_POINT",
+    "blitz" : false,
+    "yards" : 0,
+    "result" : "EXTRA_POINT_GOOD",
+    "firstDown" : false,
+    "turnover" : false,
+    "points" : 1,
+    "scoringClubId" : "00000000-0000-4000-8000-000000000003",
+    "playerIds" : [ "00000000-0000-4000-8000-000000000005" ],
+    "textKey" : "match:event.extraPoint.good",
+    "params" : {
+      "kicker" : "Renan Monmore",
+      "distance" : "32"
+    },
+    "homeScore" : 14,
+    "awayScore" : 10,
+    "clockStopped" : true,
+    "callSource" : "AI"
+  }, {
+    "seq" : 87,
+    "drive" : 11,
+    "quarter" : 2,
+    "clockSeconds" : 47,
+    "possessionClubId" : "00000000-0000-4000-8000-000000000003",
+    "down" : 1,
+    "distance" : 10,
+    "ballOnAbsYd" : 86,
+    "type" : "PASS",
+    "concept" : "MEDIUM_PASS",
+    "formation" : "SHOTGUN",
+    "defensePackage" : "BASE_3_4",
+    "coverage" : "COVER_3",
+    "blitz" : false,
+    "yards" : 14,
+    "result" : "TOUCHDOWN",
+    "firstDown" : false,
+    "turnover" : false,
+    "points" : 6,
+    "scoringClubId" : "00000000-0000-4000-8000-000000000003",
+    "playerIds" : [ "00000000-0000-4000-8000-000000000012", "00000000-0000-4000-8000-000000000006" ],
+    "textKey" : "match:event.pass.touchdown",
+    "params" : {
+      "passer" : "Vinícius Dorford",
+      "receiver" : "Tyler Fensby",
+      "yards" : "14"
+    },
+    "homeScore" : 20,
+    "awayScore" : 10,
+    "clockStopped" : true,
+    "driveEnded" : "TD",
+    "callSource" : "USER"
+  }, {
+    "seq" : 88,
+    "drive" : 0,
+    "quarter" : 2,
+    "clockSeconds" : 41,
+    "possessionClubId" : "00000000-0000-4000-8000-000000000003",
+    "down" : 0,
+    "distance" : 0,
+    "ballOnAbsYd" : 85,
+    "type" : "EXTRA_POINT",
+    "blitz" : false,
+    "yards" : 0,
+    "result" : "EXTRA_POINT_GOOD",
+    "firstDown" : false,
+    "turnover" : false,
+    "points" : 1,
+    "scoringClubId" : "00000000-0000-4000-8000-000000000003",
+    "playerIds" : [ "00000000-0000-4000-8000-000000000005" ],
+    "textKey" : "match:event.extraPoint.good",
+    "params" : {
+      "kicker" : "Renan Monmore",
+      "distance" : "32"
+    },
+    "homeScore" : 21,
+    "awayScore" : 10,
+    "clockStopped" : true,
+    "callSource" : "AI"
+  }, {
+    "seq" : 114,
+    "drive" : 13,
+    "quarter" : 3,
+    "clockSeconds" : 466,
+    "possessionClubId" : "00000000-0000-4000-8000-000000000039",
+    "down" : 4,
+    "distance" : 2,
+    "ballOnAbsYd" : 20,
+    "type" : "FIELD_GOAL",
+    "concept" : "FIELD_GOAL",
+    "blitz" : false,
+    "yards" : 37,
+    "result" : "FIELD_GOAL_GOOD",
+    "firstDown" : false,
+    "turnover" : false,
+    "points" : 3,
+    "scoringClubId" : "00000000-0000-4000-8000-000000000039",
+    "playerIds" : [ "00000000-0000-4000-8000-000000000071" ],
+    "textKey" : "match:event.fieldGoal.good",
+    "params" : {
+      "kicker" : "Felipe Normore",
+      "distance" : "37"
+    },
+    "homeScore" : 21,
+    "awayScore" : 13,
+    "clockStopped" : true,
+    "driveEnded" : "FG",
+    "callSource" : "USER"
+  }, {
+    "seq" : 144,
+    "drive" : 15,
+    "quarter" : 4,
+    "clockSeconds" : 558,
+    "possessionClubId" : "00000000-0000-4000-8000-000000000039",
+    "down" : 2,
+    "distance" : 7,
+    "ballOnAbsYd" : 7,
+    "type" : "PASS",
+    "concept" : "MEDIUM_PASS",
+    "formation" : "SHOTGUN",
+    "defensePackage" : "BASE_4_3",
+    "coverage" : "COVER_2",
+    "blitz" : false,
+    "yards" : 7,
+    "result" : "TOUCHDOWN",
+    "firstDown" : false,
+    "turnover" : false,
+    "points" : 6,
+    "scoringClubId" : "00000000-0000-4000-8000-000000000039",
+    "playerIds" : [ "00000000-0000-4000-8000-000000000040", "00000000-0000-4000-8000-000000000046" ],
+    "textKey" : "match:event.pass.touchdown",
+    "params" : {
+      "passer" : "Nolan Falquist",
+      "receiver" : "Nolan Zelwick",
+      "yards" : "7"
+    },
+    "homeScore" : 21,
+    "awayScore" : 19,
+    "clockStopped" : true,
+    "driveEnded" : "TD",
+    "callSource" : "AI"
+  }, {
+    "seq" : 145,
+    "drive" : 0,
+    "quarter" : 4,
+    "clockSeconds" : 553,
+    "possessionClubId" : "00000000-0000-4000-8000-000000000039",
+    "down" : 0,
+    "distance" : 2,
+    "ballOnAbsYd" : 2,
+    "type" : "TWO_POINT",
+    "concept" : "SHORT_PASS",
+    "formation" : "SHOTGUN",
+    "defensePackage" : "BASE_4_3",
+    "coverage" : "COVER_4",
+    "blitz" : false,
+    "yards" : 2,
+    "result" : "TWO_POINT_GOOD",
+    "firstDown" : false,
+    "turnover" : false,
+    "points" : 2,
+    "scoringClubId" : "00000000-0000-4000-8000-000000000039",
+    "playerIds" : [ "00000000-0000-4000-8000-000000000040", "00000000-0000-4000-8000-000000000046" ],
+    "textKey" : "match:event.twoPoint.good",
+    "params" : {
+      "passer" : "Nolan Falquist",
+      "receiver" : "Nolan Zelwick",
+      "yards" : "2"
+    },
+    "homeScore" : 21,
+    "awayScore" : 21,
+    "clockStopped" : true,
+    "callSource" : "USER"
+  }, {
+    "seq" : 157,
+    "drive" : 16,
+    "quarter" : 4,
+    "clockSeconds" : 215,
+    "possessionClubId" : "00000000-0000-4000-8000-000000000003",
+    "down" : 4,
+    "distance" : 3,
+    "ballOnAbsYd" : 75,
+    "type" : "FIELD_GOAL",
+    "concept" : "FIELD_GOAL",
+    "blitz" : false,
+    "yards" : 42,
+    "result" : "FIELD_GOAL_GOOD",
+    "firstDown" : false,
+    "turnover" : false,
+    "points" : 3,
+    "scoringClubId" : "00000000-0000-4000-8000-000000000003",
+    "playerIds" : [ "00000000-0000-4000-8000-000000000005" ],
+    "textKey" : "match:event.fieldGoal.good",
+    "params" : {
+      "kicker" : "Renan Monmore",
+      "distance" : "42"
+    },
+    "homeScore" : 24,
+    "awayScore" : 21,
+    "clockStopped" : true,
+    "driveEnded" : "FG",
+    "callSource" : "USER"
+  } ],
+  "decisions" : [ {
+    "decisionId" : "dec-28",
+    "situation" : "FOURTH_DOWN",
+    "clubId" : "00000000-0000-4000-8000-000000000039",
+    "optionCode" : "DEF_NICKEL_COVER_2",
+    "auto" : false,
+    "atSeq" : 28
+  }, {
+    "decisionId" : "dec-32",
+    "situation" : "FOURTH_DOWN",
+    "clubId" : "00000000-0000-4000-8000-000000000039",
+    "optionCode" : "SHORT_PASS",
+    "auto" : false,
+    "atSeq" : 32
+  }, {
+    "decisionId" : "dec-40",
+    "situation" : "FOURTH_DOWN",
+    "clubId" : "00000000-0000-4000-8000-000000000039",
+    "optionCode" : "FIELD_GOAL",
+    "auto" : false,
+    "atSeq" : 41
+  }, {
+    "decisionId" : "dec-56",
+    "situation" : "FOURTH_DOWN",
+    "clubId" : "00000000-0000-4000-8000-000000000039",
+    "optionCode" : "PUNT",
+    "auto" : false,
+    "atSeq" : 57
+  }, {
+    "decisionId" : "dec-60",
+    "situation" : "FOURTH_DOWN",
+    "clubId" : "00000000-0000-4000-8000-000000000039",
+    "optionCode" : "DEF_BLITZ_COVER_1",
+    "auto" : false,
+    "atSeq" : 61
+  }, {
+    "decisionId" : "dec-66",
+    "situation" : "FOURTH_DOWN",
+    "clubId" : "00000000-0000-4000-8000-000000000039",
+    "optionCode" : "PUNT",
+    "auto" : false,
+    "atSeq" : 67
+  }, {
+    "decisionId" : "dec-73",
+    "situation" : "FOURTH_DOWN",
+    "clubId" : "00000000-0000-4000-8000-000000000039",
+    "optionCode" : "DEF_NICKEL_COVER_2",
+    "auto" : false,
+    "atSeq" : 74
+  }, {
+    "decisionId" : "dec-77",
+    "situation" : "FOURTH_DOWN",
+    "clubId" : "00000000-0000-4000-8000-000000000039",
+    "optionCode" : "PUNT",
+    "auto" : false,
+    "atSeq" : 79
+  }, {
+    "decisionId" : "dec-78",
+    "situation" : "TWO_MINUTE",
+    "clubId" : "00000000-0000-4000-8000-000000000039",
+    "optionCode" : "DEF_DIME_COVER_4",
+    "auto" : false,
+    "atSeq" : 80
+  }, {
+    "decisionId" : "dec-79",
+    "situation" : "TWO_MINUTE",
+    "clubId" : "00000000-0000-4000-8000-000000000039",
+    "optionCode" : "DEF_BLITZ_COVER_1",
+    "auto" : false,
+    "atSeq" : 81
+  }, {
+    "decisionId" : "dec-80",
+    "situation" : "TWO_MINUTE",
+    "clubId" : "00000000-0000-4000-8000-000000000039",
+    "optionCode" : "DEF_NICKEL_COVER_2",
+    "auto" : false,
+    "atSeq" : 82
+  }, {
+    "decisionId" : "dec-81",
+    "situation" : "TWO_MINUTE",
+    "clubId" : "00000000-0000-4000-8000-000000000039",
+    "optionCode" : "DEF_NICKEL_COVER_2",
+    "auto" : false,
+    "atSeq" : 83
+  }, {
+    "decisionId" : "dec-82",
+    "situation" : "TWO_MINUTE",
+    "clubId" : "00000000-0000-4000-8000-000000000039",
+    "optionCode" : "DEF_NICKEL_COVER_2",
+    "auto" : false,
+    "atSeq" : 84
+  }, {
+    "decisionId" : "dec-83",
+    "situation" : "TWO_MINUTE",
+    "clubId" : "00000000-0000-4000-8000-000000000039",
+    "optionCode" : "DEF_NICKEL_COVER_2",
+    "auto" : false,
+    "atSeq" : 85
+  }, {
+    "decisionId" : "dec-84",
+    "situation" : "TWO_MINUTE",
+    "clubId" : "00000000-0000-4000-8000-000000000039",
+    "optionCode" : "DEF_BASE_COVER_3",
+    "auto" : false,
+    "atSeq" : 86
+  }, {
+    "decisionId" : "dec-87",
+    "situation" : "TWO_MINUTE",
+    "clubId" : "00000000-0000-4000-8000-000000000039",
+    "optionCode" : "MEDIUM_PASS",
+    "auto" : false,
+    "atSeq" : 89
+  }, {
+    "decisionId" : "dec-88",
+    "situation" : "TWO_MINUTE",
+    "clubId" : "00000000-0000-4000-8000-000000000039",
+    "optionCode" : "MEDIUM_PASS",
+    "auto" : false,
+    "atSeq" : 90
+  }, {
+    "decisionId" : "dec-89",
+    "situation" : "TWO_MINUTE",
+    "clubId" : "00000000-0000-4000-8000-000000000039",
+    "optionCode" : "MEDIUM_PASS",
+    "auto" : false,
+    "atSeq" : 91
+  }, {
+    "decisionId" : "dec-90",
+    "situation" : "TWO_MINUTE",
+    "clubId" : "00000000-0000-4000-8000-000000000039",
+    "optionCode" : "MEDIUM_PASS",
+    "auto" : false,
+    "atSeq" : 93
+  }, {
+    "decisionId" : "dec-91",
+    "situation" : "TWO_MINUTE",
+    "clubId" : "00000000-0000-4000-8000-000000000039",
+    "optionCode" : "SHORT_PASS",
+    "auto" : false,
+    "atSeq" : 95
+  }, {
+    "decisionId" : "dec-92",
+    "situation" : "TWO_MINUTE",
+    "clubId" : "00000000-0000-4000-8000-000000000039",
+    "optionCode" : "SHORT_PASS",
+    "auto" : false,
+    "atSeq" : 97
+  }, {
+    "decisionId" : "dec-93",
+    "situation" : "TWO_MINUTE",
+    "clubId" : "00000000-0000-4000-8000-000000000039",
+    "optionCode" : "OUTSIDE_RUN",
+    "auto" : false,
+    "atSeq" : 98
+  }, {
+    "decisionId" : "dec-107",
+    "situation" : "FOURTH_DOWN",
+    "clubId" : "00000000-0000-4000-8000-000000000039",
+    "optionCode" : "FIELD_GOAL",
+    "auto" : false,
+    "atSeq" : 113
+  }, {
+    "decisionId" : "dec-118",
+    "situation" : "FOURTH_DOWN",
+    "clubId" : "00000000-0000-4000-8000-000000000039",
+    "optionCode" : "DEF_BASE_COVER_3",
+    "auto" : false,
+    "atSeq" : 124
+  }, {
+    "decisionId" : "dec-129",
+    "situation" : "FOURTH_DOWN",
+    "clubId" : "00000000-0000-4000-8000-000000000039",
+    "optionCode" : "INSIDE_RUN",
+    "auto" : false,
+    "atSeq" : 135
+  }, {
+    "decisionId" : "dec-138",
+    "situation" : "CONVERSION",
+    "clubId" : "00000000-0000-4000-8000-000000000039",
+    "optionCode" : "TWO_POINT_PASS",
+    "auto" : false,
+    "atSeq" : 144
+  }, {
+    "decisionId" : "dec-150",
+    "situation" : "FOURTH_DOWN",
+    "clubId" : "00000000-0000-4000-8000-000000000039",
+    "optionCode" : "DEF_BASE_COVER_3",
+    "auto" : false,
+    "atSeq" : 156
+  }, {
+    "decisionId" : "dec-159",
+    "situation" : "FOURTH_DOWN",
+    "clubId" : "00000000-0000-4000-8000-000000000039",
+    "optionCode" : "MEDIUM_PASS",
+    "auto" : false,
+    "atSeq" : 165
+  }, {
+    "decisionId" : "dec-162",
+    "situation" : "TWO_MINUTE",
+    "clubId" : "00000000-0000-4000-8000-000000000039",
+    "optionCode" : "DEF_NICKEL_COVER_2",
+    "auto" : false,
+    "atSeq" : 170
+  }, {
+    "decisionId" : "dec-163",
+    "situation" : "FOURTH_DOWN",
+    "clubId" : "00000000-0000-4000-8000-000000000039",
+    "optionCode" : "DEF_BLITZ_COVER_1",
+    "auto" : false,
+    "atSeq" : 171
+  }, {
+    "decisionId" : "dec-164",
+    "situation" : "TWO_MINUTE",
+    "clubId" : "00000000-0000-4000-8000-000000000039",
+    "optionCode" : "INSIDE_RUN",
+    "auto" : false,
+    "atSeq" : 173
+  }, {
+    "decisionId" : "dec-165",
+    "situation" : "TWO_MINUTE",
+    "clubId" : "00000000-0000-4000-8000-000000000039",
+    "optionCode" : "SHORT_PASS",
+    "auto" : false,
+    "atSeq" : 174
+  }, {
+    "decisionId" : "dec-166",
+    "situation" : "TWO_MINUTE",
+    "clubId" : "00000000-0000-4000-8000-000000000039",
+    "optionCode" : "MEDIUM_PASS",
+    "auto" : false,
+    "atSeq" : 176
+  }, {
+    "decisionId" : "dec-167",
+    "situation" : "TWO_MINUTE",
+    "clubId" : "00000000-0000-4000-8000-000000000039",
+    "optionCode" : "SHORT_PASS",
+    "auto" : false,
+    "atSeq" : 177
+  }, {
+    "decisionId" : "dec-168",
+    "situation" : "TWO_MINUTE",
+    "clubId" : "00000000-0000-4000-8000-000000000039",
+    "optionCode" : "SHORT_PASS",
+    "auto" : false,
+    "atSeq" : 178
+  }, {
+    "decisionId" : "dec-169",
+    "situation" : "TWO_MINUTE",
+    "clubId" : "00000000-0000-4000-8000-000000000039",
+    "optionCode" : "SHORT_PASS",
+    "auto" : false,
+    "atSeq" : 179
+  }, {
+    "decisionId" : "dec-170",
+    "situation" : "TWO_MINUTE",
+    "clubId" : "00000000-0000-4000-8000-000000000039",
+    "optionCode" : "SPIKE",
+    "auto" : false,
+    "atSeq" : 180
+  }, {
+    "decisionId" : "dec-171",
+    "situation" : "FOURTH_DOWN",
+    "clubId" : "00000000-0000-4000-8000-000000000039",
+    "optionCode" : "SHORT_PASS",
+    "auto" : false,
+    "atSeq" : 181
+  }, {
+    "decisionId" : "dec-172",
+    "situation" : "TWO_MINUTE",
+    "clubId" : "00000000-0000-4000-8000-000000000039",
+    "optionCode" : "DEF_BASE_COVER_3",
+    "auto" : false,
+    "atSeq" : 182
+  }, {
+    "decisionId" : "dec-173",
+    "situation" : "TWO_MINUTE",
+    "clubId" : "00000000-0000-4000-8000-000000000039",
+    "optionCode" : "DEF_BASE_COVER_3",
+    "auto" : false,
+    "atSeq" : 183
+  } ]
+}

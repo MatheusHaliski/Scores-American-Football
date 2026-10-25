@@ -51,7 +51,7 @@ if (move ao practice squad ou eleva?) then (sim)
     :422 ELEVATION_LIMIT;
     stop
   endif
-  :PracticeSquadMember criado ou elevationsUsed + 1 (volta sozinho após o jogo);
+  :Dos 53: rosterStatus PRACTICE_SQUAD_WAIVERS (exposto a waivers, vaga reservada) · elevação: elevationsUsed + 1 (volta sozinho após o jogo);
 endif
 |Manager|
 if (coloca na IR ou ativa da IR?) then (sim)
@@ -102,7 +102,7 @@ if (envia mensagem ao jogador?) then (sim)
   :Responde no inbox · moral ajustada (MoraleEngine);
 endif
 |Scheduler|
-:Fim da semana: elevados voltam ao practice squad · contagem de semanas na IR;
+:Fim da semana: waivers resolvidos (sem reivindicação da IA, entra no practice squad: WAIVER_CLEARED) · elevados voltam ao practice squad · contagem de semanas na IR;
 |Frontend|
 :Atualiza cards e contadores;
 end

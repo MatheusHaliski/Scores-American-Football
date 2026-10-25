@@ -7,12 +7,27 @@ import java.util.List;
  * no mesmo PR, senão o ForeignKeyPolicyTest fica vermelho. Bloco 3: as FKs da plataforma (V1__plataforma.sql); a conta é
  * anonimizada e nunca apagada, mas o que é dela cai junto se um dia for (sessões, configurações, preferências, notificações,
  * pedidos de exportação); a prova do consentimento (consent_record) segura a exclusão. Bloco 4: as do catálogo (V2__dominio_af.sql).
- * Bloco 6a: as da carreira (V3__carreira.sql).
+ * Bloco 6a: as da carreira (V3__carreira.sql). Bloco 6b: as da partida (V4__partida.sql).
  */
 final class ForeignKeyPolicy {
   record Fk(String table, String column, String refTable, String refColumn, String onDelete) {}
 
   static final List<Fk> POLICY = List.of(
+      // V4 — partida (bloco 6b): plano de jogo, playbook, partida ao vivo, relatório e box score são da carreira e caem com ela, com
+      // o jogo do calendário, a franquia ou o jogador do mundo SAVE dela (CASCADE).
+      new Fk("game_plan", "career_save_id", "career_save", "id", "CASCADE"),
+      new Fk("game_plan", "club_id", "club", "id", "CASCADE"),
+      new Fk("match_report", "career_save_id", "career_save", "id", "CASCADE"),
+      new Fk("match_report", "fixture_id", "fixture", "id", "CASCADE"),
+      new Fk("match_session", "career_save_id", "career_save", "id", "CASCADE"),
+      new Fk("match_session", "fixture_id", "fixture", "id", "CASCADE"),
+      new Fk("playbook", "career_save_id", "career_save", "id", "CASCADE"),
+      new Fk("playbook", "club_id", "club", "id", "CASCADE"),
+      new Fk("playbook_weight", "playbook_id", "playbook", "id", "CASCADE"),
+      new Fk("player_match_stats", "career_save_id", "career_save", "id", "CASCADE"),
+      new Fk("player_match_stats", "club_id", "club", "id", "CASCADE"),
+      new Fk("player_match_stats", "fixture_id", "fixture", "id", "CASCADE"),
+      new Fk("player_match_stats", "player_id", "player", "id", "CASCADE"),
       // V3 — carreira e elenco (bloco 6a): o que é da carreira cai com o save (CASCADE) e com o mundo SAVE dela (franquias, ligas e
       // jogadores do mundo levam calendário, movimentos e depth chart); o save só perde a referência à liga, franquia ou temporada
       // atual (SET NULL: sem clube = desempregado). O save cai com a conta, o mundo e o head coach humano (todos dele).

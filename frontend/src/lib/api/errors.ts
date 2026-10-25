@@ -29,6 +29,16 @@ export function describeError(err: unknown): string {
   return translate("errors", "unexpected");
 }
 
+/**
+ * Excedente do 422 `CAP_EXCEEDED` da dispensa (Q-24, D-80): `details.excess`, em centavos de S$ (o backend manda também `salaryCap`
+ * e `capUsed`); `null` para qualquer outro erro. A tela formata o valor no idioma do usuário.
+ */
+export function capExceededExcess(err: unknown): number | null {
+  if (!(err instanceof ApiError) || err.problem.code !== "CAP_EXCEEDED") return null;
+  const v = err.problem.details.excess;
+  return typeof v === "number" && Number.isFinite(v) ? v : null;
+}
+
 /** Erros por campo de um 400 (VALIDATION do backend ou validação do mock). */
 export function fieldErrors(err: unknown): Record<string, string> {
   return err instanceof ApiError ? err.fields : {};

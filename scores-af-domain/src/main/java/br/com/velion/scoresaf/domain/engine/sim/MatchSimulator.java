@@ -26,6 +26,24 @@ public interface MatchSimulator {
    */
   MatchSnapshot advance(MatchSnapshot snapshot, AdvanceMode mode, List<MatchDecision> decisions);
 
+  /**
+   * Aplica as decisões sem avançar (ex.: tempo técnico pedido no painel, RF29): mesma validação de {@link #advance}.
+   *
+   * @throws IllegalArgumentException decisão que não corresponde à decisão aberta
+   * @throws IllegalStateException tempo técnico sem tempos restantes ou fora de bola morta, partida encerrada
+   */
+  MatchSnapshot apply(MatchSnapshot snapshot, List<MatchDecision> decisions);
+
+  /**
+   * Ajuste do plano de jogo (com o playbook) de uma franquia no meio da partida (RF29): devolve o snapshot com o plano trocado no
+   * setup, a versão +1 e o ajuste no log. Vale a partir do próximo snap; os sorteios não mudam de lugar (D-29), então quem retoma
+   * do snapshot ajustado joga o mesmo jogo.
+   *
+   * @throws IllegalStateException partida encerrada ou esperando uma decisão
+   * @throws IllegalArgumentException franquia fora da partida
+   */
+  MatchSnapshot adjust(MatchSnapshot snapshot, java.util.UUID clubId, br.com.velion.scoresaf.domain.engine.model.GamePlan plan);
+
   /** Resultado consolidado. Exige partida encerrada. */
   MatchResult finish(MatchSnapshot snapshot);
 

@@ -141,6 +141,18 @@ export function deadMoneyOf(p: MockPlayer, season: number): number {
 }
 
 /**
+ * Dead money do corte pela regra do 1º de junho (Q-24, D-79), como o backend: antes de 1º de junho, tudo na temporada; a partir dele,
+ * a parcela do ano (bônus rateado + garantia do ano = dead money do corte neste ano − dead money do corte no ano seguinte) agora e o
+ * resto na temporada seguinte.
+ */
+export function deadMoneySplitOf(p: MockPlayer, season: number, fromJuneFirst: boolean): { currentSeason: number; nextSeason: number } {
+  const total = deadMoneyOf(p, season);
+  if (!fromJuneFirst || total === 0) return { currentSeason: total, nextSeason: 0 };
+  const next = season + 1 > p.contract.endSeason ? 0 : (p.contract.deadMoneyIfCutByYear[yearIndex(p.contract, season + 1)] ?? 0);
+  return { currentSeason: total - next, nextSeason: next };
+}
+
+/**
  * Gera o elenco de uma franquia pela semente da carreira. `prestige` (56–84) puxa o nível dos titulares; `season` é o ano da
  * temporada; `capCents` é o teto da liga.
  */

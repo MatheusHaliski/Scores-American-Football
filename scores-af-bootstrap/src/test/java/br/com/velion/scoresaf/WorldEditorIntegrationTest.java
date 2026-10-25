@@ -278,6 +278,10 @@ class WorldEditorIntegrationTest {
 
     // voltar para o elenco ativo estoura o limite; virar agente livre solta o clube
     assertProblem(call(put("/api/v1/players/" + pid), auth, Map.of("rosterStatus", "ACTIVE")), 422, "ROSTER_FULL");
+    // waivers rumo ao practice squad só existem na carreira (Q-23): o editor não tem semana para avançar
+    assertProblem(call(put("/api/v1/players/" + pid), auth, Map.of("rosterStatus", "PRACTICE_SQUAD_WAIVERS")), 400, "INVALID_ROSTER_STATUS");
+    assertProblem(call(post(players), auth, Map.of("name", "Em Waivers", "position", "WR", "rosterStatus", "PRACTICE_SQUAD_WAIVERS")), 400,
+        "INVALID_ROSTER_STATUS");
     int taken = ((Number) list(call(get(players), auth, null)).get(0).get("jerseyNumber")).intValue();
     assertProblem(call(put("/api/v1/players/" + pid), auth, Map.of("jerseyNumber", taken)), 422, "JERSEY_TAKEN");
     assertProblem(call(put("/api/v1/players/" + pid), auth, Map.of("jerseyNumber", 120)), 400, "INVALID_JERSEY_NUMBER");

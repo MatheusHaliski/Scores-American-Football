@@ -40,11 +40,26 @@ import type {
   UpdateCareerRequest,
   WorldSummary,
 } from "./career-types";
+import type {
+  AdvanceRequest,
+  DecisionsRequest,
+  GamePlan,
+  MatchEvents,
+  MatchReport,
+  MatchState,
+  PlayCallRequest,
+  Playbook,
+  Preparation,
+  SaveGamePlanRequest,
+  SavePlaybookRequest,
+  WeekBoard,
+} from "./match-types";
 
 /**
  * Contrato do cliente de API da plataforma comum (conta, configurações e privacidade). Implementado por `live.ts`
  * (backend Java) e por `mock/index.ts` (dados no navegador). Todo consumidor de dados do frontend passa por aqui —
- * nunca por `fetch` direto. O bloco 6a acrescenta carreiras, central da franquia, calendário, elenco e depth chart.
+ * nunca por `fetch` direto. O bloco 6a acrescenta carreiras, central da franquia, calendário, elenco e depth chart; o 6b, plano de
+ * jogo, playbook, preparação, a semana e a partida ao vivo.
  */
 export interface ScoresApi {
   /** RF1/RF2/RF10 — sessão e configurações. */
@@ -115,5 +130,32 @@ export interface ScoresApi {
     get(careerId: UUID): Promise<DepthChart>;
     save(careerId: UUID, req: SaveDepthChartRequest): Promise<DepthChart>;
     setRole(careerId: UUID, playerId: UUID, req: SetRoleRequest): Promise<DepthChart>;
+  };
+  /** RF61/RF7 — plano de jogo e playbook com versão otimista (409 *_VERSION_CONFLICT; 422 com `details.errors`) e preparação. */
+  gamePlan: {
+    get(careerId: UUID): Promise<GamePlan>;
+    save(careerId: UUID, req: SaveGamePlanRequest): Promise<GamePlan>;
+    playbook(careerId: UUID): Promise<Playbook>;
+    savePlaybook(careerId: UUID, req: SavePlaybookRequest): Promise<Playbook>;
+    /** 409 NO_NEXT_GAME no fim da temporada regular */
+    preparation(careerId: UUID): Promise<Preparation>;
+  };
+  /** RF27 — semana: jogar a atual (422 DEPTH_CHART_INVALID, 409 NO_NEXT_GAME) e o painel de uma semana. */
+  weeks: {
+    playCurrent(careerId: UUID): Promise<WeekBoard>;
+    get(careerId: UUID, week: number): Promise<WeekBoard>;
+  };
+  /** RF27/RF29/RF62 — partida ao vivo, play-by-play por cursor, intervalo, chamada de jogada e relatório. */
+  matches: {
+    get(matchId: UUID): Promise<MatchState>;
+    /** sem corpo avança uma jogada (PLAY); 409 DECISION_PENDING, MATCH_VERSION_CONFLICT, MATCH_FINISHED; 400 INVALID_ADVANCE_MODE */
+    advance(matchId: UUID, req?: AdvanceRequest): Promise<MatchState>;
+    /** GAME_PLAN / PLAYBOOK (422 ADJUSTMENT_NOT_ALLOWED) e TIMEOUT (422 TIMEOUT_NOT_ALLOWED) */
+    decisions(matchId: UUID, req: DecisionsRequest): Promise<MatchState>;
+    /** 404 DECISION_NOT_FOUND, 409 DECISION_CLOSED, 422 PLAY_NOT_OFFERED, 409 MATCH_VERSION_CONFLICT */
+    playCall(matchId: UUID, decisionId: string, req: PlayCallRequest): Promise<MatchState>;
+    events(matchId: UUID, after?: number, limit?: number): Promise<MatchEvents>;
+    /** aceita o id da partida ou do jogo do calendário; 422 MATCH_NOT_FINISHED */
+    report(matchId: UUID): Promise<MatchReport>;
   };
 }

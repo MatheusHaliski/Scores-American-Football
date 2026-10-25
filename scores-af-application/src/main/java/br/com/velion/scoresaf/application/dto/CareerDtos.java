@@ -52,14 +52,21 @@ public final class CareerDtos {
 
   public record InjuryDto(UUID playerId, String name, String position, String rosterStatus, int weeksOut) {}
 
-  /** Teto salarial da temporada: teto, comprometido (cap hits + dead money), dead money e espaço. */
-  public record CapDto(long salaryCap, long capUsed, long deadMoney, long capSpace) {}
+  /**
+   * Teto salarial da temporada: teto, comprometido (cap hits + dead money), dead money da temporada, espaço e o dead money das
+   * dispensas desta temporada que a regra do 1º de junho já lançou na temporada seguinte (Q-24, D-79).
+   */
+  public record CapDto(long salaryCap, long capUsed, long deadMoney, long capSpace, long deadMoneyNextSeason) {}
 
   public record DepthChartAlertDto(long version, boolean valid, int errors, int warnings, List<String> codes) {}
 
+  /** Partida ao vivo em andamento da carreira (bloco 6b): para a central retomar o jogo ({@code GET /matches/{matchId}}). */
+  public record LiveMatchRefDto(UUID matchId, UUID fixtureId, int week, String status, int homeScore, int awayScore) {}
+
   /**
-   * Central da franquia (RF40). O que o bloco 6a ainda não tem vem como {@code null} explícito (o front mostra "—"): partida ao
-   * vivo (6b), moral (RF41), análise do analista (6c), inbox (bloco 7) e Scores Points (bloco 10).
+   * Central da franquia (RF40). O que ainda não existe vem como {@code null} explícito (o front mostra "—"): moral (RF41), análise do
+   * analista (6c), inbox (bloco 7) e Scores Points (bloco 10). {@code live} é a partida ao vivo em andamento ({@link LiveMatchRefDto},
+   * bloco 6b) ou {@code null}.
    */
   @JsonInclude(JsonInclude.Include.ALWAYS)
   public record DashboardDto(CareerDto career, ClubRefDto club, CoachDto coach, int currentWeek, NextGameDto nextGame, boolean byeWeek, RecordDto record,

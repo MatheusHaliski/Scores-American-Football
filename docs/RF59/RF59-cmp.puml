@@ -39,7 +39,7 @@ database "Cassandra 4.1" as s1
 database "Redis 7" as s2
 database "MySQL 8" as s3
 c1 --> c2 : usa
-c2 --> c7 : GET /matches/{mid}/plays/{seq}/diagram (alvo)\nGET /fixtures/{fid}/drives (alvo)\nGET /matches/{mid}/events (alvo)
+c2 --> c7 : GET /matches/{mid}/plays/{seq}/diagram (alvo)\nGET /fixtures/{fid}/drives (alvo)\nGET /matches/{mid}/events
 c7 --> c8
 c8 ..> pkg_app : orquestra
 c8 --> c11 : usa

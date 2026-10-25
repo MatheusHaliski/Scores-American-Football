@@ -1,7 +1,7 @@
 /**
  * Adaptadores das respostas da carreira (bloco 6a) para os tipos do front. Puros (sem rede), testados contra as amostras gravadas
  * pela API em docs/validation/golden/ (careers-list, career-dashboard, career-calendar, roster, roster-player, depth-chart e
- * world-editor-club). A API omite campos nulos (`non_null`), menos no `DashboardDto`, que manda os nulos explícitos: aqui todo
+ * world-editor-club). `dashboard.live` (partida em andamento) chega com o bloco 6b. A API omite campos nulos (`non_null`), menos no `DashboardDto`, que manda os nulos explícitos: aqui todo
  * anulável ausente vira `null`, e nunca zero.
  *
  * `SHAPES` lista, por objeto, os campos que o front conhece e quais podem faltar; o teste de contrato confere cada golden contra
@@ -46,7 +46,8 @@ import type {
   Unit,
   WorldSummary,
 } from "./career-types";
-import { COACH_STYLES, DIFFICULTIES, UNITS } from "./career-types";
+import { COACH_STYLES, DIFFICULTIES, ROSTER_STATUSES, UNITS } from "./career-types";
+import type { LiveMatchRef, MatchSessionStatus } from "./match-types";
 import type { CardTier } from "@/lib/ratings/tier";
 import type { Position } from "@/lib/ratings/overall";
 import type { Difficulty } from "./types";
@@ -90,22 +91,24 @@ export const SHAPES = {
   standingRow: shape(["rank", "club", "record", "winPct", "pointsFor", "pointsAgainst", "userClub"]),
   highlight: shape(["id", "name", "position", "jerseyNumber", "overall", "tier"]),
   injury: shape(["playerId", "name", "position", "rosterStatus", "weeksOut"]),
-  cap: shape(["salaryCap", "capUsed", "deadMoney", "capSpace"]),
+  cap: shape(["salaryCap", "capUsed", "deadMoney", "capSpace", "deadMoneyNextSeason"]),
   depthChartAlert: shape(["version", "valid", "errors", "warnings", "codes"]),
+  /** `dashboard.live` (bloco 6b): partida ao vivo em andamento */
+  liveRef: shape(["matchId", "fixtureId", "week", "status", "homeScore", "awayScore"]),
   calendar: shape(["seasonId", "seasonYear", "phase", "currentWeek", "regularSeasonWeeks", "gamesPerTeam", "userClubId", "clubs", "weeks"]),
   week: shape(["number", "kind", "startsOn", "status", "userBye", "byeClubIds", "fixtures"]),
-  roster: shape(["clubId", "clubName", "seasonYear", "currentWeek", "rules", "counts", "cap", "units", "practiceSquad", "injuredReserve"]),
+  roster: shape(["clubId", "clubName", "seasonYear", "currentWeek", "rules", "counts", "cap", "units", "practiceSquad", "injuredReserve", "waivers"]),
   rosterRules: shape(["rosterMax", "gameDayActives", "practiceSquadMax", "irMinWeeks", "irReturnsPerSeason"]),
-  counts: shape(["roster", "active", "inactive", "practiceSquad", "injuredReserve", "irReturnsUsed"]),
+  counts: shape(["roster", "active", "inactive", "practiceSquad", "injuredReserve", "irReturnsUsed", "waivers"]),
   card: shape(CARD_FIELDS, ["secondaryPosition", "contractEndSeason", "contractType"]),
   playerDetail: shape(
-    ["card", "clubId", "clubName", "ownPlayer", "nationality", "college", "birthDate", "potential", "attributes", "overallByPosition", "contract", "deadMoneyIfReleased", "irPlacedWeek", "irEarliestReturnWeek", "history"],
+    ["card", "clubId", "clubName", "ownPlayer", "nationality", "college", "birthDate", "potential", "attributes", "overallByPosition", "contract", "deadMoneyIfReleased", "deadMoneyNextSeasonIfReleased", "irPlacedWeek", "irEarliestReturnWeek", "history"],
     ["clubId", "clubName", "nationality", "college", "birthDate", "contract", "irPlacedWeek", "irEarliestReturnWeek"],
   ),
   contract: shape(["startSeason", "endSeason", "years", "baseSalaryByYear", "signingBonus", "guaranteed", "capHitByYear", "deadMoneyIfCutByYear", "type", "franchiseTag", "totalValue"]),
   rosterMove: shape(["id", "week", "kind", "fromStatus", "toStatus", "deadMoney", "at"], ["fromStatus", "toStatus"]),
   rosterChange: shape(["player", "counts", "cap"]),
-  release: shape(["playerId", "name", "rosterStatus", "deadMoney", "capHitRemoved", "counts", "cap"]),
+  release: shape(["playerId", "name", "rosterStatus", "deadMoney", "deadMoneyNextSeason", "capHitRemoved", "counts", "cap"]),
   depthChart: shape(["id", "clubId", "version", "valid", "updatedAt", "gameDayActives", "uniquePlayers", "units", "errors", "warnings"], ["updatedAt"]),
   depthUnit: shape(["unit", "slots"]),
   depthSlot: shape(["slot", "position", "role", "minStarters", "players"], ["position"]),
@@ -235,7 +238,7 @@ function coachFromDto(raw: unknown): CoachSummary {
 
 export function capFromDto(raw: unknown): CapSummary {
   const r = obj(raw);
-  return { salaryCap: num(r.salaryCap), capUsed: num(r.capUsed), deadMoney: num(r.deadMoney), capSpace: num(r.capSpace) };
+  return { salaryCap: num(r.salaryCap), capUsed: num(r.capUsed), deadMoney: num(r.deadMoney), capSpace: num(r.capSpace), deadMoneyNextSeason: num(r.deadMoneyNextSeason) };
 }
 
 function nextGameFromDto(raw: unknown): NextGame {
@@ -260,6 +263,14 @@ function alertFromDto(raw: unknown): DepthChartAlert {
   return { version: num(r.version), valid: bool(r.valid), errors: num(r.errors), warnings: num(r.warnings), codes: strs(r.codes) };
 }
 
+const LIVE_STATUSES: MatchSessionStatus[] = ["NOT_STARTED", "LIVE", "BREAK", "HALFTIME", "AWAITING_DECISION", "FINISHED"];
+
+/** `dashboard.live` (`LiveMatchRefDto`, bloco 6b) ou null. */
+export function liveRefFromDto(raw: unknown): LiveMatchRef | null {
+  if (!isObj(raw)) return null;
+  return { matchId: str(raw.matchId), fixtureId: str(raw.fixtureId), week: num(raw.week, 1), status: oneOf<MatchSessionStatus>(raw.status, LIVE_STATUSES, "LIVE"), homeScore: num(raw.homeScore), awayScore: num(raw.awayScore) };
+}
+
 export function dashboardFromDto(raw: unknown): CareerDashboard {
   const r = obj(raw);
   return {
@@ -277,7 +288,7 @@ export function dashboardFromDto(raw: unknown): CareerDashboard {
     injuries: list(r.injuries, injuryFromDto),
     cap: isObj(r.cap) ? capFromDto(r.cap) : null,
     depthChart: isObj(r.depthChart) ? alertFromDto(r.depthChart) : null,
-    live: r.live ?? null,
+    live: liveRefFromDto(r.live),
     morale: r.morale ?? null,
     analysis: r.analysis ?? null,
     inbox: Array.isArray(r.inbox) ? r.inbox : null,
@@ -309,7 +320,7 @@ export function calendarFromDto(raw: unknown): SeasonCalendar {
 
 export function countsFromDto(raw: unknown): RosterCounts {
   const r = obj(raw);
-  return { roster: num(r.roster), active: num(r.active), inactive: num(r.inactive), practiceSquad: num(r.practiceSquad), injuredReserve: num(r.injuredReserve), irReturnsUsed: num(r.irReturnsUsed) };
+  return { roster: num(r.roster), active: num(r.active), inactive: num(r.inactive), practiceSquad: num(r.practiceSquad), injuredReserve: num(r.injuredReserve), irReturnsUsed: num(r.irReturnsUsed), waivers: num(r.waivers) };
 }
 
 function rulesFromDto(raw: unknown): RosterRules {
@@ -333,7 +344,7 @@ export function cardFromDto(raw: unknown): PlayerCard {
     tier: str(r.tier, "BRONZE") as CardTier,
     family: str(r.family),
     macros: numMap(r.macros),
-    rosterStatus: str(r.rosterStatus, "ACTIVE") as RosterStatus,
+    rosterStatus: oneOf<RosterStatus>(r.rosterStatus, ROSTER_STATUSES, "ACTIVE"),
     condition: num(r.condition),
     morale: num(r.morale),
     experienceYears: num(r.experienceYears),
@@ -360,6 +371,7 @@ export function rosterFromDto(raw: unknown): Roster {
     units: { OFFENSE: list(u.OFFENSE, cardFromDto), DEFENSE: list(u.DEFENSE, cardFromDto), SPECIAL_TEAMS: list(u.SPECIAL_TEAMS, cardFromDto) },
     practiceSquad: list(r.practiceSquad, cardFromDto),
     injuredReserve: list(r.injuredReserve, cardFromDto),
+    waivers: list(r.waivers, cardFromDto),
   };
 }
 
@@ -403,6 +415,7 @@ export function playerDetailFromDto(raw: unknown): PlayerDetail {
     overallByPosition: numMap(r.overallByPosition) as Partial<Record<Position, number>>,
     contract: isObj(r.contract) ? contractFromDto(r.contract) : null,
     deadMoneyIfReleased: num(r.deadMoneyIfReleased),
+    deadMoneyNextSeasonIfReleased: num(r.deadMoneyNextSeasonIfReleased),
     irPlacedWeek: nnum(r.irPlacedWeek),
     irEarliestReturnWeek: nnum(r.irEarliestReturnWeek),
     history: list(r.history, moveFromDto),
@@ -416,7 +429,7 @@ export function rosterChangeFromDto(raw: unknown): RosterChange {
 
 export function releaseFromDto(raw: unknown): ReleaseResult {
   const r = obj(raw);
-  return { playerId: str(r.playerId), name: str(r.name), rosterStatus: str(r.rosterStatus, "WAIVED"), deadMoney: num(r.deadMoney), capHitRemoved: num(r.capHitRemoved), counts: countsFromDto(r.counts), cap: capFromDto(r.cap) };
+  return { playerId: str(r.playerId), name: str(r.name), rosterStatus: str(r.rosterStatus, "WAIVED"), deadMoney: num(r.deadMoney), deadMoneyNextSeason: num(r.deadMoneyNextSeason), capHitRemoved: num(r.capHitRemoved), counts: countsFromDto(r.counts), cap: capFromDto(r.cap) };
 }
 
 /* ───────────────────────── depth chart ───────────────────────── */
@@ -433,7 +446,7 @@ function entryFromDto(r: Raw): DepthEntry {
     tier: str(r.tier, "BRONZE") as CardTier,
     outOfPosition: bool(r.outOfPosition),
     available: bool(r.available),
-    rosterStatus: str(r.rosterStatus, "ACTIVE") as RosterStatus,
+    rosterStatus: oneOf<RosterStatus>(r.rosterStatus, ROSTER_STATUSES, "ACTIVE"),
   };
 }
 

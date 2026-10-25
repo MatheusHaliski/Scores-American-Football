@@ -45,7 +45,7 @@ Fonte: [`RF30-stm.puml`](RF30-stm.puml)
 | Estado | Método | Rota | Caso de uso | Autorização | Descrição |
 |---|---|---|---|---|---|
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/standings` | `GetStandingsUseCase` | JWT · dono do save | view=DIVISION\|CONFERENCE\|LEAGUE: V-D-E, winPct, campanha na divisão e conferência, pontos pró e contra, sequência, seeds 1–7 projetados e nota de desempate |
-| ⛔ alvo | `GET` | `/api/v1/careers/{id}/weeks/{n}` | `GetWeekBoardUseCase` | JWT · dono do save | Placares da semana n (passada, atual ou futura com prévia) |
+| ✅ | `GET` | `/api/v1/careers/{id}/weeks/{n}` | `GetWeekBoardUseCase` | JWT · dono do save | Placares da semana n (passada, atual ou futura com prévia) |
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/weeks/{n}/news` | `GetWeekNewsUseCase` | JWT · dono do save | Manchetes e comentários da semana (Cassandra) |
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/playoffs` | `GetPlayoffBracketUseCase` | JWT · dono do save | Chave de 14 (7 por conferência, bye do seed 1), confrontos em jogo único, final em campo neutro |
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/news` | `GetNewsFeedUseCase` | JWT · dono do save | Feed de notícias da temporada paginado |

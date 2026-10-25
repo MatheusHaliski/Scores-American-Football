@@ -44,7 +44,7 @@ Fonte: [`RF31-stm.puml`](RF31-stm.puml)
 
 | Estado | Método | Rota | Caso de uso | Autorização | Descrição |
 |---|---|---|---|---|---|
-| ⛔ alvo | `GET` | `/api/v1/matches/{mid}/report` | `GetMatchReportUseCase` | JWT · dono do save | attendance, revenue, ocupação e receita por setor, fatores (prestígio, campanha, rival de divisão, horário prime time, clima, importância, preço) |
+| ✅ | `GET` | `/api/v1/matches/{mid}/report` | `GetMatchReportUseCase` | JWT · dono do save | attendance, revenue, ocupação e receita por setor, fatores (prestígio, campanha, rival de divisão, horário prime time, clima, importância, preço) |
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/stadium` | `GetStadiumUseCase` | JWT · dono do save | Capacidade, cobertura, setores e preços usados no cálculo |
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/finance` | `GetFinanceOverviewUseCase` | JWT · dono do save | Ledger TICKETS dos jogos em casa e média da temporada |
 

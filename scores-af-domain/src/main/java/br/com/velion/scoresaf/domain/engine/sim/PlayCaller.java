@@ -3,9 +3,10 @@ package br.com.velion.scoresaf.domain.engine.sim;
 import br.com.velion.scoresaf.domain.catalog.AttributeKey;
 import br.com.velion.scoresaf.domain.engine.model.DepthSlot;
 import br.com.velion.scoresaf.domain.engine.model.EngineState.ClockState;
-import br.com.velion.scoresaf.domain.engine.model.GamePlan;
 import br.com.velion.scoresaf.domain.engine.model.GamePlan.Aggression;
 import br.com.velion.scoresaf.domain.engine.model.GamePlan.Tempo;
+import br.com.velion.scoresaf.domain.engine.model.GamePlan;
+import br.com.velion.scoresaf.domain.engine.model.Playbook;
 import br.com.velion.scoresaf.domain.shared.Coverage;
 import br.com.velion.scoresaf.domain.shared.DefensePackage;
 import br.com.velion.scoresaf.domain.shared.Formation;
@@ -13,8 +14,8 @@ import br.com.velion.scoresaf.domain.shared.PlayConcept;
 import java.util.SplittableRandom;
 
 /**
- * Chamada de jogada da IA (RF42): o ataque pela situação (descida, distância, campo, placar, relógio) e pelo plano de jogo; a
- * defesa lendo a formação. Também decide 4ª descida (tentar, punt, FG), conversão (PAT ou 2 pontos), kneel, spike, onside e os
+ * Chamada de jogada da IA (RF42): o ataque pela situação (descida, distância, campo, placar, relógio), pelo plano de jogo e pelos
+ * pesos do playbook (RF61, bloco 6b: qual corrida, qual passe, qual cobertura); a defesa lendo a formação. Também decide 4ª descida (tentar, punt, FG), conversão (PAT ou 2 pontos), kneel, spike, onside e os
  * tempos técnicos.
  */
 final class PlayCaller {
@@ -135,10 +136,16 @@ final class PlayCaller {
     if (m.quarter >= 4 && d > 0 && m.clock <= 420) pass -= 0.25;
     pass = Rng.clamp(pass, 0.10, 0.95);
     boolean goalLine = m.yd >= 97;
+    Playbook book = plan.playbook();
+    Playbook.Situation sit = situation(m, hurry);
     if (r.nextDouble() >= pass) {
       PlayConcept c;
-      if (dist <= 1 && r.nextDouble() < 0.28) c = PlayConcept.QB_SNEAK;
-      else c = r.nextDouble() < 0.6 ? PlayConcept.INSIDE_RUN : PlayConcept.OUTSIDE_RUN;
+      if (book.neutral(sit, Playbook.RUN_CONCEPTS)) {
+        if (dist <= 1 && r.nextDouble() < 0.28) c = PlayConcept.QB_SNEAK;
+        else c = r.nextDouble() < 0.6 ? PlayConcept.INSIDE_RUN : PlayConcept.OUTSIDE_RUN;
+      } else {
+        c = weightedRun(book, sit, dist, r);
+      }
       Formation f;
       if (goalLine || dist <= 1) f = r.nextDouble() < 0.7 ? Formation.GOAL_LINE : Formation.I_FORM;
       else f = new Formation[] {Formation.I_FORM, Formation.SINGLEBACK, Formation.PISTOL, Formation.SHOTGUN}[Rng.pick(r, 35, 35, 15, 15)];
@@ -150,11 +157,49 @@ final class PlayCaller {
     else if (m.down >= 3) w = new double[] {8, 55, 30, 6, 1};
     else w = new double[] {8, 40, 24, 13, m.down == 1 ? 18 : 10};
     if (m.yd >= 85) { w[3] = 0; w[4] *= 0.5; }
-    PlayConcept c = new PlayConcept[] {PlayConcept.SCREEN, PlayConcept.SHORT_PASS, PlayConcept.MEDIUM_PASS, PlayConcept.DEEP_PASS, PlayConcept.PLAY_ACTION}[Rng.pick(r, w)];
+    PlayConcept[] passes = {PlayConcept.SCREEN, PlayConcept.SHORT_PASS, PlayConcept.MEDIUM_PASS, PlayConcept.DEEP_PASS, PlayConcept.PLAY_ACTION};
+    PlayConcept c = passes[Rng.pick(r, book.neutral(sit, Playbook.PASS_CONCEPTS) ? w : weighted(w, passes, book, sit))];
     Formation f = c == PlayConcept.PLAY_ACTION
         ? new Formation[] {Formation.I_FORM, Formation.SINGLEBACK, Formation.PISTOL}[Rng.pick(r, 40, 40, 20)]
         : new Formation[] {Formation.SHOTGUN, Formation.SINGLEBACK, Formation.EMPTY, Formation.PISTOL, Formation.I_FORM}[Rng.pick(r, 55, 18, 10, 10, 7)];
     return new OffenseCall(Kind.PLAY, c, f);
+  }
+
+  /** Situação do playbook (RF61): 2 minutos, red zone, 3ª e longa, 3ª descida, descidas iniciais — nessa precedência. */
+  static Playbook.Situation situation(LiveMatch m, boolean hurry) {
+    if (hurry) return Playbook.Situation.TWO_MINUTE;
+    if (m.yd >= 80) return Playbook.Situation.RED_ZONE;
+    if (m.down >= 3 && m.distance >= 8) return Playbook.Situation.THIRD_AND_LONG;
+    if (m.down >= 3) return Playbook.Situation.THIRD_DOWN;
+    return Playbook.Situation.EARLY_DOWN;
+  }
+
+  /** Corrida pelo playbook: sneak (só com 1 jarda ou menos) e por dentro × por fora com os pesos da situação. */
+  private static PlayConcept weightedRun(Playbook book, Playbook.Situation sit, int dist, SplittableRandom r) {
+    double sneak = Math.min(0.9, 0.28 * book.factor(sit, PlayConcept.QB_SNEAK));
+    if (dist <= 1 && r.nextDouble() < sneak) return PlayConcept.QB_SNEAK;
+    double in = 0.6 * book.factor(sit, PlayConcept.INSIDE_RUN), out = 0.4 * book.factor(sit, PlayConcept.OUTSIDE_RUN);
+    if (in + out <= 0) return PlayConcept.INSIDE_RUN; // o playbook válido sempre tem uma corrida; sem nenhuma, a de dentro
+    return r.nextDouble() < in / (in + out) ? PlayConcept.INSIDE_RUN : PlayConcept.OUTSIDE_RUN;
+  }
+
+  /** Pesos multiplicados pelo playbook; se a situação zerar todos os possíveis (ex.: só passe fundo na red zone), os originais. */
+  private static double[] weighted(double[] base, PlayConcept[] concepts, Playbook book, Playbook.Situation sit) {
+    double[] out = new double[base.length];
+    double sum = 0;
+    for (int i = 0; i < base.length; i++) { out[i] = base[i] * book.factor(sit, concepts[i]); sum += Math.max(0, out[i]); }
+    return sum > 0 ? out : base;
+  }
+
+  /** Pesos das coberturas multiplicados pelo playbook (mesma regra: tudo zerado volta aos originais). */
+  private static Coverage pick(SplittableRandom r, Playbook book, Coverage[] options, double... base) { return options[pickCoverage(r, book, options, base)]; }
+
+  private static int pickCoverage(SplittableRandom r, Playbook book, Coverage[] options, double... base) {
+    if (book.neutralCoverages()) return Rng.pick(r, base);
+    double[] w = new double[base.length];
+    double sum = 0;
+    for (int i = 0; i < base.length; i++) { w[i] = base[i] * book.coverageFactor(options[i]); sum += w[i]; }
+    return Rng.pick(r, sum > 0 ? w : base);
   }
 
   /** PAT ou 2 pontos (tabela de conversão pela diferença depois do TD, só no 4º quarto; obrigatório na prorrogação COLLEGE a partir da 2ª rodada). */
@@ -189,9 +234,9 @@ final class PlayCaller {
     boolean blitz = r.nextDouble() < blitzP;
     Coverage cov;
     if (blitz && r.nextDouble() < 0.6) cov = r.nextDouble() < 0.3 ? Coverage.COVER_0 : Coverage.COVER_1;
-    else if (pkg == DefensePackage.GOAL_LINE) cov = new Coverage[] {Coverage.COVER_0, Coverage.COVER_1, Coverage.COVER_3}[Rng.pick(r, 30, 45, 25)];
-    else if (longYardage || (m.quarter >= 4 && m.diff(def) > 0 && m.clock <= 150)) cov = new Coverage[] {Coverage.COVER_1, Coverage.COVER_2, Coverage.COVER_3, Coverage.COVER_4, Coverage.COVER_6}[Rng.pick(r, 12, 24, 20, 26, 18)];
-    else cov = new Coverage[] {Coverage.COVER_0, Coverage.COVER_1, Coverage.COVER_2, Coverage.COVER_3, Coverage.COVER_4, Coverage.COVER_6}[Rng.pick(r, 3, 20, 18, 32, 15, 12)];
+    else if (pkg == DefensePackage.GOAL_LINE) cov = pick(r, plan.playbook(), new Coverage[] {Coverage.COVER_0, Coverage.COVER_1, Coverage.COVER_3}, 30, 45, 25);
+    else if (longYardage || (m.quarter >= 4 && m.diff(def) > 0 && m.clock <= 150)) cov = pick(r, plan.playbook(), new Coverage[] {Coverage.COVER_1, Coverage.COVER_2, Coverage.COVER_3, Coverage.COVER_4, Coverage.COVER_6}, 12, 24, 20, 26, 18);
+    else cov = pick(r, plan.playbook(), new Coverage[] {Coverage.COVER_0, Coverage.COVER_1, Coverage.COVER_2, Coverage.COVER_3, Coverage.COVER_4, Coverage.COVER_6}, 3, 20, 18, 32, 15, 12);
     PlayerState qb = m.offense().first(DepthSlot.QB, java.util.List.of());
     boolean spy = qb != null && qb.raw(AttributeKey.SPEED) >= 75 && r.nextDouble() < 0.2;
     return new DefenseCall(pkg, cov, blitz, spy);

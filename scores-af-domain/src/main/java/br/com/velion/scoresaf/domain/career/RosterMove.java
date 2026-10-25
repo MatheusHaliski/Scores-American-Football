@@ -19,8 +19,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
- * Movimento do elenco da franquia do usuário (RF4): troca de situação (53 ↔ practice squad ↔ IR) ou dispensa para waivers com o
- * dead money calculado pelo contrato. É o histórico da carreira e a fonte das regras que dependem do tempo (semanas mínimas na IR,
+ * Movimento do elenco da franquia do usuário (RF4): troca de situação (53 ↔ practice squad ↔ IR), dispensa para waivers com o
+ * dead money calculado pelo contrato ou saída de waivers para o practice squad no avanço da semana (Q-23). É o histórico da carreira e a fonte das regras que dependem do tempo (semanas mínimas na IR,
  * retornos da IR por temporada) e do dead money da temporada no teto. Dinheiro em centavos de S$.
  */
 @Entity
@@ -64,9 +64,13 @@ public class RosterMove extends AuditableEntity {
   @Column(name = "to_status", nullable = false, columnDefinition = "VARCHAR(32)")
   private RosterStatus toStatus;
 
-  /** Dead money lançado na temporada (só em RELEASE). */
+  /** Dead money lançado na temporada do movimento (só em RELEASE; com a regra do 1º de junho, só a parcela dela, D-79). */
   @Column(nullable = false)
   private long deadMoney;
+
+  /** Dead money que vai para a temporada seguinte (só em RELEASE a partir de 1º de junho, Q-24, D-79). */
+  @Column(name = "dead_money_next_season", nullable = false)
+  private long deadMoneyNextSeason;
 
   /** Cap hit da temporada que saiu da folha (só em RELEASE). */
   @Column(nullable = false)

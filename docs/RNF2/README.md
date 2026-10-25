@@ -45,10 +45,10 @@ Fonte: [`RNF2-stm.puml`](RNF2-stm.puml)
 | Estado | Método | Rota | Caso de uso | Autorização | Descrição |
 |---|---|---|---|---|---|
 | ✅ | `PUT` | `/api/v1/me/settings` | `UpdateUserSettingsUseCase` | JWT | simQuarterMinutes (0 = instantâneo, 1–15) · playCallingLevel KEY_MOMENTS\|ALL_PLAYS\|NONE · decisionTimeoutSeconds |
-| ⛔ alvo | `POST` | `/api/v1/careers/{id}/weeks/current/play` | `PlayWeekUseCase` | JWT · dono do save | Cria a MatchSession com orçamento de tempo congelado no snapshot das configurações |
-| ⛔ alvo | `POST` | `/api/v1/matches/{mid}/advance` | `AdvanceMatchUseCase` | JWT · dono do save | PLAY \| DRIVE \| QUARTER \| FULL · para no próximo momento decisivo |
+| ✅ | `POST` | `/api/v1/careers/{id}/weeks/current/play` | `PlayWeekUseCase` | JWT · dono do save | Cria a MatchSession com orçamento de tempo congelado no snapshot das configurações |
+| ✅ | `POST` | `/api/v1/matches/{mid}/advance` | `AdvanceMatchUseCase` | JWT · dono do save | PLAY \| DRIVE \| QUARTER \| FULL · para no próximo momento decisivo |
 | ⛔ alvo | `POST` | `/api/v1/matches/{mid}/decisions/{did}` | `SubmitPlayCallUseCase` | JWT · dono do save | Chamada de jogada (4ª descida, 2 minutos, prorrogação) dentro do tempo limite |
-| ⛔ alvo | `GET` | `/api/v1/matches/{mid}/events` | `GetMatchEventsUseCase` | JWT · dono do save | Play-by-play paginado (after=seq) no ritmo calculado |
+| ✅ | `GET` | `/api/v1/matches/{mid}/events` | `GetMatchEventsUseCase` | JWT · dono do save | Play-by-play paginado (after=seq) no ritmo calculado |
 
 ## Pontos de decisão
 

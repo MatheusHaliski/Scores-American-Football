@@ -9,10 +9,16 @@ import static br.com.velion.scoresaf.CareerFixtures.ok;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 
 import br.com.velion.scoresaf.application.common.json.Jsons;
 import br.com.velion.scoresaf.application.port.out.persistence.CareerSaveRepository;
 import br.com.velion.scoresaf.application.port.out.persistence.FixtureRepository;
+import br.com.velion.scoresaf.application.port.out.persistence.GamePlanSetupRepository;
+import br.com.velion.scoresaf.application.port.out.persistence.MatchReportRepository;
+import br.com.velion.scoresaf.application.port.out.persistence.MatchSessionRepository;
+import br.com.velion.scoresaf.application.port.out.persistence.PlaybookSetupRepository;
+import br.com.velion.scoresaf.application.port.out.persistence.PlayerMatchStatsRepository;
 import br.com.velion.scoresaf.application.port.out.persistence.PlayerRepository;
 import br.com.velion.scoresaf.application.port.out.persistence.UserAccountRepository;
 import br.com.velion.scoresaf.application.port.out.persistence.UserSessionRepository;
@@ -21,6 +27,10 @@ import br.com.velion.scoresaf.application.seed.DefaultWorldSeeder;
 import br.com.velion.scoresaf.application.usecase.rf46.AccountDeletionUseCases;
 import br.com.velion.scoresaf.domain.account.UserRole;
 import br.com.velion.scoresaf.web.security.TokenService;
+import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.transaction.PlatformTransactionManager;
+import br.com.velion.scoresaf.domain.shared.WorldKind;
+import br.com.velion.scoresaf.domain.catalog.World;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -36,7 +46,8 @@ import tools.jackson.core.type.TypeReference;
 /**
  * RF46 CA07 / LGPD com a carreira plugada no {@code AccountDataContributor} e no {@code AccountErasureHandler} (D-12): a exportação
  * (JSON imediato e o arquivo do pedido) leva as carreiras e os movimentos do elenco; a eliminação da conta apaga as carreiras com o
- * mundo de cada uma e não toca no mundo padrão.
+ * mundo de cada uma e não toca no mundo padrão. Bloco 6b: as partidas, o plano de jogo e o playbook entram na exportação e saem na
+ * eliminação.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -52,6 +63,12 @@ class CareerAccountDataIntegrationTest {
   @Autowired PlayerRepository players;
   @Autowired FixtureRepository fixtures;
   @Autowired AccountDeletionUseCases deletion;
+  @Autowired MatchSessionRepository matchSessions;
+  @Autowired MatchReportRepository reports;
+  @Autowired PlayerMatchStatsRepository stats;
+  @Autowired GamePlanSetupRepository plans;
+  @Autowired PlaybookSetupRepository playbooks;
+  @Autowired PlatformTransactionManager txManager;
 
   @Test
   @SuppressWarnings("unchecked")
@@ -92,4 +109,90 @@ class CareerAccountDataIntegrationTest {
     assertThat(worlds.findById(defaultWorld)).isPresent();
     assertThat(players.countByWorldId(defaultWorld)).isEqualTo(32 * 69);
   }
+
+  /** Bloco 6b: a exportação leva as partidas e o plano de jogo; a eliminação apaga partida, relatório, box score, plano e playbook. */
+  @Test
+  @SuppressWarnings("unchecked")
+  void exportacao_leva_partidas_e_plano_e_eliminacao_apaga_tudo() throws Exception {
+    UUID defaultWorld = seeder.seedIfMissing().getId();
+    TestSessions.Session s = TestSessions.open(users, sessions, tokens, UserRole.PLAYER);
+    String auth = s.bearer();
+    MatchFixtures.level(mvc, auth, "NONE");
+    Map<String, Object> c = create(mvc, auth, body("Partidas LGPD", null, club(mvc, auth, defaultWorld, "PAV"), 6L));
+    String base = "/api/v1/careers/" + id(c);
+    Map<String, Object> g = ok(call(mvc, get(base + "/game-plan"), auth, null));
+    ok(call(mvc, put(base + "/game-plan"), auth, Map.of("version", g.get("version"), "passRatio", 70, "fourthDownAggression", "AGGRESSIVE",
+        "tempo", "HURRY_UP", "defensiveFocus", "STOP_PASS", "blitzFrequency", "LOW", "baseDefense", "BASE_3_4")));
+    ok(call(mvc, put(base + "/playbook"), auth, Map.of("version", 0, "situations",
+        List.of(Map.of("situation", "RED_ZONE", "concepts", List.of(Map.of("item", "DEEP_PASS", "weight", 0)))))));
+    String mid = (String) MatchFixtures.play(mvc, auth, id(c)).get("matchId");
+    MatchFixtures.finish(mvc, auth, mid, "FULL");
+
+    Map<String, Object> export = ok(call(mvc, get("/api/v1/me/export"), auth, null));
+    assertThat((List<Map<String, Object>>) export.get("careerMatches")).singleElement().satisfies(row -> assertThat(row)
+        .containsEntry("careerId", id(c)).containsEntry("week", 1).containsEntry("status", "FINISHED").containsEntry("playCallingLevel", "NONE")
+        .containsKeys("home", "away", "homeScore", "awayScore", "seed", "playCalls", "adjustments"));
+    assertThat((List<Map<String, Object>>) export.get("careerGamePlans")).extracting(r -> r.get("kind")).containsExactly("GAME_PLAN", "PLAYBOOK");
+    assertThat((List<Map<String, Object>>) export.get("careerGamePlans")).first().satisfies(r -> assertThat(r).containsEntry("passRatio", 70));
+
+    UUID careerId = UUID.fromString(id(c));
+    assertThat(reports.countByCareerId(careerId)).isEqualTo(16);
+    assertThat(stats.countByCareerId(careerId)).isPositive();
+    deletion.erase(users.findById(s.user().getId()).orElseThrow());
+    assertThat(saves.findById(careerId)).isEmpty();
+    assertThat(matchSessions.findById(UUID.fromString(mid))).isEmpty();
+    assertThat(reports.countByCareerId(careerId)).isZero();
+    assertThat(stats.countByCareerId(careerId)).isZero();
+    assertThat(plans.findByCareerId(careerId)).isEmpty();
+    assertThat(playbooks.findByCareerId(careerId)).isEmpty();
+  }
+
+  /**
+   * Q-27 (D-81): eliminar a conta apaga também os mundos modelo que o titular criou e clonou no editor (RF5), com o catálogo; o mundo
+   * padrão fica. A carreira de outro usuário cujo mundo nasceu de um desses modelos sobrevive inteira: o mundo dela é uma cópia SAVE
+   * própria (RNF1) e só perde a referência de origem. Pela API ninguém inicia carreira em mundo alheio (403), então o vínculo de
+   * origem da carreira de B é gravado direto, como a cópia da criação o grava.
+   */
+  @Test
+  @SuppressWarnings("unchecked")
+  void eliminacao_apaga_os_mundos_modelo_do_titular_e_a_carreira_de_outro_usuario_sobrevive() throws Exception {
+    UUID defaultWorld = seeder.seedIfMissing().getId();
+    TestSessions.Session a = TestSessions.open(users, sessions, tokens, UserRole.PLAYER);
+    TestSessions.Session b = TestSessions.open(users, sessions, tokens, UserRole.PLAYER);
+    UUID created = UUID.fromString(id(ok(call(mvc, post("/api/v1/worlds"), a.bearer(), Map.of("name", "Criado por A")))));
+    UUID cloned = UUID.fromString(id(ok(call(mvc, post("/api/v1/worlds/" + created + "/clone"), a.bearer(), Map.of("name", "Clone de A")))));
+    Map<String, Object> careerA = create(mvc, a.bearer(), body("Carreira de A", created, club(mvc, a.bearer(), created, "PAV"), 2L));
+    UUID careerAWorld = UUID.fromString((String) careerA.get("worldId"));
+
+    Map<String, Object> careerB = create(mvc, b.bearer(), body("Carreira de B", null, club(mvc, b.bearer(), defaultWorld, "PAV"), 3L));
+    UUID careerBId = UUID.fromString(id(careerB));
+    UUID careerBWorld = UUID.fromString((String) careerB.get("worldId"));
+    tx().executeWithoutResult(st -> {
+      World w = worlds.findById(careerBWorld).orElseThrow();
+      w.setSourceWorld(worlds.findById(created).orElseThrow());
+      saves.findById(careerBId).orElseThrow().setSourceWorldName("Criado por A");
+    });
+    assertThat(ok(call(mvc, get("/api/v1/careers/" + careerBId), b.bearer(), null))).containsEntry("sourceWorldId", created.toString());
+    long careerBPlayers = players.countByWorldId(careerBWorld);
+
+    deletion.erase(users.findById(a.user().getId()).orElseThrow());
+
+    assertThat(worlds.findById(created)).as("mundo criado no editor").isEmpty();
+    assertThat(worlds.findById(cloned)).as("mundo clonado no editor").isEmpty();
+    assertThat(players.countByWorldId(created) + players.countByWorldId(cloned)).isZero();
+    assertThat(worlds.findById(careerAWorld)).as("o mundo SAVE da carreira do titular sai com ela").isEmpty();
+    assertThat(worlds.findByOwnerUserIdAndKindOrderByCreatedAtAsc(a.user().getId(), WorldKind.TEMPLATE)).isEmpty();
+    assertThat(worlds.findById(defaultWorld)).as("o mundo padrão nunca é apagado").isPresent();
+    assertThat(players.countByWorldId(defaultWorld)).isEqualTo(32 * 69);
+
+    // a carreira de B continua jogável, com o próprio mundo SAVE
+    Map<String, Object> after = ok(call(mvc, get("/api/v1/careers/" + careerBId), b.bearer(), null));
+    assertThat(after).doesNotContainKey("sourceWorldId").containsEntry("sourceWorldName", "Criado por A").containsEntry("worldId", careerBWorld.toString());
+    assertThat(players.countByWorldId(careerBWorld)).isEqualTo(careerBPlayers);
+    Map<String, Object> roster = ok(call(mvc, get("/api/v1/careers/" + careerBId + "/roster"), b.bearer(), null));
+    assertThat((Map<String, Object>) roster.get("counts")).containsEntry("roster", 53);
+    ok(call(mvc, get("/api/v1/careers/" + careerBId + "/dashboard"), b.bearer(), null));
+  }
+
+  private TransactionTemplate tx() { return new TransactionTemplate(txManager); }
 }

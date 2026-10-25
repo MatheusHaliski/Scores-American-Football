@@ -5,6 +5,7 @@ import { getLocale, translate } from "@/i18n/runtime";
 import { matchLocale } from "@/i18n/config";
 import { mockAccount } from "./account";
 import { mockCareers } from "./career";
+import { mockMatches } from "./match";
 import { uuidFrom } from "./rng";
 import { getUser, setUser } from "./state";
 
@@ -34,6 +35,11 @@ function careers() {
   return mockCareers(requireUser());
 }
 
+/** Plano de jogo, playbook, semana e partida mock do usuário da sessão (bloco 6b). */
+function matches() {
+  return mockMatches(requireUser());
+}
+
 /** Tokens de mentira gerados na hora (o modo mock não manda Bearer a lugar nenhum). */
 function auth(user: UserAccount): AuthResponse {
   return { user, tokens: { accessToken: `mock.${crypto.randomUUID()}`, refreshToken: null, accessExpiresAt: Date.now() + 15 * 60_000 } };
@@ -46,7 +52,7 @@ function newUser(email: string, displayName: string, locale?: string): UserAccou
   return { id: uuidFrom("user", email.toLowerCase()), email, displayName, avatarUrl: null, locale: matchLocale(locale) ?? getLocale(), role: roles.includes("ADMIN") ? "ADMIN" : "PLAYER", roles };
 }
 
-/** Implementação `mock` do contrato: tudo no navegador, persistido em localStorage, com as regras do backend. */
+/** Implementação `mock` do contrato: tudo no navegador, persistido em localStorage, com as regras do backend (6b: partida por descida). */
 export function createMockApi(): ScoresApi {
   return {
     auth: {
@@ -128,7 +134,7 @@ export function createMockApi(): ScoresApi {
       get: (id) => later(() => careers().get(id)),
       update: (id, req) => later(() => careers().update(id, req), 200),
       remove: (id, confirm) => later(() => careers().remove(id, confirm), 300),
-      dashboard: (id) => later(() => careers().dashboard(id)),
+      dashboard: (id) => later(() => ({ ...careers().dashboard(id), live: matches().liveRef(id) })),
       calendar: (id, week) => later(() => careers().calendar(id, week)),
     },
     roster: {
@@ -141,6 +147,25 @@ export function createMockApi(): ScoresApi {
       get: (careerId) => later(() => careers().depthChart(careerId)),
       save: (careerId, req) => later(() => careers().saveDepthChart(careerId, req), 250),
       setRole: (careerId, playerId, req) => later(() => careers().setRole(careerId, playerId, req), 200),
+    },
+    gamePlan: {
+      get: (careerId) => later(() => matches().gamePlan(careerId)),
+      save: (careerId, req) => later(() => matches().saveGamePlan(careerId, req), 200),
+      playbook: (careerId) => later(() => matches().playbook(careerId)),
+      savePlaybook: (careerId, req) => later(() => matches().savePlaybook(careerId, req), 200),
+      preparation: (careerId) => later(() => matches().preparation(careerId), 250),
+    },
+    weeks: {
+      playCurrent: (careerId) => later(() => matches().playCurrent(careerId), 300),
+      get: (careerId, week) => later(() => matches().week(careerId, week)),
+    },
+    matches: {
+      get: (mid) => later(() => matches().get(mid)),
+      advance: (mid, req) => later(() => matches().advance(mid, req), 160),
+      decisions: (mid, req) => later(() => matches().decisions(mid, req), 160),
+      playCall: (mid, decisionId, req) => later(() => matches().playCall(mid, decisionId, req), 160),
+      events: (mid, after, limit) => later(() => matches().events(mid, after, limit), 60),
+      report: (mid) => later(() => matches().report(mid)),
     },
   };
 }

@@ -60,7 +60,7 @@ database "Redis 7" as s2
 database "Cassandra 4.1" as s3
 c1 --> c4 : usa
 c2 --> c17 : dispara
-c4 --> c15 : POST /careers/{id}/weeks/current/play (alvo)\nGET /careers/{id}/weeks/{n} (alvo)\nGET /matches/{mid} (alvo)\n…
+c4 --> c15 : POST /careers/{id}/weeks/current/play\nGET /careers/{id}/weeks/{n}\nGET /matches/{mid}\n…
 c4 --> c16
 c15 --> c17
 c16 --> c17

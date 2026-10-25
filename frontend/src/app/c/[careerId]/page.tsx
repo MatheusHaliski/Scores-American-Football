@@ -1,7 +1,9 @@
 "use client";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { useState } from "react";
 import { api } from "@/lib/api";
+import { describeError } from "@/lib/api/errors";
 import type { CareerDashboard, ClubRef, Fixture } from "@/lib/api/types";
 import { useQuery } from "@/lib/hooks/useQuery";
 import { fromCents, orDash } from "@/lib/career/format";
@@ -16,9 +18,44 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { ProgressBar, Stat } from "@/components/ui/Stat";
 import { EmptyState, ErrorState, PageSkeleton } from "@/components/ui/States";
-import { IconAlert, IconCalendar, IconCheck, IconChevronRight, IconPill, IconTarget, IconUsers } from "@/components/ui/icons";
+import { IconAlert, IconBall, IconCalendar, IconCheck, IconChevronRight, IconLed, IconPill, IconTarget, IconUsers, IconWhistle } from "@/components/ui/icons";
+import { PrepareTeamModal } from "@/components/game-plan/PrepareTeamModal";
+import { toast } from "@/components/ui/Toast";
 
-function NextGameCard({ d, careerId }: { d: CareerDashboard; careerId: string }) {
+/** Partida ao vivo em andamento (`dashboard.live`, bloco 6b): placar e "continuar partida". */
+function LiveMatchCard({ d, careerId }: { d: CareerDashboard; careerId: string }) {
+  const t = useT("career");
+  const td = useTd();
+  const live = d.live;
+  if (!live) return null;
+  const next = d.nextGame;
+  const me = d.club;
+  const home = next && me ? (next.home ? me : next.opponent) : null;
+  const away = next && me ? (next.home ? next.opponent : me) : null;
+  return (
+    <section className="rounded-[var(--radius-xl)] border-2 border-led bg-arena-2 p-4 shadow-led sm:p-5" aria-labelledby="live-card-title">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <div className="min-w-0 flex-1">
+          <div className="eyebrow">{t("hub.live.eyebrow", { week: live.week })}</div>
+          <h2 id="live-card-title" className="font-heading text-xl font-semibold">{t("hub.live.title")}</h2>
+          <p className="text-[0.85rem] text-text-muted">{td("match", `live.status.${live.status === "AWAITING_DECISION" ? "AWAITING_DECISION" : live.status}`)}</p>
+        </div>
+        <div className="flex items-center gap-3 font-display text-3xl tabular sm:text-4xl">
+          {away && <ClubBadge club={away} size={36} />}
+          <span className="led-text">{live.awayScore}</span>
+          <span className="font-heading text-xl text-text-dim" aria-hidden>:</span>
+          <span className="led-text">{live.homeScore}</span>
+          {home && <ClubBadge club={home} size={36} />}
+        </div>
+        <Button variant="led" size="lg" icon={<IconBall size={18} />} href={`/c/${careerId}/match?m=${live.matchId}`} className="w-full sm:w-auto">
+          {t("hub.live.continue")}
+        </Button>
+      </div>
+    </section>
+  );
+}
+
+function NextGameCard({ d, careerId, onPrepare, onBye, byeBusy }: { d: CareerDashboard; careerId: string; onPrepare: () => void; onBye: () => void; byeBusy: boolean }) {
   const t = useT("career");
   const tc = useT("common");
   const td = useTd();
@@ -53,8 +90,24 @@ function NextGameCard({ d, careerId }: { d: CareerDashboard; careerId: string })
             <Stat size="sm" value={next.opponentRecord.summary} label={t("hub.next.opponentRecord")} />
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <Button variant="led" href={`/c/${careerId}/depth-chart`} icon={<IconTarget size={18} />} className="w-full sm:w-auto">
+            {d.byeWeek ? (
+              <Button variant="led" onClick={onBye} loading={byeBusy} icon={<IconCalendar size={18} />} className="w-full sm:w-auto">
+                {t("hub.next.playBye")}
+              </Button>
+            ) : d.live ? (
+              <Button variant="led" href={`/c/${careerId}/match?m=${d.live.matchId}`} icon={<IconBall size={18} />} className="w-full sm:w-auto">
+                {t("hub.live.continue")}
+              </Button>
+            ) : (
+              <Button variant="led" onClick={onPrepare} icon={<IconLed size={18} />} className="w-full sm:w-auto">
+                {t("hub.next.prepare")}
+              </Button>
+            )}
+            <Button variant="outline" size="sm" href={`/c/${careerId}/depth-chart`} icon={<IconTarget size={16} />}>
               {t("hub.next.depthChart")}
+            </Button>
+            <Button variant="ghost" size="sm" href={`/c/${careerId}/playbook`} icon={<IconWhistle size={16} />}>
+              {t("hub.next.playbook")}
             </Button>
             <Button variant="ghost" size="sm" href={`/c/${careerId}/calendar`} icon={<IconCalendar size={16} />}>
               {t("hub.next.calendar")}
@@ -142,6 +195,21 @@ export default function FranchiseHubPage() {
     setDashboard(d);
     return d;
   }, [careerId]);
+  const [prepare, setPrepare] = useState(false);
+  const [byeBusy, setByeBusy] = useState(false);
+  // semana de folga: "jogar" fecha a semana na hora (D-63) e a central passa para a próxima
+  const playBye = async () => {
+    setByeBusy(true);
+    try {
+      await api.weeks.playCurrent(careerId);
+      toast(t("hub.next.byeDone"), "good");
+      await q.refetch();
+    } catch (e) {
+      toast(describeError(e), "bad");
+    } finally {
+      setByeBusy(false);
+    }
+  };
 
   if (q.loading) return <PageSkeleton rows={3} />;
   if (q.error || !q.data) return <ErrorState message={q.error} onRetry={q.refetch} />;
@@ -178,8 +246,10 @@ export default function FranchiseHubPage() {
         {d.coach && <p className="mt-2 text-[0.85rem] text-text-soft">{t("hub.coach", { name: d.coach.name, style: d.coach.style ? td("enums", `coachStyle.${d.coach.style}`) : "—" })}</p>}
       </section>
 
+      <LiveMatchCard d={d} careerId={careerId} />
+
       <div className="grid gap-4 sm:gap-5 lg:grid-cols-3 [&>*]:min-w-0">
-        <NextGameCard d={d} careerId={careerId} />
+        <NextGameCard d={d} careerId={careerId} onPrepare={() => setPrepare(true)} onBye={() => void playBye()} byeBusy={byeBusy} />
         <DivisionCard d={d} />
 
         <Card title={t("hub.highlights.title")} action={<Button variant="ghost" size="sm" href={`/c/${careerId}/roster`} iconRight={<IconChevronRight size={16} />}>{t("hub.highlights.all")}</Button>}>
@@ -276,6 +346,7 @@ export default function FranchiseHubPage() {
           </dl>
         </Card>
       </div>
+      <PrepareTeamModal open={prepare} onClose={() => setPrepare(false)} careerId={careerId} onPlayed={() => void q.refetch()} />
     </div>
   );
 }

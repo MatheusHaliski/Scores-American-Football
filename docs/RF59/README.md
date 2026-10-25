@@ -46,7 +46,7 @@ Fonte: [`RF59-stm.puml`](RF59-stm.puml)
 |---|---|---|---|---|---|
 | ⛔ alvo | `GET` | `/api/v1/matches/{mid}/plays/{seq}/diagram` | `GetPlayDiagramUseCase` | JWT · dono do save | Formação, rotas, bloqueios, cobertura e trajetória real da jogada |
 | ⛔ alvo | `GET` | `/api/v1/fixtures/{fid}/drives` | `ListDrivesUseCase` | JWT · dono do save | Drives com jogadas para navegar no mini campo |
-| ⛔ alvo | `GET` | `/api/v1/matches/{mid}/events` | `ListMatchEventsUseCase` | JWT · dono do save | Jogadas do drive escolhido (RF54) |
+| ✅ | `GET` | `/api/v1/matches/{mid}/events` | `ListMatchEventsUseCase` | JWT · dono do save | Jogadas do drive escolhido (RF54) |
 
 ## Pontos de decisão
 

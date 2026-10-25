@@ -52,7 +52,7 @@ Fonte: [`RF41-stm-player-morale-pedido-de-troca.puml`](RF41-stm-player-morale-pe
 |---|---|---|---|---|---|
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/morale` | `GetManagerMoraleUseCase` | JWT · dono do save | moraleClub/moraleLeague, fatores, tendência, semanas em zona crítica, risco de demissão |
 | ✅ | `GET` | `/api/v1/careers/{id}/players/{pid}` | `GetPlayerSheetUseCase` | JWT · dono do save | Moral do jogador, fatores (snaps, contrato, vitórias, papel), pedido de troca, modificador de desempenho |
-| ⛔ alvo | `POST` | `/api/v1/careers/{id}/weeks/current/play` | `PlayWeekUseCase` | JWT · dono do save | Ao fechar a semana publica WeekCompleted → MoraleWeekJob |
+| ✅ | `POST` | `/api/v1/careers/{id}/weeks/current/play` | `PlayWeekUseCase` | JWT · dono do save | Ao fechar a semana publica WeekCompleted → MoraleWeekJob |
 | ⛔ alvo | `POST` | `/api/v1/careers/{id}/inbox/{mid}/respond` | `RespondInboxMessageUseCase` | JWT · dono do save | InboxDecisionPolicy → deltas de moral, caixa e follow-up (renovação, promessa de snaps, troca) |
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/analysis` | `GetAnalysisReportUseCase` | JWT · dono do save | Previsão de zona e risco de demissão (ClubAnalyst) |
 

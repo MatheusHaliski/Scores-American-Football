@@ -6,7 +6,16 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 
+import br.com.velion.scoresaf.application.port.out.persistence.CareerSaveRepository;
+import br.com.velion.scoresaf.application.port.out.persistence.PlayerRepository;
+import br.com.velion.scoresaf.application.port.out.persistence.WeekRepository;
 import br.com.velion.scoresaf.application.seed.DefaultWorldSeeder;
+import br.com.velion.scoresaf.domain.career.CareerSave;
+import br.com.velion.scoresaf.domain.catalog.Player;
+import br.com.velion.scoresaf.domain.catalog.PlayerContract;
+import br.com.velion.scoresaf.domain.shared.RosterStatus;
+import java.time.LocalDate;
+import java.util.Comparator;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -24,6 +33,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.node.ObjectNode;
@@ -45,6 +56,9 @@ import tools.jackson.databind.node.ObjectNode;
  * criada com semente fixa na franquia PAV do mundo padrão, então o conteúdo é determinístico; os ids (todos novos, do mundo copiado)
  * viram UUIDs sequenciais na ordem em que aparecem no arquivo ({@link #stableCareer}), o que preserva as referências internas
  * (ex.: {@code homeClubId} do jogo aponta para um {@code clubs[].id}).
+ *
+ * <p>Bloco 6b: plano de jogo, playbook, 409 do plano, preparação, painel da semana, estado ao vivo, play-by-play e relatório
+ * pós-jogo, na mesma carreira dourada (a partida é determinística pela semente; o prazo da decisão vira instante fixo).
  */
 @SpringBootTest(properties = {"scores.app.version=0.0.0-golden", "scores.security.rate-limit.limits.password-forgot=1"})
 @AutoConfigureMockMvc
@@ -65,6 +79,10 @@ class ApiGoldenTest {
   @Autowired MockMvc mvc;
   @Autowired JsonMapper json;
   @Autowired DefaultWorldSeeder seeder;
+  @Autowired CareerSaveRepository saves;
+  @Autowired WeekRepository weeks;
+  @Autowired PlayerRepository players;
+  @Autowired PlatformTransactionManager txManager;
 
   private void assertGolden(String file, MockHttpServletRequestBuilder request) throws Exception {
     assertGolden(file, mvc.perform(request).andReturn());
@@ -153,7 +171,7 @@ class ApiGoldenTest {
   }
 
   private static final Pattern UUID_TEXT = Pattern.compile("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}");
-  private static final Set<String> INSTANTS = Set.of("createdAt", "lastPlayedAt", "updatedAt", "at");
+  private static final Set<String> INSTANTS = Set.of("createdAt", "lastPlayedAt", "updatedAt", "at", "decisionDeadlineAt");
 
   /** Amostra da carreira: ids sequenciais na ordem de aparição e instantes fixos (ver o javadoc da classe). */
   private void assertCareerGolden(String file, MvcResult result) throws Exception {
@@ -233,6 +251,88 @@ class ApiGoldenTest {
         .header("Accept-Language", "pt-BR").contentType(MediaType.APPLICATION_JSON).content("{\"version\":7,\"slots\":[]}")).andReturn();
     assertThat(conflict.getResponse().getStatus()).as(conflict.getResponse().getContentAsString()).isEqualTo(409);
     assertCareerGolden("problem-409-depth-chart.json", conflict);
+  }
+
+  /**
+   * Q-24: o 422 {@code CAP_EXCEEDED} da dispensa ({@code details}: teto, comprometido depois da dispensa e excedente, em centavos;
+   * mensagem em pt-BR), lido pelo front. Carreira dourada com a data do jogo em março (antes de 1º de junho: todo o dead money na
+   * temporada) e o teto da liga ajustado para a dispensa do jogador com o maior dead money além do cap hit passar dele.
+   */
+  @Test
+  void dispensa_que_estoura_o_teto_bate_com_a_amostra_dourada() throws Exception {
+    String auth = bearer();
+    UUID career = UUID.fromString(goldenCareer(auth));
+    long used = json.readTree(mvc.perform(get("/api/v1/careers/" + career + "/roster").header("Authorization", auth)).andReturn().getResponse()
+        .getContentAsString()).get("cap").get("capUsed").asLong();
+    UUID target = new TransactionTemplate(txManager).execute(st -> {
+      CareerSave save = saves.findById(career).orElseThrow();
+      weeks.findBySeasonIdAndNumber(save.getSeason().getId(), 1).orElseThrow().setStartsOn(LocalDate.of(2026, 3, 12));
+      Comparator<Player> byExtra = Comparator.comparingLong(p -> extraDeadMoney(p.getContract()));
+      Player p = players.findByClubIdOrderByOverallDesc(save.getClub().getId()).stream().filter(x -> x.getRosterStatus() == RosterStatus.ACTIVE)
+          .max(byExtra.thenComparing(Player::getName).thenComparingInt(Player::getJerseyNumber)).orElseThrow();
+      long extra = extraDeadMoney(p.getContract());
+      save.getLeague().setSalaryCap(used + extra - extra / 2);
+      return p.getId();
+    });
+    MvcResult refused = mvc.perform(post("/api/v1/careers/" + career + "/players/" + target + "/release").header("Authorization", auth)
+        .header("X-Correlation-Id", "golden-422-cap").header("Accept-Language", "pt-BR")).andReturn();
+    assertThat(refused.getResponse().getStatus()).as(refused.getResponse().getContentAsString()).isEqualTo(422);
+    assertCareerGolden("problem-422-cap-exceeded.json", refused);
+  }
+
+  /** Dead money do corte antes de 1º de junho de 2026 menos o cap hit liberado. */
+  private static long extraDeadMoney(PlayerContract c) {
+    int y = c.yearIndexOf(2026);
+    return c.deadMoneyIfCut(y, 5) - c.capHit(y, 5);
+  }
+
+  /**
+   * Bloco 6b: plano de jogo, playbook, o 409 do plano, a preparação, o painel da semana depois de jogar, o estado ao vivo parado na
+   * primeira decisão do manager (o mesmo {@code LiveMatchDto} do {@code live-match.json} em {@code live}), os 12 primeiros lances e o
+   * relatório pós-jogo (decisões respondidas com a opção da IA, para a partida ser a mesma a cada execução).
+   */
+  @Test
+  void plano_preparacao_e_partida_batem_com_as_amostras_douradas() throws Exception {
+    String auth = bearer();
+    String career = goldenCareer(auth);
+    String base = "/api/v1/careers/" + career;
+    assertCareerGolden("game-plan.json", mvc.perform(get(base + "/game-plan").header("Authorization", auth)).andReturn());
+    assertCareerGolden("playbook.json", mvc.perform(get(base + "/playbook").header("Authorization", auth)).andReturn());
+    MvcResult conflict = mvc.perform(put(base + "/game-plan").header("Authorization", auth).header("X-Correlation-Id", "golden-409-game-plan")
+        .header("Accept-Language", "pt-BR").contentType(MediaType.APPLICATION_JSON).content("{\"version\":7,\"passRatio\":60,\"fourthDownAggression\":\"NORMAL\","
+            + "\"tempo\":\"NORMAL\",\"defensiveFocus\":\"BALANCED\",\"blitzFrequency\":\"NORMAL\",\"baseDefense\":\"BASE_4_3\"}")).andReturn();
+    assertThat(conflict.getResponse().getStatus()).as(conflict.getResponse().getContentAsString()).isEqualTo(409);
+    assertCareerGolden("problem-409-game-plan.json", conflict);
+    assertCareerGolden("preparation.json", mvc.perform(get(base + "/next-match/preparation").header("Authorization", auth)).andReturn());
+
+    MvcResult week = mvc.perform(post(base + "/weeks/current/play").header("Authorization", auth)).andReturn();
+    assertThat(week.getResponse().getStatus()).as(week.getResponse().getContentAsString()).isEqualTo(200);
+    assertCareerGolden("week.json", week);
+    String mid = json.readTree(week.getResponse().getContentAsString()).get("matchId").asString();
+    MvcResult adv = mvc.perform(post("/api/v1/matches/" + mid + "/advance").header("Authorization", auth).contentType(MediaType.APPLICATION_JSON)
+        .content("{\"mode\":\"TO_DECISION\"}")).andReturn();
+    assertThat(json.readTree(adv.getResponse().getContentAsString()).get("status").asString()).isEqualTo("AWAITING_DECISION");
+    assertCareerGolden("match-state.json", mvc.perform(get("/api/v1/matches/" + mid).header("Authorization", auth)).andReturn());
+    assertCareerGolden("match-events.json", mvc.perform(get("/api/v1/matches/" + mid + "/events?after=0&limit=12").header("Authorization", auth)).andReturn());
+
+    JsonNode state = json.readTree(adv.getResponse().getContentAsString());
+    int guard = 0;
+    while (!"FINISHED".equals(state.get("status").asString())) {
+      assertThat(++guard).isLessThan(500);
+      MvcResult next;
+      if ("AWAITING_DECISION".equals(state.get("status").asString())) {
+        JsonNode d = state.get("live").get("decision");
+        next = mvc.perform(post("/api/v1/matches/" + mid + "/play-calls/" + d.get("id").asString()).header("Authorization", auth)
+            .contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsString(Map.of("optionCode", d.get("autoOptionCode").asString(),
+                "version", state.get("live").get("version").asLong())))).andReturn();
+      } else {
+        next = mvc.perform(post("/api/v1/matches/" + mid + "/advance").header("Authorization", auth).contentType(MediaType.APPLICATION_JSON)
+            .content("{\"mode\":\"FULL\"}")).andReturn();
+      }
+      assertThat(next.getResponse().getStatus()).as(next.getResponse().getContentAsString()).isEqualTo(200);
+      state = json.readTree(next.getResponse().getContentAsString());
+    }
+    assertCareerGolden("match-report.json", mvc.perform(get("/api/v1/matches/" + mid + "/report").header("Authorization", auth)).andReturn());
   }
 
   /** Franquia "PAV" do mundo padrão, pela lista da liga (mesmas rotas que o front do editor usa). */

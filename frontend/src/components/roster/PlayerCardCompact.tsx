@@ -70,6 +70,11 @@ export function PlayerCardCompact({ player, href, actions }: { player: PlayerCar
       </div>
       <div className="flex flex-wrap gap-1">
         {p.rosterStatus === "INACTIVE" && <Badge size="xs">{td("enums", "rosterStatus.INACTIVE")}</Badge>}
+        {p.rosterStatus === "PRACTICE_SQUAD_WAIVERS" && (
+          <Badge tone="warn" size="xs" title={t("card.waiversHint")}>
+            {td("enums", "rosterStatusShort.PRACTICE_SQUAD_WAIVERS")}
+          </Badge>
+        )}
         {p.injuryWeeksOut > 0 && <Badge tone="bad" size="xs">{t("card.injured", { n: p.injuryWeeksOut })}</Badge>}
         {p.suspensionWeeks > 0 && <Badge tone="warn" size="xs">{t("card.suspended")}</Badge>}
         {p.depthChart.slice(0, 3).map((s) => (

@@ -71,6 +71,15 @@ class AfterCommitTest {
   }
 
   @Test
+  void anEffectScheduledFromAnotherEffectStillRuns() {
+    // ex.: o editor de mundos agenda a auditoria para depois do commit e o audit.ok agenda de novo (D-91): no afterCommit a
+    // transação ainda parece ativa, e uma sincronização registrada ali nunca seria chamada
+    AtomicInteger nested = new AtomicInteger();
+    tx.executeWithoutResult(st -> AfterCommit.run("fora", () -> AfterCommit.run("dentro", nested::incrementAndGet)));
+    assertThat(nested).hasValue(1);
+  }
+
+  @Test
   void runsImmediatelyWithoutTransaction() {
     AtomicInteger effects = new AtomicInteger();
     AfterCommit.run("teste", effects::incrementAndGet);

@@ -3,6 +3,7 @@ package br.com.velion.scoresaf.application.usecase.rf40;
 import br.com.velion.scoresaf.application.dto.CareerDtos;
 import br.com.velion.scoresaf.application.port.out.persistence.ClubRepository;
 import br.com.velion.scoresaf.application.port.out.persistence.FixtureRepository;
+import br.com.velion.scoresaf.application.port.out.persistence.MatchSessionRepository;
 import br.com.velion.scoresaf.application.port.out.persistence.PlayerRepository;
 import br.com.velion.scoresaf.application.service.CapSheet;
 import br.com.velion.scoresaf.application.service.DepthChartService;
@@ -31,19 +32,27 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * RF40 / HU-RF40 — central da franquia, com o que existe no bloco 6a: carreira, franquia, head coach, próximo jogo (ou semana de
  * folga), campanha, posição e tabela da divisão (empate: saldo de pontos, depois prestígio — a projeção de pré-temporada, D-48), próximos jogos de divisão, destaques do elenco (5 maiores overalls), lesionados,
- * teto salarial (cap hits + dead money) e o estado do depth chart. Partida ao vivo, moral, análise, inbox e Scores Points vêm nulos
- * até os blocos que os criam.
+ * teto salarial (cap hits + dead money), o estado do depth chart e a partida ao vivo em andamento (bloco 6b). Moral, análise, inbox e
+ * Scores Points vêm nulos até os blocos que os criam.
  */
 @Service
 public class GetClubDashboardUseCase {
   private static final int HIGHLIGHTS = 5;
 
   private final CareerSupport support; private final FixtureRepository fixtures; private final ClubRepository clubs; private final PlayerRepository players;
-  private final DepthChartService depthCharts; private final CapSheet cap;
+  private final DepthChartService depthCharts; private final CapSheet cap; private final MatchSessionRepository sessions;
 
   public GetClubDashboardUseCase(CareerSupport support, FixtureRepository fixtures, ClubRepository clubs, PlayerRepository players,
-                                 DepthChartService depthCharts, CapSheet cap) {
+                                 DepthChartService depthCharts, CapSheet cap, MatchSessionRepository sessions) {
     this.support = support; this.fixtures = fixtures; this.clubs = clubs; this.players = players; this.depthCharts = depthCharts; this.cap = cap;
+    this.sessions = sessions;
+  }
+
+  /** Partida ao vivo não encerrada da carreira (bloco 6b), ou {@code null}. */
+  private CareerDtos.LiveMatchRefDto live(CareerSave save) {
+    return sessions.findByCareerIdOrderByCreatedAtAsc(save.getId()).stream().filter(s -> !s.isFinished()).findFirst()
+        .map(s -> new CareerDtos.LiveMatchRefDto(s.getId(), s.getFixture().getId(), s.getFixture().getWeekNumber(), s.getStatus().name(), s.getHomeScore(),
+            s.getAwayScore())).orElse(null);
   }
 
   @Transactional
@@ -106,6 +115,6 @@ public class GetClubDashboardUseCase {
     CareerDtos.DepthChartAlertDto chart = new CareerDtos.DepthChartAlertDto(dc.currentVersion(), r.valid(), r.errors().size(), r.warnings().size(),
         r.errors().stream().map(DepthChartPolicy.Issue::code).distinct().toList());
     return new CareerDtos.DashboardDto(career, CareerAssembler.club(club), coach, save.getCurrentWeek(), nextGame, bye, record, rank, division, divisionGames,
-        highlights, injuries, cap.of(save, roster), chart, null, null, null, null, null, null);
+        highlights, injuries, cap.of(save, roster), chart, live(save), null, null, null, null, null);
   }
 }

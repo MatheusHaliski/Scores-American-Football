@@ -50,10 +50,10 @@ Fonte: [`RF43-stm-decisao-do-intervalo-lote.puml`](RF43-stm-decisao-do-intervalo
 
 | Estado | Método | Rota | Caso de uso | Autorização | Descrição |
 |---|---|---|---|---|---|
-| ⛔ alvo | `GET` | `/api/v1/matches/{mid}` | `MatchQueryUseCases.state` | JWT · dono do save | Estado vivo + snapshot tático: 11 por lado, depth chart em campo, fadiga, lesões, uniformes e capacetes fixados, versão |
+| ✅ | `GET` | `/api/v1/matches/{mid}` | `MatchQueryUseCases.state` | JWT · dono do save | Estado vivo + snapshot tático: 11 por lado, depth chart em campo, fadiga, lesões, uniformes e capacetes fixados, versão |
 | ⛔ alvo | `GET` | `/api/v1/clubs/{cid}/playbook` | `PlaybookQueryUseCase` | JWT · dono do save | Jogadas com diagrama (formação, rotas, bloqueios, cobertura) para desenhar no mini campo |
-| ⛔ alvo | `POST` | `/api/v1/matches/{mid}/decisions` | `AdvanceMatchUseCase.decisions` | JWT · dono do save | Lote do intervalo: DEPTH_SWAP, GAME_PLAN, PLAYBOOK_EMPHASIS · tudo ou nada · recusa com código |
-| ⛔ alvo | `POST` | `/api/v1/matches/{mid}/advance` | `AdvanceMatchUseCase` | JWT · dono do save | Confirma e inicia o próximo quarto (snapshotVersion confere) |
+| ✅ | `POST` | `/api/v1/matches/{mid}/decisions` | `AdvanceMatchUseCase.decisions` | JWT · dono do save | Lote do intervalo: DEPTH_SWAP, GAME_PLAN, PLAYBOOK_EMPHASIS · tudo ou nada · recusa com código |
+| ✅ | `POST` | `/api/v1/matches/{mid}/advance` | `AdvanceMatchUseCase` | JWT · dono do save | Confirma e inicia o próximo quarto (snapshotVersion confere) |
 
 ## Pontos de decisão
 

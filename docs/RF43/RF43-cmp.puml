@@ -44,7 +44,7 @@ database "Redis 7" as s1
 database "MySQL 8" as s2
 database "Navegador" as s3
 c1 --> c2 : usa
-c2 --> c11 : GET /matches/{mid} (alvo)\nGET /clubs/{cid}/playbook (alvo)\nPOST /matches/{mid}/decisions (alvo)\n…
+c2 --> c11 : GET /matches/{mid}\nGET /clubs/{cid}/playbook (alvo)\nPOST /matches/{mid}/decisions\n…
 c2 --> c12
 c11 --> c13
 c12 --> c13

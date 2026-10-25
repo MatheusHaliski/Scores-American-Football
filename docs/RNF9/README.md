@@ -46,7 +46,7 @@ Fonte: [`RNF9-stm.puml`](RNF9-stm.puml)
 |---|---|---|---|---|---|
 | ✅ | `GET` | `/api/v1/me/settings` | `GetUserSettingsUseCase` | JWT | reducedMotion, highContrast, fontScale (preferências de desempenho e acessibilidade) |
 | ✅ | `GET` | `/api/v1/careers/{id}/dashboard` | `GetClubDashboardUseCase` | JWT · dono do save | Leitura crítica com p95 ≤ 300 ms (cache Redis + ETag) |
-| ⛔ alvo | `GET` | `/api/v1/matches/{mid}/events` | `GetMatchEventsUseCase` | JWT · dono do save | Poll incremental leve (after=seq, 204 sem novidade) |
+| ✅ | `GET` | `/api/v1/matches/{mid}/events` | `GetMatchEventsUseCase` | JWT · dono do save | Poll incremental leve (after=seq, 204 sem novidade) |
 | ⛔ alvo | `GET` | `/api/v1/matches/{mid}/formation` | `GetPlayFormationUseCase` | JWT · dono do save | Posições dos 22 atletas no snap (coordenadas compactas para a cena 3D) |
 
 ## Pontos de decisão

@@ -45,7 +45,7 @@ Fonte: [`RF54-stm.puml`](RF54-stm.puml)
 | Estado | Método | Rota | Caso de uso | Autorização | Descrição |
 |---|---|---|---|---|---|
 | ⛔ alvo | `GET` | `/api/v1/catalog/play-events` | `ListPlayEventTypesUseCase` | público | Tipos de jogada, resultados e faltas (jardas, 1ª descida automática, perda de descida) |
-| ⛔ alvo | `GET` | `/api/v1/matches/{mid}/events` | `ListMatchEventsUseCase` | JWT · dono do save | Play-by-play paginado (quarto, drive, tipo, só faltas, só pontuação) |
+| ✅ | `GET` | `/api/v1/matches/{mid}/events` | `ListMatchEventsUseCase` | JWT · dono do save | Play-by-play paginado (quarto, drive, tipo, só faltas, só pontuação) |
 | ⛔ alvo | `POST` | `/api/v1/matches/{mid}/penalties/{seq}/decision` | `DecidePenaltyUseCase` | JWT · dono do save | Aceita ou recusa a falta quando o nível de chamada pede (RF62) |
 
 ## Pontos de decisão

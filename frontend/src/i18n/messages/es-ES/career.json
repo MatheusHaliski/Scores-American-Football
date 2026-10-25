@@ -114,5 +114,15 @@
   "new.summary": "{club} en la {league}, con {coach} ({style}) al mando, dificultad {difficulty}.",
   "new.title": "Nueva carrera",
   "new.validation.length": "De {min} a {max} caracteres.",
-  "new.world": "Mundo"
+  "new.world": "Mundo",
+  "hub.live.eyebrow": "Semana {week} · en vivo",
+  "hub.live.title": "Partido en curso",
+  "hub.live.continue": "Continuar partido",
+  "hub.next.prepare": "Preparar y jugar",
+  "hub.next.playbook": "Playbook",
+  "hub.next.playBye": "Avanzar la semana libre",
+  "hub.next.byeDone": "Semana libre cerrada.",
+  "calendar.live": "en vivo",
+  "calendar.report": "Informe",
+  "calendar.continue": "Continuar"
 }

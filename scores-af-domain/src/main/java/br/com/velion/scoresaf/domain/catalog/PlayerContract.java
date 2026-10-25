@@ -94,6 +94,34 @@ public class PlayerContract {
 
   public long deadMoneyIfCut(int yearIndex) { return deadMoneyIfCut(yearIndex, DEFAULT_PRORATION_MAX_YEARS); }
 
+  /** Parte garantida do salário-base do ano {@code yearIndex} (a garantia é consumida do primeiro ano em diante, D-27). */
+  public long guaranteeFor(int yearIndex) {
+    if (yearIndex < 0 || yearIndex >= years()) return 0;
+    long before = 0;
+    for (int y = 0; y < yearIndex; y++) before += baseSalary(y);
+    return Math.min(baseSalary(yearIndex), Math.max(0, guaranteed - before));
+  }
+
+  /**
+   * Dead money do corte no ano {@code yearIndex} dividido entre a temporada do corte e a seguinte (regra do 1º de junho, Q-24, D-79):
+   * antes de 1º de junho, tudo (bônus ainda não lançado dos anos que faltam + garantias que faltam) entra na temporada do corte; a
+   * partir de 1º de junho, só a parcela do ano (bônus rateado do ano + garantia do ano) entra nela e o resto vai para a seguinte. A
+   * soma das duas é sempre {@link #deadMoneyIfCut(int, int)}.
+   */
+  public DeadMoney deadMoneySplit(int yearIndex, int prorationMaxYears, boolean fromJuneFirst) {
+    long total = deadMoneyIfCut(yearIndex, prorationMaxYears);
+    if (!fromJuneFirst || total == 0) return new DeadMoney(total, 0);
+    int y = Math.max(0, yearIndex);
+    long current = Math.min(total, prorationFor(y, prorationMaxYears) + guaranteeFor(y));
+    return new DeadMoney(current, total - current);
+  }
+
+  /** Dead money de um corte: o que entra no teto da temporada do corte e o que vai para a temporada seguinte (centavos de S$). */
+  public record DeadMoney(long currentSeason, long nextSeason) {
+    public static final DeadMoney NONE = new DeadMoney(0, 0);
+    public long total() { return currentSeason + nextSeason; }
+  }
+
   /** Valor total (salários + bônus). */
   public long totalValue() {
     long t = signingBonus;

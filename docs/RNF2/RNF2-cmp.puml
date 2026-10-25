@@ -53,7 +53,7 @@ database "Redis 7" as s2
 database "Cassandra 4.1" as s3
 c1 --> c3 : usa
 c2 --> c12 : dispara
-c3 --> c9 : PUT /me/settings\nPOST /careers/{id}/weeks/current/play (alvo)\nPOST /matches/{mid}/advance (alvo)\n…
+c3 --> c9 : PUT /me/settings\nPOST /careers/{id}/weeks/current/play\nPOST /matches/{mid}/advance\n…
 c3 --> c10
 c3 --> c11
 c9 --> c12

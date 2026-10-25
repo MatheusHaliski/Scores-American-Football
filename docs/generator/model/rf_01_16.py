@@ -485,7 +485,7 @@ REQUIREMENTS += [
         "screen": "Elenco (/c/{careerId}/roster) — abas Ataque, Defesa, Especiais, Practice squad, IR",
         "endpoints": [
             {"method": "GET", "path": "/api/v1/careers/{id}/roster", "usecase": "GetRosterUseCase", "auth": "JWT · dono do save", "desc": "Cards compactos por unidade (unit=OFFENSE|DEFENSE|SPECIAL): posição, overall na posição, macros da família (D-6), condição, moral, lesão, rosterStatus, contrato e cap hit; contadores 53/46/16"},
-            {"method": "PATCH", "path": "/api/v1/careers/{id}/players/{pid}/roster-status", "usecase": "ChangeRosterStatusUseCase", "auth": "JWT · dono do save", "desc": "ACTIVE ↔ INACTIVE do dia de jogo (46 ativos) ou move ao practice squad"},
+            {"method": "PATCH", "path": "/api/v1/careers/{id}/players/{pid}/roster-status", "usecase": "ChangeRosterStatusUseCase", "auth": "JWT · dono do save", "desc": "ACTIVE ↔ INACTIVE do dia de jogo (46 ativos) ou move ao practice squad (dos 53, passa por waivers até a semana avançar: PRACTICE_SQUAD_WAIVERS, Q-23)"},
             {"method": "POST", "path": "/api/v1/careers/{id}/players/{pid}/injured-reserve", "usecase": "PlaceOnInjuredReserveUseCase", "auth": "JWT · dono do save", "desc": "Coloca na IR (mínimo 4 semanas) e libera vaga no elenco de 53; retorno com POST …/activate"},
             {"method": "POST", "path": "/api/v1/careers/{id}/practice-squad/{pid}/elevate", "usecase": "ElevatePracticeSquadPlayerUseCase", "auth": "JWT · dono do save", "desc": "Sobe um jogador do practice squad para o jogo da semana (até 3 elevações por temporada)"},
             {"method": "POST", "path": "/api/v1/careers/{id}/players/{pid}/release", "usecase": "ReleasePlayerUseCase", "auth": "JWT · dono do save", "desc": "Dispensa: vai a waivers (RF65) e gera dead money no teto (RF49)"},
@@ -498,11 +498,11 @@ REQUIREMENTS += [
             {"name": "Jogador do meu clube?", "rule": "save.employmentStatus == EMPLOYED && player.clubId == save.clubId (inclui practice squad e IR)", "onFalse": "403 NOT_YOUR_PLAYER"},
             {"name": "Ativos do dia de jogo ≤ 46?", "rule": "count(ACTIVE) ≤ rules.gameDayActives (46) e ≥ mínimo por posição (2 QB, 1 K, 1 P, 1 LS)", "onFalse": "422 GAME_DAY_ACTIVES_INVALID"},
             {"name": "Elenco ≤ 53?", "rule": "count(ACTIVE + INACTIVE) ≤ rules.rosterMax (53) · IR e practice squad não contam", "onFalse": "422 ROSTER_FULL"},
-            {"name": "Vaga no practice squad?", "rule": "count(PRACTICE_SQUAD) < rules.practiceSquadMax (16) e jogador elegível (experienceYears ≤ 3 ou vaga de veterano)", "onFalse": "422 PRACTICE_SQUAD_FULL"},
+            {"name": "Vaga no practice squad?", "rule": "count(PRACTICE_SQUAD + PRACTICE_SQUAD_WAIVERS) < rules.practiceSquadMax (16) e jogador elegível (experienceYears ≤ 3 ou vaga de veterano, contando os em waivers)", "onFalse": "422 PRACTICE_SQUAD_FULL"},
             {"name": "Elevação permitida?", "rule": "practiceSquadMember.elevationsUsed < 3 na temporada e ativos < 46 (elevado conta como ativo só no jogo)", "onFalse": "422 ELEVATION_LIMIT"},
             {"name": "IR permitida?", "rule": "player.injury != null && injury.weeksOut ≥ 4", "onFalse": "422 IR_NOT_ALLOWED"},
             {"name": "Retorno da IR liberado?", "rule": "semanas na IR ≥ 4 e jogador recuperado (injury == null ou weeksOut == 0) e elenco < 53", "onFalse": "422 IR_RETURN_NOT_ALLOWED"},
-            {"name": "Dead money cabe no teto?", "rule": "CapEngine: capSpace − deadMoneyIfCut ≥ 0 na temporada (ou dividido em 2 se após o 1º de junho do jogo)", "onFalse": "422 CAP_EXCEEDED (dispensa bloqueada)"},
+            {"name": "Dead money cabe no teto?", "rule": "comprometido − cap hit + dead money da temporada ≤ teto, ou não aumenta (antes de 1º de junho: dead money inteiro; a partir dele: parcela do ano agora, resto na próxima, D-79/D-80)", "onFalse": "422 CAP_EXCEEDED (dispensa bloqueada; details: teto, comprometido, excedente)"},
             {"name": "Consumível aplicável?", "rule": "item do usuário não aplicado, sem aplicação ativa da mesma categoria, efeito compatível com a posição", "onFalse": "422 CONSUMABLE_NOT_APPLICABLE"},
         ],
         "activity": [
@@ -522,7 +522,7 @@ REQUIREMENTS += [
             {"actor": "Manager", "if": "move ao practice squad ou eleva?", "yes": [
                 {"actor": "Backend", "if": "vaga no practice squad?", "no": [{"actor": "Backend", "do": "422 PRACTICE_SQUAD_FULL"}, "stop"]},
                 {"actor": "Backend", "if": "elevação permitida?", "no": [{"actor": "Backend", "do": "422 ELEVATION_LIMIT"}, "stop"]},
-                {"actor": "Backend", "do": "PracticeSquadMember criado ou elevationsUsed + 1 (volta sozinho após o jogo)"},
+                {"actor": "Backend", "do": "Dos 53: rosterStatus PRACTICE_SQUAD_WAIVERS (exposto a waivers, vaga reservada) · elevação: elevationsUsed + 1 (volta sozinho após o jogo)"},
             ]},
             {"actor": "Manager", "if": "coloca na IR ou ativa da IR?", "yes": [
                 {"actor": "Backend", "if": "IR permitida?", "no": [{"actor": "Backend", "do": "422 IR_NOT_ALLOWED"}, "stop"]},
@@ -544,7 +544,7 @@ REQUIREMENTS += [
             {"actor": "Manager", "if": "envia mensagem ao jogador?", "yes": [
                 {"actor": "JogadorIA", "do": "Responde no inbox · moral ajustada (MoraleEngine)"},
             ]},
-            {"actor": "Scheduler", "do": "Fim da semana: elevados voltam ao practice squad · contagem de semanas na IR"},
+            {"actor": "Scheduler", "do": "Fim da semana: waivers resolvidos (sem reivindicação da IA, entra no practice squad: WAIVER_CLEARED) · elevados voltam ao practice squad · contagem de semanas na IR"},
             {"actor": "Frontend", "do": "Atualiza cards e contadores"},
             "end",
         ],

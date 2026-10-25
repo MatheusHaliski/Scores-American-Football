@@ -183,10 +183,11 @@ class DepthChartIntegrationTest {
   }
 
   @Test
-  void plano_de_jogo_padrao_do_estilo_do_head_coach_so_leitura() throws Exception {
+  void plano_de_jogo_nasce_do_estilo_do_head_coach() throws Exception {
+    // bloco 6b: o plano passou a ser editável (RF61, GamePlanIntegrationTest); até o primeiro PUT continua o padrão do estilo
     Map<String, Object> plan = ok(call(mvc, get(base + "/game-plan"), auth, null));
     assertThat(plan).containsEntry("coachStyle", "OFFENSIVE").containsEntry("passRatio", 58).containsEntry("fourthDownAggression", "AGGRESSIVE")
-        .containsEntry("source", "COACH_STYLE").containsEntry("editable", false);
+        .containsEntry("source", "COACH_STYLE").containsEntry("editable", true);
   }
 
   @Test

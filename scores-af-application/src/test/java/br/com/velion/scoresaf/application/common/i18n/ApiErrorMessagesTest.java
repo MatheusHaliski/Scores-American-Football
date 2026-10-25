@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 
 /**
  * Mensagens de erro da API (RF46 CA05, RNF13): os 3 idiomas têm as mesmas chaves, inclusive os códigos da plataforma (bloco 3) e os
- * do editor de mundos (bloco 4) e os da carreira, do elenco e do depth chart (bloco 6a).
+ * do editor de mundos (bloco 4), os da carreira, do elenco e do depth chart (bloco 6a) e os da partida (bloco 6b).
  * No basquete a lista conferida era a do Digital Double (RF44), que entra aqui no bloco 9.
  */
 class ApiErrorMessagesTest {
@@ -30,9 +30,14 @@ class ApiErrorMessagesTest {
       "CAREER_ARCHIVED", "CAREER_CONFIRMATION_REQUIRED", "CAREER_VERSION_CONFLICT", "CAREER_UNEMPLOYED", "INVALID_CAREER_STATUS", "INVALID_COACH_STYLE",
       "INVALID_DIFFICULTY", "COACH_NAME_INVALID", "COACH_NATIONALITY_INVALID", "LEAGUE_NOT_IN_WORLD", "CLUB_REQUIRED", "CLUB_NOT_IN_LEAGUE",
       "LEAGUE_STRUCTURE_INVALID", "NO_SEASON", "INVALID_WEEK", "PLAYER_NOT_IN_ROSTER", "PRACTICE_SQUAD_INELIGIBLE", "IR_NOT_ALLOWED",
-      "IR_RETURN_TOO_EARLY", "IR_STILL_INJURED", "IR_RETURNS_EXHAUSTED", "ROSTER_MOVE_NOT_ALLOWED", "DEPTH_CHART_VERSION_CONFLICT",
+      "IR_RETURN_TOO_EARLY", "IR_STILL_INJURED", "IR_RETURNS_EXHAUSTED", "ROSTER_MOVE_NOT_ALLOWED", "CAP_EXCEEDED", "DEPTH_CHART_VERSION_CONFLICT",
       "DEPTH_CHART_UNKNOWN_SLOT", "DEPTH_CHART_DUPLICATE_SLOT", "DEPTH_CHART_PLAYER_UNAVAILABLE", "DEPTH_CHART_DUPLICATE_PLAYER",
       "DEPTH_CHART_INCOMPLETE", "DEPTH_CHART_TOO_MANY_ACTIVES", "INVALID_DEPTH");
+  /** Bloco 6b — plano de jogo, playbook, preparação, partida ao vivo, intervalo e chamada de jogada. */
+  private static final List<String> MATCH = List.of("GAME_PLAN_INVALID", "GAME_PLAN_VERSION_CONFLICT", "PLAYBOOK_INVALID", "PLAYBOOK_INCOMPLETE",
+      "PLAYBOOK_VERSION_CONFLICT", "NO_NEXT_GAME", "DEPTH_CHART_INVALID", "MATCH_FINISHED", "MATCH_NOT_FINISHED", "MATCH_VERSION_CONFLICT",
+      "INVALID_ADVANCE_MODE", "DECISION_PENDING", "DECISION_CLOSED", "DECISION_NOT_FOUND", "PLAY_NOT_OFFERED", "ADJUSTMENT_NOT_ALLOWED",
+      "TIMEOUT_NOT_ALLOWED", "INVALID_ADJUSTMENT");
 
   private static Set<String> keys(String path) throws Exception {
     Properties p = new Properties();
@@ -50,5 +55,6 @@ class ApiErrorMessagesTest {
     for (String code : PLATFORM) assertThat(pt).as("código " + code).contains("error." + code);
     for (String code : WORLD_EDITOR) assertThat(pt).as("código " + code).contains("error." + code);
     for (String code : CAREER) assertThat(pt).as("código " + code).contains("error." + code);
+    for (String code : MATCH) assertThat(pt).as("código " + code).contains("error." + code);
   }
 }

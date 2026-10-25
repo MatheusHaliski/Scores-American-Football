@@ -7,6 +7,8 @@ import java.util.UUID;
 /** Jogos do calendário (RF16, RF21, RF27). */
 public interface FixtureRepository extends BaseRepository<Fixture, UUID> {
   List<Fixture> findBySeasonId(UUID seasonId);
+  /** Jogos de uma semana (RF27). */
+  List<Fixture> findBySeasonIdAndWeekNumber(UUID seasonId, int weekNumber);
   long countBySeasonId(UUID seasonId);
   /** Exclusão em lote. */
   void deleteBySeasonId(UUID seasonId);

@@ -33,11 +33,11 @@
 | RF4 | Jogador do meu clube? | save.employmentStatus == EMPLOYED && player.clubId == save.clubId (inclui practice squad e IR) | 403 NOT_YOUR_PLAYER |
 | RF4 | Ativos do dia de jogo ≤ 46? | count(ACTIVE) ≤ rules.gameDayActives (46) e ≥ mínimo por posição (2 QB, 1 K, 1 P, 1 LS) | 422 GAME_DAY_ACTIVES_INVALID |
 | RF4 | Elenco ≤ 53? | count(ACTIVE + INACTIVE) ≤ rules.rosterMax (53) · IR e practice squad não contam | 422 ROSTER_FULL |
-| RF4 | Vaga no practice squad? | count(PRACTICE_SQUAD) < rules.practiceSquadMax (16) e jogador elegível (experienceYears ≤ 3 ou vaga de veterano) | 422 PRACTICE_SQUAD_FULL |
+| RF4 | Vaga no practice squad? | count(PRACTICE_SQUAD + PRACTICE_SQUAD_WAIVERS) < rules.practiceSquadMax (16) e jogador elegível (experienceYears ≤ 3 ou vaga de veterano, contando os em waivers) | 422 PRACTICE_SQUAD_FULL |
 | RF4 | Elevação permitida? | practiceSquadMember.elevationsUsed < 3 na temporada e ativos < 46 (elevado conta como ativo só no jogo) | 422 ELEVATION_LIMIT |
 | RF4 | IR permitida? | player.injury != null && injury.weeksOut ≥ 4 | 422 IR_NOT_ALLOWED |
 | RF4 | Retorno da IR liberado? | semanas na IR ≥ 4 e jogador recuperado (injury == null ou weeksOut == 0) e elenco < 53 | 422 IR_RETURN_NOT_ALLOWED |
-| RF4 | Dead money cabe no teto? | CapEngine: capSpace − deadMoneyIfCut ≥ 0 na temporada (ou dividido em 2 se após o 1º de junho do jogo) | 422 CAP_EXCEEDED (dispensa bloqueada) |
+| RF4 | Dead money cabe no teto? | comprometido − cap hit + dead money da temporada ≤ teto, ou não aumenta (antes de 1º de junho: dead money inteiro; a partir dele: parcela do ano agora, resto na próxima, D-79/D-80) | 422 CAP_EXCEEDED (dispensa bloqueada; details: teto, comprometido, excedente) |
 | RF4 | Consumível aplicável? | item do usuário não aplicado, sem aplicação ativa da mesma categoria, efeito compatível com a posição | 422 CONSUMABLE_NOT_APPLICABLE |
 | RF5 | Mundo editável pelo usuário? | world.ownerUser == jwt.sub ou (world.ownerUser == null && role == ADMIN) | 403 + ACCESS_DENIED |
 | RF5 | Mundo semente sem ser ADMIN? | world.ownerUser == null && role != ADMIN | edita diretamente |

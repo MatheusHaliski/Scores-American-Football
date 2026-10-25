@@ -43,7 +43,7 @@ import type {
 import { CAREER_NAME, COACH_NAME, COACH_STYLES, DIFFICULTIES, MAX_ACTIVE_SLOTS, MAX_DEPTH, MOVABLE_STATUSES, UNITS } from "../career-types";
 import type { Difficulty, UserAccount } from "../types";
 import { chartLabels, defaultChart, emptyChart, removeFromChart, SLOT_BY_KEY, SLOTS, validate, available, overallAt, outOfPosition, type Chart } from "./depth";
-import { capHitOf, deadMoneyOf, generateRoster, UNIT_OF, type MockPlayer } from "./players";
+import { capHitOf, deadMoneySplitOf, generateRoster, UNIT_OF, type MockPlayer } from "./players";
 import { uuidFrom } from "./rng";
 import { CLUBS, CONFERENCES, FIXTURES, KICKOFF_SLOTS, LEAGUE_NAME, LEAGUE_SHORT, REGULAR_WEEKS, SALARY_CAP, SEASON_START, SEASON_YEAR, WORLD_NAME } from "./world-data";
 
@@ -105,7 +105,7 @@ const weekStart = (week: number) => addDays(SEASON_START, (week - 1) * 7);
 
 /* ───────────────────────── estado ───────────────────────── */
 
-interface StoredCareer {
+export interface StoredCareer {
   summary: Omit<CareerSummary, "record">;
   clubIndex: number;
   coachStyle: CoachStyle;
@@ -113,7 +113,13 @@ interface StoredCareer {
   chart: Chart;
   chartVersion: number;
   chartUpdatedAt: string;
-  moves: (RosterMove & { playerId: string; capHitRemoved: number })[];
+  moves: (RosterMove & { playerId: string; capHitRemoved: number; deadMoneyNextSeason?: number })[];
+  /** bloco 6b: placar de cada jogo encerrado (id do jogo → [casa, visitante]) */
+  results?: Record<string, [number, number]>;
+  /** bloco 6b: jogo do usuário com partida ao vivo em andamento */
+  liveFixtureId?: string | null;
+  /** bloco 6b: plano, playbook e partida do mock (tipados em `match.ts`) */
+  ext?: Record<string, unknown>;
 }
 
 interface UserStore {
@@ -148,26 +154,27 @@ function save(userId: string, st: UserStore): void {
 
 /* ───────────────────────── leituras derivadas ───────────────────────── */
 
-const ZERO: TeamRecord = { wins: 0, losses: 0, ties: 0, summary: "0-0" };
 
 function clubRef(c: WorldClub): ClubRef {
   return { id: c.id, name: c.name, shortName: c.shortName, city: c.city, primaryColor: c.primaryColor, secondaryColor: c.secondaryColor, conference: c.conference, division: c.division };
 }
 
-function fixtures(careerId: string, userClub: WorldClub): Fixture[] {
+function fixtures(careerId: string, userClub: WorldClub, c?: StoredCareer): Fixture[] {
   return RAW_FIXTURES.map((f, i) => {
     const home = WORLD_CLUBS[f.home];
     const away = WORLD_CLUBS[f.away];
+    const id = uuidFrom("fixture", `${careerId}:${i}`);
+    const score = c?.results?.[id];
     return {
-      id: uuidFrom("fixture", `${careerId}:${i}`),
+      id,
       week: f.week,
       date: addDays(weekStart(f.week), f.day),
       kickoffSlot: KICKOFF_SLOTS[f.slot],
-      status: "SCHEDULED",
+      status: score ? "FINISHED" : c?.liveFixtureId === id ? "LIVE" : "SCHEDULED",
       homeClubId: home.id,
       awayClubId: away.id,
-      homeScore: null,
-      awayScore: null,
+      homeScore: score ? score[0] : null,
+      awayScore: score ? score[1] : null,
       divisional: home.division === away.division,
       conferenceGame: home.conference === away.conference,
       userGame: home.id === userClub.id || away.id === userClub.id,
@@ -175,8 +182,28 @@ function fixtures(careerId: string, userClub: WorldClub): Fixture[] {
   });
 }
 
+/** Campanha de uma franquia pelos placares gravados (D-48: a tabela sai dos placares, sem tabela materializada). */
+function recordOf(c: StoredCareer, clubIdOf: string): TeamRecord & { pointsFor: number; pointsAgainst: number } {
+  let wins = 0, losses = 0, ties = 0, pointsFor = 0, pointsAgainst = 0;
+  for (const f of fixtures(c.summary.id, WORLD_CLUBS[c.clubIndex], c)) {
+    if (f.homeScore == null || f.awayScore == null || (f.homeClubId !== clubIdOf && f.awayClubId !== clubIdOf)) continue;
+    const mine = f.homeClubId === clubIdOf ? f.homeScore : f.awayScore;
+    const theirs = f.homeClubId === clubIdOf ? f.awayScore : f.homeScore;
+    pointsFor += mine;
+    pointsAgainst += theirs;
+    if (mine > theirs) wins++;
+    else if (mine < theirs) losses++;
+    else ties++;
+  }
+  return { wins, losses, ties, summary: ties > 0 ? `${wins}-${losses}-${ties}` : `${wins}-${losses}`, pointsFor, pointsAgainst };
+}
+
+function plainRecord(r: TeamRecord): TeamRecord {
+  return { wins: r.wins, losses: r.losses, ties: r.ties, summary: r.summary };
+}
+
 function summaryOf(c: StoredCareer): CareerSummary {
-  return { ...c.summary, record: { ...ZERO } };
+  return { ...c.summary, record: plainRecord(recordOf(c, WORLD_CLUBS[c.clubIndex].id)) };
 }
 
 function playersById(c: StoredCareer): Map<string, MockPlayer> {
@@ -191,17 +218,34 @@ function deadMoney(c: StoredCareer): number {
   return c.moves.filter((m) => m.kind === "RELEASE").reduce((a, m) => a + m.deadMoney, 0);
 }
 
+function deadMoneyNextSeason(c: StoredCareer): number {
+  return c.moves.filter((m) => m.kind === "RELEASE").reduce((a, m) => a + (m.deadMoneyNextSeason ?? 0), 0);
+}
+
+/** Regra do 1º de junho pela data do jogo (a quinta-feira da semana atual; o calendário do mock começa em setembro). */
+function fromJuneFirst(c: StoredCareer): boolean {
+  return weekStart(Math.min(c.summary.currentWeek, REGULAR_WEEKS)) >= `${SEASON_YEAR}-06-01`;
+}
+
 function capOf(c: StoredCareer): CapSummary {
   const hits = club(c).reduce((a, p) => a + capHitOf(p, SEASON_YEAR), 0);
   const dead = deadMoney(c);
-  return { salaryCap: SALARY_CAP, capUsed: hits + dead, deadMoney: dead, capSpace: SALARY_CAP - hits - dead };
+  return { salaryCap: SALARY_CAP, capUsed: hits + dead, deadMoney: dead, capSpace: SALARY_CAP - hits - dead, deadMoneyNextSeason: deadMoneyNextSeason(c) };
 }
 
 function countsOf(c: StoredCareer): RosterCounts {
   const ps = club(c);
   const n = (s: RosterStatus) => ps.filter((p) => p.rosterStatus === s).length;
   const irReturnsUsed = c.moves.filter((m) => m.fromStatus === "IR" && (m.toStatus === "ACTIVE" || m.toStatus === "INACTIVE")).length;
-  return { roster: n("ACTIVE") + n("INACTIVE"), active: n("ACTIVE"), inactive: n("INACTIVE"), practiceSquad: n("PRACTICE_SQUAD"), injuredReserve: n("IR"), irReturnsUsed };
+  return { roster: n("ACTIVE") + n("INACTIVE"), active: n("ACTIVE"), inactive: n("INACTIVE"), practiceSquad: n("PRACTICE_SQUAD"), injuredReserve: n("IR"), irReturnsUsed, waivers: n("PRACTICE_SQUAD_WAIVERS") };
+}
+
+/** Fim do período de waivers no avanço da semana (Q-23): sem reivindicação da IA (bloco 7), o exposto entra no practice squad. */
+function clearWaivers(c: StoredCareer, week: number): void {
+  for (const p of club(c).filter((x) => x.rosterStatus === "PRACTICE_SQUAD_WAIVERS")) {
+    p.rosterStatus = "PRACTICE_SQUAD";
+    c.moves.push({ id: uuidFrom("move", `${c.summary.id}:${c.moves.length}:${p.id}`), week, kind: "WAIVER_CLEARED", fromStatus: "PRACTICE_SQUAD_WAIVERS", toStatus: "PRACTICE_SQUAD", deadMoney: 0, at: new Date().toISOString(), playerId: p.id, capHitRemoved: 0 });
+  }
 }
 
 function card(p: MockPlayer, labels: string[]): PlayerCard {
@@ -333,8 +377,8 @@ export function mockCareers(user: UserAccount): MockCareers {
   const touch = (c: StoredCareer) => {
     c.summary.lastPlayedAt = new Date().toISOString();
   };
-  const record = (c: StoredCareer, p: MockPlayer, kind: string, from: RosterStatus, to: RosterStatus, dead: number, hit: number) => {
-    c.moves.push({ id: uuidFrom("move", `${c.summary.id}:${c.moves.length}:${p.id}`), week: c.summary.currentWeek, kind, fromStatus: from, toStatus: to, deadMoney: dead, at: new Date().toISOString(), playerId: p.id, capHitRemoved: hit });
+  const record = (c: StoredCareer, p: MockPlayer, kind: string, from: RosterStatus, to: RosterStatus, dead: number, hit: number, deadNext = 0) => {
+    c.moves.push({ id: uuidFrom("move", `${c.summary.id}:${c.moves.length}:${p.id}`), week: c.summary.currentWeek, kind, fromStatus: from, toStatus: to, deadMoney: dead, at: new Date().toISOString(), playerId: p.id, capHitRemoved: hit, deadMoneyNextSeason: deadNext });
   };
 
   return {
@@ -470,11 +514,13 @@ export function mockCareers(user: UserAccount): MockCareers {
       const c = find(id);
       const wc = WORLD_CLUBS[c.clubIndex];
       const week = c.summary.currentWeek;
-      const all = fixtures(c.summary.id, wc).filter((f) => f.userGame);
+      const all = fixtures(c.summary.id, wc, c).filter((f) => f.userGame);
       const next = all.find((f) => f.week >= week) ?? null;
+      const pct = (r: TeamRecord) => (r.wins + r.losses + r.ties ? (r.wins + r.ties / 2) / (r.wins + r.losses + r.ties) : 0);
       const division: StandingRow[] = WORLD_CLUBS.filter((x) => x.division === wc.division)
-        .sort((a, b) => b.prestige - a.prestige || a.name.localeCompare(b.name))
-        .map((x, i) => ({ rank: i + 1, club: clubRef(x), record: { ...ZERO }, winPct: 0, pointsFor: 0, pointsAgainst: 0, userClub: x.id === wc.id }));
+        .map((x) => ({ x, r: recordOf(c, x.id) }))
+        .sort((a, b) => pct(b.r) - pct(a.r) || b.r.pointsFor - b.r.pointsAgainst - (a.r.pointsFor - a.r.pointsAgainst) || b.x.prestige - a.x.prestige || a.x.name.localeCompare(b.x.name))
+        .map(({ x, r }, i) => ({ rank: i + 1, club: clubRef(x), record: plainRecord(r), winPct: Math.round(pct(r) * 1000) / 1000, pointsFor: r.pointsFor, pointsAgainst: r.pointsAgainst, userClub: x.id === wc.id }));
       const mine = club(c);
       const v = validate(c.chart, playersById(c), RULES.gameDayActives);
       const opponent = next ? CLUB_BY_ID.get(next.homeClubId === wc.id ? next.awayClubId : next.homeClubId)! : null;
@@ -483,9 +529,9 @@ export function mockCareers(user: UserAccount): MockCareers {
         club: clubRef(wc),
         coach: { id: c.summary.coachId!, name: c.summary.coachName!, nationality: c.summary.coachNationality!, style: c.coachStyle, overall: 50, reputationLeague: 50, careerGames: 0, careerWins: 0, careerTitles: 0 },
         currentWeek: week,
-        nextGame: next && opponent ? { fixture: next, home: next.homeClubId === wc.id, opponent: clubRef(opponent), opponentRecord: { ...ZERO } } : null,
+        nextGame: next && opponent ? { fixture: next, home: next.homeClubId === wc.id, opponent: clubRef(opponent), opponentRecord: plainRecord(recordOf(c, opponent.id)) } : null,
         byeWeek: !all.some((f) => f.week === week),
-        record: { ...ZERO },
+        record: plainRecord(recordOf(c, wc.id)),
         divisionRank: division.find((r) => r.userClub)?.rank ?? null,
         division,
         upcomingDivisionGames: all.filter((f) => f.week >= week && f.divisional).slice(0, 3),
@@ -510,7 +556,7 @@ export function mockCareers(user: UserAccount): MockCareers {
       const c = find(id);
       const wc = WORLD_CLUBS[c.clubIndex];
       if (week != null && (!Number.isInteger(week) || week < 1 || week > REGULAR_WEEKS)) throw ApiError.badRequest("INVALID_WEEK", { 0: week, 1: REGULAR_WEEKS });
-      const fx = fixtures(c.summary.id, wc);
+      const fx = fixtures(c.summary.id, wc, c);
       const weeks: CalendarWeek[] = [];
       for (let n = 1; n <= REGULAR_WEEKS; n++) {
         if (week != null && n !== week) continue;
@@ -538,6 +584,7 @@ export function mockCareers(user: UserAccount): MockCareers {
         units: { OFFENSE: inRoster.filter((p) => UNIT_OF[p.position] === "OFFENSE").map(cardOf), DEFENSE: inRoster.filter((p) => UNIT_OF[p.position] === "DEFENSE").map(cardOf), SPECIAL_TEAMS: inRoster.filter((p) => UNIT_OF[p.position] === "SPECIAL_TEAMS").map(cardOf) },
         practiceSquad: mine.filter((p) => p.rosterStatus === "PRACTICE_SQUAD").map(cardOf),
         injuredReserve: mine.filter((p) => p.rosterStatus === "IR").map(cardOf),
+        waivers: mine.filter((p) => p.rosterStatus === "PRACTICE_SQUAD_WAIVERS").map(cardOf),
       };
     },
     player(id, playerId) {
@@ -548,6 +595,7 @@ export function mockCareers(user: UserAccount): MockCareers {
       const history = c.moves.filter((m) => m.playerId === p.id);
       const irMove = [...history].reverse().find((m) => m.toStatus === "IR");
       const irWeek = p.rosterStatus === "IR" ? (irMove?.week ?? null) : null;
+      const dead = p.onClub ? deadMoneySplitOf(p, SEASON_YEAR, fromJuneFirst(c)) : { currentSeason: 0, nextSeason: 0 };
       return {
         card: card(p, p.onClub ? (chartLabels(c.chart).get(p.id) ?? []) : []),
         clubId: p.onClub ? wc.id : null,
@@ -560,7 +608,8 @@ export function mockCareers(user: UserAccount): MockCareers {
         attributes: p.attributes as unknown as Record<string, Record<string, number>>,
         overallByPosition: overallByPosition(p.attributes),
         contract: { ...p.contract },
-        deadMoneyIfReleased: p.onClub ? deadMoneyOf(p, SEASON_YEAR) : 0,
+        deadMoneyIfReleased: dead.currentSeason,
+        deadMoneyNextSeasonIfReleased: dead.nextSeason,
         irPlacedWeek: irWeek,
         irEarliestReturnWeek: irWeek == null ? null : irWeek + RULES.irMinWeeks,
         history: history.map((m) => ({ id: m.id, week: m.week, kind: m.kind, fromStatus: m.fromStatus, toStatus: m.toStatus, deadMoney: m.deadMoney, at: m.at })),
@@ -587,16 +636,19 @@ export function mockCareers(user: UserAccount): MockCareers {
           if (!inRoster(from) && counts.roster >= RULES.rosterMax) throw ApiError.of(422, "ROSTER_FULL", { 0: RULES.rosterMax });
         } else if (status === "PRACTICE_SQUAD") {
           if (from === "IR") throw notAllowed();
-          if (counts.practiceSquad >= RULES.practiceSquadMax) throw ApiError.of(422, "PRACTICE_SQUAD_FULL", { 0: RULES.practiceSquadMax });
-          const vets = club(c).filter((x) => x.rosterStatus === "PRACTICE_SQUAD" && x.experienceYears > PS_MAX_EXPERIENCE).length;
+          // a vaga de quem está em waivers fica reservada (Q-23)
+          if (counts.practiceSquad + counts.waivers >= RULES.practiceSquadMax) throw ApiError.of(422, "PRACTICE_SQUAD_FULL", { 0: RULES.practiceSquadMax });
+          const vets = club(c).filter((x) => (x.rosterStatus === "PRACTICE_SQUAD" || x.rosterStatus === "PRACTICE_SQUAD_WAIVERS") && x.experienceYears > PS_MAX_EXPERIENCE).length;
           if (p.experienceYears > PS_MAX_EXPERIENCE && vets >= PS_VETERAN_SLOTS) throw ApiError.of(422, "PRACTICE_SQUAD_INELIGIBLE", { 0: PS_MAX_EXPERIENCE, 1: PS_VETERAN_SLOTS });
         } else if (status === "IR") {
           if (from === "PRACTICE_SQUAD") throw notAllowed();
           if (p.injuryWeeksOut < RULES.irMinWeeks) throw ApiError.of(422, "IR_NOT_ALLOWED", { 0: RULES.irMinWeeks });
         }
-        p.rosterStatus = status;
-        record(c, p, "STATUS_CHANGE", from, status, 0, 0);
-        if (status !== "ACTIVE" && removeFromChart(c.chart, p.id)) c.chartVersion += 1;
+        // dos 53 para o practice squad passa por waivers até a semana avançar (Q-23)
+        const landing: RosterStatus = status === "PRACTICE_SQUAD" && inRoster(from) ? "PRACTICE_SQUAD_WAIVERS" : status;
+        p.rosterStatus = landing;
+        record(c, p, "STATUS_CHANGE", from, landing, 0, 0);
+        if (landing !== "ACTIVE" && removeFromChart(c.chart, p.id)) c.chartVersion += 1;
         touch(c);
         commit();
       }
@@ -605,16 +657,24 @@ export function mockCareers(user: UserAccount): MockCareers {
     release(id, playerId) {
       const c = writable(id);
       const p = clubPlayer(c, playerId);
-      const dead = deadMoneyOf(p, SEASON_YEAR);
+      const dead = deadMoneySplitOf(p, SEASON_YEAR, fromJuneFirst(c));
       const hit = capHitOf(p, SEASON_YEAR);
+      // Q-24: recusa quando o dead money da temporada faz o comprometido subir e passar do teto (D-80)
+      const before = capOf(c);
+      const after = before.capUsed - hit + dead.currentSeason;
+      if (after > before.capUsed && after > before.salaryCap) {
+        const excess = after - before.salaryCap;
+        const reais = (cents: number) => (cents / 100).toFixed(2);
+        throw new ApiError({ status: 422, code: "CAP_EXCEEDED", message: "", details: { salaryCap: before.salaryCap, capUsed: after, excess }, correlationId: null, locale: null, params: { 0: reais(excess), 1: reais(before.salaryCap), 2: reais(after) } });
+      }
       const from = p.rosterStatus;
       p.rosterStatus = "WAIVED";
       p.onClub = false;
-      record(c, p, "RELEASE", from, "WAIVED", dead, hit);
+      record(c, p, "RELEASE", from, "WAIVED", dead.currentSeason, hit, dead.nextSeason);
       if (removeFromChart(c.chart, p.id)) c.chartVersion += 1;
       touch(c);
       commit();
-      return { playerId: p.id, name: p.name, rosterStatus: "WAIVED", deadMoney: dead, capHitRemoved: hit, counts: countsOf(c), cap: capOf(c) };
+      return { playerId: p.id, name: p.name, rosterStatus: "WAIVED", deadMoney: dead.currentSeason, deadMoneyNextSeason: dead.nextSeason, capHitRemoved: hit, counts: countsOf(c), cap: capOf(c) };
     },
     depthChart: (id) => depthChartView(find(id)),
     saveDepthChart(id, req) {
@@ -670,5 +730,75 @@ export function mockCareers(user: UserAccount): MockCareers {
     c.chartUpdatedAt = new Date().toISOString();
     touch(c);
     commit();
+  }
+}
+
+/* ───────────────────────── acesso do bloco 6b (partida no mock) ───────────────────────── */
+
+export interface MockCareerAccess {
+  all(): StoredCareer[];
+  find(id: string): StoredCareer;
+  writable(id: string): StoredCareer;
+  commit(): void;
+  club(c: StoredCareer): ClubRef & { prestige: number };
+  clubById(id: string): (ClubRef & { prestige: number }) | null;
+  fixtures(c: StoredCareer): Fixture[];
+  record(c: StoredCareer, clubId: string): TeamRecord;
+  players(c: StoredCareer): MockPlayer[];
+  validation(c: StoredCareer): ReturnType<typeof validate>;
+  rules: typeof RULES;
+  seasonId(c: StoredCareer): string;
+  /** fecha a semana (D-63): grava o placar do usuário, simula os outros jogos e passa para a próxima */
+  closeWeek(c: StoredCareer, week: number, scores: Record<string, [number, number]>, rng: () => number): void;
+}
+
+/** O que a partida do mock lê e grava da carreira do usuário (mesmo armazenamento do 6a). */
+export function mockCareerAccess(user: UserAccount): MockCareerAccess {
+  const st = load(user.id);
+  const find = (id: string): StoredCareer => {
+    const c = st.careers.find((x) => x.summary.id === id);
+    if (!c) throw ApiError.notFound("career");
+    return c;
+  };
+  const withPrestige = (x: WorldClub) => ({ ...clubRef(x), prestige: x.prestige });
+  return {
+    all: () => st.careers,
+    find,
+    writable(id) {
+      const c = find(id);
+      if (c.summary.status !== "ACTIVE") throw ApiError.of(422, "CAREER_ARCHIVED");
+      return c;
+    },
+    commit: () => save(user.id, st),
+    club: (c) => withPrestige(WORLD_CLUBS[c.clubIndex]),
+    clubById: (id) => {
+      const x = CLUB_BY_ID.get(id);
+      return x ? withPrestige(x) : null;
+    },
+    fixtures: (c) => fixtures(c.summary.id, WORLD_CLUBS[c.clubIndex], c),
+    record: (c, id) => plainRecord(recordOf(c, id)),
+    players: (c) => club(c),
+    validation: (c) => validate(c.chart, playersById(c), RULES.gameDayActives),
+    rules: RULES,
+    seasonId: (c) => c.summary.seasonId ?? uuidFrom("season", c.summary.id),
+    closeWeek(c, week, scores, rng) {
+      c.results = { ...(c.results ?? {}), ...scores };
+      for (const f of fixtures(c.summary.id, WORLD_CLUBS[c.clubIndex], c)) {
+        if (f.week !== week || c.results[f.id]) continue;
+        const pts = () => [0, 3, 6, 7, 10, 13, 14, 17, 20, 21, 24, 27, 28, 31, 34, 38][Math.floor(rng() * 16)];
+        const a = pts();
+        let h = pts();
+        if (h === a) h += 3;
+        c.results[f.id] = [h, a];
+      }
+      if (c.liveFixtureId && c.results[c.liveFixtureId]) c.liveFixtureId = null;
+      if (c.summary.currentWeek === week) clearWaivers(c, week);
+      c.summary.currentWeek = Math.min(REGULAR_WEEKS + 1, week + 1);
+      touch(c);
+      save(user.id, st);
+    },
+  };
+  function touch(c: StoredCareer) {
+    c.summary.lastPlayedAt = new Date().toISOString();
   }
 }

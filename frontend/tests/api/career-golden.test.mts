@@ -17,7 +17,7 @@ import {
   type Raw,
 } from "@/lib/api/live-career";
 import { ApiError, problemFromBody } from "@/lib/api/problem";
-import { describeError } from "@/lib/api/errors";
+import { capExceededExcess, describeError } from "@/lib/api/errors";
 import { setRuntimeLocale } from "@/i18n/runtime";
 import { MESSAGES } from "@/i18n/messages";
 import { FAMILY_OF, macros } from "@/lib/ratings/macros";
@@ -32,6 +32,7 @@ const roster = loadGolden("roster.json") as Raw;
 const player = loadGolden("roster-player.json") as Raw;
 const depth = loadGolden("depth-chart.json") as Raw;
 const conflict = loadGolden("problem-409-depth-chart.json") as Raw;
+const capExceeded = loadGolden("problem-422-cap-exceeded.json") as Raw;
 const editorClub = loadGolden("world-editor-club.json") as Raw;
 
 type ShapeName = keyof typeof SHAPES;
@@ -153,6 +154,8 @@ test("roster: elenco, regras, contadores, teto e cards só têm campos conhecido
   for (const cards of Object.values(asObj(roster.units))) for (const c of each(cards)) assertCard(c, "roster.units[][]");
   for (const c of each(roster.practiceSquad)) assertCard(c, "roster.practiceSquad[]");
   for (const c of each(roster.injuredReserve)) assertCard(c, "roster.injuredReserve[]");
+  assert.ok(Array.isArray(roster.waivers), "lista dos expostos a waivers (Q-23)");
+  for (const c of each(roster.waivers)) assertCard(c, "roster.waivers[]");
 });
 
 test("roster: vira 53 por unidade + practice squad; macros na família e nível pelo overall da lib de ratings", () => {
@@ -161,6 +164,8 @@ test("roster: vira 53 por unidade + practice squad; macros na família e nível 
   assert.equal(in53, r.counts.roster);
   assert.ok(in53 <= r.rules.rosterMax);
   assert.equal(r.practiceSquad.length, r.counts.practiceSquad);
+  assert.equal(r.waivers.length, r.counts.waivers);
+  assert.equal(r.cap.deadMoneyNextSeason, 0, "carreira nova: nada lançado na próxima temporada");
   assert.ok(r.practiceSquad.length <= r.rules.practiceSquadMax);
   for (const c of [...r.units.OFFENSE, ...r.units.DEFENSE, ...r.units.SPECIAL_TEAMS, ...r.practiceSquad]) {
     assert.equal(c.family, FAMILY_OF[c.position], `família de ${c.position}`);
@@ -185,7 +190,10 @@ test("roster-player: overall por posição e macros batem com a lib de ratings (
   assert.deepEqual(macros(attrs, FAMILY_OF[p.card.position]), p.card.macros);
   assert.equal(p.irPlacedWeek, null);
   assert.equal(p.contract?.capHitByYear.length, p.contract?.years);
-  assert.equal(p.deadMoneyIfReleased, p.contract?.deadMoneyIfCutByYear[0]);
+  // a semana 1 começa em setembro: regra do 1º de junho (Q-24) — a parcela do ano agora, o resto (o corte no ano seguinte) depois
+  assert.equal(p.deadMoneyIfReleased + p.deadMoneyNextSeasonIfReleased, p.contract?.deadMoneyIfCutByYear[0]);
+  assert.equal(p.deadMoneyNextSeasonIfReleased, p.contract?.deadMoneyIfCutByYear[1] ?? 0);
+  assert.ok(p.deadMoneyNextSeasonIfReleased > 0, "o QB do golden tem bônus rateado nos anos seguintes");
   assert.equal(playerDetailFromDto({ ...player, birthDate: "null" }).birthDate, null, "String.valueOf(null) do backend vira null");
 });
 
@@ -229,6 +237,24 @@ test("problem-409-depth-chart: conflito de versão com as duas versões e mensag
   // o catálogo usa {0}/{1}; sem argumentos posicionais no corpo, a tela mostra a mensagem que o servidor já traduziu
   setRuntimeLocale("pt-BR");
   assert.equal(describeError(err), conflict.message);
+});
+
+test("problem-422-cap-exceeded: dispensa recusada com teto, comprometido e excedente; a tela mostra o excedente (Q-24)", () => {
+  const err = new ApiError(problemFromBody(422, capExceeded));
+  assert.equal(err.status, 422);
+  assert.equal(err.code, "CAP_EXCEEDED");
+  const d = err.problem.details;
+  for (const k of ["salaryCap", "capUsed", "excess"]) assert.equal(typeof d[k], "number", `details.${k}`);
+  assert.equal(d.excess, (d.capUsed as number) - (d.salaryCap as number));
+  assert.equal(capExceededExcess(err), d.excess);
+  assert.equal(capExceededExcess(new ApiError(problemFromBody(409, conflict))), null, "outro erro não tem excedente");
+  for (const loc of ["pt-BR", "en-US", "es-ES"] as const) {
+    assert.ok(err.code in MESSAGES[loc].errors, `${loc} sem errors:${err.code}`);
+    assert.match((MESSAGES[loc].roster as Record<string, string>)["release.capExceeded"], /\{excess\}/, `${loc}: a tela mostra o excedente`);
+  }
+  setRuntimeLocale("pt-BR");
+  assert.equal(describeError(err), capExceeded.message, "sem argumentos posicionais no corpo, vale a mensagem do servidor");
+  assert.match(String(capExceeded.message), /S\$ [\d.]+,\d{2}/);
 });
 
 test("world-editor-club: a nova carreira lê da franquia só campos que existem no ClubDto", () => {

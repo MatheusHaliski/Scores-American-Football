@@ -50,4 +50,23 @@ class PlayerContractTest {
     assertThat(empty.capHit(0)).isZero();
     assertThat(empty.deadMoneyIfCut(0)).isZero();
   }
+
+  /** Q-24: regra do 1º de junho. Antes, tudo na temporada do corte; a partir dele, a parcela do ano agora e o resto na seguinte. */
+  @Test
+  void dead_money_pela_regra_do_1o_de_junho() {
+    PlayerContract k = c(8_000_000L, 3_000_000L, 2_000_000L, 2_000_000L, 2_000_000L, 2_000_000L);
+    // corte no 1º ano antes de 1º de junho: os 11 M (8 M de bônus + 3 M garantidos) na temporada
+    assertThat(k.deadMoneySplit(0, 5, false)).isEqualTo(new PlayerContract.DeadMoney(11_000_000L, 0));
+    // a partir de 1º de junho: parcela do ano (2 M de bônus + 2 M de garantia do ano) agora; 6 M de bônus + 1 M de garantia depois
+    assertThat(k.deadMoneySplit(0, 5, true)).isEqualTo(new PlayerContract.DeadMoney(4_000_000L, 7_000_000L));
+    // 2º ano: 2 M de bônus + 1 M de garantia restante agora; 4 M de bônus depois
+    assertThat(k.deadMoneySplit(1, 5, true)).isEqualTo(new PlayerContract.DeadMoney(3_000_000L, 4_000_000L));
+    assertThat(k.deadMoneySplit(1, 5, false).total()).isEqualTo(k.deadMoneyIfCut(1));
+    // último ano: nada a jogar para a temporada seguinte
+    assertThat(k.deadMoneySplit(3, 5, true)).isEqualTo(new PlayerContract.DeadMoney(2_000_000L, 0));
+    assertThat(k.deadMoneySplit(4, 5, true)).isEqualTo(PlayerContract.DeadMoney.NONE);
+    assertThat(k.guaranteeFor(0)).isEqualTo(2_000_000L);
+    assertThat(k.guaranteeFor(1)).isEqualTo(1_000_000L);
+    assertThat(k.guaranteeFor(2)).isZero();
+  }
 }

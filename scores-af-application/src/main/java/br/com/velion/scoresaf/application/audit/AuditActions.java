@@ -49,6 +49,16 @@ public final class AuditActions {
   public static final String CAREER_DELETED = "CAREER_DELETED";
   public static final String ROSTER_MOVE = "ROSTER_MOVE";
   public static final String PLAYER_RELEASED = "PLAYER_RELEASED";
+  /** Jogador saiu de waivers sem reivindicação e entrou no practice squad no avanço da semana (Q-23). */
+  public static final String WAIVER_CLEARED = "WAIVER_CLEARED";
   public static final String DEPTH_CHART_UPDATED = "DEPTH_CHART_UPDATED";
-  // As demais ações do jogo (partida, mercado, carreira, loja, Meu jogador) entram com os blocos que as usam (docs/01 §5).
+  // RF61/RF7/RF27/RF29/RF62 — plano de jogo, playbook e partida (bloco 6b). Recurso: GamePlanSetup, PlaybookSetup, MatchSession, Fixture.
+  public static final String GAME_PLAN_UPDATED = "GAME_PLAN_UPDATED";
+  public static final String PLAYBOOK_UPDATED = "PLAYBOOK_UPDATED";
+  public static final String MATCH_STARTED = "MATCH_STARTED";
+  public static final String MATCH_SIMULATED = "MATCH_SIMULATED";
+  public static final String MATCH_ADJUSTED = "MATCH_ADJUSTED";
+  public static final String PLAY_CALLED = "PLAY_CALLED";
+  public static final String WEEK_COMPLETED = "WEEK_COMPLETED";
+  // As demais ações do jogo (mercado, carreira, loja, Meu jogador) entram com os blocos que as usam (docs/01 §5).
 }

@@ -13,7 +13,10 @@ import java.util.Set;
  * o practice squad ({@code practiceSquadMax}) e a lista de lesionados (IR exige lesão de pelo menos {@code irMinWeeks} semanas; a volta
  * exige {@code irMinWeeks} semanas na lista, jogador recuperado, vaga nos 53 e retorno disponível em {@code irReturnsPerSeason}).
  * Practice squad: jogadores com até {@link #PRACTICE_SQUAD_MAX_EXPERIENCE} anos de experiência, mais
- * {@link #PRACTICE_SQUAD_VETERAN_SLOTS} vagas de veterano (provisório, Q-23). Dispensar não passa por aqui (vai a waivers).
+ * {@link #PRACTICE_SQUAD_VETERAN_SLOTS} vagas de veterano (confirmado pelo PO na Q-23). Sair dos 53 para o practice squad passa por
+ * waivers (Q-23, D-78): o movimento é aceito para PRACTICE_SQUAD, mas o jogador fica em {@link RosterStatus#PRACTICE_SQUAD_WAIVERS}
+ * ({@link #landingStatus}) até a semana avançar, com a vaga do practice squad (e a de veterano) reservada. Quem está em waivers não se
+ * move por aqui. Dispensar não passa por aqui (vai a waivers como WAIVED).
  */
 public final class RosterRules {
   public static final int PRACTICE_SQUAD_MAX_EXPERIENCE = 3;
@@ -23,20 +26,41 @@ public final class RosterRules {
 
   private RosterRules() {}
 
-  public record Counts(int roster, int active, int inactive, int practiceSquad, int practiceSquadVeterans, int injuredReserve) {
+  /**
+   * Contagem do elenco da franquia. {@code waivers}: expostos a waivers rumo ao practice squad (não contam nos 53 nem no practice
+   * squad, mas reservam a vaga: {@link #practiceSquadReserved()}); {@code waiverVeterans}: quantos deles são veteranos.
+   */
+  public record Counts(int roster, int active, int inactive, int practiceSquad, int practiceSquadVeterans, int injuredReserve, int waivers,
+                       int waiverVeterans) {
     public static Counts of(Collection<Player> clubPlayers) {
-      int active = 0, inactive = 0, ps = 0, vets = 0, ir = 0;
+      int active = 0, inactive = 0, ps = 0, vets = 0, ir = 0, waivers = 0, waiverVets = 0;
       for (Player p : clubPlayers) {
+        boolean veteran = p.getExperienceYears() > PRACTICE_SQUAD_MAX_EXPERIENCE;
         switch (p.getRosterStatus()) {
           case ACTIVE -> active++;
           case INACTIVE -> inactive++;
-          case PRACTICE_SQUAD -> { ps++; if (p.getExperienceYears() > PRACTICE_SQUAD_MAX_EXPERIENCE) vets++; }
+          case PRACTICE_SQUAD -> { ps++; if (veteran) vets++; }
+          case PRACTICE_SQUAD_WAIVERS -> { waivers++; if (veteran) waiverVets++; }
           case IR -> ir++;
           default -> { }
         }
       }
-      return new Counts(active + inactive, active, inactive, ps, vets, ir);
+      return new Counts(active + inactive, active, inactive, ps, vets, ir, waivers, waiverVets);
     }
+
+    /** Vagas do practice squad ocupadas ou reservadas (quem está em waivers entra nele se não for reivindicado). */
+    public int practiceSquadReserved() { return practiceSquad + waivers; }
+
+    /** Vagas de veterano ocupadas ou reservadas. */
+    public int veteransReserved() { return practiceSquadVeterans + waiverVeterans; }
+  }
+
+  /**
+   * Situação em que o jogador fica depois de um movimento aceito para {@code requested}: dos 53 para o practice squad, ele vai a
+   * waivers ({@link RosterStatus#PRACTICE_SQUAD_WAIVERS}, Q-23); o resto fica como pedido.
+   */
+  public static RosterStatus landingStatus(RosterStatus from, RosterStatus requested) {
+    return requested == RosterStatus.PRACTICE_SQUAD && from != null && from.countsTowardRoster() ? RosterStatus.PRACTICE_SQUAD_WAIVERS : requested;
   }
 
   /** Movimento recusado: código de erro ({@code error.<code>}) e parâmetros da mensagem. */
@@ -65,8 +89,8 @@ public final class RosterRules {
       }
       case PRACTICE_SQUAD -> {
         if (!from.countsTowardRoster()) return Violation.of("ROSTER_MOVE_NOT_ALLOWED", from.name(), to.name());
-        if (c.practiceSquad() >= rules.getPracticeSquadMax()) return Violation.of("PRACTICE_SQUAD_FULL", rules.getPracticeSquadMax());
-        if (p.getExperienceYears() > PRACTICE_SQUAD_MAX_EXPERIENCE && c.practiceSquadVeterans() >= PRACTICE_SQUAD_VETERAN_SLOTS) {
+        if (c.practiceSquadReserved() >= rules.getPracticeSquadMax()) return Violation.of("PRACTICE_SQUAD_FULL", rules.getPracticeSquadMax());
+        if (p.getExperienceYears() > PRACTICE_SQUAD_MAX_EXPERIENCE && c.veteransReserved() >= PRACTICE_SQUAD_VETERAN_SLOTS) {
           return Violation.of("PRACTICE_SQUAD_INELIGIBLE", PRACTICE_SQUAD_MAX_EXPERIENCE, PRACTICE_SQUAD_VETERAN_SLOTS);
         }
         return null;

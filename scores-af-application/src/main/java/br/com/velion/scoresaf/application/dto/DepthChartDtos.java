@@ -4,7 +4,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
-/** DTOs do depth chart (RF60) e do plano de jogo (só leitura no bloco 6a), lidos pelo front pela amostra {@code depth-chart.json}. */
+/** DTOs do depth chart (RF60), lidos pelo front pela amostra {@code depth-chart.json}. O plano de jogo está em {@link GamePlanDtos}. */
 public final class DepthChartDtos {
   private DepthChartDtos() {}
 
@@ -22,8 +22,4 @@ public final class DepthChartDtos {
   /** {@code version}: devolva no PUT; diverge ⇒ 409 DEPTH_CHART_VERSION_CONFLICT. */
   public record DepthChartDto(UUID id, UUID clubId, long version, boolean valid, Instant updatedAt, int gameDayActives, int uniquePlayers,
                               List<UnitDto> units, List<IssueDto> errors, List<IssueDto> warnings) {}
-
-  /** Plano de jogo padrão pelo estilo do head coach (o motor usa; a edição é do bloco 6b). */
-  public record GamePlanDto(int passRatio, String fourthDownAggression, String tempo, String defensiveFocus, String blitzFrequency, String baseDefense,
-                            String coachStyle, String source, boolean editable) {}
 }

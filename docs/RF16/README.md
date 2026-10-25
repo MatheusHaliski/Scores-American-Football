@@ -45,7 +45,7 @@ Fonte: [`RF16-stm.puml`](RF16-stm.puml)
 | Estado | Método | Rota | Caso de uso | Autorização | Descrição |
 |---|---|---|---|---|---|
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/standings` | `GetStandingsUseCase` | JWT · dono do save | view=DIVISION\|CONFERENCE\|LEAGUE: V-D-E, % de vitórias (empate vale meio), recorde na divisão e na conferência, pontos pró e contra, sequência, últimos 5, seed e nota de desempate |
-| ⛔ alvo | `GET` | `/api/v1/careers/{id}/weeks/{n}` | `GetWeekPanelUseCase` | JWT · dono do save | Placares da semana n (passada: finais por quarto e prorrogação · atual: ao vivo · futura: agendados e horários), times de folga e destaques (líderes em passe, corrida, recepção e defesa, jogador da semana) |
+| ✅ | `GET` | `/api/v1/careers/{id}/weeks/{n}` | `GetWeekPanelUseCase` | JWT · dono do save | Placares da semana n (passada: finais por quarto e prorrogação · atual: ao vivo · futura: agendados e horários), times de folga e destaques (líderes em passe, corrida, recepção e defesa, jogador da semana) |
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/playoffs` | `GetPlayoffBracketUseCase` | JWT · dono do save | Chave com 7 seeds por conferência, folga do seed 1 e final em campo neutro (RF66) |
 | ✅ | `GET` | `/api/v1/careers/{id}/calendar` | `GetCalendarUseCase` | JWT · dono do save | Semanas futuras com jogos de divisão, quinta à noite e semana de folga (RF21) |
 

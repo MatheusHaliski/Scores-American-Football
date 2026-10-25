@@ -1,1 +1,340 @@
-{"source": "scores-af-web controllers (nenhum ainda)", "endpoints": []}
+{
+ "source": "scores-af-web controllers (extraído do código)",
+ "endpoints": [
+  {
+   "method": "GET",
+   "path": "/api/v1/me",
+   "controller": "AccountController"
+  },
+  {
+   "method": "PUT",
+   "path": "/api/v1/me",
+   "controller": "AccountController"
+  },
+  {
+   "method": "PUT",
+   "path": "/api/v1/me/email",
+   "controller": "AccountController"
+  },
+  {
+   "method": "PUT",
+   "path": "/api/v1/me/password",
+   "controller": "AccountController"
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/me/sessions",
+   "controller": "AccountController"
+  },
+  {
+   "method": "DELETE",
+   "path": "/api/v1/me/sessions/{id}",
+   "controller": "AccountController"
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/me/consents",
+   "controller": "AccountController"
+  },
+  {
+   "method": "PUT",
+   "path": "/api/v1/me/consents",
+   "controller": "AccountController"
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/me/consents/history",
+   "controller": "AccountController"
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/me/export",
+   "controller": "AccountController"
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/me/export",
+   "controller": "AccountController"
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/me/export/jobs",
+   "controller": "AccountController"
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/me/export/{jobId}",
+   "controller": "AccountController"
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/me/export/{jobId}/download",
+   "controller": "AccountController"
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/me/activity",
+   "controller": "AccountController"
+  },
+  {
+   "method": "DELETE",
+   "path": "/api/v1/me",
+   "controller": "AccountController"
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/me/deletion",
+   "controller": "AccountController"
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/me/deletion/cancel",
+   "controller": "AccountController"
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/me/settings",
+   "controller": "AccountController"
+  },
+  {
+   "method": "PUT",
+   "path": "/api/v1/me/settings",
+   "controller": "AccountController"
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/auth/register",
+   "controller": "AuthController"
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/auth/login",
+   "controller": "AuthController"
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/auth/refresh",
+   "controller": "AuthController"
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/auth/logout",
+   "controller": "AuthController"
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/auth/password/forgot",
+   "controller": "AuthController"
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/auth/password/reset",
+   "controller": "AuthController"
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/auth/email/verify",
+   "controller": "EmailVerificationController"
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/careers",
+   "controller": "CareerController"
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/careers",
+   "controller": "CareerController"
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/careers/{id}",
+   "controller": "CareerController"
+  },
+  {
+   "method": "PATCH",
+   "path": "/api/v1/careers/{id}",
+   "controller": "CareerController"
+  },
+  {
+   "method": "DELETE",
+   "path": "/api/v1/careers/{id}",
+   "controller": "CareerController"
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/careers/{id}/dashboard",
+   "controller": "CareerController"
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/careers/{id}/depth-chart",
+   "controller": "DepthChartController"
+  },
+  {
+   "method": "PUT",
+   "path": "/api/v1/careers/{id}/depth-chart",
+   "controller": "DepthChartController"
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/careers/{id}/game-plan",
+   "controller": "DepthChartController"
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/worlds",
+   "controller": "WorldEditorController"
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/worlds/{id}",
+   "controller": "WorldEditorController"
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/worlds/{id}/clone",
+   "controller": "WorldEditorController"
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/worlds",
+   "controller": "WorldEditorController"
+  },
+  {
+   "method": "PUT",
+   "path": "/api/v1/worlds/{id}",
+   "controller": "WorldEditorController"
+  },
+  {
+   "method": "DELETE",
+   "path": "/api/v1/worlds/{id}",
+   "controller": "WorldEditorController"
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/worlds/{id}/leagues",
+   "controller": "WorldEditorController"
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/worlds/{id}/leagues",
+   "controller": "WorldEditorController"
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/worlds/{id}/leagues/{lid}/structure",
+   "controller": "WorldEditorController"
+  },
+  {
+   "method": "PUT",
+   "path": "/api/v1/worlds/{id}/leagues/{lid}/structure",
+   "controller": "WorldEditorController"
+  },
+  {
+   "method": "PUT",
+   "path": "/api/v1/leagues/{id}",
+   "controller": "WorldEditorController"
+  },
+  {
+   "method": "DELETE",
+   "path": "/api/v1/leagues/{id}",
+   "controller": "WorldEditorController"
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/leagues/{id}/clubs",
+   "controller": "WorldEditorController"
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/leagues/{id}/clubs",
+   "controller": "WorldEditorController"
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/clubs/{id}",
+   "controller": "WorldEditorController"
+  },
+  {
+   "method": "PUT",
+   "path": "/api/v1/clubs/{id}",
+   "controller": "WorldEditorController"
+  },
+  {
+   "method": "DELETE",
+   "path": "/api/v1/clubs/{id}",
+   "controller": "WorldEditorController"
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/clubs/{id}/stadium",
+   "controller": "WorldEditorController"
+  },
+  {
+   "method": "PUT",
+   "path": "/api/v1/clubs/{id}/stadium",
+   "controller": "WorldEditorController"
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/clubs/{id}/players",
+   "controller": "WorldEditorController"
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/clubs/{id}/players",
+   "controller": "WorldEditorController"
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/players/{id}",
+   "controller": "WorldEditorController"
+  },
+  {
+   "method": "PUT",
+   "path": "/api/v1/players/{id}",
+   "controller": "WorldEditorController"
+  },
+  {
+   "method": "DELETE",
+   "path": "/api/v1/players/{id}",
+   "controller": "WorldEditorController"
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/meta",
+   "controller": "MetaController"
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/careers/{id}/roster",
+   "controller": "RosterController"
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/careers/{id}/players/{pid}",
+   "controller": "RosterController"
+  },
+  {
+   "method": "PATCH",
+   "path": "/api/v1/careers/{id}/players/{pid}/roster-status",
+   "controller": "RosterController"
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/careers/{id}/players/{pid}/release",
+   "controller": "RosterController"
+  },
+  {
+   "method": "PATCH",
+   "path": "/api/v1/careers/{id}/players/{pid}/role",
+   "controller": "RosterController"
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/careers/{id}/calendar",
+   "controller": "SeasonController"
+  }
+ ]
+}

@@ -44,7 +44,7 @@ Fonte: [`RF21-stm.puml`](RF21-stm.puml)
 
 | Estado | Método | Rota | Caso de uso | Autorização | Descrição |
 |---|---|---|---|---|---|
-| ⛔ alvo | `GET` | `/api/v1/careers/{id}/calendar` | `GetCalendarUseCase` | JWT · dono do save | Semanas da temporada (pré, 18 regulares, playoffs) com fixtures por horário (THU_NIGHT, SUN_EARLY, SUN_LATE, SUN_NIGHT, MON_NIGHT), bye, clima previsto, importance e CalendarInsight |
+| ✅ | `GET` | `/api/v1/careers/{id}/calendar` | `GetCalendarUseCase` | JWT · dono do save | Semanas da temporada (pré, 18 regulares, playoffs) com fixtures por horário (THU_NIGHT, SUN_EARLY, SUN_LATE, SUN_NIGHT, MON_NIGHT), bye, clima previsto, importance e CalendarInsight |
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/weeks/{n}` | `GetWeekBoardUseCase` | JWT · dono do save | Detalhe da semana ao clicar (placares, destaques ou prévia) |
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/next-match/preparation` | `GetNextMatchPreparationUseCase` | JWT · dono do save | Atalho para preparar o time a partir do próximo jogo (RF6/RF7) |
 

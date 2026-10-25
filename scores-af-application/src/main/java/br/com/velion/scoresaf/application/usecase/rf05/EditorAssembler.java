@@ -67,12 +67,12 @@ public final class EditorAssembler {
     Map<String, Integer> byPosition = new LinkedHashMap<>();
     OverallCalculator.overallByPosition(p.getAttributes()).forEach((pos, v) -> byPosition.put(pos.name(), v));
     return new EditorDtos.PlayerEditorDto(p.getId(), p.getWorld().getId(), p.getClub() == null ? null : p.getClub().getId(), p.getName(),
-        p.getNationality(), p.getCollege(), String.valueOf(p.getBirthDate()), p.getAge(), p.getHeightCm(), p.getWeightKg(), p.getPosition().name(),
+        p.getNationality(), p.getCollege(), br.com.velion.scoresaf.application.common.text.IsoDates.of(p.getBirthDate()), p.getAge(), p.getHeightCm(), p.getWeightKg(), p.getPosition().name(),
         p.getSecondaryPosition() == null ? null : p.getSecondaryPosition().name(), p.getUnit().name(), p.getRosterStatus().name(), p.getJerseyNumber(),
         p.getExperienceYears(), p.getPotential(), p.isLegendary(), p.getAttributes().asGroupedMap(), rating, byPosition, contract(p.getContract(), rules));
   }
 
-  static EditorDtos.ContractDto contract(PlayerContract c, LeagueRules rules) {
+  public static EditorDtos.ContractDto contract(PlayerContract c, LeagueRules rules) {
     if (c == null) return null;
     int prorate = rules.getBonusProrationMaxYears();
     List<Long> dead = new ArrayList<>();

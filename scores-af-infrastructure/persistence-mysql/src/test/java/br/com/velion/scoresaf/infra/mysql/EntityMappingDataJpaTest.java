@@ -43,10 +43,11 @@ import org.springframework.test.context.ActiveProfiles;
  * Mapeamento JPA da plataforma sobre H2 (modo MySQL): cifra do e-mail com busca por hash, persist das entidades com UUID
  * atribuído pelo repositório base (D-9), família de sessão (D-25 do basquete) e as configurações do futebol americano (D-10).
  * Bloco 4: o catálogo do futebol americano (mundo, liga com regras embutidas, conferência, divisão, franquia, estádio, uniforme,
- * capacete, jogador com 49 subatributos e contrato com salários por ano) — o mundo semente inteiro é gravado e relido.
+ * capacete, jogador com 49 subatributos e contrato com salários por ano) — o mundo semente inteiro é gravado e relido. Bloco 6a: a
+ * carreira (save, temporada, semana, jogo, movimento do elenco, depth chart e vaga) e as chaves únicas de slot e de vaga.
  */
 @DataJpaTest
-@Import(CatalogGraph.class)
+@Import({CatalogGraph.class, CareerGraph.class})
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @ActiveProfiles("test")
 class EntityMappingDataJpaTest {
@@ -57,6 +58,7 @@ class EntityMappingDataJpaTest {
   @Autowired UserSettingsJpaRepository settings;
   @Autowired ConsentRecordJpaRepository consents;
   @Autowired CatalogGraph catalog;
+  @Autowired CareerGraph career;
 
   @Test
   void deve_cifrar_email_e_buscar_por_hash_quando_persistir_user_account() {
@@ -184,6 +186,70 @@ class EntityMappingDataJpaTest {
     dup.setClub(w.clubs().get(0));
     dup.setSlot(UniformSlot.HOME);
     org.assertj.core.api.Assertions.assertThatThrownBy(() -> { catalog.uniforms.save(dup); em.flush(); })
+        .isInstanceOfAny(DataIntegrityViolationException.class, org.hibernate.exception.ConstraintViolationException.class,
+            jakarta.persistence.PersistenceException.class);
+  }
+
+  @Test
+  void carreira_temporada_calendario_movimento_e_depth_chart_gravam_e_releem() {
+    DefaultWorld w = new DefaultWorldFactory().build(11L);
+    catalog.persist(w);
+    CareerGraph.Saved saved = career.persist(w, "carreira@example.com");
+    em.flush(); em.clear();
+
+    br.com.velion.scoresaf.domain.career.CareerSave c = career.saves.findById(saved.career().getId()).orElseThrow();
+    assertThat(c.getSlot()).isEqualTo(1);
+    assertThat(c.getSeason().getId()).isEqualTo(saved.season().getId());
+    assertThat(c.getManager().isHuman()).isTrue();
+    assertThat(c.getWorld().getKind()).isEqualTo(WorldKind.SAVE);
+    assertThat(career.saves.findByUserIdOrderByCreatedAtAsc(c.getUser().getId())).hasSize(1);
+    assertThat(career.seasons.findByCareerIdOrderByNumberAsc(c.getId())).singleElement().satisfies(s -> assertThat(s.getYear()).isEqualTo(2026));
+    assertThat(career.weeks.findBySeasonIdOrderByNumberAsc(saved.season().getId())).singleElement()
+        .satisfies(x -> assertThat(x.getStartsOn()).isEqualTo(java.time.LocalDate.of(2026, 9, 10)));
+    assertThat(career.fixtures.findBySeasonId(saved.season().getId())).singleElement().satisfies(f -> {
+      assertThat(f.getKickoffSlot()).isEqualTo(br.com.velion.scoresaf.domain.shared.KickoffSlot.THU_NIGHT);
+      assertThat(f.isDivisional()).isTrue();
+      assertThat(f.getHomeScore()).isNull();
+    });
+    assertThat(career.moves.findByCareerIdAndSeasonIdOrderByCreatedAtAsc(c.getId(), saved.season().getId())).singleElement()
+        .satisfies(m -> assertThat(m.getDeadMoney()).isEqualTo(1_000_00L));
+    assertThat(career.charts.findFirstByClubId(saved.chart().getClub().getId())).get().satisfies(d -> assertThat(d.getRevision()).isEqualTo(1));
+    assertThat(career.slots.findByDepthChartId(saved.chart().getId())).singleElement()
+        .satisfies(x -> assertThat(x.getSlot()).isEqualTo(br.com.velion.scoresaf.domain.match.ChartSlot.THIRD_DOWN_BACK));
+
+    // exclusão em lote: vagas, jogos, semanas e temporadas da carreira, sem carregar as entidades
+    career.slots.deleteAllOfCareer(c.getId());
+    career.fixtures.deleteAllOfCareer(c.getId());
+    career.weeks.deleteAllOfCareer(c.getId());
+    assertThat(career.slots.findByDepthChartId(saved.chart().getId())).isEmpty();
+    assertThat(career.fixtures.countBySeasonId(saved.season().getId())).isZero();
+    assertThat(career.weeks.findBySeasonIdOrderByNumberAsc(saved.season().getId())).isEmpty();
+  }
+
+  @Test
+  void slot_de_carreira_e_vaga_do_depth_chart_sao_unicos() {
+    DefaultWorld w = new DefaultWorldFactory().build(12L);
+    catalog.persist(w);
+    CareerGraph.Saved saved = career.persist(w, "unico@example.com");
+    em.flush();
+    br.com.velion.scoresaf.domain.career.CareerSave dup = new br.com.velion.scoresaf.domain.career.CareerSave();
+    dup.setUser(saved.career().getUser()); dup.setName("Outra"); dup.setWorld(w.world()); dup.setManager(saved.career().getManager()); dup.setSlot(1);
+    org.assertj.core.api.Assertions.assertThatThrownBy(() -> { career.saves.save(dup); em.flush(); })
+        .isInstanceOfAny(DataIntegrityViolationException.class, org.hibernate.exception.ConstraintViolationException.class,
+            jakarta.persistence.PersistenceException.class);
+  }
+
+  @Test
+  void mesma_profundidade_na_mesma_vaga_e_recusada() {
+    DefaultWorld w = new DefaultWorldFactory().build(13L);
+    catalog.persist(w);
+    CareerGraph.Saved saved = career.persist(w, "vaga@example.com");
+    em.flush();
+    Player other = w.players().stream().filter(x -> x.getClub() == saved.chart().getClub() && !x.getId().equals(saved.slot().getPlayer().getId()))
+        .findFirst().orElseThrow();
+    br.com.velion.scoresaf.domain.match.DepthChartSlot dup = br.com.velion.scoresaf.domain.match.DepthChartSlot.of(saved.chart(),
+        br.com.velion.scoresaf.domain.match.ChartSlot.THIRD_DOWN_BACK, 1, other);
+    org.assertj.core.api.Assertions.assertThatThrownBy(() -> { career.slots.save(dup); em.flush(); })
         .isInstanceOfAny(DataIntegrityViolationException.class, org.hibernate.exception.ConstraintViolationException.class,
             jakarta.persistence.PersistenceException.class);
   }

@@ -45,7 +45,7 @@ Fonte: [`RF20-stm.puml`](RF20-stm.puml)
 | Estado | Método | Rota | Caso de uso | Autorização | Descrição |
 |---|---|---|---|---|---|
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/search` | `SearchUseCase` | JWT · dono do save | q, type=PLAYER\|CLUB\|LEAGUE\|MANAGER, position, unit (OFFENSE\|DEFENSE\|SPECIAL), conference, division, rosterStatus, minOverall, college · facetas e paginação (OpenSearch, fallback MySQL) |
-| ⛔ alvo | `GET` | `/api/v1/careers/{id}/players/{pid}` | `GetPlayerExpandedUseCase` | JWT · dono do save | Esquema ampliado do jogador (RF22) |
+| ✅ | `GET` | `/api/v1/careers/{id}/players/{pid}` | `GetPlayerExpandedUseCase` | JWT · dono do save | Esquema ampliado do jogador (RF22) |
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/clubs/{cid}` | `GetClubSheetUseCase` | JWT · dono do save | Esquema ampliado da franquia: identidade, divisão, campanha, elenco por unidade, depth chart titular, head coach, estádio |
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/standings` | `GetStandingsUseCase` | JWT · dono do save | Esquema ampliado da liga: classificação por divisão e líderes estatísticos (jardas de passe, corrida, recepção, sacks) |
 

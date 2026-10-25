@@ -44,8 +44,8 @@ Fonte: [`RF1-stm.puml`](RF1-stm.puml)
 
 | Estado | Método | Rota | Caso de uso | Autorização | Descrição |
 |---|---|---|---|---|---|
-| ⛔ alvo | `POST` | `/api/v1/auth/register` | `RegisterUserUseCase` | público · 10 por IP/hora | Cria UserAccount (e-mail AES-GCM + emailHash HMAC, senha Argon2id fora da transação, status ACTIVE), UserSettings padrão do futebol americano (jardas, controle KEY_MOMENTS) e consentimento de processamento; envia e-mail de verificação (token 24 h) |
-| ⛔ alvo | `POST` | `/api/v1/auth/email/verify` | `EmailChangeUseCases.verify` | público · 40 por IP/hora | Confirma a posse do e-mail (cadastro ou troca) com token de uso único |
+| ✅ | `POST` | `/api/v1/auth/register` | `RegisterUserUseCase` | público · 10 por IP/hora | Cria UserAccount (e-mail AES-GCM + emailHash HMAC, senha Argon2id fora da transação, status ACTIVE), UserSettings padrão do futebol americano (jardas, controle KEY_MOMENTS) e consentimento de processamento; envia e-mail de verificação (token 24 h) |
+| ✅ | `POST` | `/api/v1/auth/email/verify` | `EmailChangeUseCases.verify` | público · 40 por IP/hora | Confirma a posse do e-mail (cadastro ou troca) com token de uso único |
 
 ## Pontos de decisão
 

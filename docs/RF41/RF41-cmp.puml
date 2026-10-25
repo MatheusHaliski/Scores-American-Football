@@ -62,7 +62,7 @@ database "Cassandra 4.1" as s2
 database "Redis 7" as s3
 c1 --> c16 : dispara
 c2 --> c7 : usa
-c7 --> c12 : GET /careers/{id}/morale (alvo)\nGET /careers/{id}/players/{pid} (alvo)\nPOST /careers/{id}/weeks/current/play (alvo)\n…
+c7 --> c12 : GET /careers/{id}/morale (alvo)\nGET /careers/{id}/players/{pid}\nPOST /careers/{id}/weeks/current/play (alvo)\n…
 c7 --> c13
 c7 --> c14
 c7 --> c15

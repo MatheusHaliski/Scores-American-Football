@@ -41,7 +41,7 @@ database "Redis 7" as s2
 c1 --> c4 : usa
 c2 --> c4 : usa
 c3 --> c11 : dispara
-c4 --> c6 : GET /me/activity (alvo)\nPOST /auth/login (alvo)\nPOST /careers/{id}/weeks/current/play (alvo)\n…
+c4 --> c6 : GET /me/activity\nPOST /auth/login\nPOST /careers/{id}/weeks/current/play (alvo)\n…
 c4 --> c7
 c4 --> c8
 c4 --> c9

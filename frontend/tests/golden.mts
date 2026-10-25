@@ -15,3 +15,6 @@ export function loadGolden(file: string): unknown {
 export function loadAccountGolden(file: (typeof ACCOUNT_GOLDENS)[number]): unknown {
   return loadGolden(file);
 }
+
+/** Amostras da carreira (bloco 6a) e a franquia do editor usada na nova carreira. */
+export const CAREER_GOLDENS = ["careers-list.json", "career-dashboard.json", "career-calendar.json", "roster.json", "roster-player.json", "depth-chart.json", "problem-409-depth-chart.json", "world-editor-club.json"] as const;

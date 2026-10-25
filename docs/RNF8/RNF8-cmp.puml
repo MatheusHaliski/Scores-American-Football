@@ -50,7 +50,7 @@ database "Cassandra 4.1" as s4
 c1 --> c4 : usa
 c2 --> c10 : dispara
 c3 --> c4 : usa
-c4 --> c8 : GET /me (alvo)\nPUT /me/consents (alvo)\nPOST /me/export (alvo)\n…
+c4 --> c8 : GET /me\nPUT /me/consents\nPOST /me/export\n…
 c4 --> c9
 c8 --> c10
 c9 --> c10

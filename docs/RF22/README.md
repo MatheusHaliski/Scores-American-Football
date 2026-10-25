@@ -44,14 +44,14 @@ Fonte: [`RF22-stm.puml`](RF22-stm.puml)
 
 | Estado | Método | Rota | Caso de uso | Autorização | Descrição |
 |---|---|---|---|---|---|
-| ⛔ alvo | `GET` | `/api/v1/careers/{id}/players/{pid}` | `GetPlayerExpandedUseCase` | JWT · dono do save | 6 macros pela família de posição (D-6), ≈40 subatributos agrupados, overall em cada posição com aviso fora de posição, contrato (cap hit, garantia, dead money), moral e fatores, lesão e InjuryReport, estatísticas da temporada pela posição, estilos, consumíveis, slot no depth chart e card (nível Bronze…Elite) |
+| ✅ | `GET` | `/api/v1/careers/{id}/players/{pid}` | `GetPlayerExpandedUseCase` | JWT · dono do save | 6 macros pela família de posição (D-6), ≈40 subatributos agrupados, overall em cada posição com aviso fora de posição, contrato (cap hit, garantia, dead money), moral e fatores, lesão e InjuryReport, estatísticas da temporada pela posição, estilos, consumíveis, slot no depth chart e card (nível Bronze…Elite) |
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/players/{pid}/card-history` | `GetPlayerCardHistoryUseCase` | JWT · dono do save | Versões do card por temporada, prêmio ou título |
 | ⛔ alvo | `POST` | `/api/v1/careers/{id}/players/{pid}/depth-chart` | `MovePlayerInDepthChartUseCase` | JWT · dono do save | Atalho do RF60: posição ou papel (KR, PR, 3RD_DOWN_BACK) e profundidade |
-| ⛔ alvo | `PATCH` | `/api/v1/careers/{id}/players/{pid}/roster-status` | `ChangeRosterStatusUseCase` | JWT · dono do save | ACTIVE, PRACTICE_SQUAD ou IR dentro das regras 53 / 16 / IR |
+| ✅ | `PATCH` | `/api/v1/careers/{id}/players/{pid}/roster-status` | `ChangeRosterStatusUseCase` | JWT · dono do save | ACTIVE, PRACTICE_SQUAD ou IR dentro das regras 53 / 16 / IR |
 | ⛔ alvo | `POST` | `/api/v1/careers/{id}/players/{pid}/extend` | `ExtendPlayerContractUseCase` | JWT · dono do save | Extensão: anos, salário por ano, bônus de assinatura (rateado), garantia · jogador IA aceita ou contrapropõe |
 | ⛔ alvo | `POST` | `/api/v1/careers/{id}/players/{pid}/franchise-tag` | `ApplyFranchiseTagUseCase` | JWT · dono do save | Franchise tag de 1 ano no último ano de contrato (1 por franquia por temporada, RF49) |
 | ⛔ alvo | `POST` | `/api/v1/careers/{id}/players/{pid}/trade-block` | `ToggleTradeBlockUseCase` | JWT · dono do save | Entra ou sai do bloco de trocas (franquias IA podem propor, RF19) |
-| ⛔ alvo | `POST` | `/api/v1/careers/{id}/players/{pid}/release` | `ReleasePlayerUseCase` | JWT · dono do save | Dispensa: vai aos waivers e o dead money entra no teto |
+| ✅ | `POST` | `/api/v1/careers/{id}/players/{pid}/release` | `ReleasePlayerUseCase` | JWT · dono do save | Dispensa: vai aos waivers e o dead money entra no teto |
 | ⛔ alvo | `POST` | `/api/v1/careers/{id}/players/{pid}/consumables` | `ApplyConsumableUseCase` | JWT · dono do save | Aplica consumível (RF25) |
 | ⛔ alvo | `POST` | `/api/v1/careers/{id}/players/{pid}/message` | `MessagePlayerUseCase` | JWT · dono do save | Mensagem ao jogador (inbox, RF24) |
 

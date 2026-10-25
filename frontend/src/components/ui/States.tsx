@@ -55,7 +55,7 @@ export function PageSkeleton({ rows = 3 }: { rows?: number }) {
 }
 
 export function InlineAlert({ tone = "info", children, className }: { tone?: "info" | "warn" | "bad" | "good"; children: ReactNode; className?: string }) {
-  const tones = { info: "border-info/50 bg-info/10 text-[#BBD5F5]", warn: "border-warn/50 bg-warn/10 text-[#F5D98A]", bad: "border-bad/50 bg-bad/10 text-[var(--bad-text)]", good: "border-good/50 bg-good/10 text-[#9FE0B0]" };
+  const tones = { info: "border-info/50 bg-info/10 text-[var(--info-text)]", warn: "border-warn/50 bg-warn/10 text-[var(--warn-text)]", bad: "border-bad/50 bg-bad/10 text-[var(--bad-text)]", good: "border-good/50 bg-good/10 text-[var(--good-text)]" };
   return (
     <div role={tone === "bad" ? "alert" : "status"} className={cn("flex gap-2 items-start rounded-[var(--radius-md)] border px-3 py-2.5 text-[0.9rem]", tones[tone], className)}>
       <IconAlert size={18} className="shrink-0 mt-0.5" />

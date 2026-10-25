@@ -57,7 +57,7 @@ database "OpenSearch 2" as s4
 database "S3/MinIO" as s5
 c1 --> c3 : usa
 c2 --> c11 : dispara
-c3 --> c6 : POST /careers (alvo)\nGET /careers/{id} (alvo)\nPUT /editor/players/{id} (alvo)\n…
+c3 --> c6 : POST /careers\nGET /careers/{id}\nPUT /editor/players/{id} (alvo)\n…
 c3 --> c7
 c3 --> c8
 c3 --> c9

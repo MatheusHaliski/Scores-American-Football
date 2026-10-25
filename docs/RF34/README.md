@@ -44,14 +44,14 @@ Fonte: [`RF34-stm.puml`](RF34-stm.puml)
 
 | Estado | Método | Rota | Caso de uso | Autorização | Descrição |
 |---|---|---|---|---|---|
-| ⛔ alvo | `GET` | `/api/v1/worlds` | `ListWorldsUseCase` | JWT | Mundo padrão (32 franquias fictícias) e mundos editados do usuário (RF5) |
-| ⛔ alvo | `GET` | `/api/v1/worlds/{id}/leagues` | `ListLeaguesUseCase` | JWT | Ligas com ruleset PRO/COLLEGE, conferências, divisões, nº de franquias, teto e piso salarial |
-| ⛔ alvo | `GET` | `/api/v1/leagues/{id}/clubs` | `ListClubsUseCase` | JWT | Franquias por conferência e divisão (prestígio, cap space, vitórias esperadas, overall por unidade) |
-| ⛔ alvo | `POST` | `/api/v1/leagues/{id}/clubs` | `CreateClubUseCase` | JWT | Cria franquia (nome, cidade, cores, capacete, divisão) só em mundo editável |
+| ✅ | `GET` | `/api/v1/worlds` | `ListWorldsUseCase` | JWT | Mundo padrão (32 franquias fictícias) e mundos editados do usuário (RF5) |
+| ✅ | `GET` | `/api/v1/worlds/{id}/leagues` | `ListLeaguesUseCase` | JWT | Ligas com ruleset PRO/COLLEGE, conferências, divisões, nº de franquias, teto e piso salarial |
+| ✅ | `GET` | `/api/v1/leagues/{id}/clubs` | `ListClubsUseCase` | JWT | Franquias por conferência e divisão (prestígio, cap space, vitórias esperadas, overall por unidade) |
+| ✅ | `POST` | `/api/v1/leagues/{id}/clubs` | `CreateClubUseCase` | JWT | Cria franquia (nome, cidade, cores, capacete, divisão) só em mundo editável |
 | ⛔ alvo | `GET` | `/api/v1/catalog/coach-styles` | `ListCoachStylesUseCase` | JWT | Estilos de head coach: OFFENSIVE, DEFENSIVE, DEVELOPER, MOTIVATOR (RF15) |
-| ⛔ alvo | `POST` | `/api/v1/careers` | `CreateCareerUseCase` | JWT | Cria CareerSave CREATING e agenda o bootstrap → 202 {saveId} |
-| ⛔ alvo | `GET` | `/api/v1/careers/{id}` | `GetCareerUseCase` | JWT · dono do save | Status da criação (CREATING → ACTIVE \| FAILED) para o poll do wizard |
-| ⛔ alvo | `GET` | `/api/v1/careers` | `ListCareersUseCase` | JWT | Carreiras salvas e slots livres (RF11) |
+| ✅ | `POST` | `/api/v1/careers` | `CreateCareerUseCase` | JWT | Cria CareerSave CREATING e agenda o bootstrap → 202 {saveId} |
+| ✅ | `GET` | `/api/v1/careers/{id}` | `GetCareerUseCase` | JWT · dono do save | Status da criação (CREATING → ACTIVE \| FAILED) para o poll do wizard |
+| ✅ | `GET` | `/api/v1/careers` | `ListCareersUseCase` | JWT | Carreiras salvas e slots livres (RF11) |
 
 ## Pontos de decisão
 

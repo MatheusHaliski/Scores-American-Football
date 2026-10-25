@@ -55,7 +55,7 @@ Fonte: [`RF49-stm-salarycapledger-espaco-na-temporada.puml`](RF49-stm-salarycapl
 | ⛔ alvo | `POST` | `/api/v1/careers/{id}/players/{pid}/contract/negotiate` | `NegotiateContractUseCase` | JWT · dono do save | Proposta de extensão (anos, salário por ano, bônus, garantias) → ACCEPT \| COUNTER \| REJECT |
 | ⛔ alvo | `POST` | `/api/v1/careers/{id}/players/{pid}/contract/restructure` | `RestructureContractUseCase` | JWT · dono do save | Converte salário-base em bônus rateado: alivia o ano atual, pesa nos próximos |
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/players/{pid}/release/preview` | `PreviewReleaseUseCase` | JWT · dono do save | Dead money e economia, normal e pós-1º de junho |
-| ⛔ alvo | `POST` | `/api/v1/careers/{id}/players/{pid}/release` | `ReleasePlayerUseCase` | JWT · dono do save | Corta o jogador (waivers, RF65) e lança o dead money · expectedLedgerVersion |
+| ✅ | `POST` | `/api/v1/careers/{id}/players/{pid}/release` | `ReleasePlayerUseCase` | JWT · dono do save | Corta o jogador (waivers, RF65) e lança o dead money · expectedLedgerVersion |
 | ⛔ alvo | `POST` | `/api/v1/careers/{id}/players/{pid}/franchise-tag` | `ApplyFranchiseTagUseCase` | JWT · dono do save | Tag de 1 ano: valor = máx(média dos 5 maiores salários da posição, 120 % do salário anterior) |
 | ⛔ alvo | `DELETE` | `/api/v1/careers/{id}/players/{pid}/franchise-tag` | `RemoveFranchiseTagUseCase` | JWT · dono do save | Retira a tag antes de assinada (jogador vira agente livre) |
 

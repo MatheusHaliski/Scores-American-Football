@@ -44,18 +44,18 @@ Fonte: [`RF5-stm.puml`](RF5-stm.puml)
 
 | Estado | Método | Rota | Caso de uso | Autorização | Descrição |
 |---|---|---|---|---|---|
-| ⛔ alvo | `GET` | `/api/v1/worlds` | `ListWorldsUseCase` | JWT | Mundo semente fictício de 32 times + mundos TEMPLATE do usuário |
-| ⛔ alvo | `POST` | `/api/v1/worlds/{id}/clone` | `CloneWorldUseCase` | JWT | Copia o mundo semente (ou outro TEMPLATE) para o usuário editar |
-| ⛔ alvo | `POST` | `/api/v1/worlds/{id}/leagues` | `SaveLeagueUseCase` | JWT · dono do mundo | Cria liga com ruleset PRO\|COLLEGE, LeagueRules AF (quarto, relógio de jogada, prorrogação, kickoff, 53/46/16), teto e piso salarial |
+| ✅ | `GET` | `/api/v1/worlds` | `ListWorldsUseCase` | JWT | Mundo semente fictício de 32 times + mundos TEMPLATE do usuário |
+| ✅ | `POST` | `/api/v1/worlds/{id}/clone` | `CloneWorldUseCase` | JWT | Copia o mundo semente (ou outro TEMPLATE) para o usuário editar |
+| ✅ | `POST` | `/api/v1/worlds/{id}/leagues` | `SaveLeagueUseCase` | JWT · dono do mundo | Cria liga com ruleset PRO\|COLLEGE, LeagueRules AF (quarto, relógio de jogada, prorrogação, kickoff, 53/46/16), teto e piso salarial |
 | ⛔ alvo | `PUT` | `/api/v1/worlds/{id}/leagues/{lid}` | `SaveLeagueUseCase` | JWT · dono do mundo | Edita liga e regras (LeagueRules.version + 1) |
-| ⛔ alvo | `PUT` | `/api/v1/worlds/{id}/leagues/{lid}/structure` | `SaveLeagueStructureUseCase` | JWT · dono do mundo | Conferências (1–2), divisões por conferência e franquia de cada divisão; vagas de playoff por conferência |
+| ✅ | `PUT` | `/api/v1/worlds/{id}/leagues/{lid}/structure` | `SaveLeagueStructureUseCase` | JWT · dono do mundo | Conferências (1–2), divisões por conferência e franquia de cada divisão; vagas de playoff por conferência |
 | ⛔ alvo | `DELETE` | `/api/v1/worlds/{id}/leagues/{lid}` | `DeleteCatalogItemUseCase` | JWT · dono do mundo | Exclui liga (sem franquias ou cascata confirmada) |
-| ⛔ alvo | `POST` | `/api/v1/leagues/{id}/clubs` | `SaveClubUseCase` | JWT · dono do mundo | Cria franquia (nome, cidade, divisão, cores, capacete, logo, prestígio) |
+| ✅ | `POST` | `/api/v1/leagues/{id}/clubs` | `SaveClubUseCase` | JWT · dono do mundo | Cria franquia (nome, cidade, divisão, cores, capacete, logo, prestígio) |
 | ⛔ alvo | `PUT` | `/api/v1/leagues/{id}/clubs/{cid}` | `SaveClubUseCase` | JWT · dono do mundo | Edita franquia, uniformes (HOME\|AWAY\|ALTERNATE) e capacete |
-| ⛔ alvo | `POST` | `/api/v1/clubs/{id}/players` | `SavePlayerUseCase` | JWT · dono do mundo | Cria jogador: posição AF, unidade, ≈40 subatributos, altura/peso, college, contrato |
+| ✅ | `POST` | `/api/v1/clubs/{id}/players` | `SavePlayerUseCase` | JWT · dono do mundo | Cria jogador: posição AF, unidade, ≈40 subatributos, altura/peso, college, contrato |
 | ⛔ alvo | `PUT` | `/api/v1/clubs/{id}/players/{pid}` | `SavePlayerUseCase` | JWT · dono do mundo | Edita jogador · overall por posição recalculado (OVR v1) |
 | ⛔ alvo | `DELETE` | `/api/v1/clubs/{id}/players/{pid}` | `DeleteCatalogItemUseCase` | JWT · dono do mundo | Exclui jogador |
-| ⛔ alvo | `PUT` | `/api/v1/clubs/{id}/stadium` | `SaveStadiumUseCase` | JWT · dono do mundo | Estádio do catálogo: capacidade, cobertura, gramado, zona climática, arte da end zone |
+| ✅ | `PUT` | `/api/v1/clubs/{id}/stadium` | `SaveStadiumUseCase` | JWT · dono do mundo | Estádio do catálogo: capacidade, cobertura, gramado, zona climática, arte da end zone |
 
 ## Pontos de decisão
 

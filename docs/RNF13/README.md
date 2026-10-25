@@ -44,8 +44,8 @@ Fonte: [`RNF13-stm.puml`](RNF13-stm.puml)
 
 | Estado | Método | Rota | Caso de uso | Autorização | Descrição |
 |---|---|---|---|---|---|
-| ⛔ alvo | `GET` | `/api/v1/me/settings` | `SettingsUseCases.get` | JWT | Lê locale da conta, regionalFormat e units |
-| ⛔ alvo | `PUT` | `/api/v1/me/settings` | `SettingsUseCases.update` | JWT | Salva locale (pt-BR \| en-US \| es-ES) · vale para e-mails e conteúdo gerado |
+| ✅ | `GET` | `/api/v1/me/settings` | `SettingsUseCases.get` | JWT | Lê locale da conta, regionalFormat e units |
+| ✅ | `PUT` | `/api/v1/me/settings` | `SettingsUseCases.update` | JWT | Salva locale (pt-BR \| en-US \| es-ES) · vale para e-mails e conteúdo gerado |
 | — | `*` | `/api/v1/** (Accept-Language)` | `LocaleResolver + MessageSource` | — | Erro RFC 7807 e e-mail no idioma da conta ou do cabeçalho, com fallback pt-BR · campo locale no corpo |
 
 ## Pontos de decisão

@@ -44,9 +44,9 @@ Fonte: [`RNF5-stm.puml`](RNF5-stm.puml)
 
 | Estado | Método | Rota | Caso de uso | Autorização | Descrição |
 |---|---|---|---|---|---|
-| ⛔ alvo | `POST` | `/api/v1/auth/register` | `RegisterUserUseCase` | público | email → AES-GCM + emailHash HMAC-SHA256 · senha → Argon2id fora da transação, com teto de hashes simultâneos |
-| ⛔ alvo | `PUT` | `/api/v1/me` | `AccountUseCases.updateProfile` | JWT | displayName recifrado · AuditLog SENSITIVE_DATA_CHANGED sem valores |
-| ⛔ alvo | `GET` | `/api/v1/me` | `AccountUseCases.profile` | JWT | Decifra só para o titular |
+| ✅ | `POST` | `/api/v1/auth/register` | `RegisterUserUseCase` | público | email → AES-GCM + emailHash HMAC-SHA256 · senha → Argon2id fora da transação, com teto de hashes simultâneos |
+| ✅ | `PUT` | `/api/v1/me` | `AccountUseCases.updateProfile` | JWT | displayName recifrado · AuditLog SENSITIVE_DATA_CHANGED sem valores |
+| ✅ | `GET` | `/api/v1/me` | `AccountUseCases.profile` | JWT | Decifra só para o titular |
 | ⛔ alvo | `POST` | `/api/v1/admin/crypto/rotate` | `RotateEncryptionKeyUseCase` | JWT · ADMIN | Rotação por versão de chave (kid) com recifragem em lotes |
 
 ## Pontos de decisão

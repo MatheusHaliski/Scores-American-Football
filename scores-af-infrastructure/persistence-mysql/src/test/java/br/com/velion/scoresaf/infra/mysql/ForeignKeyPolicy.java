@@ -7,11 +7,36 @@ import java.util.List;
  * no mesmo PR, senão o ForeignKeyPolicyTest fica vermelho. Bloco 3: as FKs da plataforma (V1__plataforma.sql); a conta é
  * anonimizada e nunca apagada, mas o que é dela cai junto se um dia for (sessões, configurações, preferências, notificações,
  * pedidos de exportação); a prova do consentimento (consent_record) segura a exclusão. Bloco 4: as do catálogo (V2__dominio_af.sql).
+ * Bloco 6a: as da carreira (V3__carreira.sql).
  */
 final class ForeignKeyPolicy {
   record Fk(String table, String column, String refTable, String refColumn, String onDelete) {}
 
   static final List<Fk> POLICY = List.of(
+      // V3 — carreira e elenco (bloco 6a): o que é da carreira cai com o save (CASCADE) e com o mundo SAVE dela (franquias, ligas e
+      // jogadores do mundo levam calendário, movimentos e depth chart); o save só perde a referência à liga, franquia ou temporada
+      // atual (SET NULL: sem clube = desempregado). O save cai com a conta, o mundo e o head coach humano (todos dele).
+      new Fk("career_save", "club_id", "club", "id", "SET NULL"),
+      new Fk("career_save", "league_id", "league", "id", "SET NULL"),
+      new Fk("career_save", "manager_id", "manager_profile", "id", "CASCADE"),
+      new Fk("career_save", "season_id", "season", "id", "SET NULL"),
+      new Fk("career_save", "user_id", "user_account", "id", "CASCADE"),
+      new Fk("career_save", "world_id", "world", "id", "CASCADE"),
+      new Fk("depth_chart", "career_save_id", "career_save", "id", "CASCADE"),
+      new Fk("depth_chart", "club_id", "club", "id", "CASCADE"),
+      new Fk("depth_chart_slot", "depth_chart_id", "depth_chart", "id", "CASCADE"),
+      new Fk("depth_chart_slot", "player_id", "player", "id", "CASCADE"),
+      new Fk("fixture", "away_club_id", "club", "id", "CASCADE"),
+      new Fk("fixture", "home_club_id", "club", "id", "CASCADE"),
+      new Fk("fixture", "season_id", "season", "id", "CASCADE"),
+      new Fk("fixture", "week_id", "season_week", "id", "CASCADE"),
+      new Fk("roster_move", "career_save_id", "career_save", "id", "CASCADE"),
+      new Fk("roster_move", "club_id", "club", "id", "SET NULL"),
+      new Fk("roster_move", "player_id", "player", "id", "CASCADE"),
+      new Fk("roster_move", "season_id", "season", "id", "CASCADE"),
+      new Fk("season", "career_save_id", "career_save", "id", "CASCADE"),
+      new Fk("season", "league_id", "league", "id", "CASCADE"),
+      new Fk("season_week", "season_id", "season", "id", "CASCADE"),
       // V2 — domínio do futebol americano (bloco 4): o mundo leva o catálogo junto (CASCADE); a franquia segura liga, conferência e
       // divisão (RESTRICT: o editor move as franquias antes de apagar a estrutura); perder estádio, head coach ou clube só anula a
       // referência (SET NULL: o jogador vira agente livre).

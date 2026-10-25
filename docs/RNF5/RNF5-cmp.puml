@@ -45,7 +45,7 @@ c1 --> c5 : usa
 c2 --> c5 : usa
 c3 --> c5 : usa
 c4 --> c11 : dispara
-c5 --> c7 : POST /auth/register (alvo)\nPUT /me (alvo)\nGET /me (alvo)\n…
+c5 --> c7 : POST /auth/register\nPUT /me\nGET /me\n…
 c5 --> c8
 c5 --> c9
 c5 --> c10

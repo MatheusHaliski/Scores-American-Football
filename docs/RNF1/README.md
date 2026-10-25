@@ -44,10 +44,10 @@ Fonte: [`RNF1-stm.puml`](RNF1-stm.puml)
 
 | Estado | Método | Rota | Caso de uso | Autorização | Descrição |
 |---|---|---|---|---|---|
-| ⛔ alvo | `POST` | `/api/v1/careers` | `CreateCareerUseCase` | JWT | Clona o mundo TEMPLATE para um mundo SAVE e cria o salvamento numa só transação |
-| ⛔ alvo | `GET` | `/api/v1/careers/{id}` | `CareerQueries` | JWT · dono do save | Retomar: lê o último commit do mundo SAVE |
+| ✅ | `POST` | `/api/v1/careers` | `CreateCareerUseCase` | JWT | Clona o mundo TEMPLATE para um mundo SAVE e cria o salvamento numa só transação |
+| ✅ | `GET` | `/api/v1/careers/{id}` | `CareerQueries` | JWT · dono do save | Retomar: lê o último commit do mundo SAVE |
 | ⛔ alvo | `PUT` | `/api/v1/editor/players/{id}` | `WorldEditorUseCases` | JWT | Edita o database do jogo do usuário (TEMPLATE); carreiras existentes não mudam |
-| ⛔ alvo | `PUT` | `/api/v1/careers/{id}/depth-chart` | `UpdateDepthChartUseCase` | JWT · dono do save | Escrita típica de carreira: DepthChart com @Version (409 em conflito) |
+| ✅ | `PUT` | `/api/v1/careers/{id}/depth-chart` | `UpdateDepthChartUseCase` | JWT · dono do save | Escrita típica de carreira: DepthChart com @Version (409 em conflito) |
 | ⛔ alvo | `POST` | `/api/v1/matches/{mid}/advance` | `AdvanceMatchUseCase` | JWT · dono do save | MatchSession com @Version · play-by-play no Cassandra e estado no Redis só depois do commit |
 
 ## Pontos de decisão

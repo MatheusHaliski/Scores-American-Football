@@ -44,8 +44,8 @@ Fonte: [`RF10-stm.puml`](RF10-stm.puml)
 
 | Estado | Método | Rota | Caso de uso | Autorização | Descrição |
 |---|---|---|---|---|---|
-| ⛔ alvo | `GET` | `/api/v1/me/settings` | `GetSettingsUseCase` | JWT | UserSettings: simQuarterMinutes, playCallingLevel, decisionTimeoutSeconds, difficulty, units, theme, highContrast, fontScale, reducedMotion, notificationsEnabled |
-| ⛔ alvo | `PUT` | `/api/v1/me/settings` | `UpdateSettingsUseCase` | JWT | Salva preferências validadas |
+| ✅ | `GET` | `/api/v1/me/settings` | `GetSettingsUseCase` | JWT | UserSettings: simQuarterMinutes, playCallingLevel, decisionTimeoutSeconds, difficulty, units, theme, highContrast, fontScale, reducedMotion, notificationsEnabled |
+| ✅ | `PUT` | `/api/v1/me/settings` | `UpdateSettingsUseCase` | JWT | Salva preferências validadas |
 | ⛔ alvo | `GET` | `/api/v1/me/inventory` | `ListInventoryUseCase` | JWT | Temas, artes de card e trilhas compradas na loja (Purchase) para as galerias |
 
 ## Pontos de decisão

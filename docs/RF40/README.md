@@ -44,7 +44,7 @@ Fonte: [`RF40-stm.puml`](RF40-stm.puml)
 
 | Estado | Método | Rota | Caso de uso | Autorização | Descrição |
 |---|---|---|---|---|---|
-| ⛔ alvo | `GET` | `/api/v1/careers/{id}/dashboard` | `GetClubDashboardUseCase` | JWT · dono do save | Head coach, franquia, próximo jogo ou bye, próximos adversários da divisão, partida ao vivo, últimas semanas, divisão, cap space, lesões, alertas IA, inbox |
+| ✅ | `GET` | `/api/v1/careers/{id}/dashboard` | `GetClubDashboardUseCase` | JWT · dono do save | Head coach, franquia, próximo jogo ou bye, próximos adversários da divisão, partida ao vivo, últimas semanas, divisão, cap space, lesões, alertas IA, inbox |
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/morale` | `GetManagerMoraleUseCase` | JWT · dono do save | Moral com a franquia e com a liga + fatores (RF41) |
 | ⛔ alvo | `GET` | `/api/v1/matches/{mid}/live-card` | `GetLiveMatchCardUseCase` | JWT · dono do save | Placar, quarto, relógio, posse e 'descida & distância at OPP yd' (Redis) |
 

@@ -53,7 +53,7 @@ Fonte: [`RF62-stm-matchsession-status-chamada.puml`](RF62-stm-matchsession-statu
 | ⛔ alvo | `GET` | `/api/v1/matches/{mid}/decisions/current` | `GetOpenPlayCallUseCase` | JWT · dono do save | Decisão aberta: situação, descida e distância, 3 a 5 opções, prazo |
 | ⛔ alvo | `POST` | `/api/v1/matches/{mid}/decisions/{did}` | `SubmitPlayCallUseCase` | JWT · dono do save | Escolhe a jogada (expectedVersion da sessão) |
 | ⛔ alvo | `GET` | `/api/v1/matches/{mid}/stream` | `MatchStreamUseCase` | JWT · dono do save | SSE: DecisionOpened, DecisionResolved, PlayResolved |
-| ⛔ alvo | `PUT` | `/api/v1/me/settings` | `UpdateUserSettingsUseCase` | JWT | Nível de chamada (KEY_MOMENTS, ALL_PLAYS, NONE) e tempo limite (RF10) |
+| ✅ | `PUT` | `/api/v1/me/settings` | `UpdateUserSettingsUseCase` | JWT | Nível de chamada (KEY_MOMENTS, ALL_PLAYS, NONE) e tempo limite (RF10) |
 
 ## Pontos de decisão
 

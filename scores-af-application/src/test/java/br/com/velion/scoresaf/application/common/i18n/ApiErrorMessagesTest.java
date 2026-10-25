@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 
 /**
  * Mensagens de erro da API (RF46 CA05, RNF13): os 3 idiomas têm as mesmas chaves, inclusive os códigos da plataforma (bloco 3) e os
- * do editor de mundos (bloco 4).
+ * do editor de mundos (bloco 4) e os da carreira, do elenco e do depth chart (bloco 6a).
  * No basquete a lista conferida era a do Digital Double (RF44), que entra aqui no bloco 9.
  */
 class ApiErrorMessagesTest {
@@ -25,6 +25,14 @@ class ApiErrorMessagesTest {
       "JERSEY_TAKEN", "PLAYER_WITHOUT_CLUB", "INVALID_POSITION", "INVALID_HEIGHT", "INVALID_WEIGHT", "INVALID_ATTRIBUTE", "INVALID_ROSTER_STATUS",
       "INVALID_RULES", "INVALID_RULESET", "INVALID_JERSEY_NUMBER", "INVALID_STADIUM_CAPACITY", "INVALID_SECTOR", "INVALID_CONTRACT", "INVALID_COLOR",
       "INVALID_SHORT_NAME", "INVALID_NAME", "INVALID_VALUE", "INVALID_BIRTH_DATE");
+  /** Bloco 6a — carreira, calendário, elenco e depth chart. */
+  private static final List<String> CAREER = List.of("CAREER_NAME_INVALID", "CAREER_NAME_TAKEN", "CAREER_SLOTS_FULL", "CAREER_SLOT_TAKEN",
+      "CAREER_ARCHIVED", "CAREER_CONFIRMATION_REQUIRED", "CAREER_VERSION_CONFLICT", "CAREER_UNEMPLOYED", "INVALID_CAREER_STATUS", "INVALID_COACH_STYLE",
+      "INVALID_DIFFICULTY", "COACH_NAME_INVALID", "COACH_NATIONALITY_INVALID", "LEAGUE_NOT_IN_WORLD", "CLUB_REQUIRED", "CLUB_NOT_IN_LEAGUE",
+      "LEAGUE_STRUCTURE_INVALID", "NO_SEASON", "INVALID_WEEK", "PLAYER_NOT_IN_ROSTER", "PRACTICE_SQUAD_INELIGIBLE", "IR_NOT_ALLOWED",
+      "IR_RETURN_TOO_EARLY", "IR_STILL_INJURED", "IR_RETURNS_EXHAUSTED", "ROSTER_MOVE_NOT_ALLOWED", "DEPTH_CHART_VERSION_CONFLICT",
+      "DEPTH_CHART_UNKNOWN_SLOT", "DEPTH_CHART_DUPLICATE_SLOT", "DEPTH_CHART_PLAYER_UNAVAILABLE", "DEPTH_CHART_DUPLICATE_PLAYER",
+      "DEPTH_CHART_INCOMPLETE", "DEPTH_CHART_TOO_MANY_ACTIVES", "INVALID_DEPTH");
 
   private static Set<String> keys(String path) throws Exception {
     Properties p = new Properties();
@@ -41,5 +49,6 @@ class ApiErrorMessagesTest {
     for (String b : BUNDLES.subList(1, BUNDLES.size())) assertThat(keys(b)).as(b).isEqualTo(pt);
     for (String code : PLATFORM) assertThat(pt).as("código " + code).contains("error." + code);
     for (String code : WORLD_EDITOR) assertThat(pt).as("código " + code).contains("error." + code);
+    for (String code : CAREER) assertThat(pt).as("código " + code).contains("error." + code);
   }
 }

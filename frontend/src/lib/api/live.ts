@@ -1,5 +1,19 @@
 import { HttpClient, type TokenStorage } from "./client";
 import type { ScoresApi } from "./contract";
+import {
+  calendarFromDto,
+  careerFromDto,
+  careerListFromDto,
+  dashboardFromDto,
+  depthChartFromDto,
+  leagueClubsFrom,
+  leagueFromDto,
+  playerDetailFromDto,
+  releaseFromDto,
+  rosterChangeFromDto,
+  rosterFromDto,
+  worldFromDto,
+} from "./live-career";
 import { authFromDto, profileFromDto, settingsFromDto, userFromDto, type AccountDto, type SettingsDto, type TokenResponseDto } from "./live-account";
 
 /** Implementação `live` do contrato: chama o backend Java em NEXT_PUBLIC_API_URL (rotas iguais às do Scores de basquete). */
@@ -60,6 +74,34 @@ export function createLiveApi(baseUrl: string, tokens: TokenStorage, onUnauthori
       deleteAccount: (req) => http.delete("/me", req),
       deletionStatus: () => http.get("/me/deletion"),
       cancelDeletion: () => http.post("/me/deletion/cancel"),
+    },
+    worlds: {
+      list: async () => (await http.get<unknown[]>("/worlds")).map(worldFromDto),
+      leagues: async (worldId) => (await http.get<unknown[]>(`/worlds/${worldId}/leagues`)).map(leagueFromDto),
+      leagueClubs: async (worldId, leagueId) => {
+        const [structure, clubs] = await Promise.all([http.get<unknown>(`/worlds/${worldId}/leagues/${leagueId}/structure`), http.get<unknown>(`/leagues/${leagueId}/clubs`)]);
+        return leagueClubsFrom(leagueId, structure, clubs);
+      },
+    },
+    careers: {
+      list: async () => careerListFromDto(await http.get("/careers")),
+      create: async (req) => careerFromDto(await http.post("/careers", req)),
+      get: async (id) => careerFromDto(await http.get(`/careers/${id}`)),
+      update: async (id, req) => careerFromDto(await http.patch(`/careers/${id}`, req)),
+      remove: (id, confirm) => http.delete(`/careers/${id}?confirm=${encodeURIComponent(confirm)}`),
+      dashboard: async (id) => dashboardFromDto(await http.get(`/careers/${id}/dashboard`)),
+      calendar: async (id, week) => calendarFromDto(await http.get(`/careers/${id}/calendar`, { week })),
+    },
+    roster: {
+      get: async (careerId) => rosterFromDto(await http.get(`/careers/${careerId}/roster`)),
+      player: async (careerId, playerId) => playerDetailFromDto(await http.get(`/careers/${careerId}/players/${playerId}`)),
+      changeStatus: async (careerId, playerId, status) => rosterChangeFromDto(await http.patch(`/careers/${careerId}/players/${playerId}/roster-status`, { status })),
+      release: async (careerId, playerId) => releaseFromDto(await http.post(`/careers/${careerId}/players/${playerId}/release`)),
+    },
+    depthChart: {
+      get: async (careerId) => depthChartFromDto(await http.get(`/careers/${careerId}/depth-chart`)),
+      save: async (careerId, req) => depthChartFromDto(await http.put(`/careers/${careerId}/depth-chart`, req)),
+      setRole: async (careerId, playerId, req) => depthChartFromDto(await http.patch(`/careers/${careerId}/players/${playerId}/role`, req)),
     },
   };
 }

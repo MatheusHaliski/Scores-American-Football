@@ -44,12 +44,12 @@ Fonte: [`RNF8-stm.puml`](RNF8-stm.puml)
 
 | Estado | Método | Rota | Caso de uso | Autorização | Descrição |
 |---|---|---|---|---|---|
-| ⛔ alvo | `GET` | `/api/v1/me` | `AccountUseCases.profile` | JWT | Acesso: dados pessoais decifrados só para o titular |
-| ⛔ alvo | `PUT` | `/api/v1/me/consents` | `PrivacyUseCases.update` | JWT | Concede ou revoga por finalidade (ConsentRecord append-only) · biometria revogada apaga a mídia |
-| ⛔ alvo | `POST` | `/api/v1/me/export` | `DataExportUseCases.request` | JWT | Portabilidade: DataExportJob → JSON + CSV no S3 privado por 24 h |
-| ⛔ alvo | `GET` | `/api/v1/me/export/{jobId}/download` | `DataExportUseCases.download` | JWT · dono do job | DATA_EXPORT_DOWNLOADED |
-| ⛔ alvo | `DELETE` | `/api/v1/me` | `AccountDeletionUseCases.request` | JWT · senha (step-up) | PENDING_DELETION, sessões revogadas, 7 dias de arrependimento, depois anonimização |
-| ⛔ alvo | `POST` | `/api/v1/me/deletion/cancel` | `AccountDeletionUseCases.cancel` | JWT | Cancela no prazo |
+| ✅ | `GET` | `/api/v1/me` | `AccountUseCases.profile` | JWT | Acesso: dados pessoais decifrados só para o titular |
+| ✅ | `PUT` | `/api/v1/me/consents` | `PrivacyUseCases.update` | JWT | Concede ou revoga por finalidade (ConsentRecord append-only) · biometria revogada apaga a mídia |
+| ✅ | `POST` | `/api/v1/me/export` | `DataExportUseCases.request` | JWT | Portabilidade: DataExportJob → JSON + CSV no S3 privado por 24 h |
+| ✅ | `GET` | `/api/v1/me/export/{jobId}/download` | `DataExportUseCases.download` | JWT · dono do job | DATA_EXPORT_DOWNLOADED |
+| ✅ | `DELETE` | `/api/v1/me` | `AccountDeletionUseCases.request` | JWT · senha (step-up) | PENDING_DELETION, sessões revogadas, 7 dias de arrependimento, depois anonimização |
+| ✅ | `POST` | `/api/v1/me/deletion/cancel` | `AccountDeletionUseCases.cancel` | JWT | Cancela no prazo |
 
 ## Pontos de decisão
 

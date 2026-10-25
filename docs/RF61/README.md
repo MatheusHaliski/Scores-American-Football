@@ -48,7 +48,7 @@ Fonte: [`RF61-stm.puml`](RF61-stm.puml)
 | ⛔ alvo | `GET` | `/api/v1/playbooks/{pbId}/plays` | `ListPlayDefinitionsUseCase` | JWT | Jogadas com filtros (lado, formação, conceito, cobertura) |
 | ⛔ alvo | `POST` | `/api/v1/careers/{id}/playbooks` | `CreateCustomPlaybookUseCase` | JWT · dono do save | Cria playbook próprio a partir de um esquema |
 | ⛔ alvo | `PUT` | `/api/v1/careers/{id}/playbooks/active` | `SetActivePlaybookUseCase` | JWT · dono do save | Define o playbook ativo |
-| ⛔ alvo | `GET` | `/api/v1/careers/{id}/game-plan` | `GetGamePlanUseCase` | JWT · dono do save | Plano da semana |
+| ✅ | `GET` | `/api/v1/careers/{id}/game-plan` | `GetGamePlanUseCase` | JWT · dono do save | Plano da semana |
 | ⛔ alvo | `PUT` | `/api/v1/careers/{id}/game-plan` | `UpdateGamePlanUseCase` | JWT · dono do save | Grava tendências, 4ª descida, ritmo, foco, blitz, jogadores-chave |
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/game-plan/suggestion` | `SuggestGamePlanUseCase` | JWT · dono do save | Sugestão contra o próximo adversário (fixtureId) |
 

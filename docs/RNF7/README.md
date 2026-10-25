@@ -44,8 +44,8 @@ Fonte: [`RNF7-stm.puml`](RNF7-stm.puml)
 
 | Estado | Método | Rota | Caso de uso | Autorização | Descrição |
 |---|---|---|---|---|---|
-| ⛔ alvo | `GET` | `/api/v1/me/activity` | `ActivityUseCases.list` | JWT | Atividades da própria conta |
-| ⛔ alvo | `POST` | `/api/v1/auth/login` | `LoginUseCase` | público | LOGIN_OK / LOGIN_FAILED / LOGIN_LOCKED · o LOGIN_FAILED sobrevive ao rollback |
+| ✅ | `GET` | `/api/v1/me/activity` | `ActivityUseCases.list` | JWT | Atividades da própria conta |
+| ✅ | `POST` | `/api/v1/auth/login` | `LoginUseCase` | público | LOGIN_OK / LOGIN_FAILED / LOGIN_LOCKED · o LOGIN_FAILED sobrevive ao rollback |
 | ⛔ alvo | `POST` | `/api/v1/careers/{id}/weeks/current/play` | `PlayWeekUseCase` | JWT · dono do save | MATCH_SIMULATED com seed e placar · replay verificável |
 | ⛔ alvo | `GET` | `/api/v1/admin/audit` | `QueryAuditLogUseCase` | JWT · ADMIN | Consulta paginada por actor, action, resource, período, correlationId |
 

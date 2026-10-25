@@ -67,7 +67,7 @@ database "Cassandra 4.1" as s3
 database "OpenSearch 2" as s4
 c1 --> c4 : usa
 c3 --> c15 : dispara
-c4 --> c14 : GET /careers/{id}/roster (alvo)\nPATCH /careers/{id}/players/{pid}/roster-status (alvo)\nPOST /careers/{id}/players/{pid}/injured-reserve (alvo)\n…
+c4 --> c14 : GET /careers/{id}/roster\nPATCH /careers/{id}/players/{pid}/roster-status\nPOST /careers/{id}/players/{pid}/injured-reserve (alvo)\n…
 c14 --> c15
 c15 ..> pkg_app : orquestra
 c15 --> c25 : usa

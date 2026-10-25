@@ -1,7 +1,7 @@
 /**
  * DTOs de conta, configurações e privacidade (RF1–RF3, RF10, RF46) — espelham os records Java das rotas
  * `/api/v1/auth/...` e `/api/v1/me/...` (AuthController, AccountController, AccountDto, SettingsDto, SessionDto).
- * Os tipos do jogo (franquia, elenco, partida) chegam com os blocos seguintes.
+ * Os tipos da carreira (bloco 6a) ficam em `career-types.ts`, reexportados aqui.
  */
 export type UUID = string;
 export type ISODate = string;
@@ -240,3 +240,5 @@ export interface PageResponse<T> {
   totalElements: number;
   totalPages: number;
 }
+
+export * from "./career-types";

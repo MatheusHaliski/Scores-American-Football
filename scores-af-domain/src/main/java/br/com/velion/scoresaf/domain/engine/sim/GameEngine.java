@@ -457,7 +457,7 @@ final class GameEngine {
     if (m.clockState == ClockState.STOPPED) return true;
     SplittableRandom r = Rng.of(m.setup.seed(), m.cursor, Rng.PRE_SNAP);
     Tempo tempo = oc.kind() == Kind.KNEEL ? Tempo.MILK_CLOCK : PlayCaller.tempo(m, m.offense());
-    int runoff = ClockModel.runoff(m.clockState, tempo, r);
+    int runoff = ClockModel.runoff(m.clockState, tempo, m.rules, r);
     TeamState caller = oc.kind() == Kind.KNEEL && m.defense().timeoutsLeft() == 0 ? null : PlayCaller.timeoutBeforeSnap(m);
     if (caller != null) { callTimeout(caller); return true; }
     if (m.warningPeriod() && !m.twoMinuteWarningGiven && m.clock > EngineConstants.TWO_MINUTES && m.clock - runoff <= EngineConstants.TWO_MINUTES) {
@@ -628,14 +628,16 @@ final class GameEngine {
     }
 
     boolean first = o.yards >= m.distance && o.type != PlayType.KNEEL;
-    if (before.down() >= 3 && o.type != PlayType.KNEEL && o.type != PlayType.SPIKE) downConversionStat(off, before.down(), first);
+    // falta pessoal da defesa depois da jogada: primeira descida automática — vale antes de qualquer turnover on downs
+    boolean personalFirst = personalAfterPlay && pc.code().automaticFirstDown();
+    if (before.down() >= 3 && o.type != PlayType.KNEEL && o.type != PlayType.SPIKE) downConversionStat(off, before.down(), first || personalFirst);
     if (first) {
       ev.firstDown = true;
       firstDown(off, o.rush ? TeamStat.FD_RUSH : TeamStat.FD_PASS);
       m.yd = newYd;
       m.down = 1;
       m.distance = Math.min(m.rules.yardsToGain(), 100 - newYd);
-    } else if (m.down >= m.rules.downs()) {
+    } else if (m.down >= m.rules.downs() && !personalFirst) {
       ev.turnover = true;
       endDrive(DriveResult.DOWNS, newYd, ev);
       ev.clockStopped = true;
@@ -644,7 +646,7 @@ final class GameEngine {
       return;
     } else {
       m.distance -= o.yards;
-      m.down++;
+      m.down = Math.min(m.down + 1, m.rules.downs());
       m.yd = newYd;
     }
     m.clockState = ClockModel.after(o, first, false, false, m);

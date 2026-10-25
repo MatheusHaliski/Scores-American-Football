@@ -22,7 +22,7 @@ final class SampleGames {
   }
 
   static synchronized List<MatchResult> college() {
-    if (college == null) college = run(RulesSnapshot.college(), 160, 20_000, UnaryOperator.identity());
+    if (college == null) college = run(RulesSnapshot.college(), 260, 20_000, UnaryOperator.identity());
     return college;
   }
 

@@ -4,18 +4,22 @@ Gerente de futebol americano da VELION TECH CO., irmão do Scores (basquete). Me
 Next.js com 3D em React Three Fiber), domínio do futebol americano. O plano de construção fica em
 [`docs/01-plano-american-football.md`](docs/01-plano-american-football.md).
 
-## Como rodar (esqueleto, bloco 2)
+## Como rodar (plataforma comum, bloco 3)
 
 Backend (JDK 21 ou 25, Maven 3.9):
 
 ```bash
-mvn verify                                   # testes de todos os módulos
-mvn -pl scores-af-bootstrap -am spring-boot:run   # API em http://localhost:8080
+mvn verify                                   # testes de todos os módulos (H2 em memória)
+mvn -Pit verify                              # + testes com MySQL 8 de verdade (Testcontainers, exige Docker)
+mvn -pl scores-af-bootstrap -am spring-boot:run   # API em http://localhost:8080 (perfil dev: H2, chaves efêmeras)
 ```
 
 `GET /api/v1/meta` é público e devolve a identidade do jogo; `/actuator/health` é o único endpoint do actuator exposto. A
-documentação OpenAPI fica em `/swagger-ui.html`. Qualquer outra rota responde 401 no corpo de erro padrão até o login chegar
-no bloco 3.
+documentação OpenAPI fica em `/swagger-ui.html`. A plataforma comum (bloco 3) traz cadastro, login com JWT RSA e refresh rotativo
+em cookie `__Host-` HttpOnly (família de sessão), conta, configurações (RF10 com duração do quarto e nível de chamada de jogada),
+LGPD (privacidade, consentimentos, exportação, exclusão com prazo, troca de e-mail, atividade), auditoria e limites por IP em
+`/api/v1/auth/**` e `/api/v1/me/**`. O banco é MySQL 8 com Flyway (`V1__plataforma.sql`) no perfil `mysql`; em produção,
+`SPRING_PROFILES_ACTIVE=mysql,prod`, e o `ProductionConfigGuard` não deixa subir sem os segredos.
 
 Frontend (Node 22):
 

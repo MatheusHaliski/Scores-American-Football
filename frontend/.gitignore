@@ -39,3 +39,5 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# amostras douradas provisórias do front (as reais vêm do backend em ../docs/validation/golden/)

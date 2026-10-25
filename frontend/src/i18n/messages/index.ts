@@ -7,23 +7,35 @@ import type { Locale } from "../config";
 
 import ptCommon from "./pt-BR/common.json";
 import ptErrors from "./pt-BR/errors.json";
+import ptAuth from "./pt-BR/auth.json";
+import ptNav from "./pt-BR/nav.json";
+import ptSettings from "./pt-BR/settings.json";
 
 import enCommon from "./en-US/common.json";
 import enErrors from "./en-US/errors.json";
+import enAuth from "./en-US/auth.json";
+import enNav from "./en-US/nav.json";
+import enSettings from "./en-US/settings.json";
 
 import esCommon from "./es-ES/common.json";
 import esErrors from "./es-ES/errors.json";
+import esAuth from "./es-ES/auth.json";
+import esNav from "./es-ES/nav.json";
+import esSettings from "./es-ES/settings.json";
 
 export interface Catalog {
   common: typeof ptCommon;
   errors: typeof ptErrors;
+  auth: typeof ptAuth;
+  nav: typeof ptNav;
+  settings: typeof ptSettings;
 }
 
 /** Chave tipada de um namespace (derivada do catálogo pt-BR). */
 export type MessageKey<NS extends keyof Catalog> = keyof Catalog[NS] & string;
 
 export const MESSAGES: Record<Locale, Catalog> = {
-  "pt-BR": { common: ptCommon, errors: ptErrors },
-  "en-US": { common: enCommon, errors: enErrors },
-  "es-ES": { common: esCommon, errors: esErrors },
+  "pt-BR": { common: ptCommon, errors: ptErrors, auth: ptAuth, nav: ptNav, settings: ptSettings },
+  "en-US": { common: enCommon, errors: enErrors, auth: enAuth, nav: enNav, settings: enSettings },
+  "es-ES": { common: esCommon, errors: esErrors, auth: esAuth, nav: esNav, settings: esSettings },
 };

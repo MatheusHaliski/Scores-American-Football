@@ -47,7 +47,7 @@ jobs:
       - name: Build & test
         run: mvn -B -ntp verify
       - name: Integration tests (perfil it)
-        # o perfil já existe para o banco real que chega com a persistência (D-8); no esqueleto não há teste marcado como it
+        # MySQL 8 de verdade pelo Testcontainers: Flyway V1 + ddl-auto=validate e política de FKs (bloco 3)
         if: matrix.java == '25'
         run: mvn -B -ntp -Pit verify
 

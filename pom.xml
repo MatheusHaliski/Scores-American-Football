@@ -16,11 +16,12 @@
   <name>Scores: American Football</name>
   <description>Gerente de futebol americano da VELION TECH CO. — mesma arquitetura do Scores (basquete), domínio próprio (docs/01).</description>
 
-  <!-- Infraestrutura (persistence-mysql, cache-redis, persistence-cassandra, search-opensearch, storage-s3, ai-providers)
-       entra no bloco em que cada adaptador ganha o primeiro uso (D-8). -->
+  <!-- Infraestrutura entra no bloco em que cada adaptador ganha o primeiro uso (D-8): persistence-mysql no bloco 3;
+       cache-redis, persistence-cassandra, search-opensearch, storage-s3 e ai-providers depois. -->
   <modules>
     <module>scores-af-domain</module>
     <module>scores-af-application</module>
+    <module>scores-af-infrastructure</module>
     <module>scores-af-web</module>
     <module>scores-af-bootstrap</module>
   </modules>
@@ -31,13 +32,17 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <springdoc.version>3.1.1</springdoc.version>
+    <bouncycastle.version>1.86</bouncycastle.version>
   </properties>
 
   <dependencyManagement>
     <dependencies>
       <dependency><groupId>br.com.velion.scoresaf</groupId><artifactId>scores-af-domain</artifactId><version>${project.version}</version></dependency>
       <dependency><groupId>br.com.velion.scoresaf</groupId><artifactId>scores-af-application</artifactId><version>${project.version}</version></dependency>
+      <dependency><groupId>br.com.velion.scoresaf</groupId><artifactId>scores-af-persistence-mysql</artifactId><version>${project.version}</version></dependency>
       <dependency><groupId>br.com.velion.scoresaf</groupId><artifactId>scores-af-web</artifactId><version>${project.version}</version></dependency>
+      <!-- Argon2id (spring-security-crypto) usa o Bouncy Castle -->
+      <dependency><groupId>org.bouncycastle</groupId><artifactId>bcprov-jdk18on</artifactId><version>${bouncycastle.version}</version></dependency>
       <dependency><groupId>org.springdoc</groupId><artifactId>springdoc-openapi-starter-webmvc-ui</artifactId><version>${springdoc.version}</version></dependency>
     </dependencies>
   </dependencyManagement>
@@ -51,6 +56,10 @@
           <configuration>
             <release>${maven.compiler.release}</release>
             <parameters>true</parameters>
+            <!-- processador explícito: a partir do JDK 23 o javac não roda processadores achados só no classpath -->
+            <annotationProcessorPaths>
+              <path><groupId>org.projectlombok</groupId><artifactId>lombok</artifactId><version>${lombok.version}</version></path>
+            </annotationProcessorPaths>
           </configuration>
         </plugin>
         <plugin>
@@ -73,7 +82,9 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-surefire-plugin</artifactId>
-            <configuration><excludedGroups/></configuration>
+            <!-- combine.self="override": um <excludedGroups/> vazio é mesclado com o "it" do pluginManagement e não tira a
+                 exclusão (era o que acontecia com a configuração copiada do basquete: -Pit não rodava nenhum teste it) -->
+            <configuration><excludedGroups combine.self="override"/></configuration>
           </plugin>
         </plugins>
       </build>

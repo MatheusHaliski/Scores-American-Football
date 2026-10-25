@@ -71,6 +71,14 @@ for (const ns of namespaces) {
   }
 }
 
+// 5. os namespaces em disco são exatamente os de `NAMESPACES` (config.ts) e todos entram em messages/index.ts nos 3 idiomas
+const configSrc = readFileSync(resolve(here, "../src/i18n/config.ts"), "utf8");
+const declared = [...(configSrc.match(/NAMESPACES\s*=\s*\[([^\]]*)\]/)?.[1] ?? "").matchAll(/"([^"]+)"/g)].map((m) => m[1]);
+for (const ns of namespaces) if (!declared.includes(ns)) errors.push(`config.ts › namespace "${ns}" existe em disco mas falta em NAMESPACES`);
+for (const ns of declared) if (!namespaces.includes(ns)) errors.push(`config.ts › NAMESPACES declara "${ns}" sem ${SOURCE}/${ns}.json`);
+const indexSrc = readFileSync(resolve(root, "index.ts"), "utf8");
+for (const loc of [SOURCE, ...TARGETS]) for (const ns of declared) if (!indexSrc.includes(`"./${loc}/${ns}.json"`)) errors.push(`messages/index.ts › falta importar ${loc}/${ns}.json`);
+
 if (existsSync(backendBundle)) {
   const codes = readFileSync(backendBundle, "utf8").split("\n").map((l) => l.match(/^error\.([A-Z0-9_]+)=/)?.[1]).filter(Boolean);
   for (const loc of [SOURCE, ...TARGETS]) {

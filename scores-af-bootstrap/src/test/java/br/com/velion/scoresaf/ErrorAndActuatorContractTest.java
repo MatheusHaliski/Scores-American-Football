@@ -4,12 +4,19 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
+import br.com.velion.scoresaf.application.port.out.persistence.UserAccountRepository;
+import br.com.velion.scoresaf.application.port.out.persistence.UserSessionRepository;
+import br.com.velion.scoresaf.domain.account.UserRole;
+import br.com.velion.scoresaf.web.security.TokenService;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import tools.jackson.core.type.TypeReference;
@@ -18,12 +25,20 @@ import tools.jackson.databind.json.JsonMapper;
 /**
  * Bloco 2 (D-5): corpo de erro único {@code {code, message, details, correlationId, locale}} em todo caminho (controller e
  * Spring Security), mensagens no idioma do {@code Accept-Language} e actuator público só com o health, sem detalhes.
+ * Bloco 3: os casos do basquete com usuário de verdade (token inválido, 403 de admin, 404 de recurso do titular, 429 do filtro
+ * de limite e actuator negado também ao ADMIN). O limite de login fica em 2 para o 429 sair rápido.
  */
-@SpringBootTest
+@SpringBootTest(properties = "scores.security.rate-limit.limits.login=2")
 @AutoConfigureMockMvc
+@ActiveProfiles("test")
 class ErrorAndActuatorContractTest {
   @Autowired MockMvc mvc;
   @Autowired JsonMapper json;
+  @Autowired TokenService tokens;
+  @Autowired UserAccountRepository users;
+  @Autowired UserSessionRepository sessions;
+
+  private String bearer(UserRole role) { return TestSessions.bearer(users, sessions, tokens, role); }
 
   private Map<String, Object> body(MvcResult r) throws Exception {
     return json.readValue(r.getResponse().getContentAsString(), new TypeReference<>() {});
@@ -88,6 +103,42 @@ class ErrorAndActuatorContractTest {
     assertThat(body(health)).containsKey("status").doesNotContainKeys("components", "details");
     for (String path : List.of("/actuator/info", "/actuator/metrics", "/actuator/env", "/actuator/beans", "/actuator/heapdump")) {
       assertThat(mvc.perform(get(path)).andReturn().getResponse().getStatus()).as("anônimo em %s", path).isNotEqualTo(200);
+    }
+  }
+
+  @Test
+  void token_invalido_responde_401_no_formato_padrao() throws Exception {
+    assertErrorContract(mvc.perform(get("/api/v1/me/settings").header("Authorization", "Bearer invalido")).andReturn(), 401, "UNAUTHENTICATED");
+  }
+
+  @Test
+  void rota_de_admin_com_usuario_comum_responde_403_no_formato_padrao() throws Exception {
+    assertErrorContract(mvc.perform(get("/api/v1/admin/audit").header("Authorization", bearer(UserRole.PLAYER))).andReturn(), 403, "FORBIDDEN");
+  }
+
+  @Test
+  void recurso_inexistente_responde_404_no_formato_padrao() throws Exception {
+    assertErrorContract(mvc.perform(get("/api/v1/me/export/" + UUID.randomUUID()).header("Authorization", bearer(UserRole.PLAYER))).andReturn(), 404, "NOT_FOUND");
+  }
+
+  @Test
+  void limite_excedido_responde_429_com_correlation_id_e_retry_after() throws Exception {
+    MvcResult last = null;
+    String wrong = "E" + UUID.randomUUID(); // gerada na execução (docs/01 §6)
+    for (int i = 0; i < 3; i++) {
+      last = mvc.perform(post("/api/v1/auth/login").header("X-Correlation-Id", "teste-limite-" + i)
+          .contentType(MediaType.APPLICATION_JSON).content("{\"email\":\"x@scoresaf.test\",\"password\":\"" + wrong + "\"}")).andReturn();
+    }
+    assertErrorContract(last, 429, "RATE_LIMITED");
+    assertThat(last.getResponse().getHeader("Retry-After")).isNotBlank();
+    assertThat(last.getResponse().getHeader("X-Correlation-Id")).isEqualTo("teste-limite-2");
+  }
+
+  @Test
+  void actuator_alem_do_health_e_negado_ate_ao_admin() throws Exception {
+    String admin = bearer(UserRole.ADMIN);
+    for (String path : List.of("/actuator/info", "/actuator/metrics", "/actuator/prometheus", "/actuator/env", "/actuator/beans")) {
+      assertThat(mvc.perform(get(path).header("Authorization", admin)).andReturn().getResponse().getStatus()).as("ADMIN em %s", path).isNotEqualTo(200);
     }
   }
 

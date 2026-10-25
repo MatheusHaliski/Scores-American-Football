@@ -1,0 +1,22 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:scoresaf_mysql_test;MODE=MySQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: br.com.velion.scoresaf.infra.mysql.TestH2Dialect
+  flyway:
+    enabled: false
+scores:
+  security:
+    encryption:
+      data-key: ""
+logging:
+  level:
+    org.hibernate: WARN

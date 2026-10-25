@@ -27,8 +27,17 @@ public class ErrorWriter {
   public ErrorWriter(MessageSource messages, LocaleResolver locales, JsonMapper json) { this.messages = messages; this.locales = locales; this.json = json; }
 
   public void write(HttpServletRequest req, HttpServletResponse res, HttpStatus status, String code, Map<String, Object> details) throws IOException {
+    write(req, res, status, code, code, details);
+  }
+
+  /**
+   * Como {@link #write(HttpServletRequest, HttpServletResponse, HttpStatus, String, Map)}, com o texto pt-BR para quando o
+   * catálogo não tem a chave (assinatura dos filtros copiados do basquete: limite, sessão revogada).
+   */
+  public void write(HttpServletRequest req, HttpServletResponse res, HttpStatus status, String code, String fallback, Map<String, Object> details)
+      throws IOException {
     Locale locale = locales.resolveLocale(req);
-    String message = messages.getMessage("error." + code, null, code, locale);
+    String message = messages.getMessage("error." + code, null, fallback == null ? code : fallback, locale);
     Map<String, Object> body = new LinkedHashMap<>();
     body.put("type", "about:blank");
     body.put("title", messages.getMessage("problem.title." + status.value(), null, status.getReasonPhrase(), locale));

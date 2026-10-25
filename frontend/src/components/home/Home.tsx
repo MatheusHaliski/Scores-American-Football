@@ -1,13 +1,18 @@
 "use client";
 /**
- * Tela inicial do esqueleto (bloco 2): marca, campo 3D e o estado da conexão com a API ({@code GET /api/v1/meta}).
- * As regras mostradas e as hash marks do campo seguem o {@code defaultRuleset} que o servidor devolve (D-4).
+ * Tela inicial: marca, campo 3D, o estado da conexão com a API ({@code GET /api/v1/meta}) e a conta (bloco 3: entrar,
+ * criar conta e, logado, o atalho para as configurações). As regras mostradas e as hash marks do campo seguem o
+ * {@code defaultRuleset} que o servidor devolve (D-4).
  */
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { LOCALES, LOCALE_META, useI18n, useT } from "@/i18n";
 import { API_MODE } from "@/lib/api/config";
 import { fetchMeta, type GameMeta } from "@/lib/api/meta";
+import { BrandMark } from "@/components/brand/BrandMark";
+import { Button } from "@/components/ui/Button";
+import { IconLogout, IconSettings, IconUser } from "@/components/ui/icons";
+import { useSession } from "@/store/session";
 
 type ApiState = { kind: "checking" } | { kind: "online"; meta: GameMeta } | { kind: "offline" };
 
@@ -37,6 +42,49 @@ function LocaleSwitch() {
         </button>
       ))}
     </div>
+  );
+}
+
+/** Conta: visitante vê entrar/criar conta; logado vê o nome, o atalho para as configurações e sair. */
+function AccountPanel() {
+  const t = useT("common");
+  const user = useSession((s) => s.user);
+  const hydrated = useSession((s) => s.hydrated);
+  const logout = useSession((s) => s.logout);
+
+  return (
+    <section className="surface-2 flex flex-wrap items-center justify-between gap-3 p-4" aria-labelledby="home-account" aria-busy={!hydrated}>
+      <div className="min-w-0">
+        <h2 id="home-account" className="text-sm uppercase tracking-widest text-text-muted">
+          {t("home.account.title")}
+        </h2>
+        <p className="text-text truncate">{!hydrated ? t("state.loading") : user ? t("home.account.hello", { name: user.displayName }) : t("home.account.guest")}</p>
+        {hydrated && user && <p className="text-[0.85rem] text-text-muted">{t("home.account.signedIn")}</p>}
+      </div>
+      {hydrated && (
+        <div className="flex flex-wrap gap-2">
+          {user ? (
+            <>
+              <Button href="/settings" icon={<IconSettings size={18} />}>
+                {t("home.cta.settings")}
+              </Button>
+              <Button variant="ghost" icon={<IconLogout size={18} />} onClick={() => void logout().catch(() => undefined)}>
+                {t("actions.logout")}
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button href="/auth" icon={<IconUser size={18} />}>
+                {t("home.cta.login")}
+              </Button>
+              <Button href="/auth?mode=register" variant="secondary">
+                {t("home.cta.register")}
+              </Button>
+            </>
+          )}
+        </div>
+      )}
+    </section>
   );
 }
 
@@ -70,6 +118,7 @@ export function Home() {
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="eyebrow">{t("home.eyebrow")}</p>
+          <BrandMark size={44} className="mt-3" />
           <h1 className="font-display text-6xl text-text sm:text-7xl">
             {t("app.name")}
             <span className="mt-1 block font-heading text-xl tracking-[0.3em] text-led">{t("app.sport")}</span>
@@ -79,6 +128,8 @@ export function Home() {
       </header>
 
       <p className="max-w-2xl text-lg text-text-soft">{t("app.tagline")}</p>
+
+      <AccountPanel />
 
       <section className="surface relative aspect-[16/9] w-full overflow-hidden">
         <FieldScene ruleset={ruleset} label={t("home.field.label")} />

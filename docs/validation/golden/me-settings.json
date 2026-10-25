@@ -1,0 +1,14 @@
+{
+  "quarterDurationMinutes" : 3,
+  "playCallingLevel" : "KEY_MOMENTS",
+  "difficulty" : "NORMAL",
+  "reducedMotion" : false,
+  "notificationsEnabled" : true,
+  "theme" : "SYSTEM",
+  "highContrast" : false,
+  "fontScale" : "MEDIUM",
+  "density" : "COMFORTABLE",
+  "preferredLocale" : "pt-BR",
+  "regionalFormat" : "pt-BR",
+  "simulationSpeed" : "FAST"
+}

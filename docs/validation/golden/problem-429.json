@@ -1,0 +1,14 @@
+{
+  "type" : "about:blank",
+  "title" : "Muitas requisições",
+  "status" : 429,
+  "detail" : "Muitas requisições. Tente novamente em instantes.",
+  "code" : "RATE_LIMITED",
+  "message" : "Muitas requisições. Tente novamente em instantes.",
+  "details" : {
+    "retryAfterSeconds" : 3600,
+    "rule" : "password-forgot"
+  },
+  "correlationId" : "golden-429",
+  "locale" : "pt-BR"
+}

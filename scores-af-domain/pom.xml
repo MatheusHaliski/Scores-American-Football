@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent><groupId>br.com.velion.scoresaf</groupId><artifactId>scores-american-football</artifactId><version>0.1.0-SNAPSHOT</version></parent>
+  <artifactId>scores-af-domain</artifactId>
+  <name>scores-af-domain</name>
+  <description>Domínio do futebol americano em Java puro: regras, posições, atributos, motor de partida (sem Spring).</description>
+  <dependencies>
+    <!-- só as anotações de mapeamento e validação (D-9); nada de Spring, servlet ou Jackson (DomainPurityTest) -->
+    <dependency><groupId>jakarta.persistence</groupId><artifactId>jakarta.persistence-api</artifactId></dependency>
+    <dependency><groupId>jakarta.validation</groupId><artifactId>jakarta.validation-api</artifactId></dependency>
+    <dependency><groupId>org.projectlombok</groupId><artifactId>lombok</artifactId><scope>provided</scope></dependency>
+    <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-test</artifactId><scope>test</scope></dependency>
+  </dependencies>
+</project>

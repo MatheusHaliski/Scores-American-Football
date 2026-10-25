@@ -1,0 +1,10 @@
+{
+  "accessToken" : "golden.access.token",
+  "accessExpiresAt" : "2026-01-01T00:15:00Z",
+  "refreshExpiresAt" : "2026-01-08T00:00:00Z",
+  "user" : {
+    "id" : "00000000-0000-4000-8000-000000000001",
+    "displayName" : "Jogadora Dourada",
+    "roles" : [ "PLAYER" ]
+  }
+}

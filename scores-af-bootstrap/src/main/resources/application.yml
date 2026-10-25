@@ -1,0 +1,203 @@
+# Perfis: dev (padrão, H2 em memória), test (H2, um banco por contexto), mysql (MySQL 8 + Flyway) e prod (sempre com mysql:
+# SPRING_PROFILES_ACTIVE=mysql,prod). Nenhum valor de segredo neste arquivo: só ${NOME} de variável, listada em .env.example.
+spring:
+  application:
+    name: scores-american-football
+  profiles:
+    default: dev
+  jackson:
+    default-property-inclusion: non_null
+    datatype:
+      datetime:
+        write-dates-as-timestamps: false
+    deserialization:
+      # o Jackson 3 liga por padrão; o front manda null em campos opcionais (JsonContractTest)
+      fail-on-null-for-primitives: false
+  jpa:
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc.batch_size: 50
+        order_inserts: true
+        order_updates: true
+  threads:
+    virtual:
+      enabled: true
+  web:
+    error:
+      include-message: never
+      include-stacktrace: never
+  autoconfigure:
+    exclude:
+      # nunca um usuário em memória com senha gerada impressa no log (docs/01 §6); o login é o da API (JWT).
+      # Nome do Boot 4; o Boot ignora em silêncio uma classe inexistente (AutoConfigurationExclusionsTest).
+      - org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration
+
+server:
+  port: ${APP_PORT:8080}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        # público: só o health (sem detalhes). Métricas, se vierem, numa porta de gestão na rede privada.
+        include: health
+  endpoint:
+    health:
+      show-details: never
+      show-components: never
+      probes:
+        enabled: true
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: alpha
+    tags-sorter: alpha
+
+scores:
+  app:
+    version: ${SCORES_APP_VERSION:dev}
+    base-url: ${APP_BASE_URL:http://localhost:8080}
+    cors-allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:http://localhost:3000}
+  auth:
+    # Refresh token em cookie HttpOnly (D-5). Com secure=true o cookie usa o prefixo __Host-, que o navegador só
+    # aceita em HTTPS; em dev e nos testes (http://localhost) o perfil desliga o secure e o nome fica simples.
+    refresh-cookie-secure: ${SCORES_REFRESH_COOKIE_SECURE:true}
+    # true só para cliente que não é navegador; no navegador o refresh nunca volta no corpo.
+    refresh-in-body: ${SCORES_REFRESH_IN_BODY:false}
+  security:
+    jwt:
+      issuer: ${JWT_ISSUER:scores-af}
+      audience: ${JWT_AUDIENCE:scores-af-api}
+      access-ttl-minutes: ${JWT_ACCESS_TTL_MINUTES:15}
+      refresh-ttl-days: ${JWT_REFRESH_TTL_DAYS:7}
+      # Par RSA em PEM (Base64 sem cabeçalhos também é aceito). Vazio fora de prod => par efêmero gerado na subida.
+      private-key-pem: ${JWT_PRIVATE_KEY_PEM:}
+      public-key-pem: ${JWT_PUBLIC_KEY_PEM:}
+    encryption:
+      # AES-256-GCM, Base64 de 32 bytes. Vazio fora de prod => chave efêmera gerada na subida (D-11); prod não sobe sem ela.
+      data-key: ${DATA_ENCRYPTION_KEY:}
+    login:
+      max-failed-attempts: 5
+      lock-minutes: 15
+    rate-limit:
+      # rotas de autenticação: limites por IP + método + rota no AuthRateLimitFilter (trocar por limits.<regra>)
+      analysis-per-minute: 6
+      store-per-minute: 20
+    hash:
+      # teto de hashes Argon2id simultâneos; 0 = max(1, min(max(2, núcleos), pool do banco / 2))
+      max-concurrent: ${SCORES_HASH_MAX_CONCURRENT:0}
+      wait-ms: 2000
+    # segredo do HMAC do IP assinado pelo BFF (openssl rand -hex 32); o mesmo valor vai no front, nunca como NEXT_PUBLIC_
+    edge-proxy-secret: ${EDGE_PROXY_SECRET:}
+    client-ip:
+      # cabeçalho de valor único escrito pela borda (ex.: X-Real-IP); vazio = só IP assinado ou da conexão
+      trusted-header: ${SCORES_CLIENT_IP_HEADER:}
+  admin:
+    # admin inicial (AdminBootstrap): só cria se não houver nenhum; senha só de segredo, 12+ caracteres
+    bootstrap-email: ${SCORES_ADMIN_EMAIL:}
+    bootstrap-password: ${SCORES_ADMIN_PASSWORD:}
+    promote-existing: ${SCORES_ADMIN_PROMOTE_EXISTING:false}
+  media:
+    # HMAC dos links curtos de mídia privada (Meu jogador, bloco 9); 32+ caracteres, gerado no provedor. Vazio fora de prod =>
+    # chave efêmera; o perfil prod não sobe sem ele (ProductionConfigGuard).
+    link-secret: ${MEDIA_LINK_SECRET:}
+    link-ttl-seconds: 120
+  privacy:
+    # eliminação definitiva das contas com prazo vencido e limpeza das exportações expiradas (RF46)
+    deletion-cron: "0 15 * * * *"
+    export-purge-cron: "0 5 * * * *"
+  seed:
+    # mundo padrão fictício gravado na subida se ainda não existir (D-23); idempotente
+    enabled: ${SCORES_SEED_ENABLED:true}
+  persistence:
+    # adaptadores que ainda não existem (Redis, S3) entram nos blocos que os usam (D-8); até lá, memória e filesystem
+    cache: ${SCORES_PERSISTENCE_CACHE:memory}           # memory (redis quando o cache-redis entrar)
+    media: ${SCORES_PERSISTENCE_MEDIA:filesystem}       # filesystem (s3 quando o storage-s3 entrar)
+    media-local-dir: ${SCORES_MEDIA_LOCAL_DIR:./data/media}
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    url: jdbc:h2:mem:scoresaf;MODE=MySQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE
+    driver-class-name: org.h2.Driver
+    username: sa
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+  flyway:
+    enabled: false
+logging:
+  level:
+    br.com.velion.scoresaf: DEBUG
+scores:
+  auth:
+    refresh-cookie-secure: false   # http://localhost: o prefixo __Host- exige HTTPS
+
+---
+spring:
+  config:
+    activate:
+      on-profile: test
+  datasource:
+    # um banco por contexto Spring: com create-drop, um contexto novo apagava as tabelas que outro contexto (em cache)
+    # ainda usava (falha dependente da ordem, lição do basquete)
+    url: jdbc:h2:mem:scoresaf_test_${random.uuid};MODE=MySQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE
+    driver-class-name: org.h2.Driver
+    username: sa
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+  flyway:
+    enabled: false
+scores:
+  auth:
+    refresh-cookie-secure: false   # http://localhost: o prefixo __Host- exige HTTPS
+  seed:
+    enabled: false                 # cada teste semeia quando precisa (DefaultWorldSeeder)
+  persistence:
+    media-local-dir: ${java.io.tmpdir}/scoresaf-test-media-${random.uuid}
+logging:
+  level:
+    br.com.velion.scoresaf: INFO
+
+---
+spring:
+  config:
+    activate:
+      on-profile: mysql
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/${MYSQL_DATABASE:scoresaf}?useSSL=${MYSQL_SSL:false}&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=utf8mb4
+    username: ${MYSQL_USER:scoresaf}
+    password: ${MYSQL_PASSWORD:}
+    hikari:
+      maximum-pool-size: ${MYSQL_POOL_SIZE:10}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+---
+# Produção: sempre junto com o perfil mysql (SPRING_PROFILES_ACTIVE=mysql,prod).
+# ProductionConfigGuard recusa subir com segredo vazio; nenhum valor padrão de senha existe neste arquivo.
+spring:
+  config:
+    activate:
+      on-profile: prod
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+logging:
+  level:
+    br.com.velion.scoresaf: INFO

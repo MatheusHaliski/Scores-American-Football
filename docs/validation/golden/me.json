@@ -1,0 +1,13 @@
+{
+  "id" : "00000000-0000-4000-8000-000000000001",
+  "email" : "golden@scoresaf.test",
+  "displayName" : "Jogadora Dourada",
+  "locale" : "pt-BR",
+  "role" : "PLAYER",
+  "status" : "ACTIVE",
+  "marketingConsent" : false,
+  "dataProcessingConsentAt" : "2026-01-01T00:00:00Z",
+  "lastLoginAt" : "2026-01-01T00:00:00Z",
+  "createdAt" : "2026-01-01T00:00:00Z",
+  "profileVisibility" : "ONLY_ME"
+}

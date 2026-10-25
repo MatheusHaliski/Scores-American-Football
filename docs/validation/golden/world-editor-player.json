@@ -1,0 +1,137 @@
+{
+  "id" : "00000000-0000-4000-8000-000000000001",
+  "worldId" : "8f97b7fb-0197-4278-8eba-8e894f47fa1f",
+  "clubId" : "60660a57-b6a8-448b-a177-330425755010",
+  "name" : "Nolan Falquist",
+  "nationality" : "ARG",
+  "college" : "Instituto Politécnico de Ribeirão Dourado",
+  "birthDate" : "2004-01-22",
+  "age" : 22,
+  "heightCm" : 190,
+  "weightKg" : 100,
+  "position" : "QB",
+  "unit" : "OFFENSE",
+  "rosterStatus" : "ACTIVE",
+  "jerseyNumber" : 14,
+  "experienceYears" : 0,
+  "potential" : 93,
+  "legendary" : false,
+  "attributes" : {
+    "physical" : {
+      "speed" : 75,
+      "acceleration" : 70,
+      "agility" : 76,
+      "strength" : 68,
+      "jumping" : 72,
+      "stamina" : 72,
+      "durability" : 73
+    },
+    "passing" : {
+      "shortAccuracy" : 83,
+      "mediumAccuracy" : 79,
+      "deepAccuracy" : 83,
+      "throwPower" : 78,
+      "throwOnRun" : 80,
+      "playAction" : 76,
+      "readDefense" : 77,
+      "poise" : 77
+    },
+    "rushing" : {
+      "vision" : 53,
+      "breakTackle" : 57,
+      "juke" : 58,
+      "spin" : 58,
+      "stiffArm" : 55,
+      "ballSecurity" : 54,
+      "carrying" : 49
+    },
+    "receiving" : {
+      "hands" : 50,
+      "catchInTraffic" : 57,
+      "spectacularCatch" : 54,
+      "shortRoute" : 51,
+      "mediumRoute" : 59,
+      "deepRoute" : 51,
+      "release" : 56
+    },
+    "blocking" : {
+      "passBlock" : 59,
+      "runBlock" : 55,
+      "blockTechnique" : 49,
+      "blockFinesse" : 57,
+      "blockPower" : 51
+    },
+    "defense" : {
+      "tackle" : 53,
+      "hitPower" : 57,
+      "pursuit" : 56,
+      "playRecognition" : 55,
+      "manCoverage" : 52,
+      "zoneCoverage" : 56,
+      "press" : 52,
+      "finesseMoves" : 54,
+      "powerMoves" : 56,
+      "blockShedding" : 50
+    },
+    "kicking" : {
+      "kickPower" : 55,
+      "kickAccuracy" : 58,
+      "kickReturn" : 57
+    },
+    "mental" : {
+      "awareness" : 72,
+      "leadership" : 77
+    }
+  },
+  "rating" : {
+    "version" : "OVR v1",
+    "position" : "QB",
+    "family" : "QUARTERBACK",
+    "overall" : 79,
+    "tier" : "GOLD",
+    "outOfPosition" : false,
+    "macros" : {
+      "PRE" : 82,
+      "BRA" : 79,
+      "LEI" : 76,
+      "MOB" : 76,
+      "CAL" : 77,
+      "LID" : 76
+    }
+  },
+  "overallByPosition" : {
+    "QB" : 79,
+    "RB" : 61,
+    "FB" : 57,
+    "WR" : 61,
+    "TE" : 58,
+    "LT" : 60,
+    "LG" : 59,
+    "C" : 59,
+    "RG" : 59,
+    "RT" : 60,
+    "DE" : 59,
+    "DT" : 58,
+    "OLB" : 58,
+    "MLB" : 59,
+    "CB" : 61,
+    "FS" : 60,
+    "SS" : 59,
+    "K" : 59,
+    "P" : 59,
+    "LS" : 61
+  },
+  "contract" : {
+    "startSeason" : 2026,
+    "endSeason" : 2029,
+    "years" : 4,
+    "baseSalaryByYear" : [ 896991500, 941841100, 988933100, 1038379800 ],
+    "signingBonus" : 966536400,
+    "guaranteed" : 0,
+    "capHitByYear" : [ 1138625600, 1183475200, 1230567200, 1280013900 ],
+    "deadMoneyIfCutByYear" : [ 966536400, 724902300, 483268200, 241634100 ],
+    "type" : "ROOKIE",
+    "franchiseTag" : false,
+    "totalValue" : 4832681900
+  }
+}

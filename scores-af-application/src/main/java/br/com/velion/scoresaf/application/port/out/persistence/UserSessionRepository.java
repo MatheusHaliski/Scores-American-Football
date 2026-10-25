@@ -18,4 +18,9 @@ public interface UserSessionRepository extends BaseRepository<UserSession, UUID>
   long deleteByExpiresAtBefore(Instant threshold);
   /** D-25: a família ainda tem sessão ativa? Senão, o access token dela é recusado. */
   boolean existsByFamilyIdAndRevokedAtIsNullAndExpiresAtAfter(UUID familyId, Instant now);
+  /**
+   * Consome a sessão de forma atômica: marca {@code revokedAt} só se ela ainda estiver ativa e devolve quantas linhas mudou
+   * (0 ou 1). Dois refreshes simultâneos do mesmo token disputam esta linha; só um ganha, o outro vê 0 e é tratado como reuso.
+   */
+  int revokeIfActive(UUID id, Instant revokedAt);
 }

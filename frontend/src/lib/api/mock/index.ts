@@ -78,6 +78,10 @@ export function createMockApi(): ScoresApi {
           if (!req.token.trim()) throw ApiError.of(401, "INVALID_TOKEN");
           if (req.newPassword.length < 8) throw ApiError.badRequest("WEAK_PASSWORD");
         }, 300),
+      verifyEmail: (token) =>
+        later(() => {
+          if (!token.trim()) throw ApiError.badRequest("INVALID_TOKEN");
+        }, 300),
       settings: () => later(() => acct().settings()),
       updateSettings: (patch) => later(() => acct().updateSettings(patch)),
     },

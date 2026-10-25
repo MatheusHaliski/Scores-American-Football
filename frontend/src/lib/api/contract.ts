@@ -39,6 +39,8 @@ export interface ScoresApi {
     forgotPassword(req: ForgotPasswordRequest): Promise<void>;
     /** 204; link inválido ou expirado → 401 (HU-RF3 CA30) */
     resetPassword(req: ResetPasswordRequest): Promise<void>;
+    /** RF46 CA02 — confirma o novo e-mail pelo link recebido (público: o token é a prova). 204; link inválido → 422 INVALID_TOKEN */
+    verifyEmail(token: string): Promise<void>;
     settings(): Promise<UserSettings>;
     updateSettings(patch: Partial<UserSettings>): Promise<UserSettings>;
   };

@@ -111,6 +111,7 @@ test("rotas de conta/privacidade/dados usam os mesmos caminhos do backend", asyn
     "POST /me/deletion/cancel": ok,
     "POST /auth/password/forgot": () => json({ message: "ok" }, 202),
     "POST /auth/password/reset": () => new Response(null, { status: 204 }),
+    "POST /auth/email/verify": () => new Response(null, { status: 204 }),
     "POST /auth/logout": () => new Response(null, { status: 204 }),
   });
   try {
@@ -132,9 +133,13 @@ test("rotas de conta/privacidade/dados usam os mesmos caminhos do backend", asyn
     await api.account.cancelDeletion();
     await api.auth.forgotPassword({ email: "x@scores.test" });
     await api.auth.resetPassword({ token: randomUUID(), newPassword: randomUUID() });
+    const emailToken = randomUUID();
+    await api.auth.verifyEmail(emailToken);
     await api.auth.logout();
     const paths = srv.calls.map((c) => `${c.method} ${c.url.replace(BASE, "")}`);
     assert.ok(paths.includes("GET /me/activity?page=0&size=20"));
+    const verify = srv.calls.find((c) => c.method === "POST" && c.url.endsWith("/auth/email/verify"));
+    assert.deepEqual(verify?.body, { token: emailToken }, "o link de troca de e-mail chama a verificação com o token");
     const consents = srv.calls.find((c) => c.method === "PUT" && c.url.endsWith("/me/consents"));
     assert.equal((consents?.body as { source: string }).source, "SETTINGS", "a origem do consentimento vai junto (prova, Art. 8º §2º)");
     assert.equal(memoryTokenStorage.get(), null, "logout limpa a memória");

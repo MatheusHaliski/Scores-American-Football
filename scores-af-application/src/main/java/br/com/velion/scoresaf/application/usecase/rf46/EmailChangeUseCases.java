@@ -27,10 +27,13 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * RF46 CA02 — correção do e-mail (Art. 18, III) com verificação de posse do novo endereço (Art. 7º, V) e reautenticação por senha.
  * O token (32 bytes aleatórios) só existe em hash no cache, com validade de 24 h; o endereço antigo é avisado nas duas etapas.
+ * O token fica preso ao endereço para o qual foi enviado: se o usuário pedir outro endereço depois, o link do primeiro não
+ * confirma o segundo (cada token só prova a posse do endereço que o recebeu).
  */
 @Service
 public class EmailChangeUseCases {
   static final String CACHE_PREFIX = "email-verify:";
+  static final String ADDRESS_PREFIX = "email-verify-addr:";
   static final Duration TOKEN_TTL = Duration.ofHours(24);
   private static final Pattern EMAIL = Pattern.compile("^[^@\\s]{1,64}@[^@\\s]{1,255}\\.[^@\\s]{2,}$");
   private final SecureRandom random = new SecureRandom();
@@ -58,7 +61,9 @@ public class EmailChangeUseCases {
     if (users.existsByEmailHash(Hashing.sha256Hex(normalized))) throw new ConflictException("EMAIL_IN_USE", "E-mail já cadastrado");
     byte[] raw = new byte[32]; random.nextBytes(raw);
     String token = Base64.getUrlEncoder().withoutPadding().encodeToString(raw);
-    cache.put(CACHE_PREFIX + TokenHashing.sha256Hex(token), userId, TOKEN_TTL);
+    String tokenHash = TokenHashing.sha256Hex(token);
+    cache.put(CACHE_PREFIX + tokenHash, userId, TOKEN_TTL);
+    cache.put(ADDRESS_PREFIX + tokenHash, addressId(normalized), TOKEN_TTL);
     u.setPendingEmail(normalized); users.save(u);
     String link = frontendBaseUrl + "/settings/verify-email?token=" + token;
     email.send(normalized, messages.forUser(u, "mail.emailChange.subject"), messages.forUser(u, "mail.emailChange.body", u.getDisplayName(), link));
@@ -70,18 +75,23 @@ public class EmailChangeUseCases {
   @Transactional
   public void verify(String token) {
     if (token == null || token.isBlank()) throw new BusinessRuleException("INVALID_TOKEN", "Link inválido ou expirado");
-    String key = CACHE_PREFIX + TokenHashing.sha256Hex(token);
+    String tokenHash = TokenHashing.sha256Hex(token);
+    String key = CACHE_PREFIX + tokenHash, addressKey = ADDRESS_PREFIX + tokenHash;
     UUID userId = cache.get(key).orElseThrow(() -> new BusinessRuleException("INVALID_TOKEN", "Link inválido ou expirado"));
     UserAccount u = users.findById(userId).filter(UserAccount::isUsable).orElseThrow(() -> new NotFoundException("Conta", userId));
     String pending = u.getPendingEmail();
-    if (pending == null) { cache.evict(key); throw new BusinessRuleException("INVALID_TOKEN", "Link inválido ou expirado"); }
-    if (users.existsByEmailHash(Hashing.sha256Hex(pending))) { cache.evict(key); throw new ConflictException("EMAIL_IN_USE", "E-mail já cadastrado"); }
+    boolean sameAddress = pending != null && cache.get(addressKey).map(addressId(pending)::equals).orElse(false);
+    if (!sameAddress) { cache.evict(key); cache.evict(addressKey); throw new BusinessRuleException("INVALID_TOKEN", "Link inválido ou expirado"); }
+    if (users.existsByEmailHash(Hashing.sha256Hex(pending))) { cache.evict(key); cache.evict(addressKey); throw new ConflictException("EMAIL_IN_USE", "E-mail já cadastrado"); }
     String old = u.getEmail();
     u.setEmail(pending); u.setPendingEmail(null); users.save(u);
-    cache.evict(key);
+    cache.evict(key); cache.evict(addressKey);
     email.send(old, messages.forUser(u, "mail.emailChanged.subject"), messages.forUser(u, "mail.emailChanged.body", u.getDisplayName(), mask(pending)));
     audit.ok(AuditActions.EMAIL_CHANGED, "UserAccount", userId, "novo=" + mask(pending));
   }
 
   static String mask(String email) { return LogSafe.maskEmail(email); }
+
+  /** Impressão digital do endereço normalizado (o cache guarda UUID; o endereço em si não fica no cache). */
+  static UUID addressId(String normalizedEmail) { return UUID.nameUUIDFromBytes(("email:" + normalizedEmail).getBytes(java.nio.charset.StandardCharsets.UTF_8)); }
 }

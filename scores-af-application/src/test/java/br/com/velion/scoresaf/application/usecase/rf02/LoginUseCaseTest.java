@@ -112,12 +112,22 @@ class LoginUseCaseTest {
     RefreshTokenUseCase refresh = new RefreshTokenUseCase(sessions, cache, policy, audit);
     UserSession old = new UserSession(); old.setUser(user); old.setRefreshTokenHash(TokenHashing.sha256Hex("t1")); old.setExpiresAt(Instant.now().plusSeconds(3600));
     when(sessions.findByRefreshTokenHash(TokenHashing.sha256Hex("t1"))).thenReturn(Optional.of(old));
+    when(sessions.revokeIfActive(any(), any())).thenReturn(1); // o banco consumiu a sessão (UPDATE condicional)
     RefreshTokenUseCase.Result r = refresh.execute("t1", null, null);
     assertThat(old.getRevokedAt()).isNotNull(); assertThat(old.getReplacedBy()).isNotNull(); assertThat(r.refreshToken()).isNotEqualTo("t1");
     UserSession other = new UserSession(); other.setUser(user); other.setRefreshTokenHash("h2"); other.setExpiresAt(Instant.now().plusSeconds(3600));
     when(sessions.findByUserIdAndRevokedAtIsNull(user.getId())).thenReturn(List.of(other));
     assertThatThrownBy(() -> refresh.execute("t1", null, null)).isInstanceOf(AuthenticationFailedException.class);
     assertThat(other.getRevokedAt()).isNotNull();
+    verify(audit).denied(eq(AuditActions.TOKEN_REUSE_DETECTED), eq("UserAccount"), eq(user.getId()), anyString());
+  }
+
+  @Test void refresh_que_perde_a_corrida_no_banco_e_tratado_como_reuso() {
+    RefreshTokenUseCase refresh = new RefreshTokenUseCase(sessions, cache, policy, audit);
+    UserSession s = new UserSession(); s.setUser(user); s.setRefreshTokenHash(TokenHashing.sha256Hex("t9")); s.setExpiresAt(Instant.now().plusSeconds(3600));
+    when(sessions.findByRefreshTokenHash(TokenHashing.sha256Hex("t9"))).thenReturn(Optional.of(s));
+    when(sessions.revokeIfActive(any(), any())).thenReturn(0); // outro refresh simultâneo consumiu a mesma sessão antes
+    assertThatThrownBy(() -> refresh.execute("t9", null, null)).isInstanceOf(AuthenticationFailedException.class);
     verify(audit).denied(eq(AuditActions.TOKEN_REUSE_DETECTED), eq("UserAccount"), eq(user.getId()), anyString());
   }
 }

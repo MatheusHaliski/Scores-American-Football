@@ -33,6 +33,9 @@ export function createLiveApi(baseUrl: string, tokens: TokenStorage, onUnauthori
         await http.post("/auth/password/forgot", req);
       },
       resetPassword: (req) => http.post("/auth/password/reset", req),
+      verifyEmail: async (token) => {
+        await http.post("/auth/email/verify", { token });
+      },
       settings: async () => settingsFromDto(await http.get<SettingsDto>("/me/settings")),
       updateSettings: async (patch) => settingsFromDto(await http.put<SettingsDto>("/me/settings", patch)),
     },

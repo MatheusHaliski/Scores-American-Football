@@ -54,6 +54,11 @@ test("recuperação de senha: resposta uniforme e redefinição exige 8+ caracte
   await assert.rejects(api.auth.resetPassword({ token: " ", newPassword: randomUUID() }), (e: unknown) => e instanceof ApiError && e.code === "INVALID_TOKEN");
 });
 
+test("verificação de e-mail: token vazio é link inválido", async () => {
+  await api.auth.verifyEmail(randomUUID());
+  await assert.rejects(api.auth.verifyEmail(" "), (e: unknown) => e instanceof ApiError && e.code === "INVALID_TOKEN");
+});
+
 test("depois de sair, as rotas da conta respondem 401", async () => {
   await api.auth.logout();
   await assert.rejects(api.auth.me(), (e: unknown) => e instanceof ApiError && e.status === 401);

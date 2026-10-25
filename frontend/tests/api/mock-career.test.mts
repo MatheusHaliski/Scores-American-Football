@@ -66,7 +66,11 @@ test("central da franquia: próximo jogo, divisão, destaques, teto e nada inven
   assert.ok(d.injuries.length >= 1, "o mock traz um lesionado para a tela");
   assert.ok(d.cap && d.cap.capSpace > 0 && d.cap.capUsed <= d.cap.salaryCap);
   assert.equal(d.depthChart?.valid, true);
-  for (const k of ["live", "morale", "analysis", "inbox", "unreadInbox", "scoresPoints"] as const) assert.equal(d[k], null, `${k} nulo`);
+  for (const k of ["live", "analysis", "inbox", "unreadInbox", "scoresPoints"] as const) assert.equal(d[k], null, `${k} nulo`);
+  // bloco 6c (D-106): moral do elenco, notícias (nenhuma antes da 1ª semana) e a projeção dos playoffs
+  assert.ok(d.morale && d.morale.average >= 0 && d.morale.average <= 100);
+  assert.deepEqual(d.news, []);
+  assert.match(String(d.playoffs?.status), /^PROJECTED_(IN|OUT)$/);
 });
 
 test("calendário: 18 semanas, 17 jogos e um bye da franquia", async () => {

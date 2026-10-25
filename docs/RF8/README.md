@@ -45,7 +45,7 @@ Fonte: [`RF8-stm.puml`](RF8-stm.puml)
 | Estado | Método | Rota | Caso de uso | Autorização | Descrição |
 |---|---|---|---|---|---|
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/manager` | `GetManagerPanelUseCase` | JWT · dono do save | Perfil, contrato ativo, metas (vitórias, vaga nos playoffs, título de divisão/conferência, campeão) e progresso, moral com a franquia e com a liga, histórico, propostas pendentes |
-| ⛔ alvo | `GET` | `/api/v1/careers/{id}/morale` | `GetManagerMoraleUseCase` | JWT · dono do save | Moral com a franquia e com a liga + fatores |
+| ✅ | `GET` | `/api/v1/careers/{id}/morale` | `GetManagerMoraleUseCase` | JWT · dono do save | Moral com a franquia e com a liga + fatores |
 | ⛔ alvo | `POST` | `/api/v1/careers/{id}/manager/raise-request` | `RequestSalaryRaiseUseCase` | JWT · dono do save | Pede aumento (valor e justificativa) · diretoria decide |
 | ⛔ alvo | `POST` | `/api/v1/careers/{id}/manager/message-board` | `MessageBoardUseCase` | JWT · dono do save | Mensagem à diretoria (assunto de lista + texto) · resposta no inbox |
 | ⛔ alvo | `POST` | `/api/v1/careers/{id}/finance/budget-request` | `RequestBudgetUseCase` | JWT · dono do save | Solicita verba operacional (estrutura, scouting, staff) · não mexe no teto salarial (RF14/RF49) |

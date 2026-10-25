@@ -3431,5 +3431,26 @@
       "conferenceGame" : true,
       "userGame" : false
     } ]
+  } ],
+  "playoffWeeks" : [ {
+    "number" : 19,
+    "kind" : "WILD_CARD",
+    "startsOn" : "2027-01-14",
+    "status" : "PENDING"
+  }, {
+    "number" : 20,
+    "kind" : "DIVISIONAL",
+    "startsOn" : "2027-01-21",
+    "status" : "PENDING"
+  }, {
+    "number" : 21,
+    "kind" : "CONFERENCE",
+    "startsOn" : "2027-01-28",
+    "status" : "PENDING"
+  }, {
+    "number" : 22,
+    "kind" : "FINAL",
+    "startsOn" : "2027-02-04",
+    "status" : "PENDING"
   } ]
 }

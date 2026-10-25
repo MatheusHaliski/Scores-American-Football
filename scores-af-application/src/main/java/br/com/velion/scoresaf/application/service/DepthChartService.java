@@ -107,6 +107,27 @@ public class DepthChartService implements SavedDepthCharts {
     charts.saveAndFlush(dc);
   }
 
+  /**
+   * Depois de uma mudança de elenco fora do controle do usuário (fim de contrato no avanço da temporada, D-100): tira do depth chart
+   * salvo quem saiu da franquia ou deixou de estar disponível e, se ele ficar inválido, volta ao depth chart padrão. Devolve
+   * {@code true} quando voltou ao padrão.
+   */
+  @Transactional
+  public boolean refreshAfterRosterChange(CareerSave save, Club club, int gameDayActives) {
+    DepthChart dc = getOrCreate(save, club, gameDayActives);
+    List<Player> roster = players.findByClubIdOrderByOverallDesc(club.getId());
+    Map<UUID, Player> byId = byId(roster);
+    Map<ChartSlot, List<UUID>> chart = read(dc);
+    for (List<UUID> ids : chart.values()) ids.removeIf(id -> !DepthChartPolicy.available(byId.get(id), club.getId()));
+    boolean valid = DepthChartPolicy.validate(chart, byId, club.getId(), gameDayActives).valid();
+    boolean reset = !valid;
+    if (reset) chart = DepthChartPolicy.defaults(eligible(roster, club.getId()), gameDayActives);
+    write(dc, chart, byId);
+    dc.touch(DepthChartPolicy.validate(chart, byId, club.getId(), gameDayActives).valid());
+    charts.saveAndFlush(dc);
+    return reset;
+  }
+
   @Override
   @Transactional(readOnly = true)
   public br.com.velion.scoresaf.domain.engine.model.DepthChart forClub(UUID clubId) {

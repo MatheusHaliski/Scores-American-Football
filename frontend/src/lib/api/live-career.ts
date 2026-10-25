@@ -1,8 +1,9 @@
 /**
  * Adaptadores das respostas da carreira (bloco 6a) para os tipos do front. Puros (sem rede), testados contra as amostras gravadas
  * pela API em docs/validation/golden/ (careers-list, career-dashboard, career-calendar, roster, roster-player, depth-chart e
- * world-editor-club). `dashboard.live` (partida em andamento) chega com o bloco 6b. A API omite campos nulos (`non_null`), menos no `DashboardDto`, que manda os nulos explícitos: aqui todo
- * anulável ausente vira `null`, e nunca zero.
+ * world-editor-club). `dashboard.live` (partida em andamento) chega com o bloco 6b; `morale`, `analysis`, `news` e `playoffs` da
+ * central e `playoffWeeks` do calendário, com o 6c (os objetos deles são lidos por `live-season.ts`). A API omite campos nulos
+ * (`non_null`), menos no `DashboardDto`, que manda os nulos explícitos: aqui todo anulável ausente vira `null`, e nunca zero.
  *
  * `SHAPES` lista, por objeto, os campos que o front conhece e quais podem faltar; o teste de contrato confere cada golden contra
  * essa lista (campo desconhecido falha, obrigatório ausente falha).
@@ -33,6 +34,7 @@ import type {
   PlayerContract,
   PlayerDetail,
   PlayerHighlight,
+  PlayoffWeek,
   ReleaseResult,
   Roster,
   RosterChange,
@@ -48,6 +50,7 @@ import type {
 } from "./career-types";
 import { COACH_STYLES, DIFFICULTIES, ROSTER_STATUSES, UNITS } from "./career-types";
 import type { LiveMatchRef, MatchSessionStatus } from "./match-types";
+import { analysisSummaryFromDto, moraleSummaryFromDto, newsFromDto, userPlayoffFromDto } from "./live-season";
 import type { CardTier } from "@/lib/ratings/tier";
 import type { Position } from "@/lib/ratings/overall";
 import type { Difficulty } from "./types";
@@ -81,8 +84,8 @@ export const SHAPES = {
   career: shape(CAREER_FIELDS, CAREER_NULLABLE),
   record: shape(["wins", "losses", "ties", "summary"]),
   dashboard: shape(
-    ["career", "club", "coach", "currentWeek", "nextGame", "byeWeek", "record", "divisionRank", "division", "upcomingDivisionGames", "rosterHighlights", "injuries", "cap", "depthChart", "live", "morale", "analysis", "inbox", "unreadInbox", "scoresPoints"],
-    ["club", "coach", "nextGame", "divisionRank", "cap", "depthChart", "live", "morale", "analysis", "inbox", "unreadInbox", "scoresPoints"],
+    ["career", "club", "coach", "currentWeek", "nextGame", "byeWeek", "record", "divisionRank", "division", "upcomingDivisionGames", "rosterHighlights", "injuries", "cap", "depthChart", "live", "morale", "analysis", "news", "playoffs", "inbox", "unreadInbox", "scoresPoints"],
+    ["club", "coach", "nextGame", "divisionRank", "cap", "depthChart", "live", "morale", "analysis", "playoffs", "inbox", "unreadInbox", "scoresPoints"],
   ),
   clubRef: shape(["id", "name", "shortName", "city", "primaryColor", "secondaryColor", "conference", "division"], ["conference", "division"]),
   coach: shape(["id", "name", "nationality", "style", "overall", "reputationLeague", "careerGames", "careerWins", "careerTitles"], ["style"]),
@@ -95,7 +98,7 @@ export const SHAPES = {
   depthChartAlert: shape(["version", "valid", "errors", "warnings", "codes"]),
   /** `dashboard.live` (bloco 6b): partida ao vivo em andamento */
   liveRef: shape(["matchId", "fixtureId", "week", "status", "homeScore", "awayScore"]),
-  calendar: shape(["seasonId", "seasonYear", "phase", "currentWeek", "regularSeasonWeeks", "gamesPerTeam", "userClubId", "clubs", "weeks"]),
+  calendar: shape(["seasonId", "seasonYear", "phase", "currentWeek", "regularSeasonWeeks", "gamesPerTeam", "userClubId", "clubs", "weeks", "playoffWeeks"]),
   week: shape(["number", "kind", "startsOn", "status", "userBye", "byeClubIds", "fixtures"]),
   roster: shape(["clubId", "clubName", "seasonYear", "currentWeek", "rules", "counts", "cap", "units", "practiceSquad", "injuredReserve", "waivers"]),
   rosterRules: shape(["rosterMax", "gameDayActives", "practiceSquadMax", "irMinWeeks", "irReturnsPerSeason"]),
@@ -289,8 +292,10 @@ export function dashboardFromDto(raw: unknown): CareerDashboard {
     cap: isObj(r.cap) ? capFromDto(r.cap) : null,
     depthChart: isObj(r.depthChart) ? alertFromDto(r.depthChart) : null,
     live: liveRefFromDto(r.live),
-    morale: r.morale ?? null,
-    analysis: r.analysis ?? null,
+    morale: moraleSummaryFromDto(r.morale),
+    analysis: analysisSummaryFromDto(r.analysis),
+    news: list(r.news, newsFromDto),
+    playoffs: userPlayoffFromDto(r.playoffs),
     inbox: Array.isArray(r.inbox) ? r.inbox : null,
     unreadInbox: nnum(r.unreadInbox),
     scoresPoints: nnum(r.scoresPoints),
@@ -313,7 +318,12 @@ export function calendarFromDto(raw: unknown): SeasonCalendar {
     userClubId: str(r.userClubId),
     clubs: list(r.clubs, clubRefFromDto),
     weeks: list(r.weeks, weekFromDto),
+    playoffWeeks: list(r.playoffWeeks, playoffWeekFromDto),
   };
+}
+
+function playoffWeekFromDto(r: Raw): PlayoffWeek {
+  return { number: num(r.number), kind: str(r.kind), startsOn: str(r.startsOn), status: str(r.status, "PENDING") };
 }
 
 /* ───────────────────────── elenco ───────────────────────── */

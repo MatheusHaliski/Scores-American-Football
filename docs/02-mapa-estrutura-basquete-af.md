@@ -210,6 +210,11 @@ Rotas do futebol americano seguem as do basquete, trocando rodada por semana (`/
 | TacticsController | `PUT` | `/api/v1/careers/{id}/lineup` | `/api/v1/careers/{id}/depth-chart` | DepthChartController + GamePlanController | 6 |
 | TacticsController | `GET` | `/api/v1/careers/{id}/next-match/preparation` | `/api/v1/careers/{id}/next-match/preparation` | DepthChartController + GamePlanController | 6 |
 
+Situação do bloco 6 (6a, 6b e 6c): todas as rotas de bloco 6 desta tabela existem, menos as ações de elenco `trade-block`,
+`trade-block/remove`, `restructure`, `renew` e `message`, que vão para o bloco 7 (contratos e mercado), e `consumables`, que vai para o
+bloco 10 (loja) (D-107). No 6c, `GET /careers/{id}/morale` traz a moral do elenco e dos jogadores (no basquete, a do manager; Q-43) e
+o analista é só por regras, sem provedor externo (D-104).
+
 ### Endpoints novos, só do futebol americano
 
 | Método | Rota | RF | Bloco |

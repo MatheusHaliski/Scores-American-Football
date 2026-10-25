@@ -59,6 +59,10 @@ import tools.jackson.databind.node.ObjectNode;
  *
  * <p>Bloco 6b: plano de jogo, playbook, 409 do plano, preparação, painel da semana, estado ao vivo, play-by-play e relatório
  * pós-jogo, na mesma carreira dourada (a partida é determinística pela semente; o prazo da decisão vira instante fixo).
+ *
+ * <p>Bloco 6c: classificação, moral, analista, notícias, playoffs, chave, resumo, avanço e troféus, e os problemas 409/422 do avanço,
+ * numa temporada dourada curta: o mundo padrão clonado com a liga em 2 jogos por franquia (o resto das regras igual: 7 sementes por
+ * conferência, folga da 1ª, final neutra), a mesma franquia PAV e a semente 2026.
  */
 @SpringBootTest(properties = {"scores.app.version=0.0.0-golden", "scores.security.rate-limit.limits.password-forgot=1"})
 @AutoConfigureMockMvc
@@ -171,7 +175,7 @@ class ApiGoldenTest {
   }
 
   private static final Pattern UUID_TEXT = Pattern.compile("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}");
-  private static final Set<String> INSTANTS = Set.of("createdAt", "lastPlayedAt", "updatedAt", "at", "decisionDeadlineAt");
+  private static final Set<String> INSTANTS = Set.of("createdAt", "lastPlayedAt", "updatedAt", "at", "decisionDeadlineAt", "generatedAt");
 
   /** Amostra da carreira: ids sequenciais na ordem de aparição e instantes fixos (ver o javadoc da classe). */
   private void assertCareerGolden(String file, MvcResult result) throws Exception {
@@ -333,6 +337,78 @@ class ApiGoldenTest {
       state = json.readTree(next.getResponse().getContentAsString());
     }
     assertCareerGolden("match-report.json", mvc.perform(get("/api/v1/matches/" + mid + "/report").header("Authorization", auth)).andReturn());
+  }
+
+  /**
+   * Bloco 6c, numa temporada curta (2 jogos por franquia): depois da semana 1, a classificação (projeção), a moral e o analista; depois
+   * da última semana regular, as notícias dela, os playoffs começando e o 422 do avanço; no fim, a chave completa, o resumo, os troféus,
+   * o avanço e o 409 do segundo avanço da mesma temporada.
+   */
+  @Test
+  void temporada_bate_com_as_amostras_douradas() throws Exception {
+    String auth = bearer();
+    MatchFixtures.level(mvc, auth, "NONE");
+    UUID world = seeder.seedIfMissing().getId();
+    JsonNode clone = json.readTree(mvc.perform(post("/api/v1/worlds/" + world + "/clone").header("Authorization", auth).contentType(MediaType.APPLICATION_JSON)
+        .content("{\"name\":\"Temporada Dourada\"}")).andReturn().getResponse().getContentAsString());
+    String cloned = clone.get("id").asString();
+    JsonNode leagues = json.readTree(mvc.perform(get("/api/v1/worlds/" + cloned + "/leagues").header("Authorization", auth)).andReturn().getResponse()
+        .getContentAsString());
+    MvcResult rules = mvc.perform(put("/api/v1/leagues/" + leagues.get(0).get("id").asString()).header("Authorization", auth).contentType(MediaType.APPLICATION_JSON)
+        .content("{\"rules\":{\"regularSeasonWeeks\":2,\"gamesPerTeam\":2,\"byeWeeksPerTeam\":0}}")).andReturn();
+    assertThat(rules.getResponse().getStatus()).as(rules.getResponse().getContentAsString()).isEqualTo(200);
+    String club = null;
+    JsonNode clubs = json.readTree(mvc.perform(get("/api/v1/leagues/" + leagues.get(0).get("id").asString() + "/clubs").header("Authorization", auth))
+        .andReturn().getResponse().getContentAsString());
+    for (JsonNode c : clubs) if ("PAV".equals(c.get("shortName").asString())) club = c.get("id").asString();
+    Map<String, Object> body = new HashMap<>(Map.of("name", "Temporada Dourada", "worldId", cloned, "clubId", club, "coachName", "Treinadora Dourada",
+        "coachNationality", "BRA", "coachStyle", "OFFENSIVE", "difficulty", "NORMAL", "seed", 2026L));
+    MvcResult created = mvc.perform(post("/api/v1/careers").header("Authorization", auth).contentType(MediaType.APPLICATION_JSON)
+        .content(json.writeValueAsString(body))).andReturn();
+    assertThat(created.getResponse().getStatus()).as(created.getResponse().getContentAsString()).isEqualTo(201);
+    String base = "/api/v1/careers/" + json.readTree(created.getResponse().getContentAsString()).get("id").asString();
+
+    playSeasonWeek(auth, base);
+    assertCareerGolden("standings.json", mvc.perform(get(base + "/standings").header("Authorization", auth)).andReturn());
+    assertCareerGolden("morale.json", mvc.perform(get(base + "/morale").header("Authorization", auth)).andReturn());
+    MvcResult analysis = mvc.perform(post(base + "/analysis/refresh").header("Authorization", auth).header("Accept-Language", "pt-BR")
+        .with(r -> { r.setRemoteAddr("198.51.100.66"); return r; })).andReturn();
+    assertThat(analysis.getResponse().getStatus()).as(analysis.getResponse().getContentAsString()).isEqualTo(200);
+    assertCareerGolden("analysis.json", analysis);
+
+    playSeasonWeek(auth, base);
+    assertCareerGolden("week-news.json", mvc.perform(get(base + "/weeks/2/news").header("Authorization", auth).header("Accept-Language", "pt-BR")).andReturn());
+    assertCareerGolden("playoffs.json", mvc.perform(get(base + "/playoffs").header("Authorization", auth)).andReturn());
+    MvcResult early = mvc.perform(post(base + "/season/advance").header("Authorization", auth).header("X-Correlation-Id", "golden-422-season")
+        .header("Accept-Language", "pt-BR")).andReturn();
+    assertThat(early.getResponse().getStatus()).as(early.getResponse().getContentAsString()).isEqualTo(422);
+    assertCareerGolden("problem-422-season-not-finished.json", early);
+
+    for (int guard = 0; playSeasonWeek(auth, base); guard++) assertThat(guard).isLessThan(10);
+    assertCareerGolden("playoffs-bracket.json", mvc.perform(get(base + "/playoffs/bracket").header("Authorization", auth)).andReturn());
+    MvcResult summary = mvc.perform(get(base + "/season/summary").header("Authorization", auth)).andReturn();
+    assertCareerGolden("season-summary.json", summary);
+    assertCareerGolden("trophies.json", mvc.perform(get(base + "/trophies").header("Authorization", auth)).andReturn());
+    String seasonId = json.readTree(summary.getResponse().getContentAsString()).get("seasonId").asString();
+    String advanceBody = "{\"seasonId\":\"" + seasonId + "\"}";
+    MvcResult advanced = mvc.perform(post(base + "/season/advance").header("Authorization", auth).contentType(MediaType.APPLICATION_JSON).content(advanceBody))
+        .andReturn();
+    assertThat(advanced.getResponse().getStatus()).as(advanced.getResponse().getContentAsString()).isEqualTo(200);
+    assertCareerGolden("season-advance.json", advanced);
+    MvcResult again = mvc.perform(post(base + "/season/advance").header("Authorization", auth).header("X-Correlation-Id", "golden-409-season")
+        .header("Accept-Language", "pt-BR").contentType(MediaType.APPLICATION_JSON).content(advanceBody)).andReturn();
+    assertThat(again.getResponse().getStatus()).as(again.getResponse().getContentAsString()).isEqualTo(409);
+    assertCareerGolden("problem-409-season-advance.json", again);
+  }
+
+  /** Joga a semana atual da temporada dourada (a partida do usuário até o fim); {@code false} quando a temporada acabou. */
+  private boolean playSeasonWeek(String auth, String base) throws Exception {
+    MvcResult r = mvc.perform(post(base + "/weeks/current/play").header("Authorization", auth)).andReturn();
+    if (r.getResponse().getStatus() == 409) return false;
+    assertThat(r.getResponse().getStatus()).as(r.getResponse().getContentAsString()).isEqualTo(200);
+    JsonNode board = json.readTree(r.getResponse().getContentAsString());
+    if (board.hasNonNull("matchId")) MatchFixtures.finish(mvc, auth, board.get("matchId").asString(), "FULL");
+    return true;
   }
 
   /** Franquia "PAV" do mundo padrão, pela lista da liga (mesmas rotas que o front do editor usa). */

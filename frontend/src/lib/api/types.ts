@@ -1,7 +1,8 @@
 /**
  * DTOs de conta, configurações e privacidade (RF1–RF3, RF10, RF46) — espelham os records Java das rotas
  * `/api/v1/auth/...` e `/api/v1/me/...` (AuthController, AccountController, AccountDto, SettingsDto, SessionDto).
- * Os tipos da carreira (bloco 6a) ficam em `career-types.ts` e os da partida (bloco 6b) em `match-types.ts`, reexportados aqui.
+ * Os tipos da carreira (bloco 6a) ficam em `career-types.ts`, os da partida (bloco 6b) em `match-types.ts` e os da temporada (bloco
+ * 6c) em `season-types.ts`, reexportados aqui.
  */
 export type UUID = string;
 export type ISODate = string;
@@ -243,3 +244,4 @@ export interface PageResponse<T> {
 
 export * from "./career-types";
 export * from "./match-types";
+export * from "./season-types";

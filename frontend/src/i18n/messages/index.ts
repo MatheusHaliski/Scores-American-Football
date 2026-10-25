@@ -15,6 +15,7 @@ import ptCareer from "./pt-BR/career.json";
 import ptRoster from "./pt-BR/roster.json";
 import ptEnums from "./pt-BR/enums.json";
 import ptGame from "./pt-BR/game.json";
+import ptSeason from "./pt-BR/season.json";
 
 import enCommon from "./en-US/common.json";
 import enErrors from "./en-US/errors.json";
@@ -26,6 +27,7 @@ import enCareer from "./en-US/career.json";
 import enRoster from "./en-US/roster.json";
 import enEnums from "./en-US/enums.json";
 import enGame from "./en-US/game.json";
+import enSeason from "./en-US/season.json";
 
 import esCommon from "./es-ES/common.json";
 import esErrors from "./es-ES/errors.json";
@@ -37,6 +39,7 @@ import esCareer from "./es-ES/career.json";
 import esRoster from "./es-ES/roster.json";
 import esEnums from "./es-ES/enums.json";
 import esGame from "./es-ES/game.json";
+import esSeason from "./es-ES/season.json";
 
 export interface Catalog {
   common: typeof ptCommon;
@@ -54,13 +57,15 @@ export interface Catalog {
   enums: typeof ptEnums;
   /** Playbook, plano de jogo e preparação do próximo jogo (bloco 6b). */
   game: typeof ptGame;
+  /** Temporada (bloco 6c): classificação, playoffs, resumo, avanço, troféus, notícias, moral e analista. */
+  season: typeof ptSeason;
 }
 
 /** Chave tipada de um namespace (derivada do catálogo pt-BR). */
 export type MessageKey<NS extends keyof Catalog> = keyof Catalog[NS] & string;
 
 export const MESSAGES: Record<Locale, Catalog> = {
-  "pt-BR": { common: ptCommon, errors: ptErrors, auth: ptAuth, nav: ptNav, settings: ptSettings, match: ptMatch, career: ptCareer, roster: ptRoster, enums: ptEnums, game: ptGame },
-  "en-US": { common: enCommon, errors: enErrors, auth: enAuth, nav: enNav, settings: enSettings, match: enMatch, career: enCareer, roster: enRoster, enums: enEnums, game: enGame },
-  "es-ES": { common: esCommon, errors: esErrors, auth: esAuth, nav: esNav, settings: esSettings, match: esMatch, career: esCareer, roster: esRoster, enums: esEnums, game: esGame },
+  "pt-BR": { common: ptCommon, errors: ptErrors, auth: ptAuth, nav: ptNav, settings: ptSettings, match: ptMatch, career: ptCareer, roster: ptRoster, enums: ptEnums, game: ptGame, season: ptSeason },
+  "en-US": { common: enCommon, errors: enErrors, auth: enAuth, nav: enNav, settings: enSettings, match: enMatch, career: enCareer, roster: enRoster, enums: enEnums, game: enGame, season: enSeason },
+  "es-ES": { common: esCommon, errors: esErrors, auth: esAuth, nav: esNav, settings: esSettings, match: esMatch, career: esCareer, roster: esRoster, enums: esEnums, game: esGame, season: esSeason },
 };

@@ -17,7 +17,7 @@ export const FALLBACK_CHAIN: Record<Locale, Locale[]> = {
   "es-ES": ["pt-BR", "en-US"],
 };
 
-export const NAMESPACES = ["common", "errors", "auth", "nav", "settings", "match", "career", "roster", "enums", "game"] as const;
+export const NAMESPACES = ["common", "errors", "auth", "nav", "settings", "match", "career", "roster", "enums", "game", "season"] as const;
 export type Namespace = (typeof NAMESPACES)[number];
 
 export interface LocaleMeta {

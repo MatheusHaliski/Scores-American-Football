@@ -1,0 +1,1133 @@
+{
+  "seasonId" : "00000000-0000-4000-8000-000000000001",
+  "number" : 1,
+  "year" : 2026,
+  "phase" : "OFFSEASON",
+  "completed" : true,
+  "champion" : {
+    "id" : "00000000-0000-4000-8000-000000000002",
+    "name" : "Harpias de Rio Ametista",
+    "shortName" : "RAM",
+    "city" : "Rio Ametista",
+    "primaryColor" : "#5E2B97",
+    "secondaryColor" : "#C0C0C0",
+    "conference" : "CAT",
+    "division" : "Atlântica Leste"
+  },
+  "runnerUp" : {
+    "id" : "00000000-0000-4000-8000-000000000003",
+    "name" : "Arraias de Lagoa Funda",
+    "shortName" : "LFU",
+    "city" : "Lagoa Funda",
+    "primaryColor" : "#0277BD",
+    "secondaryColor" : "#B3E5FC",
+    "conference" : "CPA",
+    "division" : "Pacífica Oeste"
+  },
+  "userClubId" : "00000000-0000-4000-8000-000000000004",
+  "campaign" : {
+    "record" : {
+      "wins" : 2,
+      "losses" : 0,
+      "ties" : 0,
+      "summary" : "2-0"
+    },
+    "pointsFor" : 55,
+    "pointsAgainst" : 17,
+    "divisionRank" : 1,
+    "conferenceRank" : 2,
+    "seed" : 2,
+    "playoffResult" : "CONFERENCE"
+  },
+  "provisionalAwards" : false,
+  "awards" : [ {
+    "type" : "MVP",
+    "playerId" : "00000000-0000-4000-8000-000000000005",
+    "name" : "Lucas Torales",
+    "position" : "RB",
+    "club" : {
+      "id" : "00000000-0000-4000-8000-000000000002",
+      "name" : "Harpias de Rio Ametista",
+      "shortName" : "RAM",
+      "city" : "Rio Ametista",
+      "primaryColor" : "#5E2B97",
+      "secondaryColor" : "#C0C0C0",
+      "conference" : "CAT",
+      "division" : "Atlântica Leste"
+    },
+    "score" : 81.6,
+    "statLine" : {
+      "games" : 2,
+      "rushYards" : 279,
+      "rushTouchdowns" : 1,
+      "receptions" : 5,
+      "receivingYards" : 51,
+      "receivingTouchdowns" : 2
+    }
+  }, {
+    "type" : "OPOY",
+    "playerId" : "00000000-0000-4000-8000-000000000006",
+    "name" : "Bruno Penton",
+    "position" : "QB",
+    "club" : {
+      "id" : "00000000-0000-4000-8000-000000000007",
+      "name" : "Sentinelas de Cedro Alto",
+      "shortName" : "CAL",
+      "city" : "Cedro Alto",
+      "primaryColor" : "#3E2723",
+      "secondaryColor" : "#8BC34A",
+      "conference" : "CPA",
+      "division" : "Pacífica Sul"
+    },
+    "score" : 55.0,
+    "statLine" : {
+      "games" : 2,
+      "passYards" : 621,
+      "passTouchdowns" : 6,
+      "interceptionsThrown" : 0,
+      "rushYards" : 2,
+      "rushTouchdowns" : 1
+    }
+  }, {
+    "type" : "DPOY",
+    "playerId" : "00000000-0000-4000-8000-000000000008",
+    "name" : "Tyler Casado",
+    "position" : "CB",
+    "club" : {
+      "id" : "00000000-0000-4000-8000-000000000009",
+      "name" : "Escorpiões de Serra Cobalto",
+      "shortName" : "SCO",
+      "city" : "Serra Cobalto",
+      "primaryColor" : "#1A237E",
+      "secondaryColor" : "#B0BEC5",
+      "conference" : "CAT",
+      "division" : "Atlântica Oeste"
+    },
+    "score" : 37.5,
+    "statLine" : {
+      "games" : 2,
+      "soloTackles" : 7,
+      "sacks" : 0,
+      "interceptions" : 4,
+      "forcedFumbles" : 0
+    }
+  }, {
+    "type" : "OROY",
+    "playerId" : "00000000-0000-4000-8000-000000000005",
+    "name" : "Lucas Torales",
+    "position" : "RB",
+    "club" : {
+      "id" : "00000000-0000-4000-8000-000000000002",
+      "name" : "Harpias de Rio Ametista",
+      "shortName" : "RAM",
+      "city" : "Rio Ametista",
+      "primaryColor" : "#5E2B97",
+      "secondaryColor" : "#C0C0C0",
+      "conference" : "CAT",
+      "division" : "Atlântica Leste"
+    },
+    "score" : 51.0,
+    "statLine" : {
+      "games" : 2,
+      "rushYards" : 279,
+      "rushTouchdowns" : 1,
+      "receptions" : 5,
+      "receivingYards" : 51,
+      "receivingTouchdowns" : 2
+    }
+  }, {
+    "type" : "DROY",
+    "playerId" : "00000000-0000-4000-8000-000000000010",
+    "name" : "Jordan Caseiro",
+    "position" : "DT",
+    "club" : {
+      "id" : "00000000-0000-4000-8000-000000000011",
+      "name" : "Pioneiros de Terra Ventura",
+      "shortName" : "TVE",
+      "city" : "Terra Ventura",
+      "primaryColor" : "#827717",
+      "secondaryColor" : "#FFFFFF",
+      "conference" : "CPA",
+      "division" : "Pacífica Sul"
+    },
+    "score" : 31.5,
+    "statLine" : {
+      "games" : 2,
+      "soloTackles" : 9,
+      "sacks" : 3,
+      "interceptions" : 0,
+      "forcedFumbles" : 2
+    }
+  }, {
+    "type" : "COACH",
+    "name" : "Gonzalo Wesard",
+    "club" : {
+      "id" : "00000000-0000-4000-8000-000000000002",
+      "name" : "Harpias de Rio Ametista",
+      "shortName" : "RAM",
+      "city" : "Rio Ametista",
+      "primaryColor" : "#5E2B97",
+      "secondaryColor" : "#C0C0C0",
+      "conference" : "CAT",
+      "division" : "Atlântica Leste"
+    },
+    "score" : 0.5,
+    "statLine" : {
+      "games" : 2,
+      "wins" : 2,
+      "prestige" : 73
+    }
+  } ],
+  "leaders" : {
+    "PASS_YARDS" : [ {
+      "playerId" : "00000000-0000-4000-8000-000000000012",
+      "name" : "Nolan Falquist",
+      "position" : "QB",
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000004",
+        "name" : "Trovões de Porto Alvorada",
+        "shortName" : "PAV",
+        "city" : "Porto Alvorada",
+        "primaryColor" : "#1B2A4A",
+        "secondaryColor" : "#F2B705",
+        "conference" : "CAT",
+        "division" : "Atlântica Norte"
+      },
+      "value" : 626,
+      "games" : 2
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000006",
+      "name" : "Bruno Penton",
+      "position" : "QB",
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000007",
+        "name" : "Sentinelas de Cedro Alto",
+        "shortName" : "CAL",
+        "city" : "Cedro Alto",
+        "primaryColor" : "#3E2723",
+        "secondaryColor" : "#8BC34A",
+        "conference" : "CPA",
+        "division" : "Pacífica Sul"
+      },
+      "value" : 621,
+      "games" : 2
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000013",
+      "name" : "Marcus Norore",
+      "position" : "QB",
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000014",
+        "name" : "Centauros de Cerro Ventania",
+        "shortName" : "CVE",
+        "city" : "Cerro Ventania",
+        "primaryColor" : "#1B5E20",
+        "secondaryColor" : "#FFD54F",
+        "conference" : "CAT",
+        "division" : "Atlântica Sul"
+      },
+      "value" : 606,
+      "games" : 2
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000015",
+      "name" : "Andrés Quelford",
+      "position" : "QB",
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000016",
+        "name" : "Tatus-Canastra de Vila Topázio",
+        "shortName" : "VTO",
+        "city" : "Vila Topázio",
+        "primaryColor" : "#F57F17",
+        "secondaryColor" : "#3E2723",
+        "conference" : "CPA",
+        "division" : "Pacífica Oeste"
+      },
+      "value" : 578,
+      "games" : 2
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000017",
+      "name" : "Mason Varane",
+      "position" : "QB",
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000018",
+        "name" : "Meteoros de Porto Quartzo",
+        "shortName" : "PQU",
+        "city" : "Porto Quartzo",
+        "primaryColor" : "#311B92",
+        "secondaryColor" : "#00E5FF",
+        "conference" : "CPA",
+        "division" : "Pacífica Sul"
+      },
+      "value" : 559,
+      "games" : 2
+    } ],
+    "PASS_TOUCHDOWNS" : [ {
+      "playerId" : "00000000-0000-4000-8000-000000000006",
+      "name" : "Bruno Penton",
+      "position" : "QB",
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000007",
+        "name" : "Sentinelas de Cedro Alto",
+        "shortName" : "CAL",
+        "city" : "Cedro Alto",
+        "primaryColor" : "#3E2723",
+        "secondaryColor" : "#8BC34A",
+        "conference" : "CPA",
+        "division" : "Pacífica Sul"
+      },
+      "value" : 6,
+      "games" : 2
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000019",
+      "name" : "Austin Zelard",
+      "position" : "QB",
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000020",
+        "name" : "Bisões de Vale Sereno",
+        "shortName" : "VSE",
+        "city" : "Vale Sereno",
+        "primaryColor" : "#4E342E",
+        "secondaryColor" : "#D7CCC8",
+        "conference" : "CAT",
+        "division" : "Atlântica Leste"
+      },
+      "value" : 5,
+      "games" : 2
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000021",
+      "name" : "Lucas Kelovic",
+      "position" : "QB",
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000022",
+        "name" : "Albatrozes de São Lucário",
+        "shortName" : "SLU",
+        "city" : "São Lucário",
+        "primaryColor" : "#01579B",
+        "secondaryColor" : "#FFFFFF",
+        "conference" : "CPA",
+        "division" : "Pacífica Leste"
+      },
+      "value" : 5,
+      "games" : 2
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000015",
+      "name" : "Andrés Quelford",
+      "position" : "QB",
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000016",
+        "name" : "Tatus-Canastra de Vila Topázio",
+        "shortName" : "VTO",
+        "city" : "Vila Topázio",
+        "primaryColor" : "#F57F17",
+        "secondaryColor" : "#3E2723",
+        "conference" : "CPA",
+        "division" : "Pacífica Oeste"
+      },
+      "value" : 4,
+      "games" : 2
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000023",
+      "name" : "Enzo Monquist",
+      "position" : "QB",
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000024",
+        "name" : "Marujos de Costa Safira",
+        "shortName" : "CSA",
+        "city" : "Costa Safira",
+        "primaryColor" : "#0D47A1",
+        "secondaryColor" : "#FFFFFF",
+        "conference" : "CPA",
+        "division" : "Pacífica Sul"
+      },
+      "value" : 4,
+      "games" : 2
+    } ],
+    "RUSH_YARDS" : [ {
+      "playerId" : "00000000-0000-4000-8000-000000000005",
+      "name" : "Lucas Torales",
+      "position" : "RB",
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000002",
+        "name" : "Harpias de Rio Ametista",
+        "shortName" : "RAM",
+        "city" : "Rio Ametista",
+        "primaryColor" : "#5E2B97",
+        "secondaryColor" : "#C0C0C0",
+        "conference" : "CAT",
+        "division" : "Atlântica Leste"
+      },
+      "value" : 279,
+      "games" : 2
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000025",
+      "name" : "Iván Ivardell",
+      "position" : "RB",
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000018",
+        "name" : "Meteoros de Porto Quartzo",
+        "shortName" : "PQU",
+        "city" : "Porto Quartzo",
+        "primaryColor" : "#311B92",
+        "secondaryColor" : "#00E5FF",
+        "conference" : "CPA",
+        "division" : "Pacífica Sul"
+      },
+      "value" : 277,
+      "games" : 2
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000026",
+      "name" : "Théo Peneiro",
+      "position" : "RB",
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000027",
+        "name" : "Tubarões-Martelo de Pedra Lume",
+        "shortName" : "PLU",
+        "city" : "Pedra Lume",
+        "primaryColor" : "#0E3B43",
+        "secondaryColor" : "#57C4AD",
+        "conference" : "CAT",
+        "division" : "Atlântica Leste"
+      },
+      "value" : 266,
+      "games" : 2
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000028",
+      "name" : "Rodrigo Kelino",
+      "position" : "RB",
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000003",
+        "name" : "Arraias de Lagoa Funda",
+        "shortName" : "LFU",
+        "city" : "Lagoa Funda",
+        "primaryColor" : "#0277BD",
+        "secondaryColor" : "#B3E5FC",
+        "conference" : "CPA",
+        "division" : "Pacífica Oeste"
+      },
+      "value" : 261,
+      "games" : 2
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000029",
+      "name" : "André Mararo",
+      "position" : "RB",
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000030",
+        "name" : "Rinocerontes de Morro Carmim",
+        "shortName" : "MCA",
+        "city" : "Morro Carmim",
+        "primaryColor" : "#8E0000",
+        "secondaryColor" : "#9E9E9E",
+        "conference" : "CPA",
+        "division" : "Pacífica Oeste"
+      },
+      "value" : 255,
+      "games" : 2
+    } ],
+    "RUSH_TOUCHDOWNS" : [ {
+      "playerId" : "00000000-0000-4000-8000-000000000031",
+      "name" : "Rafael Monanski",
+      "position" : "RB",
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000032",
+        "name" : "Tempestades de Monte Azulão",
+        "shortName" : "MAZ",
+        "city" : "Monte Azulão",
+        "primaryColor" : "#263238",
+        "secondaryColor" : "#4FC3F7",
+        "conference" : "CAT",
+        "division" : "Atlântica Sul"
+      },
+      "value" : 4,
+      "games" : 2
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000033",
+      "name" : "Rafael Casaro",
+      "position" : "RB",
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000034",
+        "name" : "Cometas de Porto Brisa",
+        "shortName" : "PBR",
+        "city" : "Porto Brisa",
+        "primaryColor" : "#00695C",
+        "secondaryColor" : "#FFAB00",
+        "conference" : "CAT",
+        "division" : "Atlântica Oeste"
+      },
+      "value" : 3,
+      "games" : 2
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000026",
+      "name" : "Théo Peneiro",
+      "position" : "RB",
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000027",
+        "name" : "Tubarões-Martelo de Pedra Lume",
+        "shortName" : "PLU",
+        "city" : "Pedra Lume",
+        "primaryColor" : "#0E3B43",
+        "secondaryColor" : "#57C4AD",
+        "conference" : "CAT",
+        "division" : "Atlântica Leste"
+      },
+      "value" : 3,
+      "games" : 2
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000035",
+      "name" : "Trey Branley",
+      "position" : "RB",
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000004",
+        "name" : "Trovões de Porto Alvorada",
+        "shortName" : "PAV",
+        "city" : "Porto Alvorada",
+        "primaryColor" : "#1B2A4A",
+        "secondaryColor" : "#F2B705",
+        "conference" : "CAT",
+        "division" : "Atlântica Norte"
+      },
+      "value" : 3,
+      "games" : 2
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000036",
+      "name" : "Caio Cordell",
+      "position" : "RB",
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000037",
+        "name" : "Carcarás de Vila Aurora",
+        "shortName" : "VAU",
+        "city" : "Vila Aurora",
+        "primaryColor" : "#3B1F5C",
+        "secondaryColor" : "#F28C28",
+        "conference" : "CAT",
+        "division" : "Atlântica Norte"
+      },
+      "value" : 2,
+      "games" : 2
+    } ],
+    "RECEIVING_YARDS" : [ {
+      "playerId" : "00000000-0000-4000-8000-000000000038",
+      "name" : "Vinícius Jorley",
+      "position" : "WR",
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000004",
+        "name" : "Trovões de Porto Alvorada",
+        "shortName" : "PAV",
+        "city" : "Porto Alvorada",
+        "primaryColor" : "#1B2A4A",
+        "secondaryColor" : "#F2B705",
+        "conference" : "CAT",
+        "division" : "Atlântica Norte"
+      },
+      "value" : 351,
+      "games" : 2
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000039",
+      "name" : "Garrett Penwick",
+      "position" : "WR",
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000037",
+        "name" : "Carcarás de Vila Aurora",
+        "shortName" : "VAU",
+        "city" : "Vila Aurora",
+        "primaryColor" : "#3B1F5C",
+        "secondaryColor" : "#F28C28",
+        "conference" : "CAT",
+        "division" : "Atlântica Norte"
+      },
+      "value" : 254,
+      "games" : 2
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000040",
+      "name" : "Trey Dorquist",
+      "position" : "WR",
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000041",
+        "name" : "Vulcões de Santa Bruma",
+        "shortName" : "SBR",
+        "city" : "Santa Bruma",
+        "primaryColor" : "#BF360C",
+        "secondaryColor" : "#212121",
+        "conference" : "CPA",
+        "division" : "Pacífica Leste"
+      },
+      "value" : 241,
+      "games" : 2
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000042",
+      "name" : "Gabriel Wesanski",
+      "position" : "WR",
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000027",
+        "name" : "Tubarões-Martelo de Pedra Lume",
+        "shortName" : "PLU",
+        "city" : "Pedra Lume",
+        "primaryColor" : "#0E3B43",
+        "secondaryColor" : "#57C4AD",
+        "conference" : "CAT",
+        "division" : "Atlântica Leste"
+      },
+      "value" : 222,
+      "games" : 2
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000043",
+      "name" : "Trey Varanski",
+      "position" : "WR",
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000020",
+        "name" : "Bisões de Vale Sereno",
+        "shortName" : "VSE",
+        "city" : "Vale Sereno",
+        "primaryColor" : "#4E342E",
+        "secondaryColor" : "#D7CCC8",
+        "conference" : "CAT",
+        "division" : "Atlântica Leste"
+      },
+      "value" : 202,
+      "games" : 2
+    } ],
+    "RECEPTIONS" : [ {
+      "playerId" : "00000000-0000-4000-8000-000000000044",
+      "name" : "Austin Saleiro",
+      "position" : "WR",
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000034",
+        "name" : "Cometas de Porto Brisa",
+        "shortName" : "PBR",
+        "city" : "Porto Brisa",
+        "primaryColor" : "#00695C",
+        "secondaryColor" : "#FFAB00",
+        "conference" : "CAT",
+        "division" : "Atlântica Oeste"
+      },
+      "value" : 21,
+      "games" : 2
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000042",
+      "name" : "Gabriel Wesanski",
+      "position" : "WR",
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000027",
+        "name" : "Tubarões-Martelo de Pedra Lume",
+        "shortName" : "PLU",
+        "city" : "Pedra Lume",
+        "primaryColor" : "#0E3B43",
+        "secondaryColor" : "#57C4AD",
+        "conference" : "CAT",
+        "division" : "Atlântica Leste"
+      },
+      "value" : 21,
+      "games" : 2
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000038",
+      "name" : "Vinícius Jorley",
+      "position" : "WR",
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000004",
+        "name" : "Trovões de Porto Alvorada",
+        "shortName" : "PAV",
+        "city" : "Porto Alvorada",
+        "primaryColor" : "#1B2A4A",
+        "secondaryColor" : "#F2B705",
+        "conference" : "CAT",
+        "division" : "Atlântica Norte"
+      },
+      "value" : 21,
+      "games" : 2
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000045",
+      "name" : "Henrique Orlaro",
+      "position" : "WR",
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000046",
+        "name" : "Ciclones de Baía Coral",
+        "shortName" : "BCO",
+        "city" : "Baía Coral",
+        "primaryColor" : "#E65100",
+        "secondaryColor" : "#263238",
+        "conference" : "CAT",
+        "division" : "Atlântica Oeste"
+      },
+      "value" : 17,
+      "games" : 2
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000047",
+      "name" : "Austin Kelette",
+      "position" : "WR",
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000048",
+        "name" : "Lobos-Guará de Serra Alta",
+        "shortName" : "SAL",
+        "city" : "Serra Alta",
+        "primaryColor" : "#7A2E1F",
+        "secondaryColor" : "#E8C39E",
+        "conference" : "CAT",
+        "division" : "Atlântica Norte"
+      },
+      "value" : 16,
+      "games" : 2
+    } ],
+    "SACKS" : [ {
+      "playerId" : "00000000-0000-4000-8000-000000000049",
+      "name" : "Felipe Corvane",
+      "position" : "DE",
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000016",
+        "name" : "Tatus-Canastra de Vila Topázio",
+        "shortName" : "VTO",
+        "city" : "Vila Topázio",
+        "primaryColor" : "#F57F17",
+        "secondaryColor" : "#3E2723",
+        "conference" : "CPA",
+        "division" : "Pacífica Oeste"
+      },
+      "value" : 4,
+      "games" : 2
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000050",
+      "name" : "Gabriel Kelmont",
+      "position" : "DE",
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000018",
+        "name" : "Meteoros de Porto Quartzo",
+        "shortName" : "PQU",
+        "city" : "Porto Quartzo",
+        "primaryColor" : "#311B92",
+        "secondaryColor" : "#00E5FF",
+        "conference" : "CPA",
+        "division" : "Pacífica Sul"
+      },
+      "value" : 4,
+      "games" : 2
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000051",
+      "name" : "Eduardo Varsen",
+      "position" : "DE",
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000052",
+        "name" : "Sucuris de Ponta Granito",
+        "shortName" : "PGR",
+        "city" : "Ponta Granito",
+        "primaryColor" : "#33691E",
+        "secondaryColor" : "#CDDC39",
+        "conference" : "CPA",
+        "division" : "Pacífica Norte"
+      },
+      "value" : 3,
+      "games" : 2
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000053",
+      "name" : "Emeka Ivarvane",
+      "position" : "DE",
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000054",
+        "name" : "Jaguatiricas de Campo Celeste",
+        "shortName" : "CCE",
+        "city" : "Campo Celeste",
+        "primaryColor" : "#0D47A1",
+        "secondaryColor" : "#FFCA28",
+        "conference" : "CAT",
+        "division" : "Atlântica Leste"
+      },
+      "value" : 3,
+      "games" : 2
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000055",
+      "name" : "Gabriel Norales",
+      "position" : "DT",
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000032",
+        "name" : "Tempestades de Monte Azulão",
+        "shortName" : "MAZ",
+        "city" : "Monte Azulão",
+        "primaryColor" : "#263238",
+        "secondaryColor" : "#4FC3F7",
+        "conference" : "CAT",
+        "division" : "Atlântica Sul"
+      },
+      "value" : 3,
+      "games" : 2
+    } ],
+    "INTERCEPTIONS" : [ {
+      "playerId" : "00000000-0000-4000-8000-000000000008",
+      "name" : "Tyler Casado",
+      "position" : "CB",
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000009",
+        "name" : "Escorpiões de Serra Cobalto",
+        "shortName" : "SCO",
+        "city" : "Serra Cobalto",
+        "primaryColor" : "#1A237E",
+        "secondaryColor" : "#B0BEC5",
+        "conference" : "CAT",
+        "division" : "Atlântica Oeste"
+      },
+      "value" : 4,
+      "games" : 2
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000056",
+      "name" : "Aleksander Ivarsby",
+      "position" : "CB",
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000007",
+        "name" : "Sentinelas de Cedro Alto",
+        "shortName" : "CAL",
+        "city" : "Cedro Alto",
+        "primaryColor" : "#3E2723",
+        "secondaryColor" : "#8BC34A",
+        "conference" : "CPA",
+        "division" : "Pacífica Sul"
+      },
+      "value" : 2,
+      "games" : 2
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000057",
+      "name" : "Brandon Belales",
+      "position" : "SS",
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000046",
+        "name" : "Ciclones de Baía Coral",
+        "shortName" : "BCO",
+        "city" : "Baía Coral",
+        "primaryColor" : "#E65100",
+        "secondaryColor" : "#263238",
+        "conference" : "CAT",
+        "division" : "Atlântica Oeste"
+      },
+      "value" : 2,
+      "games" : 2
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000058",
+      "name" : "Dante Penley",
+      "position" : "CB",
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000027",
+        "name" : "Tubarões-Martelo de Pedra Lume",
+        "shortName" : "PLU",
+        "city" : "Pedra Lume",
+        "primaryColor" : "#0E3B43",
+        "secondaryColor" : "#57C4AD",
+        "conference" : "CAT",
+        "division" : "Atlântica Leste"
+      },
+      "value" : 2,
+      "games" : 2
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000059",
+      "name" : "Enzo Branard",
+      "position" : "CB",
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000041",
+        "name" : "Vulcões de Santa Bruma",
+        "shortName" : "SBR",
+        "city" : "Santa Bruma",
+        "primaryColor" : "#BF360C",
+        "secondaryColor" : "#212121",
+        "conference" : "CPA",
+        "division" : "Pacífica Leste"
+      },
+      "value" : 2,
+      "games" : 2
+    } ],
+    "TACKLES" : [ {
+      "playerId" : "00000000-0000-4000-8000-000000000060",
+      "name" : "Gonzalo Gilberg",
+      "position" : "MLB",
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000048",
+        "name" : "Lobos-Guará de Serra Alta",
+        "shortName" : "SAL",
+        "city" : "Serra Alta",
+        "primaryColor" : "#7A2E1F",
+        "secondaryColor" : "#E8C39E",
+        "conference" : "CAT",
+        "division" : "Atlântica Norte"
+      },
+      "value" : 26,
+      "games" : 2
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000061",
+      "name" : "Tyler Gilquist",
+      "position" : "MLB",
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000062",
+        "name" : "Condores de Alto Jacarandá",
+        "shortName" : "AJA",
+        "city" : "Alto Jacarandá",
+        "primaryColor" : "#4A148C",
+        "secondaryColor" : "#FFEB3B",
+        "conference" : "CPA",
+        "division" : "Pacífica Norte"
+      },
+      "value" : 23,
+      "games" : 2
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000063",
+      "name" : "Malik Casmore",
+      "position" : "MLB",
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000007",
+        "name" : "Sentinelas de Cedro Alto",
+        "shortName" : "CAL",
+        "city" : "Cedro Alto",
+        "primaryColor" : "#3E2723",
+        "secondaryColor" : "#8BC34A",
+        "conference" : "CPA",
+        "division" : "Pacífica Sul"
+      },
+      "value" : 22,
+      "games" : 2
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000064",
+      "name" : "Pedro Ivaranski",
+      "position" : "MLB",
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000052",
+        "name" : "Sucuris de Ponta Granito",
+        "shortName" : "PGR",
+        "city" : "Ponta Granito",
+        "primaryColor" : "#33691E",
+        "secondaryColor" : "#CDDC39",
+        "conference" : "CPA",
+        "division" : "Pacífica Norte"
+      },
+      "value" : 21,
+      "games" : 2
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000065",
+      "name" : "Aleksander Penton",
+      "position" : "MLB",
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000034",
+        "name" : "Cometas de Porto Brisa",
+        "shortName" : "PBR",
+        "city" : "Porto Brisa",
+        "primaryColor" : "#00695C",
+        "secondaryColor" : "#FFAB00",
+        "conference" : "CAT",
+        "division" : "Atlântica Oeste"
+      },
+      "value" : 19,
+      "games" : 2
+    } ]
+  },
+  "offseason" : {
+    "canAdvance" : true,
+    "steps" : [ {
+      "phase" : "RENEWALS",
+      "status" : "PENDING",
+      "handledBy" : "SEASON_ADVANCE"
+    }, {
+      "phase" : "FREE_AGENCY",
+      "status" : "PENDING",
+      "handledBy" : "BLOCK_7"
+    }, {
+      "phase" : "DRAFT",
+      "status" : "PENDING",
+      "handledBy" : "BLOCK_7"
+    }, {
+      "phase" : "PRESEASON",
+      "status" : "PENDING",
+      "handledBy" : "SEASON_ADVANCE"
+    } ],
+    "expiringContracts" : [ {
+      "playerId" : "00000000-0000-4000-8000-000000000066",
+      "name" : "Mateus Normont",
+      "position" : "C",
+      "age" : 26,
+      "overall" : 85,
+      "endSeason" : 2026,
+      "capHit" : 963383600
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000067",
+      "name" : "Kyle Ivarore",
+      "position" : "LG",
+      "age" : 31,
+      "overall" : 83,
+      "endSeason" : 2026,
+      "capHit" : 801363000
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000068",
+      "name" : "Tomás Torford",
+      "position" : "MLB",
+      "age" : 29,
+      "overall" : 81,
+      "endSeason" : 2026,
+      "capHit" : 601841000
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000069",
+      "name" : "Bjorn Rosovic",
+      "position" : "SS",
+      "age" : 30,
+      "overall" : 81,
+      "endSeason" : 2026,
+      "capHit" : 513235900
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000070",
+      "name" : "Logan Ivarane",
+      "position" : "FS",
+      "age" : 25,
+      "overall" : 79,
+      "endSeason" : 2026,
+      "capHit" : 424336300
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000071",
+      "name" : "Tyler Albuales",
+      "position" : "C",
+      "age" : 26,
+      "overall" : 78,
+      "endSeason" : 2026,
+      "capHit" : 487303800
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000072",
+      "name" : "Vinícius Jordell",
+      "position" : "CB",
+      "age" : 31,
+      "overall" : 75,
+      "endSeason" : 2026,
+      "capHit" : 353559800
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000073",
+      "name" : "Andrés Faleiro",
+      "position" : "WR",
+      "age" : 31,
+      "overall" : 74,
+      "endSeason" : 2026,
+      "capHit" : 323626900
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000074",
+      "name" : "Aleksander Kelley",
+      "position" : "CB",
+      "age" : 26,
+      "overall" : 68,
+      "endSeason" : 2026,
+      "capHit" : 144553100
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000075",
+      "name" : "Elijah Norane",
+      "position" : "RB",
+      "age" : 21,
+      "overall" : 67,
+      "endSeason" : 2026,
+      "capHit" : 21600000
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000076",
+      "name" : "Joaquín Dorford",
+      "position" : "WR",
+      "age" : 21,
+      "overall" : 66,
+      "endSeason" : 2026,
+      "capHit" : 21600000
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000077",
+      "name" : "Luca Pendell",
+      "position" : "TE",
+      "age" : 24,
+      "overall" : 66,
+      "endSeason" : 2026,
+      "capHit" : 21600000
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000078",
+      "name" : "Trey Falton",
+      "position" : "LT",
+      "age" : 22,
+      "overall" : 66,
+      "endSeason" : 2026,
+      "capHit" : 21600000
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000079",
+      "name" : "Logan Lorette",
+      "position" : "DE",
+      "age" : 23,
+      "overall" : 66,
+      "endSeason" : 2026,
+      "capHit" : 21600000
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000080",
+      "name" : "Marcus Marovic",
+      "position" : "OLB",
+      "age" : 24,
+      "overall" : 66,
+      "endSeason" : 2026,
+      "capHit" : 21600000
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000081",
+      "name" : "Emeka Salmont",
+      "position" : "LG",
+      "age" : 22,
+      "overall" : 65,
+      "endSeason" : 2026,
+      "capHit" : 21600000
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000082",
+      "name" : "Danilo Falore",
+      "position" : "CB",
+      "age" : 22,
+      "overall" : 65,
+      "endSeason" : 2026,
+      "capHit" : 21600000
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000083",
+      "name" : "Felipe Monore",
+      "position" : "SS",
+      "age" : 24,
+      "overall" : 65,
+      "endSeason" : 2026,
+      "capHit" : 21600000
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000084",
+      "name" : "Austin Salaro",
+      "position" : "CB",
+      "age" : 24,
+      "overall" : 64,
+      "endSeason" : 2026,
+      "capHit" : 21600000
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000085",
+      "name" : "Kyle Salales",
+      "position" : "C",
+      "age" : 24,
+      "overall" : 63,
+      "endSeason" : 2026,
+      "capHit" : 21600000
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000086",
+      "name" : "Enzo Doraro",
+      "position" : "MLB",
+      "age" : 22,
+      "overall" : 62,
+      "endSeason" : 2026,
+      "capHit" : 21600000
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000087",
+      "name" : "Mateo Fenmont",
+      "position" : "WR",
+      "age" : 25,
+      "overall" : 61,
+      "endSeason" : 2026,
+      "capHit" : 21600000
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000088",
+      "name" : "Gabriel Garford",
+      "position" : "DT",
+      "age" : 22,
+      "overall" : 61,
+      "endSeason" : 2026,
+      "capHit" : 21600000
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000089",
+      "name" : "Danilo Normore",
+      "position" : "QB",
+      "age" : 23,
+      "overall" : 60,
+      "endSeason" : 2026,
+      "capHit" : 21600000
+    }, {
+      "playerId" : "00000000-0000-4000-8000-000000000090",
+      "name" : "Rodrigo Albumore",
+      "position" : "DE",
+      "age" : 22,
+      "overall" : 59,
+      "endSeason" : 2026,
+      "capHit" : 21600000
+    } ]
+  }
+}

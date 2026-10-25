@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 
 /**
  * Mensagens de erro da API (RF46 CA05, RNF13): os 3 idiomas têm as mesmas chaves, inclusive os códigos da plataforma (bloco 3) e os
- * do editor de mundos (bloco 4), os da carreira, do elenco e do depth chart (bloco 6a) e os da partida (bloco 6b).
+ * do editor de mundos (bloco 4), os da carreira, do elenco e do depth chart (bloco 6a), os da partida (bloco 6b) e os da temporada (bloco 6c).
  * No basquete a lista conferida era a do Digital Double (RF44), que entra aqui no bloco 9.
  */
 class ApiErrorMessagesTest {
@@ -38,6 +38,8 @@ class ApiErrorMessagesTest {
       "PLAYBOOK_VERSION_CONFLICT", "NO_NEXT_GAME", "DEPTH_CHART_INVALID", "MATCH_FINISHED", "MATCH_NOT_FINISHED", "MATCH_VERSION_CONFLICT",
       "INVALID_ADVANCE_MODE", "DECISION_PENDING", "DECISION_CLOSED", "DECISION_NOT_FOUND", "PLAY_NOT_OFFERED", "ADJUSTMENT_NOT_ALLOWED",
       "TIMEOUT_NOT_ALLOWED", "INVALID_ADJUSTMENT");
+  /** Bloco 6c — temporada (RF35 avanço e analista). */
+  private static final List<String> SEASON = List.of("SEASON_NOT_FINISHED", "SEASON_ALREADY_ADVANCED", "ANALYSIS_NOT_FOUND");
 
   private static Set<String> keys(String path) throws Exception {
     Properties p = new Properties();
@@ -56,5 +58,6 @@ class ApiErrorMessagesTest {
     for (String code : WORLD_EDITOR) assertThat(pt).as("código " + code).contains("error." + code);
     for (String code : CAREER) assertThat(pt).as("código " + code).contains("error." + code);
     for (String code : MATCH) assertThat(pt).as("código " + code).contains("error." + code);
+    for (String code : SEASON) assertThat(pt).as("código " + code).contains("error." + code);
   }
 }

@@ -40,7 +40,7 @@ package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
 database "MySQL 8" as s1
 database "S3/MinIO" as s2
 c1 --> c2 : usa
-c2 --> c8 : GET /careers/{id}/trophies (alvo)\nGET /careers/{id}/awards (alvo)
+c2 --> c8 : GET /careers/{id}/trophies\nGET /careers/{id}/awards (alvo)
 c8 --> c9
 c9 ..> pkg_app : orquestra
 pkg_app --> pkg_ports : depende (DIP)

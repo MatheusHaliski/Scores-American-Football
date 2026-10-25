@@ -22,10 +22,12 @@ public final class CareerAssembler {
     public CareerDtos.RecordDto record() { return CareerDtos.RecordDto.of(wins, losses, ties); }
   }
 
+  /** Campanha da temporada regular (os jogos de playoff não contam, D-106). */
   public static Map<UUID, Tally> tallies(List<Fixture> fixtures) {
     Map<UUID, int[]> acc = new HashMap<>();
     for (Fixture f : fixtures) {
       if (!f.isFinished() || f.getHomeScore() == null || f.getAwayScore() == null) continue;
+      if (f.getSeason() != null && f.getWeekNumber() > f.getSeason().getRegularSeasonWeeks()) continue;
       int h = f.getHomeScore(), a = f.getAwayScore();
       bump(acc, f.getHomeClub().getId(), h, a);
       bump(acc, f.getAwayClub().getId(), a, h);
@@ -69,6 +71,11 @@ public final class CareerAssembler {
     return new CareerDtos.FixtureDto(f.getId(), f.getWeekNumber(), f.getKickoffDate(), f.getKickoffSlot().name(), f.getStatus().name(),
         f.getHomeClub().getId(), f.getAwayClub().getId(), f.getHomeScore(), f.getAwayScore(), f.isDivisional(), f.isConferenceGame(),
         userClubId != null && f.involves(userClubId));
+  }
+
+  /** Última semana existente da temporada (a temporada regular e as semanas de playoff já criadas). */
+  public static int lastWeek(List<br.com.velion.scoresaf.domain.season.Week> weeks, Season season) {
+    return weeks.stream().mapToInt(br.com.velion.scoresaf.domain.season.Week::getNumber).max().orElse(season.getRegularSeasonWeeks());
   }
 
   /** Ordem do jogo na semana: horário (quinta, domingo cedo, tarde, noite, segunda), depois o nome do mandante. */

@@ -41,8 +41,8 @@ public class AuthRateLimitFilter extends OncePerRequestFilter {
         route("password-change", "PUT", "/api/v1/me/password", 20, Duration.ofHours(1), true),
         route("email-change", "PUT", "/api/v1/me/email", 30, Duration.ofHours(1), true),
         route("account-deletion", "DELETE", "/api/v1/me", 10, Duration.ofHours(1), true),
-        // as regras do jogo (análise por IA, loja; upload e links do Meu jogador no bloco 9) já ficam declaradas com os
-        // limites do basquete para as rotas que vão chegar
+        // as regras do jogo seguem os limites do basquete: o analista do sistema (bloco 6c, GET /analysis e POST /analysis/refresh,
+        // D-104) e a loja, que ainda vai chegar (upload e links do Meu jogador no bloco 9)
         new Rule("analysis", r -> r.getRequestURI().contains("/analysis"), cfg == null ? 6 : cfg.analysisPerMinute(), Duration.ofMinutes(1), false),
         new Rule("store", r -> r.getRequestURI().startsWith("/api/v1/store/"), cfg == null ? 20 : cfg.storePerMinute(), Duration.ofMinutes(1), false));
   }

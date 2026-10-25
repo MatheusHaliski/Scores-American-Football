@@ -6,6 +6,7 @@ import { matchLocale } from "@/i18n/config";
 import { mockAccount } from "./account";
 import { mockCareers } from "./career";
 import { mockMatches } from "./match";
+import { mockSeason } from "./season";
 import { uuidFrom } from "./rng";
 import { getUser, setUser } from "./state";
 
@@ -40,6 +41,11 @@ function matches() {
   return mockMatches(requireUser());
 }
 
+/** Temporada mock do usuário da sessão (bloco 6c): classificação, playoffs, notícias, resumo, avanço, troféus, moral e analista. */
+function season() {
+  return mockSeason(requireUser());
+}
+
 /** Tokens de mentira gerados na hora (o modo mock não manda Bearer a lugar nenhum). */
 function auth(user: UserAccount): AuthResponse {
   return { user, tokens: { accessToken: `mock.${crypto.randomUUID()}`, refreshToken: null, accessExpiresAt: Date.now() + 15 * 60_000 } };
@@ -52,7 +58,7 @@ function newUser(email: string, displayName: string, locale?: string): UserAccou
   return { id: uuidFrom("user", email.toLowerCase()), email, displayName, avatarUrl: null, locale: matchLocale(locale) ?? getLocale(), role: roles.includes("ADMIN") ? "ADMIN" : "PLAYER", roles };
 }
 
-/** Implementação `mock` do contrato: tudo no navegador, persistido em localStorage, com as regras do backend (6b: partida por descida). */
+/** Implementação `mock` do contrato: tudo no navegador, persistido em localStorage, com as regras do backend (6b: partida por descida; 6c: temporada). */
 export function createMockApi(): ScoresApi {
   return {
     auth: {
@@ -134,8 +140,22 @@ export function createMockApi(): ScoresApi {
       get: (id) => later(() => careers().get(id)),
       update: (id, req) => later(() => careers().update(id, req), 200),
       remove: (id, confirm) => later(() => careers().remove(id, confirm), 300),
-      dashboard: (id) => later(() => ({ ...careers().dashboard(id), live: matches().liveRef(id) })),
+      dashboard: (id) => later(() => ({ ...careers().dashboard(id), live: matches().liveRef(id), ...season().dashboardExtras(id) })),
       calendar: (id, week) => later(() => careers().calendar(id, week)),
+      morale: (id) => later(() => season().morale(id)),
+    },
+    season: {
+      standings: (careerId) => later(() => season().standings(careerId)),
+      weekNews: (careerId, week) => later(() => season().weekNews(careerId, week)),
+      playoffs: (careerId) => later(() => season().playoffs(careerId)),
+      bracket: (careerId) => later(() => season().bracket(careerId)),
+      summary: (careerId, number) => later(() => season().summary(careerId, number), 200),
+      advance: (careerId, req) => later(() => season().advance(careerId, req), 500),
+      trophies: (careerId) => later(() => season().trophies(careerId)),
+    },
+    analysis: {
+      get: (careerId) => later(() => season().analysis(careerId)),
+      refresh: (careerId) => later(() => season().refreshAnalysis(careerId), 300),
     },
     roster: {
       get: (careerId) => later(() => careers().roster(careerId)),

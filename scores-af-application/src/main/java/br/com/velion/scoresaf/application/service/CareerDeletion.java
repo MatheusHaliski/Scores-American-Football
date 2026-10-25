@@ -1,6 +1,9 @@
 package br.com.velion.scoresaf.application.service;
 
+import br.com.velion.scoresaf.application.port.out.persistence.AnalysisReportRepository;
 import br.com.velion.scoresaf.application.port.out.persistence.CareerSaveRepository;
+import br.com.velion.scoresaf.application.port.out.persistence.PlayoffSeedRepository;
+import br.com.velion.scoresaf.application.port.out.persistence.SeasonAwardRepository;
 import br.com.velion.scoresaf.application.port.out.persistence.DepthChartRepository;
 import br.com.velion.scoresaf.application.port.out.persistence.DepthChartSlotRepository;
 import br.com.velion.scoresaf.application.port.out.persistence.FixtureRepository;
@@ -20,9 +23,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Exclusão definitiva de uma carreira (RF11 DELETE, RF46 eliminação da conta): box score dos jogadores, relatórios, partidas ao
- * vivo (com o snapshot e o log de decisões), playbook, plano de jogo (bloco 6b), depth chart, movimentos do elenco, calendário,
- * temporadas, o save e o mundo SAVE inteiro, nessa ordem (filhos antes dos pais; FKs em ForeignKeyPolicy). Projeções de outros
+ * Exclusão definitiva de uma carreira (RF11 DELETE, RF46 eliminação da conta): relatórios do analista, prêmios e sementes dos
+ * playoffs (bloco 6c), box score dos jogadores, relatórios, partidas ao vivo (com o snapshot e o log de decisões), playbook, plano de
+ * jogo (bloco 6b), depth chart, movimentos do elenco, calendário, temporadas, o save e o mundo SAVE inteiro, nessa ordem (filhos antes dos pais; FKs em ForeignKeyPolicy). Projeções de outros
  * bancos (play-by-play, inbox, cache) entram aqui quando existirem.
  */
 @Service
@@ -31,15 +34,16 @@ public class CareerDeletion {
   private final FixtureRepository fixtures; private final RosterMoveRepository moves; private final DepthChartRepository charts;
   private final DepthChartSlotRepository slots; private final WorldGraphStore graph; private final MatchSessionRepository sessions;
   private final MatchReportRepository reports; private final PlayerMatchStatsRepository stats; private final GamePlanSetupRepository plans;
-  private final PlaybookSetupRepository playbooks; private final PlaybookWeightRepository weights;
+  private final PlaybookSetupRepository playbooks; private final PlaybookWeightRepository weights; private final AnalysisReportRepository analyses;
+  private final SeasonAwardRepository awards; private final PlayoffSeedRepository seeds;
 
   public CareerDeletion(CareerSaveRepository saves, SeasonRepository seasons, WeekRepository weeks, FixtureRepository fixtures, RosterMoveRepository moves,
                         DepthChartRepository charts, DepthChartSlotRepository slots, WorldGraphStore graph, MatchSessionRepository sessions,
                         MatchReportRepository reports, PlayerMatchStatsRepository stats, GamePlanSetupRepository plans, PlaybookSetupRepository playbooks,
-                        PlaybookWeightRepository weights) {
+                        PlaybookWeightRepository weights, AnalysisReportRepository analyses, SeasonAwardRepository awards, PlayoffSeedRepository seeds) {
     this.saves = saves; this.seasons = seasons; this.weeks = weeks; this.fixtures = fixtures; this.moves = moves; this.charts = charts;
     this.slots = slots; this.graph = graph; this.sessions = sessions; this.reports = reports; this.stats = stats; this.plans = plans;
-    this.playbooks = playbooks; this.weights = weights;
+    this.playbooks = playbooks; this.weights = weights; this.analyses = analyses; this.awards = awards; this.seeds = seeds;
   }
 
   /** Tudo em DELETEs em lote por carreira (nada de filho carregado no contexto apontando para o save apagado). */
@@ -48,6 +52,9 @@ public class CareerDeletion {
     World world = save.getWorld();
     save.setSeason(null);
     saves.saveAndFlush(save);
+    analyses.deleteByCareerId(save.getId());
+    awards.deleteAllOfCareer(save.getId());
+    seeds.deleteAllOfCareer(save.getId());
     stats.deleteByCareerId(save.getId());
     reports.deleteByCareerId(save.getId());
     sessions.deleteByCareerId(save.getId());

@@ -33,7 +33,7 @@ import org.testcontainers.mysql.MySQLContainer;
 @Tag("it")
 @Testcontainers
 @SpringBootTest(classes = PersistenceTestApplication.class)
-@Import({CatalogGraph.class, CareerGraph.class, MatchGraph.class})
+@Import({CatalogGraph.class, CareerGraph.class, MatchGraph.class, SeasonGraph.class})
 class FlywayMySqlValidationTest {
   @Container static final MySQLContainer MYSQL = new MySQLContainer("mysql:8.0").withDatabaseName("scoresaf");
 
@@ -54,6 +54,7 @@ class FlywayMySqlValidationTest {
   @Autowired CatalogGraph catalog;
   @Autowired CareerGraph career;
   @Autowired MatchGraph match;
+  @Autowired SeasonGraph season;
 
   @Test
   void schema_da_v1_valida_contra_as_entidades_no_mysql() {
@@ -138,5 +139,29 @@ class FlywayMySqlValidationTest {
     assertThat(career.moves.findByCareerIdOrderByCreatedAtAsc(saved.career().getId())).extracting(RosterMove::getKind)
         .containsExactly(RosterMoveKind.RELEASE, RosterMoveKind.WAIVER_CLEARED);
     assertThat(career.moves.findById(release.getId())).get().satisfies(x -> assertThat(x.getDeadMoneyNextSeason()).isEqualTo(3_000_00L));
+  }
+
+  /**
+   * A V6 (temporada, bloco 6c) aceita a temporada encerrada (campeã, vice, fim), a semente de playoff, o prêmio, o relatório do analista
+   * e o movimento CONTRACT_EXPIRED, e devolve o que foi gravado.
+   */
+  @Test
+  void temporada_grava_pela_v6_e_rele() {
+    DefaultWorld w = new DefaultWorldFactory().build(DefaultWorldFactory.DEFAULT_SEED + 5);
+    catalog.persist(w);
+    CareerGraph.Saved saved = career.persist(w, "v6-" + java.util.UUID.randomUUID() + "@example.com");
+    SeasonGraph.Saved s = season.persist(saved, saved.slot().getPlayer());
+    assertThat(season.seasons.findById(saved.season().getId())).get().satisfies(x -> {
+      assertThat(x.isCompleted()).isTrue();
+      assertThat(x.getChampionClub().getId()).isEqualTo(saved.fixture().getHomeClub().getId());
+      assertThat(x.getRunnerUpClub().getId()).isEqualTo(saved.fixture().getAwayClub().getId());
+    });
+    assertThat(season.seeds.findBySeasonIdOrderBySeedAsc(saved.season().getId())).singleElement().satisfies(x -> {
+      assertThat(x.isDivisionChampion()).isTrue();
+      assertThat(x.getTiebreak()).isEqualTo("HEAD_TO_HEAD");
+    });
+    assertThat(season.awards.findBySeasonId(saved.season().getId())).singleElement().satisfies(x -> assertThat(x.getScore()).isEqualTo(412.5));
+    assertThat(season.reports.findFirstByCareerIdOrderByCreatedAtDesc(saved.career().getId())).get().satisfies(x -> assertThat(x.getWeek()).isEqualTo(3));
+    assertThat(season.moves.findById(s.expired().getId())).get().satisfies(x -> assertThat(x.getKind()).isEqualTo(RosterMoveKind.CONTRACT_EXPIRED));
   }
 }

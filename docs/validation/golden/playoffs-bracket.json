@@ -1,0 +1,561 @@
+{
+  "seasonId" : "00000000-0000-4000-8000-000000000001",
+  "status" : "FINISHED",
+  "userClubId" : "00000000-0000-4000-8000-000000000002",
+  "rounds" : [ {
+    "index" : 0,
+    "kind" : "WILD_CARD",
+    "week" : 3,
+    "status" : "COMPLETED",
+    "games" : [ {
+      "fixtureId" : "00000000-0000-4000-8000-000000000003",
+      "conference" : "CPA",
+      "home" : {
+        "club" : {
+          "id" : "00000000-0000-4000-8000-000000000004",
+          "name" : "Arraias de Lagoa Funda",
+          "shortName" : "LFU",
+          "city" : "Lagoa Funda",
+          "primaryColor" : "#0277BD",
+          "secondaryColor" : "#B3E5FC",
+          "conference" : "CPA",
+          "division" : "Pacífica Oeste"
+        },
+        "seed" : 2
+      },
+      "away" : {
+        "club" : {
+          "id" : "00000000-0000-4000-8000-000000000005",
+          "name" : "Sentinelas de Cedro Alto",
+          "shortName" : "CAL",
+          "city" : "Cedro Alto",
+          "primaryColor" : "#3E2723",
+          "secondaryColor" : "#8BC34A",
+          "conference" : "CPA",
+          "division" : "Pacífica Sul"
+        },
+        "seed" : 7
+      },
+      "homeScore" : 23,
+      "awayScore" : 13,
+      "overtime" : false,
+      "winnerClubId" : "00000000-0000-4000-8000-000000000004",
+      "neutralSite" : false,
+      "status" : "FINISHED",
+      "date" : "2026-09-27",
+      "kickoffSlot" : "SUN_EARLY",
+      "userGame" : false
+    }, {
+      "fixtureId" : "00000000-0000-4000-8000-000000000006",
+      "conference" : "CAT",
+      "home" : {
+        "club" : {
+          "id" : "00000000-0000-4000-8000-000000000002",
+          "name" : "Trovões de Porto Alvorada",
+          "shortName" : "PAV",
+          "city" : "Porto Alvorada",
+          "primaryColor" : "#1B2A4A",
+          "secondaryColor" : "#F2B705",
+          "conference" : "CAT",
+          "division" : "Atlântica Norte"
+        },
+        "seed" : 2
+      },
+      "away" : {
+        "club" : {
+          "id" : "00000000-0000-4000-8000-000000000007",
+          "name" : "Ciclones de Baía Coral",
+          "shortName" : "BCO",
+          "city" : "Baía Coral",
+          "primaryColor" : "#E65100",
+          "secondaryColor" : "#263238",
+          "conference" : "CAT",
+          "division" : "Atlântica Oeste"
+        },
+        "seed" : 7
+      },
+      "homeScore" : 31,
+      "awayScore" : 9,
+      "overtime" : false,
+      "winnerClubId" : "00000000-0000-4000-8000-000000000002",
+      "neutralSite" : false,
+      "status" : "FINISHED",
+      "date" : "2026-09-27",
+      "kickoffSlot" : "SUN_EARLY",
+      "userGame" : true
+    }, {
+      "fixtureId" : "00000000-0000-4000-8000-000000000008",
+      "conference" : "CAT",
+      "home" : {
+        "club" : {
+          "id" : "00000000-0000-4000-8000-000000000009",
+          "name" : "Escorpiões de Serra Cobalto",
+          "shortName" : "SCO",
+          "city" : "Serra Cobalto",
+          "primaryColor" : "#1A237E",
+          "secondaryColor" : "#B0BEC5",
+          "conference" : "CAT",
+          "division" : "Atlântica Oeste"
+        },
+        "seed" : 3
+      },
+      "away" : {
+        "club" : {
+          "id" : "00000000-0000-4000-8000-000000000010",
+          "name" : "Arpões de Baía Serena",
+          "shortName" : "BSE",
+          "city" : "Baía Serena",
+          "primaryColor" : "#005B7F",
+          "secondaryColor" : "#9AD1D4",
+          "conference" : "CAT",
+          "division" : "Atlântica Norte"
+        },
+        "seed" : 6
+      },
+      "homeScore" : 13,
+      "awayScore" : 19,
+      "overtime" : false,
+      "winnerClubId" : "00000000-0000-4000-8000-000000000010",
+      "neutralSite" : false,
+      "status" : "FINISHED",
+      "date" : "2026-09-27",
+      "kickoffSlot" : "SUN_LATE",
+      "userGame" : false
+    }, {
+      "fixtureId" : "00000000-0000-4000-8000-000000000011",
+      "conference" : "CPA",
+      "home" : {
+        "club" : {
+          "id" : "00000000-0000-4000-8000-000000000012",
+          "name" : "Faróis de Ribeira Turquesa",
+          "shortName" : "RTU",
+          "city" : "Ribeira Turquesa",
+          "primaryColor" : "#006064",
+          "secondaryColor" : "#FFD600",
+          "conference" : "CPA",
+          "division" : "Pacífica Leste"
+        },
+        "seed" : 3
+      },
+      "away" : {
+        "club" : {
+          "id" : "00000000-0000-4000-8000-000000000013",
+          "name" : "Tamanduás de Campos Rubi",
+          "shortName" : "CRU",
+          "city" : "Campos Rubi",
+          "primaryColor" : "#880E4F",
+          "secondaryColor" : "#F8BBD0",
+          "conference" : "CPA",
+          "division" : "Pacífica Norte"
+        },
+        "seed" : 6
+      },
+      "homeScore" : 21,
+      "awayScore" : 23,
+      "overtime" : false,
+      "winnerClubId" : "00000000-0000-4000-8000-000000000013",
+      "neutralSite" : false,
+      "status" : "FINISHED",
+      "date" : "2026-09-27",
+      "kickoffSlot" : "SUN_LATE",
+      "userGame" : false
+    }, {
+      "fixtureId" : "00000000-0000-4000-8000-000000000014",
+      "conference" : "CAT",
+      "home" : {
+        "club" : {
+          "id" : "00000000-0000-4000-8000-000000000015",
+          "name" : "Tempestades de Monte Azulão",
+          "shortName" : "MAZ",
+          "city" : "Monte Azulão",
+          "primaryColor" : "#263238",
+          "secondaryColor" : "#4FC3F7",
+          "conference" : "CAT",
+          "division" : "Atlântica Sul"
+        },
+        "seed" : 4
+      },
+      "away" : {
+        "club" : {
+          "id" : "00000000-0000-4000-8000-000000000016",
+          "name" : "Tubarões-Martelo de Pedra Lume",
+          "shortName" : "PLU",
+          "city" : "Pedra Lume",
+          "primaryColor" : "#0E3B43",
+          "secondaryColor" : "#57C4AD",
+          "conference" : "CAT",
+          "division" : "Atlântica Leste"
+        },
+        "seed" : 5
+      },
+      "homeScore" : 10,
+      "awayScore" : 17,
+      "overtime" : false,
+      "winnerClubId" : "00000000-0000-4000-8000-000000000016",
+      "neutralSite" : false,
+      "status" : "FINISHED",
+      "date" : "2026-09-27",
+      "kickoffSlot" : "SUN_NIGHT",
+      "userGame" : false
+    }, {
+      "fixtureId" : "00000000-0000-4000-8000-000000000017",
+      "conference" : "CPA",
+      "home" : {
+        "club" : {
+          "id" : "00000000-0000-4000-8000-000000000018",
+          "name" : "Sucuris de Ponta Granito",
+          "shortName" : "PGR",
+          "city" : "Ponta Granito",
+          "primaryColor" : "#33691E",
+          "secondaryColor" : "#CDDC39",
+          "conference" : "CPA",
+          "division" : "Pacífica Norte"
+        },
+        "seed" : 4
+      },
+      "away" : {
+        "club" : {
+          "id" : "00000000-0000-4000-8000-000000000019",
+          "name" : "Meteoros de Porto Quartzo",
+          "shortName" : "PQU",
+          "city" : "Porto Quartzo",
+          "primaryColor" : "#311B92",
+          "secondaryColor" : "#00E5FF",
+          "conference" : "CPA",
+          "division" : "Pacífica Sul"
+        },
+        "seed" : 5
+      },
+      "homeScore" : 27,
+      "awayScore" : 24,
+      "overtime" : true,
+      "winnerClubId" : "00000000-0000-4000-8000-000000000018",
+      "neutralSite" : false,
+      "status" : "FINISHED",
+      "date" : "2026-09-28",
+      "kickoffSlot" : "MON_NIGHT",
+      "userGame" : false
+    } ],
+    "byes" : [ {
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000020",
+        "name" : "Harpias de Rio Ametista",
+        "shortName" : "RAM",
+        "city" : "Rio Ametista",
+        "primaryColor" : "#5E2B97",
+        "secondaryColor" : "#C0C0C0",
+        "conference" : "CAT",
+        "division" : "Atlântica Leste"
+      },
+      "seed" : 1
+    }, {
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000021",
+        "name" : "Marujos de Costa Safira",
+        "shortName" : "CSA",
+        "city" : "Costa Safira",
+        "primaryColor" : "#0D47A1",
+        "secondaryColor" : "#FFFFFF",
+        "conference" : "CPA",
+        "division" : "Pacífica Sul"
+      },
+      "seed" : 1
+    } ]
+  }, {
+    "index" : 1,
+    "kind" : "DIVISIONAL",
+    "week" : 4,
+    "status" : "COMPLETED",
+    "games" : [ {
+      "fixtureId" : "00000000-0000-4000-8000-000000000022",
+      "conference" : "CPA",
+      "home" : {
+        "club" : {
+          "id" : "00000000-0000-4000-8000-000000000004",
+          "name" : "Arraias de Lagoa Funda",
+          "shortName" : "LFU",
+          "city" : "Lagoa Funda",
+          "primaryColor" : "#0277BD",
+          "secondaryColor" : "#B3E5FC",
+          "conference" : "CPA",
+          "division" : "Pacífica Oeste"
+        },
+        "seed" : 2
+      },
+      "away" : {
+        "club" : {
+          "id" : "00000000-0000-4000-8000-000000000018",
+          "name" : "Sucuris de Ponta Granito",
+          "shortName" : "PGR",
+          "city" : "Ponta Granito",
+          "primaryColor" : "#33691E",
+          "secondaryColor" : "#CDDC39",
+          "conference" : "CPA",
+          "division" : "Pacífica Norte"
+        },
+        "seed" : 4
+      },
+      "homeScore" : 27,
+      "awayScore" : 12,
+      "overtime" : false,
+      "winnerClubId" : "00000000-0000-4000-8000-000000000004",
+      "neutralSite" : false,
+      "status" : "FINISHED",
+      "date" : "2026-10-04",
+      "kickoffSlot" : "SUN_EARLY",
+      "userGame" : false
+    }, {
+      "fixtureId" : "00000000-0000-4000-8000-000000000023",
+      "conference" : "CAT",
+      "home" : {
+        "club" : {
+          "id" : "00000000-0000-4000-8000-000000000020",
+          "name" : "Harpias de Rio Ametista",
+          "shortName" : "RAM",
+          "city" : "Rio Ametista",
+          "primaryColor" : "#5E2B97",
+          "secondaryColor" : "#C0C0C0",
+          "conference" : "CAT",
+          "division" : "Atlântica Leste"
+        },
+        "seed" : 1
+      },
+      "away" : {
+        "club" : {
+          "id" : "00000000-0000-4000-8000-000000000010",
+          "name" : "Arpões de Baía Serena",
+          "shortName" : "BSE",
+          "city" : "Baía Serena",
+          "primaryColor" : "#005B7F",
+          "secondaryColor" : "#9AD1D4",
+          "conference" : "CAT",
+          "division" : "Atlântica Norte"
+        },
+        "seed" : 6
+      },
+      "homeScore" : 10,
+      "awayScore" : 9,
+      "overtime" : false,
+      "winnerClubId" : "00000000-0000-4000-8000-000000000020",
+      "neutralSite" : false,
+      "status" : "FINISHED",
+      "date" : "2026-10-04",
+      "kickoffSlot" : "SUN_EARLY",
+      "userGame" : false
+    }, {
+      "fixtureId" : "00000000-0000-4000-8000-000000000024",
+      "conference" : "CAT",
+      "home" : {
+        "club" : {
+          "id" : "00000000-0000-4000-8000-000000000002",
+          "name" : "Trovões de Porto Alvorada",
+          "shortName" : "PAV",
+          "city" : "Porto Alvorada",
+          "primaryColor" : "#1B2A4A",
+          "secondaryColor" : "#F2B705",
+          "conference" : "CAT",
+          "division" : "Atlântica Norte"
+        },
+        "seed" : 2
+      },
+      "away" : {
+        "club" : {
+          "id" : "00000000-0000-4000-8000-000000000016",
+          "name" : "Tubarões-Martelo de Pedra Lume",
+          "shortName" : "PLU",
+          "city" : "Pedra Lume",
+          "primaryColor" : "#0E3B43",
+          "secondaryColor" : "#57C4AD",
+          "conference" : "CAT",
+          "division" : "Atlântica Leste"
+        },
+        "seed" : 5
+      },
+      "homeScore" : 31,
+      "awayScore" : 13,
+      "overtime" : false,
+      "winnerClubId" : "00000000-0000-4000-8000-000000000002",
+      "neutralSite" : false,
+      "status" : "FINISHED",
+      "date" : "2026-10-04",
+      "kickoffSlot" : "SUN_LATE",
+      "userGame" : true
+    }, {
+      "fixtureId" : "00000000-0000-4000-8000-000000000025",
+      "conference" : "CPA",
+      "home" : {
+        "club" : {
+          "id" : "00000000-0000-4000-8000-000000000021",
+          "name" : "Marujos de Costa Safira",
+          "shortName" : "CSA",
+          "city" : "Costa Safira",
+          "primaryColor" : "#0D47A1",
+          "secondaryColor" : "#FFFFFF",
+          "conference" : "CPA",
+          "division" : "Pacífica Sul"
+        },
+        "seed" : 1
+      },
+      "away" : {
+        "club" : {
+          "id" : "00000000-0000-4000-8000-000000000013",
+          "name" : "Tamanduás de Campos Rubi",
+          "shortName" : "CRU",
+          "city" : "Campos Rubi",
+          "primaryColor" : "#880E4F",
+          "secondaryColor" : "#F8BBD0",
+          "conference" : "CPA",
+          "division" : "Pacífica Norte"
+        },
+        "seed" : 6
+      },
+      "homeScore" : 17,
+      "awayScore" : 21,
+      "overtime" : false,
+      "winnerClubId" : "00000000-0000-4000-8000-000000000013",
+      "neutralSite" : false,
+      "status" : "FINISHED",
+      "date" : "2026-10-04",
+      "kickoffSlot" : "SUN_NIGHT",
+      "userGame" : false
+    } ],
+    "byes" : [ ]
+  }, {
+    "index" : 2,
+    "kind" : "CONFERENCE",
+    "week" : 5,
+    "status" : "COMPLETED",
+    "games" : [ {
+      "fixtureId" : "00000000-0000-4000-8000-000000000026",
+      "conference" : "CAT",
+      "home" : {
+        "club" : {
+          "id" : "00000000-0000-4000-8000-000000000020",
+          "name" : "Harpias de Rio Ametista",
+          "shortName" : "RAM",
+          "city" : "Rio Ametista",
+          "primaryColor" : "#5E2B97",
+          "secondaryColor" : "#C0C0C0",
+          "conference" : "CAT",
+          "division" : "Atlântica Leste"
+        },
+        "seed" : 1
+      },
+      "away" : {
+        "club" : {
+          "id" : "00000000-0000-4000-8000-000000000002",
+          "name" : "Trovões de Porto Alvorada",
+          "shortName" : "PAV",
+          "city" : "Porto Alvorada",
+          "primaryColor" : "#1B2A4A",
+          "secondaryColor" : "#F2B705",
+          "conference" : "CAT",
+          "division" : "Atlântica Norte"
+        },
+        "seed" : 2
+      },
+      "homeScore" : 24,
+      "awayScore" : 21,
+      "overtime" : false,
+      "winnerClubId" : "00000000-0000-4000-8000-000000000020",
+      "neutralSite" : false,
+      "status" : "FINISHED",
+      "date" : "2026-10-11",
+      "kickoffSlot" : "SUN_EARLY",
+      "userGame" : true
+    }, {
+      "fixtureId" : "00000000-0000-4000-8000-000000000027",
+      "conference" : "CPA",
+      "home" : {
+        "club" : {
+          "id" : "00000000-0000-4000-8000-000000000004",
+          "name" : "Arraias de Lagoa Funda",
+          "shortName" : "LFU",
+          "city" : "Lagoa Funda",
+          "primaryColor" : "#0277BD",
+          "secondaryColor" : "#B3E5FC",
+          "conference" : "CPA",
+          "division" : "Pacífica Oeste"
+        },
+        "seed" : 2
+      },
+      "away" : {
+        "club" : {
+          "id" : "00000000-0000-4000-8000-000000000013",
+          "name" : "Tamanduás de Campos Rubi",
+          "shortName" : "CRU",
+          "city" : "Campos Rubi",
+          "primaryColor" : "#880E4F",
+          "secondaryColor" : "#F8BBD0",
+          "conference" : "CPA",
+          "division" : "Pacífica Norte"
+        },
+        "seed" : 6
+      },
+      "homeScore" : 27,
+      "awayScore" : 18,
+      "overtime" : false,
+      "winnerClubId" : "00000000-0000-4000-8000-000000000004",
+      "neutralSite" : false,
+      "status" : "FINISHED",
+      "date" : "2026-10-11",
+      "kickoffSlot" : "SUN_LATE",
+      "userGame" : false
+    } ],
+    "byes" : [ ]
+  }, {
+    "index" : 3,
+    "kind" : "FINAL",
+    "week" : 6,
+    "status" : "COMPLETED",
+    "games" : [ {
+      "fixtureId" : "00000000-0000-4000-8000-000000000028",
+      "home" : {
+        "club" : {
+          "id" : "00000000-0000-4000-8000-000000000020",
+          "name" : "Harpias de Rio Ametista",
+          "shortName" : "RAM",
+          "city" : "Rio Ametista",
+          "primaryColor" : "#5E2B97",
+          "secondaryColor" : "#C0C0C0",
+          "conference" : "CAT",
+          "division" : "Atlântica Leste"
+        },
+        "seed" : 1
+      },
+      "away" : {
+        "club" : {
+          "id" : "00000000-0000-4000-8000-000000000004",
+          "name" : "Arraias de Lagoa Funda",
+          "shortName" : "LFU",
+          "city" : "Lagoa Funda",
+          "primaryColor" : "#0277BD",
+          "secondaryColor" : "#B3E5FC",
+          "conference" : "CPA",
+          "division" : "Pacífica Oeste"
+        },
+        "seed" : 2
+      },
+      "homeScore" : 23,
+      "awayScore" : 21,
+      "overtime" : false,
+      "winnerClubId" : "00000000-0000-4000-8000-000000000020",
+      "neutralSite" : true,
+      "status" : "FINISHED",
+      "date" : "2026-10-18",
+      "kickoffSlot" : "SUN_NIGHT",
+      "userGame" : false
+    } ],
+    "byes" : [ ]
+  } ],
+  "champion" : {
+    "id" : "00000000-0000-4000-8000-000000000020",
+    "name" : "Harpias de Rio Ametista",
+    "shortName" : "RAM",
+    "city" : "Rio Ametista",
+    "primaryColor" : "#5E2B97",
+    "secondaryColor" : "#C0C0C0",
+    "conference" : "CAT",
+    "division" : "Atlântica Leste"
+  }
+}

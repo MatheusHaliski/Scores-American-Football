@@ -125,5 +125,6 @@
   "tab.SPECIAL_TEAMS": "Times especiais",
   "tab.WAIVERS": "Em waivers",
   "title": "Elenco",
-  "waivers.hint": "Saíram dos 53 rumo ao practice squad. Ficam expostos a waivers até a semana avançar: sem reivindicação, entram no practice squad com o mesmo contrato. A vaga no practice squad fica reservada e o cap hit continua na folha."
+  "waivers.hint": "Saíram dos 53 rumo ao practice squad. Ficam expostos a waivers até a semana avançar: sem reivindicação, entram no practice squad com o mesmo contrato. A vaga no practice squad fica reservada e o cap hit continua na folha.",
+  "tab.MORALE": "Moral"
 }

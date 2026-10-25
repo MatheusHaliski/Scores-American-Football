@@ -48,13 +48,13 @@ test("as vagas e os códigos do golden de depth chart têm rótulo e mensagem", 
   for (const code of ["DEPTH_CHART_INCOMPLETE", "DEPTH_CHART_PLAYER_UNAVAILABLE", "DEPTH_CHART_DUPLICATE_PLAYER", "DEPTH_CHART_TOO_MANY_ACTIVES", "OUT_OF_POSITION"]) assert.ok(`depth.issue.${code}` in roster, code);
 });
 
-test("seções da central: todas as do mapa (docs/02 §1) com rótulo; prontas só as dos blocos 6a e 6b", () => {
+test("seções da central: todas as do mapa (docs/02 §1) com rótulo; prontas só as dos blocos 6a, 6b e 6c", () => {
   // sections.ts importa os ícones (.tsx): o teste lê a tabela como texto
   const src = readFileSync(new URL("../../src/components/shell/sections.ts", import.meta.url), "utf8");
   const rows = [...src.matchAll(/\{ key: "([^"]*)", labelKey: "(\w+)",[^}]*ready: (true|false)[^}]*\}/g)].map((m) => ({ key: m[1], labelKey: m[2], ready: m[3] === "true", href: m[0].includes("href:") }));
   const nav = MESSAGES["pt-BR"].nav as Record<string, string>;
   for (const s of rows) assert.ok(`section.${s.labelKey}` in nav, s.labelKey);
-  assert.deepEqual(rows.filter((s) => s.ready && !s.href).map((s) => s.key), ["", "roster", "depth-chart", "playbook", "match", "calendar"]);
+  assert.deepEqual(rows.filter((s) => s.ready && !s.href).map((s) => s.key), ["", "roster", "depth-chart", "playbook", "match", "calendar", "standings", "playoffs", "season"]);
   assert.equal(rows.length, 22);
 });
 

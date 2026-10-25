@@ -125,5 +125,6 @@
   "tab.SPECIAL_TEAMS": "Equipos especiales",
   "tab.WAIVERS": "En waivers",
   "title": "Plantel",
-  "waivers.hint": "Salieron de los 53 rumbo al practice squad. Quedan expuestos a waivers hasta que avance la semana: si nadie los reclama, entran en el practice squad con el mismo contrato. La plaza del practice squad queda reservada y el cap hit sigue en la nómina."
+  "waivers.hint": "Salieron de los 53 rumbo al practice squad. Quedan expuestos a waivers hasta que avance la semana: si nadie los reclama, entran en el practice squad con el mismo contrato. La plaza del practice squad queda reservada y el cap hit sigue en la nómina.",
+  "tab.MORALE": "Moral"
 }

@@ -1,0 +1,18 @@
+{
+  "detail" : "Esta temporada já foi encerrada e a temporada 2 já começou.",
+  "instance" : "/api/v1/careers/00000000-0000-4000-8000-000000000001/season/advance",
+  "status" : 409,
+  "title" : "Conflito",
+  "code" : "SEASON_ALREADY_ADVANCED",
+  "message" : "Esta temporada já foi encerrada e a temporada 2 já começou.",
+  "details" : {
+    "seasonId" : "00000000-0000-4000-8000-000000000002",
+    "currentSeasonId" : "00000000-0000-4000-8000-000000000003",
+    "currentSeasonNumber" : 2
+  },
+  "correlationId" : "golden-409-season",
+  "locale" : "pt-BR",
+  "seasonId" : "00000000-0000-4000-8000-000000000002",
+  "currentSeasonId" : "00000000-0000-4000-8000-000000000003",
+  "currentSeasonNumber" : 2
+}

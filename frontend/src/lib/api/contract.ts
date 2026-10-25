@@ -54,12 +54,14 @@ import type {
   SavePlaybookRequest,
   WeekBoard,
 } from "./match-types";
+import type { Analysis, Bracket, PlayoffSituation, SeasonAdvanceRequest, SeasonAdvanceResult, SeasonSummary, SquadMorale, Standings, Trophies, WeekNews } from "./season-types";
 
 /**
  * Contrato do cliente de API da plataforma comum (conta, configurações e privacidade). Implementado por `live.ts`
  * (backend Java) e por `mock/index.ts` (dados no navegador). Todo consumidor de dados do frontend passa por aqui —
  * nunca por `fetch` direto. O bloco 6a acrescenta carreiras, central da franquia, calendário, elenco e depth chart; o 6b, plano de
- * jogo, playbook, preparação, a semana e a partida ao vivo.
+ * jogo, playbook, preparação, a semana e a partida ao vivo; o 6c, classificação, playoffs, notícias, resumo, avanço e troféus da
+ * temporada, moral do elenco e analista.
  */
 export interface ScoresApi {
   /** RF1/RF2/RF10 — sessão e configurações. */
@@ -117,6 +119,26 @@ export interface ScoresApi {
     remove(id: UUID, confirm: string): Promise<void>;
     dashboard(id: UUID): Promise<CareerDashboard>;
     calendar(id: UUID, week?: number): Promise<SeasonCalendar>;
+    /** RF41 — moral do elenco e de cada jogador (D-102) */
+    morale(id: UUID): Promise<SquadMorale>;
+  };
+  /** RF16/RF21/RF35/RF66/RF17 — temporada: classificação, notícias, playoffs, chave, resumo, avanço e sala de troféus. */
+  season: {
+    standings(careerId: UUID): Promise<Standings>;
+    /** notícias de uma semana; 400 INVALID_WEEK fora das semanas criadas */
+    weekNews(careerId: UUID, week: number): Promise<WeekNews>;
+    playoffs(careerId: UUID): Promise<PlayoffSituation>;
+    bracket(careerId: UUID): Promise<Bracket>;
+    /** `number` = outra temporada da carreira (histórico); sem ele, a atual */
+    summary(careerId: UUID, number?: number): Promise<SeasonSummary>;
+    /** 422 SEASON_NOT_FINISHED antes da final; 409 SEASON_ALREADY_ADVANCED se `seasonId` já foi fechada */
+    advance(careerId: UUID, req?: SeasonAdvanceRequest): Promise<SeasonAdvanceResult>;
+    trophies(careerId: UUID): Promise<Trophies>;
+  };
+  /** Analista do sistema por regras (D-104): 404 ANALYSIS_NOT_FOUND antes do primeiro relatório; 429 RATE_LIMITED no limite de pedidos. */
+  analysis: {
+    get(careerId: UUID): Promise<Analysis>;
+    refresh(careerId: UUID): Promise<Analysis>;
   };
   /** RF4/RF56 — elenco, jogador, movimentos e dispensa. */
   roster: {

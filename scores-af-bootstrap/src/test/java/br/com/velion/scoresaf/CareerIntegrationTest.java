@@ -320,9 +320,15 @@ class CareerIntegrationTest {
     Map<String, Object> c = career(auth, "Central", "MAZ", 11L);
     Map<String, Object> d = ok(call(mvc, get("/api/v1/careers/" + id(c) + "/dashboard"), auth, null));
     assertThat(d).containsKeys("career", "club", "coach", "nextGame", "byeWeek", "record", "division", "upcomingDivisionGames", "rosterHighlights",
-        "injuries", "cap", "depthChart", "live", "morale", "analysis", "inbox", "unreadInbox", "scoresPoints");
+        "injuries", "cap", "depthChart", "live", "morale", "analysis", "news", "playoffs", "inbox", "unreadInbox", "scoresPoints");
     assertThat(d.get("live")).isNull();
-    assertThat(d.get("morale")).isNull();
+    // bloco 6c (D-106): moral do elenco e o usuário nos playoffs (projeção); sem relatório do analista nem semana encerrada ainda
+    assertThat(d.get("morale")).asInstanceOf(org.assertj.core.api.InstanceOfAssertFactories.MAP).containsKeys("average", "label", "trend", "low", "tradeRequests");
+    assertThat(d.get("analysis")).isNull();
+    assertThat(d.get("news")).asInstanceOf(org.assertj.core.api.InstanceOfAssertFactories.LIST).isEmpty();
+    assertThat(d.get("playoffs")).asInstanceOf(org.assertj.core.api.InstanceOfAssertFactories.MAP).containsKey("status");
+    assertThat(d.get("inbox")).isNull();
+    assertThat(d.get("scoresPoints")).isNull();
     @SuppressWarnings("unchecked") Map<String, Object> next = (Map<String, Object>) d.get("nextGame");
     @SuppressWarnings("unchecked") Map<String, Object> fixture = (Map<String, Object>) next.get("fixture");
     assertThat(fixture).containsEntry("userGame", true);

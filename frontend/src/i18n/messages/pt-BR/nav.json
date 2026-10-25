@@ -40,5 +40,6 @@
   "section.store": "Loja",
   "section.trophies": "Troféus",
   "settingsLink": "Configurações da conta",
-  "userFallback": "manager"
+  "userFallback": "manager",
+  "clubStatusPhase": "{record} · {phase}"
 }

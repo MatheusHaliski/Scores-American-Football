@@ -4256,7 +4256,7 @@
     "usecase": "GetAnalysisUseCase",
     "auth": "JWT · dono do save",
     "desc": "Relatório do ClubAnalyst: depth chart sugerido, gamePlanFit, alertas (fora de posição, fadiga, lesão)",
-    "implemented": false
+    "implemented": true
    }
   ],
   "entities": [
@@ -5918,7 +5918,7 @@
     "usecase": "GetManagerMoraleUseCase",
     "auth": "JWT · dono do save",
     "desc": "Moral com a franquia e com a liga + fatores",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "POST",
@@ -11615,7 +11615,7 @@
     "usecase": "GetStandingsUseCase",
     "auth": "JWT · dono do save",
     "desc": "view=DIVISION|CONFERENCE|LEAGUE: V-D-E, % de vitórias (empate vale meio), recorde na divisão e na conferência, pontos pró e contra, sequência, últimos 5, seed e nota de desempate",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "GET",
@@ -11631,7 +11631,7 @@
     "usecase": "GetPlayoffBracketUseCase",
     "auth": "JWT · dono do save",
     "desc": "Chave com 7 seeds por conferência, folga do seed 1 e final em campo neutro (RF66)",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "GET",
@@ -12297,7 +12297,7 @@
     "usecase": "GetTrophyRoomUseCase",
     "auth": "JWT · dono do save",
     "desc": "Campeões por temporada (final, conferências, divisões) e meus troféus (títulos do head coach, prêmio COACH) com URL do troféu 3D · filtros season, kind",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "GET",
@@ -14503,7 +14503,7 @@
     "usecase": "GetStandingsUseCase",
     "auth": "JWT · dono do save",
     "desc": "Esquema ampliado da liga: classificação por divisão e líderes estatísticos (jardas de passe, corrida, recepção, sacks)",
-    "implemented": false
+    "implemented": true
    }
   ],
   "entities": [
@@ -21868,7 +21868,7 @@
     "usecase": "GetStandingsUseCase",
     "auth": "JWT · dono do save",
     "desc": "view=DIVISION|CONFERENCE|LEAGUE: V-D-E, winPct, campanha na divisão e conferência, pontos pró e contra, sequência, seeds 1–7 projetados e nota de desempate",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "GET",
@@ -21884,7 +21884,7 @@
     "usecase": "GetWeekNewsUseCase",
     "auth": "JWT · dono do save",
     "desc": "Manchetes e comentários da semana (Cassandra)",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "GET",
@@ -21892,7 +21892,7 @@
     "usecase": "GetPlayoffBracketUseCase",
     "auth": "JWT · dono do save",
     "desc": "Chave de 14 (7 por conferência, bye do seed 1), confrontos em jogo único, final em campo neutro",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "GET",
@@ -25396,7 +25396,7 @@
     "usecase": "GetSeasonSummaryUseCase",
     "auth": "JWT · dono do save",
     "desc": "Campeão (troféu 3D), classificação final por divisão e conferência, rankings, prêmios, narrativa, fase da entressafra e pendências",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "GET",
@@ -25404,7 +25404,7 @@
     "usecase": "GetPlayoffBracketUseCase",
     "auth": "JWT · dono do save",
     "desc": "Chave final: 7 por conferência, folga do 1º, final neutra (RF66)",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "GET",
@@ -25444,7 +25444,7 @@
     "usecase": "AdvanceOffseasonPhaseUseCase",
     "auth": "JWT · dono do save",
     "desc": "Avança a fase: OFFSEASON → FREE_AGENCY → DRAFT → PRESEASON n+1 · idempotente por (seasonId, fase)",
-    "implemented": false
+    "implemented": true
    }
   ],
   "entities": [
@@ -28427,7 +28427,7 @@
     "usecase": "GetManagerMoraleUseCase",
     "auth": "JWT · dono do save",
     "desc": "Moral com a franquia e com a liga + fatores (RF41)",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "GET",
@@ -28988,7 +28988,7 @@
     "usecase": "GetManagerMoraleUseCase",
     "auth": "JWT · dono do save",
     "desc": "moraleClub/moraleLeague, fatores, tendência, semanas em zona crítica, risco de demissão",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "GET",
@@ -29020,7 +29020,7 @@
     "usecase": "GetAnalysisReportUseCase",
     "auth": "JWT · dono do save",
     "desc": "Previsão de zona e risco de demissão (ClubAnalyst)",
-    "implemented": false
+    "implemented": true
    }
   ],
   "entities": [
@@ -45332,7 +45332,7 @@
     "usecase": "GetPlayoffBracketUseCase",
     "auth": "JWT · dono do save",
     "desc": "Chave por rodada (Wild Card, Divisional, Conferência, Final)",
-    "implemented": false
+    "implemented": true
    },
    {
     "method": "GET",

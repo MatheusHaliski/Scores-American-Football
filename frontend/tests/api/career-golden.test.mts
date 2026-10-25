@@ -16,6 +16,7 @@ import {
   rosterFromDto,
   type Raw,
 } from "@/lib/api/live-career";
+import { SEASON_SHAPES } from "@/lib/api/live-season";
 import { ApiError, problemFromBody } from "@/lib/api/problem";
 import { capExceededExcess, describeError } from "@/lib/api/errors";
 import { setRuntimeLocale } from "@/i18n/runtime";
@@ -35,14 +36,14 @@ const conflict = loadGolden("problem-409-depth-chart.json") as Raw;
 const capExceeded = loadGolden("problem-422-cap-exceeded.json") as Raw;
 const editorClub = loadGolden("world-editor-club.json") as Raw;
 
-type ShapeName = keyof typeof SHAPES;
+type ShapeName = keyof typeof SHAPES | keyof typeof SEASON_SHAPES;
 const asObj = (v: unknown) => v as Raw;
 const each = (v: unknown) => (v as Raw[]) ?? [];
 
 /** Todo campo do golden é conhecido do front e todo campo obrigatório (nunca nulo) está presente. */
 function assertShape(o: unknown, name: ShapeName, what: string) {
   assert.ok(o && typeof o === "object" && !Array.isArray(o), `${what}: não é objeto`);
-  const { fields, nullable } = SHAPES[name] as { fields: readonly string[]; nullable: readonly string[] };
+  const { fields, nullable } = ((SHAPES as Record<string, unknown>)[name] ?? (SEASON_SHAPES as Record<string, unknown>)[name]) as { fields: readonly string[]; nullable: readonly string[] };
   const present = Object.keys(o as object);
   assert.deepEqual(present.filter((k) => !fields.includes(k)), [], `${what}: campo que o front não conhece`);
   assert.deepEqual(fields.filter((k) => !nullable.includes(k) && !present.includes(k)), [], `${what}: campo obrigatório ausente`);
@@ -104,14 +105,33 @@ test("career-dashboard: todos os objetos aninhados só têm campos conhecidos", 
   for (const f of each(dash.upcomingDivisionGames)) assertShape(f, "fixture", "dashboard.upcomingDivisionGames[]");
   for (const h of each(dash.rosterHighlights)) assertShape(h, "highlight", "dashboard.rosterHighlights[]");
   for (const i of each(dash.injuries)) assertShape(i, "injury", "dashboard.injuries[]");
+  // bloco 6c (D-106): moral, notícias e playoffs preenchidos
+  assertShape(dash.morale, "moraleSummary", "dashboard.morale");
+  assert.ok(Array.isArray(dash.news), "dashboard.news é lista");
+  for (const n of each(dash.news)) assertShape(n, "news", "dashboard.news[]");
+  assertShape(dash.playoffs, "userPlayoff", "dashboard.playoffs");
+  if (dash.analysis !== null) assertShape(dash.analysis, "analysisSummary", "dashboard.analysis");
 });
 
-test("career-dashboard: o que o 6a ainda não tem chega nulo e continua nulo (a tela mostra —, nunca zero)", () => {
-  for (const k of ["live", "morale", "analysis", "inbox", "unreadInbox", "scoresPoints"]) assert.ok(k in dash && dash[k] === null, `${k} nulo explícito`);
+test("career-dashboard: o que ainda não existe chega nulo e continua nulo (a tela mostra —, nunca zero); moral e playoffs do 6c viram objetos", () => {
+  for (const k of ["live", "analysis", "inbox", "unreadInbox", "scoresPoints"]) assert.ok(k in dash && dash[k] === null, `${k} nulo explícito`);
   const d = dashboardFromDto(dash);
   assert.equal(d.live, null);
-  assert.equal(d.morale, null);
-  assert.equal(d.analysis, null);
+  assert.equal(d.analysis, null, "sem relatório do analista ainda");
+  const m = asObj(dash.morale);
+  assert.deepEqual(d.morale, { average: m.average, label: m.label, trend: m.trend, low: m.low, tradeRequests: m.tradeRequests });
+  assert.deepEqual(d.news, []);
+  const p = asObj(dash.playoffs);
+  assert.equal(d.playoffs?.clubId, p.clubId);
+  assert.equal(d.playoffs?.seed, p.seed);
+  assert.equal(d.playoffs?.status, p.status);
+  assert.equal(d.playoffs?.round, null, "round ausente vira null");
+  assert.equal(d.playoffs?.nextGame, null, "nextGame ausente vira null");
+  // carreira sem temporada: moral e playoffs nulos, notícias lista vazia
+  const bare = dashboardFromDto({ ...dash, morale: null, playoffs: null, news: undefined });
+  assert.equal(bare.morale, null);
+  assert.equal(bare.playoffs, null);
+  assert.deepEqual(bare.news, []);
   assert.equal(d.inbox, null);
   assert.equal(d.unreadInbox, null);
   assert.equal(d.scoresPoints, null);
@@ -128,8 +148,10 @@ test("career-dashboard: o que o 6a ainda não tem chega nulo e continua nulo (a 
   assert.equal(empty.cap, null);
 });
 
-test("career-calendar: semanas, jogos e franquias só têm campos conhecidos; 17 jogos e 1 bye por franquia", () => {
+test("career-calendar: semanas, jogos e franquias só têm campos conhecidos; 17 jogos e 1 bye por franquia; rodadas de playoff planejadas", () => {
   assertShape(cal, "calendar", "calendar");
+  assert.ok(Array.isArray(cal.playoffWeeks), "playoffWeeks (D-105)");
+  for (const p of each(cal.playoffWeeks)) assertShape(p, "playoffWeek", "calendar.playoffWeeks[]");
   for (const c of each(cal.clubs)) assertShape(c, "clubRef", "calendar.clubs[]");
   for (const w of each(cal.weeks)) {
     assertShape(w, "week", "calendar.weeks[]");
@@ -143,6 +165,10 @@ test("career-calendar: semanas, jogos e franquias só têm campos conhecidos; 17
   assert.ok(games.every((f) => f.userGame));
   assert.equal(c.weeks.filter((w) => w.userBye).length, 1);
   assert.ok(c.weeks.filter((w) => w.userBye).every((w) => w.byeClubIds.includes(user)));
+  assert.deepEqual(c.playoffWeeks.map((p) => p.kind), ["WILD_CARD", "DIVISIONAL", "CONFERENCE", "FINAL"]);
+  assert.deepEqual(c.playoffWeeks.map((p) => p.number), [c.regularSeasonWeeks + 1, c.regularSeasonWeeks + 2, c.regularSeasonWeeks + 3, c.regularSeasonWeeks + 4]);
+  assert.ok(c.playoffWeeks.every((p) => p.status === "PENDING" && /^\d{4}-\d{2}-\d{2}$/.test(p.startsOn)));
+  assert.deepEqual(calendarFromDto({ ...cal, playoffWeeks: undefined }).playoffWeeks, [], "calendário antigo sem playoffWeeks: lista vazia");
 });
 
 test("roster: elenco, regras, contadores, teto e cards só têm campos conhecidos", () => {

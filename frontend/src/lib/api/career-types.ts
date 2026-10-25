@@ -8,6 +8,7 @@ import type { CardTier } from "@/lib/ratings/tier";
 import type { Position } from "@/lib/ratings/overall";
 import type { Difficulty, ISODate, UUID } from "./types";
 import type { LiveMatchRef } from "./match-types";
+import type { AnalysisSummary, MoraleSummary, NewsItem, UserPlayoff } from "./season-types";
 
 export type { CardTier, Position };
 
@@ -269,8 +270,10 @@ export interface DepthChartAlert {
 }
 
 /**
- * `DashboardDto` (RF40). `morale`, `analysis`, `inbox`, `unreadInbox` e `scoresPoints` chegam nulos até os blocos que os criam: a
- * tela mostra "—" ou esconde, nunca zero. `live` é a partida ao vivo em andamento (bloco 6b) ou null.
+ * `DashboardDto` (RF40). `inbox`, `unreadInbox` e `scoresPoints` chegam nulos até os blocos que os criam: a tela mostra "—" ou
+ * esconde, nunca zero. `live` é a partida ao vivo em andamento (bloco 6b) ou null. Bloco 6c (D-106): `morale` (resumo da moral do
+ * elenco), `analysis` (último relatório do analista, nulo antes do primeiro), `news` (até 3 notícias da última semana encerrada) e
+ * `playoffs` (o usuário nos playoffs).
  */
 export interface CareerDashboard {
   career: CareerSummary;
@@ -288,8 +291,10 @@ export interface CareerDashboard {
   cap: CapSummary | null;
   depthChart: DepthChartAlert | null;
   live: LiveMatchRef | null;
-  morale: unknown;
-  analysis: unknown;
+  morale: MoraleSummary | null;
+  analysis: AnalysisSummary | null;
+  news: NewsItem[];
+  playoffs: UserPlayoff | null;
   inbox: unknown[] | null;
   unreadInbox: number | null;
   scoresPoints: number | null;
@@ -305,7 +310,18 @@ export interface CalendarWeek {
   fixtures: Fixture[];
 }
 
-/** `CalendarDto` (RF21): franquias uma vez só e as semanas com jogos e folgas. */
+/** Rodada de playoff planejada (`PlayoffWeekDto`, D-105): semana, tipo, quinta prevista e situação (PENDING até a semana existir). */
+export interface PlayoffWeek {
+  number: number;
+  kind: string;
+  startsOn: ISODate;
+  status: string;
+}
+
+/**
+ * `CalendarDto` (RF21): franquias uma vez só e as semanas com jogos e folgas. As semanas de playoff entram em `weeks` quando a rodada
+ * é criada (com `kind` WILD_CARD…FINAL); `playoffWeeks` lista as rodadas planejadas pelas regras.
+ */
 export interface SeasonCalendar {
   seasonId: UUID;
   seasonYear: number;
@@ -316,6 +332,7 @@ export interface SeasonCalendar {
   userClubId: UUID;
   clubs: ClubRef[];
   weeks: CalendarWeek[];
+  playoffWeeks: PlayoffWeek[];
 }
 
 /* ───────────────────────── Elenco ───────────────────────── */

@@ -1,6 +1,6 @@
 "use client";
-import { useParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useParams, useSearchParams } from "next/navigation";
+import { Suspense, useMemo, useState } from "react";
 import { api } from "@/lib/api";
 import { capExceededExcess, describeError } from "@/lib/api/errors";
 import { MOVABLE_STATUSES, type MovableStatus, type PlayerCard, type PlayerDetail, type Roster, type Unit } from "@/lib/api/types";
@@ -11,6 +11,7 @@ import { useFormat } from "@/i18n/format";
 import { cn } from "@/lib/utils/cn";
 import { PageHeader } from "@/components/shell/PageHeader";
 import { PlayerCardCompact } from "@/components/roster/PlayerCardCompact";
+import { MoralePanel } from "@/components/season/Morale";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Dialog } from "@/components/ui/Dialog";
@@ -19,10 +20,13 @@ import { EmptyState, ErrorState, InlineAlert, PageSkeleton } from "@/components/
 import { toast } from "@/components/ui/Toast";
 import { IconSwap, IconTrash, IconUsers } from "@/components/ui/icons";
 
-type TabKey = Unit | "PRACTICE_SQUAD" | "WAIVERS" | "IR";
-const TABS: TabKey[] = ["OFFENSE", "DEFENSE", "SPECIAL_TEAMS", "PRACTICE_SQUAD", "WAIVERS", "IR"];
+type CardTab = Unit | "PRACTICE_SQUAD" | "WAIVERS" | "IR";
+/** "MORALE" é a aba da moral por jogador (RF41, D-113): `GET /morale`, carregada só ao abrir. */
+type TabKey = CardTab | "MORALE";
+const TABS: TabKey[] = ["OFFENSE", "DEFENSE", "SPECIAL_TEAMS", "PRACTICE_SQUAD", "WAIVERS", "IR", "MORALE"];
 
 function cardsOf(r: Roster, tab: TabKey): PlayerCard[] {
+  if (tab === "MORALE") return [];
   if (tab === "PRACTICE_SQUAD") return r.practiceSquad;
   if (tab === "WAIVERS") return r.waivers;
   if (tab === "IR") return r.injuredReserve;
@@ -175,13 +179,33 @@ function MoveDialog({ careerId, player, onClose, onDone }: { careerId: string; p
   );
 }
 
+function MoraleTab({ careerId }: { careerId: string }) {
+  const q = useQuery(() => api.careers.morale(careerId), [careerId]);
+  if (q.loading && !q.data) return <PageSkeleton rows={2} />;
+  if (q.error || !q.data) return <ErrorState message={q.error} onRetry={q.refetch} />;
+  return (
+    <div role="tabpanel">
+      <MoralePanel m={q.data} careerId={careerId} />
+    </div>
+  );
+}
+
 export default function RosterPage() {
+  return (
+    <Suspense fallback={<PageSkeleton rows={3} />}>
+      <RosterScreen />
+    </Suspense>
+  );
+}
+
+function RosterScreen() {
   const t = useT("roster");
   const td = useTd();
   const f = useFormat();
   const { careerId } = useParams<{ careerId: string }>();
+  const search = useSearchParams();
   const q = useQuery(() => api.roster.get(careerId), [careerId]);
-  const [tab, setTab] = useState<TabKey>("OFFENSE");
+  const [tab, setTab] = useState<TabKey>(() => (TABS.includes(search.get("tab") as TabKey) ? (search.get("tab") as TabKey) : "OFFENSE"));
   const [acting, setActing] = useState<PlayerCard | null>(null);
   const groups = useMemo(() => (q.data ? byPosition(cardsOf(q.data, tab)) : []), [q.data, tab]);
 
@@ -205,9 +229,11 @@ export default function RosterPage() {
       <Tabs
         value={tab}
         onChange={setTab}
-        tabs={TABS.map((k) => ({ value: k, label: t(`tab.${k}`), badge: <span className="tabular text-[0.7rem] text-text-dim">{count(k)}</span> }))}
+        tabs={TABS.map((k) => ({ value: k, label: t(`tab.${k}`), badge: k === "MORALE" ? undefined : <span className="tabular text-[0.7rem] text-text-dim">{count(k)}</span> }))}
       />
-      {groups.length === 0 ? (
+      {tab === "MORALE" ? (
+        <MoraleTab careerId={careerId} />
+      ) : groups.length === 0 ? (
         <EmptyState
           compact
           icon={<IconUsers size={22} />}

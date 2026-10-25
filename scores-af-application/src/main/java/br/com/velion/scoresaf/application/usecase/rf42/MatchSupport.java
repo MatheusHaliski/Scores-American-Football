@@ -12,6 +12,7 @@ import br.com.velion.scoresaf.application.port.out.persistence.FixtureRepository
 import br.com.velion.scoresaf.application.port.out.persistence.MatchSessionRepository;
 import br.com.velion.scoresaf.application.port.out.persistence.WeekRepository;
 import br.com.velion.scoresaf.application.service.MatchService;
+import br.com.velion.scoresaf.application.service.PlayoffService;
 import br.com.velion.scoresaf.application.service.WeekProcessor;
 import br.com.velion.scoresaf.application.usecase.support.CareerAssembler;
 import br.com.velion.scoresaf.domain.career.CareerSave;
@@ -53,11 +54,12 @@ public class MatchSupport {
   public static final int LAST_EVENTS = 20;
 
   private final MatchSessionRepository sessions; private final FixtureRepository fixtures; private final WeekRepository weeks; private final MatchService matches;
-  private final WeekProcessor weekProcessor; private final AuditService audit;
+  private final WeekProcessor weekProcessor; private final AuditService audit; private final PlayoffService playoffs;
 
   public MatchSupport(MatchSessionRepository sessions, FixtureRepository fixtures, WeekRepository weeks, MatchService matches, WeekProcessor weekProcessor,
-                      AuditService audit) {
+                      AuditService audit, PlayoffService playoffs) {
     this.sessions = sessions; this.fixtures = fixtures; this.weeks = weeks; this.matches = matches; this.weekProcessor = weekProcessor; this.audit = audit;
+    this.playoffs = playoffs;
   }
 
   /** Sessão do dono. Inexistente ou de outro usuário: 404 (não revela que a partida existe), com auditoria no segundo caso. */
@@ -204,7 +206,9 @@ public class MatchSupport {
       if (userClub != null && f.involves(userClub)) { userFixture = f.getId(); matchId = session == null ? null : session.getId(); }
       games.add(new MatchDtos.WeekGameDto(CareerAssembler.fixture(f, userClub), CareerAssembler.club(f.getHomeClub()), CareerAssembler.club(f.getAwayClub()), live));
     }
-    List<UUID> byes = leagueClubs.stream().map(Club::getId).filter(id -> !playing.contains(id)).toList();
+    // semana de playoff: folga é só a semente que folga na rodada (as eliminadas e as de fora não "folgam", D-105)
+    Set<UUID> playoffByes = playoffs.byes(season, week);
+    List<UUID> byes = leagueClubs.stream().map(Club::getId).filter(id -> !playing.contains(id) && (playoffByes == null || playoffByes.contains(id))).toList();
     boolean completed = !fx.isEmpty() && fx.stream().allMatch(Fixture::isFinished);
     return new MatchDtos.WeekBoardDto(season.getId(), week, season.getRegularSeasonWeeks(), season.getCurrentWeek(), w == null ? null : w.getKind().name(),
         w == null ? null : w.getStatus().name(), w == null ? null : w.getStartsOn(), completed, userClub != null && byes.contains(userClub), userFixture,

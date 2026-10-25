@@ -1,0 +1,19 @@
+{
+  "app.name": "Scores",
+  "app.sport": "American Football",
+  "app.tagline": "Monte sua franquia, chame a jogada decisiva e leve o time ao título.",
+  "app.skipToContent": "Pular para o conteúdo",
+  "home.eyebrow": "VELION TECH CO. apresenta",
+  "home.cta.soon": "Em breve: crie sua franquia",
+  "home.field.label": "Campo de futebol americano em 3D, com as linhas de jarda e as end zones",
+  "home.field.loading": "Montando o campo…",
+  "home.api.title": "Conexão com o servidor",
+  "home.api.checking": "Conferindo o servidor…",
+  "home.api.online": "Servidor {version} no ar · regras padrão {ruleset}",
+  "home.api.mock": "Modo demonstração: sem servidor",
+  "home.api.offline": "Servidor fora do ar. Tente de novo em instantes.",
+  "ruleset.PRO": "profissionais",
+  "ruleset.COLLEGE": "universitárias",
+  "field.yards": "{n, plural, one {# jarda} other {# jardas}}",
+  "locale.label": "Idioma"
+}

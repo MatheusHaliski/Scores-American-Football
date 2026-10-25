@@ -1,0 +1,19 @@
+{
+  "app.name": "Scores",
+  "app.sport": "American Football",
+  "app.tagline": "Build your franchise, call the decisive play and take the team to the title.",
+  "app.skipToContent": "Skip to content",
+  "home.eyebrow": "VELION TECH CO. presents",
+  "home.cta.soon": "Coming soon: create your franchise",
+  "home.field.label": "3D American football field with yard lines and end zones",
+  "home.field.loading": "Building the field…",
+  "home.api.title": "Server connection",
+  "home.api.checking": "Checking the server…",
+  "home.api.online": "Server {version} online · default {ruleset} rules",
+  "home.api.mock": "Demo mode: no server",
+  "home.api.offline": "Server is down. Try again shortly.",
+  "ruleset.PRO": "pro",
+  "ruleset.COLLEGE": "college",
+  "field.yards": "{n, plural, one {# yard} other {# yards}}",
+  "locale.label": "Language"
+}

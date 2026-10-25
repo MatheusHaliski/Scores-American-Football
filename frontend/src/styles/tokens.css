@@ -1,0 +1,221 @@
+/* ============================================================
+   Scores: American Football — Design tokens ("arena / LED")
+   Mesma identidade do Scores de basquete (arena escura, laranja,
+   LED com glow, linhas creme), mais os tokens do campo no fim
+   do arquivo. Tudo aqui é consumido pelo Tailwind via @theme
+   inline em globals.css.
+   ============================================================ */
+:root {
+  /* Superfícies (arena) */
+  --arena: #15110c;
+  --arena-2: #211a11;
+  --arena-3: #2c2317;
+  --arena-4: #3a2f1f;
+  --arena-5: #4a3d2a;
+  --pitch: #0a0805;
+
+  /* Papel (uso pontual: impressos, relatórios) */
+  --paper: #f4ecdc;
+  --paper-2: #ede2cd;
+  --ink: #1e1810;
+  --ink-soft: #4a3f30;
+
+  /* Marca */
+  --orange: #dc5b26;
+  --orange-deep: #b8451a;
+  --rim: #e8732e;
+  --led: #ff7a3d;
+  --led-dim: #c65a26;
+  --wood: #b07b35;
+  --wood-light: #d9ae6e;
+  --line: #fbf6ec;
+  --net: #fbf7ef;
+
+  /* Semânticas */
+  --good: #3f9a5b;
+  --good-soft: rgba(63, 154, 91, 0.18);
+  --bad: #c9472e;
+  --bad-soft: rgba(201, 71, 46, 0.18);
+  --warn: #e0a93a;
+  --warn-soft: rgba(224, 169, 58, 0.18);
+  --info: #4c8dd8;
+  --info-soft: rgba(76, 141, 216, 0.18);
+  /* texto sobre fundos semânticos (alertas, toasts, erros de campo) */
+  --good-text: #c8f0d2;
+  --bad-text: #f2c9bf;
+
+  /* Texto */
+  --text: var(--line);
+  --text-soft: #e2d6bf;
+  --text-muted: #b5a78d;
+  --text-dim: #8b7c62;
+
+  /* Bordas */
+  --border: rgba(251, 246, 236, 0.1);
+  --border-strong: rgba(251, 246, 236, 0.2);
+  --border-orange: rgba(220, 91, 38, 0.55);
+
+  /* Tipografia */
+  --font-display: "Anton", "Oswald", Impact, sans-serif;
+  --font-heading: "Oswald", "Inter", sans-serif;
+  --font-body: "Inter", system-ui, sans-serif;
+
+  /* Raios */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-pill: 999px;
+
+  /* Sombras e brilhos */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 6px 18px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 18px 48px rgba(0, 0, 0, 0.55);
+  --glow-led: 0 0 14px rgba(255, 122, 61, 0.55);
+  --glow-led-strong: 0 0 6px rgba(255, 122, 61, 0.9), 0 0 24px rgba(255, 122, 61, 0.55);
+  --glow-orange: 0 0 0 1px rgba(220, 91, 38, 0.45), 0 8px 28px rgba(220, 91, 38, 0.25);
+
+  /* Gradientes "ultra premium" (velocímetros / cards de tier) */
+  --grad-bronze: linear-gradient(135deg, #7a4a1d 0%, #c8865a 45%, #f0c39a 55%, #8a5a2a 100%);
+  --grad-silver: linear-gradient(135deg, #6d7480 0%, #c9d1dc 45%, #f4f7fb 55%, #8a94a3 100%);
+  --grad-gold: linear-gradient(135deg, #8a5a12 0%, #e3a92e 40%, #ffe38a 52%, #c98a1a 70%, #7a4c0e 100%);
+  --grad-icon: linear-gradient(135deg, #b8451a 0%, #ff7a3d 40%, #ffd2b0 52%, #ff7a3d 64%, #7a2a0a 100%);
+  --grad-led: linear-gradient(180deg, #ffb27a 0%, #ff7a3d 50%, #c65a26 100%);
+  --grad-arena: radial-gradient(ellipse 70% 55% at 50% 0%, rgba(220, 91, 38, 0.22), transparent 70%);
+  --grad-wood: repeating-linear-gradient(90deg, rgba(176, 123, 53, 0.06) 0px, rgba(176, 123, 53, 0.06) 2px, transparent 2px, transparent 64px);
+
+  /* Movimento */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --dur-fast: 120ms;
+  --dur-base: 220ms;
+  --dur-slow: 480ms;
+
+  /* Layout */
+  --sidebar-w: 260px;
+  --bottombar-h: 64px;
+  --touch: 44px;
+  --gutter: 16px;
+
+  color-scheme: dark;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-fast: 0ms;
+    --dur-base: 0ms;
+    --dur-slow: 0ms;
+  }
+}
+
+/* Preferência do usuário (RF10) — sobrepõe a preferência do sistema */
+:root[data-reduce-motion="true"] {
+  --dur-fast: 0ms;
+  --dur-base: 0ms;
+  --dur-slow: 0ms;
+}
+
+/* ============================================================
+   RF46 · Aparência — tema claro, alto contraste, tamanho de fonte
+   e densidade. Aplicados em <html> por `applyAppearance()` sem reload.
+   ============================================================ */
+
+/* Tema claro "quadra de dia": piso creme, tinta escura, laranja preservado (contraste AA ≥ 4.5:1). */
+:root[data-theme="light"] {
+  --arena: #f4ecdc;
+  --arena-2: #ede2cd;
+  --arena-3: #e3d5ba;
+  --arena-4: #d6c4a3;
+  --arena-5: #c7b28c;
+  --pitch: #fbf6ec;
+
+  --orange: #b8451a;
+  --orange-deep: #8f3312;
+  --led: #b8451a;
+  --led-dim: #8f3312;
+  --wood: #8a5a1f;
+  --wood-light: #7a4c16;
+  --line: #1e1810;
+  --net: #1e1810;
+
+  --good: #2f7a47;
+  --bad: #a8361f;
+  --warn: #8a6310;
+  --info: #2f69ad;
+  --good-text: #1f5c33;
+  --bad-text: #8a2a16;
+
+  --text: #1e1810;
+  --text-soft: #3a3024;
+  --text-muted: #5a4d3a;
+  --text-dim: #6e604a;
+
+  --border: rgba(30, 24, 16, 0.14);
+  --border-strong: rgba(30, 24, 16, 0.28);
+  --border-orange: rgba(184, 69, 26, 0.55);
+
+  --shadow-sm: 0 1px 2px rgba(30, 24, 16, 0.12);
+  --shadow-md: 0 6px 18px rgba(30, 24, 16, 0.14);
+  --shadow-lg: 0 18px 48px rgba(30, 24, 16, 0.18);
+  --glow-led: 0 0 0 1px rgba(184, 69, 26, 0.35);
+  --glow-led-strong: 0 0 0 2px rgba(184, 69, 26, 0.55);
+  --grad-arena: radial-gradient(ellipse 70% 55% at 50% 0%, rgba(184, 69, 26, 0.12), transparent 70%);
+
+  color-scheme: light;
+}
+
+/* Alto contraste (WCAG AAA para texto): texto puro, bordas fortes, foco espesso. */
+:root[data-contrast="high"] {
+  --text: #ffffff;
+  --text-soft: #ffffff;
+  --text-muted: #f1e6d0;
+  --text-dim: #e2d6bf;
+  --border: rgba(255, 255, 255, 0.45);
+  --border-strong: rgba(255, 255, 255, 0.8);
+  --led: #ffa36e;
+}
+:root[data-theme="light"][data-contrast="high"] {
+  --text: #000000;
+  --text-soft: #000000;
+  --text-muted: #1e1810;
+  --text-dim: #2c2317;
+  --border: rgba(0, 0, 0, 0.5);
+  --border-strong: rgba(0, 0, 0, 0.85);
+  --led: #8f3312;
+}
+:root[data-contrast="high"] :focus-visible {
+  outline: 3px solid var(--led) !important;
+  outline-offset: 3px !important;
+}
+
+/* Tamanho de fonte: escala o rem inteiro (layout acompanha). */
+:root[data-font-scale="small"] { font-size: 93.75%; }
+:root[data-font-scale="medium"] { font-size: 100%; }
+:root[data-font-scale="large"] { font-size: 112.5%; }
+
+/* Densidade: compacta reduz respiros, nunca a área de toque (44 px). */
+:root[data-density="compact"] {
+  --gutter: 10px;
+  --radius-lg: 10px;
+  --radius-xl: 14px;
+}
+
+/* ============================================================
+   Futebol americano: grama, linhas e marcadores de transmissão.
+   A linha de primeira descida é amarela e a de scrimmage é azul,
+   como na TV; as duas valem nos dois temas.
+   ============================================================ */
+:root {
+  --turf: #2f6b33;
+  --turf-dark: #255a2a;
+  --turf-stripe: #357a3a;
+  --yard-line: #f7f5ee;
+  --first-down: #f2d21b;
+  --scrimmage: #2f7fe0;
+  --endzone-home: #b8451a;
+  --endzone-away: #1f3f73;
+  --pylon: #ff7a1a;
+  --goalpost: #f3c623;
+  --grad-turf: repeating-linear-gradient(90deg, rgba(47, 107, 51, 0.07) 0px, rgba(47, 107, 51, 0.07) 2px, transparent 2px, transparent 64px);
+}

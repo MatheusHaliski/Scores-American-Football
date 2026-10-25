@@ -1,0 +1,9 @@
+{
+  "VALIDATION": "Datos no válidos",
+  "UNAUTHENTICATED": "Inicia sesión para continuar",
+  "FORBIDDEN": "No tienes acceso a este recurso",
+  "NOT_FOUND": "Recurso no encontrado",
+  "INTERNAL": "Error interno. Indica el correlationId al soporte.",
+  "NETWORK": "Sin conexión con el servidor",
+  "UNKNOWN": "Algo salió mal"
+}

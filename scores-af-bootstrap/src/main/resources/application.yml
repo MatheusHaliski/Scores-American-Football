@@ -1,0 +1,42 @@
+spring:
+  application:
+    name: scores-american-football
+  profiles:
+    default: dev
+  jackson:
+    default-property-inclusion: non_null
+  threads:
+    virtual:
+      enabled: true
+  web:
+    error:
+      include-message: never
+      include-stacktrace: never
+
+server:
+  port: ${APP_PORT:8080}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        # público: só o health (sem detalhes). Métricas, se vierem, numa porta de gestão na rede privada.
+        include: health
+  endpoint:
+    health:
+      show-details: never
+      show-components: never
+      probes:
+        enabled: true
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+scores:
+  app:
+    version: ${SCORES_APP_VERSION:dev}
+    base-url: ${APP_BASE_URL:http://localhost:8080}
+    cors-allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:http://localhost:3000}

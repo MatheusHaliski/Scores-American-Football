@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>4.1.1</version>
+    <relativePath/>
+  </parent>
+
+  <groupId>br.com.velion.scoresaf</groupId>
+  <artifactId>scores-american-football</artifactId>
+  <version>0.1.0-SNAPSHOT</version>
+  <packaging>pom</packaging>
+  <name>Scores: American Football</name>
+  <description>Gerente de futebol americano da VELION TECH CO. — mesma arquitetura do Scores (basquete), domínio próprio (docs/01).</description>
+
+  <!-- Infraestrutura (persistence-mysql, cache-redis, persistence-cassandra, search-opensearch, storage-s3, ai-providers)
+       entra no bloco em que cada adaptador ganha o primeiro uso (D-8). -->
+  <modules>
+    <module>scores-af-domain</module>
+    <module>scores-af-application</module>
+    <module>scores-af-web</module>
+    <module>scores-af-bootstrap</module>
+  </modules>
+
+  <properties>
+    <java.version>21</java.version>
+    <maven.compiler.release>21</maven.compiler.release>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <springdoc.version>3.1.1</springdoc.version>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency><groupId>br.com.velion.scoresaf</groupId><artifactId>scores-af-domain</artifactId><version>${project.version}</version></dependency>
+      <dependency><groupId>br.com.velion.scoresaf</groupId><artifactId>scores-af-application</artifactId><version>${project.version}</version></dependency>
+      <dependency><groupId>br.com.velion.scoresaf</groupId><artifactId>scores-af-web</artifactId><version>${project.version}</version></dependency>
+      <dependency><groupId>org.springdoc</groupId><artifactId>springdoc-openapi-starter-webmvc-ui</artifactId><version>${springdoc.version}</version></dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <configuration>
+            <release>${maven.compiler.release}</release>
+            <parameters>true</parameters>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <configuration>
+            <!-- testes de integração com Testcontainers exigem Docker e rodam só no perfil "it" -->
+            <excludedGroups>it</excludedGroups>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+
+  <profiles>
+    <profile>
+      <id>it</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration><excludedGroups/></configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+</project>

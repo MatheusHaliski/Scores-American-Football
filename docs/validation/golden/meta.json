@@ -1,0 +1,7 @@
+{
+  "name" : "Scores: American Football",
+  "sport" : "AMERICAN_FOOTBALL",
+  "version" : "0.0.0-golden",
+  "defaultRuleset" : "PRO",
+  "apiVersion" : "v1"
+}

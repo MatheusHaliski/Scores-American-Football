@@ -1,0 +1,11 @@
+{
+  "type" : "about:blank",
+  "title" : "Não autenticado",
+  "status" : 401,
+  "detail" : "Faça login para continuar",
+  "code" : "UNAUTHENTICATED",
+  "message" : "Faça login para continuar",
+  "details" : { },
+  "correlationId" : "golden-401",
+  "locale" : "pt-BR"
+}

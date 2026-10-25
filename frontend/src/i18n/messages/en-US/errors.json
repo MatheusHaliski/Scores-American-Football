@@ -1,0 +1,9 @@
+{
+  "VALIDATION": "Invalid data",
+  "UNAUTHENTICATED": "Sign in to continue",
+  "FORBIDDEN": "You do not have access to this resource",
+  "NOT_FOUND": "Resource not found",
+  "INTERNAL": "Internal error. Give the correlationId to support.",
+  "NETWORK": "No connection to the server",
+  "UNKNOWN": "Something went wrong"
+}

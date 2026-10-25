@@ -1,0 +1,18 @@
+# Nada de segredo, chave ou estado local na imagem.
+.git
+.github
+**/target
+**/node_modules
+frontend
+docs
+*.png
+*.zip
+data
+keys
+**/*.pem
+**/*.key
+**/*.p12
+**/*.jks
+.env
+.env.*
+!.env.example

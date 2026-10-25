@@ -1,0 +1,84 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+# um push novo no mesmo PR/branch cancela a execução anterior
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  secrets-scan:
+    # histórico inteiro, não só os commits do PR; --redact nunca imprime o valor.
+    # .gitleaksignore aceita só fingerprints exatos.
+    name: gitleaks (histórico inteiro)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with: { fetch-depth: 0 }
+      - uses: actions/setup-go@v7
+        with: { go-version: "stable", cache: false }
+      - name: instala gitleaks (versão fixa, conferida pelo sum.golang.org)
+        run: go install github.com/zricethezav/gitleaks/v8@v8.30.1
+      - name: varre o histórico
+        run: $(go env GOPATH)/bin/gitleaks git --redact --no-banner --exit-code 1 .
+
+  backend:
+    # bytecode 21 (maven.compiler.release); 25 é a JVM da imagem (D-5)
+    name: backend (JDK ${{ matrix.java }} / Maven)
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        java: ["21", "25"]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.java }}
+          cache: maven
+      - name: Build & test
+        run: mvn -B -ntp verify
+      - name: Integration tests (perfil it)
+        # o perfil já existe para o banco real que chega com a persistência (D-8); no esqueleto não há teste marcado como it
+        if: matrix.java == '25'
+        run: mvn -B -ntp -Pit verify
+
+  image:
+    name: imagem da API (temurin 25)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: docker build (sem push)
+        run: docker build --pull -t scores-af-api:ci .
+
+  frontend:
+    name: frontend (Next.js)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - name: dependências de produção sem vulnerabilidade alta
+        run: npm audit --omit=dev --audit-level=high
+      - run: npm run lint
+      - run: npx tsc --noEmit
+      - run: npm run i18n:check
+      - run: npm run test:unit
+      - run: npm run build
+        env:
+          NEXT_PUBLIC_API_MODE: mock

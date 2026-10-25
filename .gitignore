@@ -1,0 +1,51 @@
+# segredos
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.jks
+/keys/
+**/serviceAccount*.json
+
+# java / maven
+target/
+*.class
+*.log
+.mvn/wrapper/maven-wrapper.jar
+hs_err_pid*
+
+# ides
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
+.factorypath
+
+# node / next
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/.turbo/
+frontend/next-env.d.ts
+frontend/*.tsbuildinfo
+node_modules/
+
+# dados locais
+data/media/
+data/*.db
+*.mv.db
+*.trace.db
+
+# so
+.DS_Store
+Thumbs.db
+
+# gerador de diagramas
+docs/generator/__pycache__/
+__pycache__/
+*.pyc
+.venv/

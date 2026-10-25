@@ -53,7 +53,7 @@ Fonte: [`RF10-stm.puml`](RF10-stm.puml)
 | Gateway | Regra | Se falso |
 |---|---|---|
 | Autenticado e conta ativa? | JWT RS256 válido · família de sessão sid ativa (SessionActiveFilter) · status != DELETED | 401 UNAUTHENTICATED {code, message, details, correlationId} |
-| Valores válidos? | simQuarterMinutes 1–15 (tempo real por quarto, RNF2) · playCallingLevel ∈ KEY_MOMENTS|ALL_PLAYS|NONE · decisionTimeoutSeconds 10–60 · difficulty ∈ EASY|NORMAL|HARD|LEGEND · units ∈ YARDS|METERS · fontScale na lista | 422 VALIDATION_ERROR |
+| Valores válidos? | simQuarterMinutes 1–15 (tempo real por quarto, RNF2) · playCallingLevel ∈ KEY_MOMENTS\|ALL_PLAYS\|NONE · decisionTimeoutSeconds 10–60 · difficulty ∈ EASY\|NORMAL\|HARD\|LEGEND · units ∈ YARDS\|METERS · fontScale na lista | 422 VALIDATION_ERROR |
 | Item visual possuído? | tema, arte ou trilha é padrão ou existe Purchase do usuário para o StoreItem | 422 ITEM_NOT_OWNED |
 | Partida ao vivo em andamento? | existe MatchSession LIVE do usuário | aplica já · se sim: duração e nível de controle valem a partir do próximo jogo (o snapshot guarda os da partida) |
 | Dificuldade afeta carreiras existentes? | save.difficulty é fixada na criação · só novas carreiras usam o valor | aviso na tela (não bloqueia) |

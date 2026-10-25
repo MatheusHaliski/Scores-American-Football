@@ -51,7 +51,7 @@ Fonte: [`RF12-stm-stadium-roof-troca-de-cobertura.puml`](RF12-stm-stadium-roof-t
 | Estado | Método | Rota | Caso de uso | Autorização | Descrição |
 |---|---|---|---|---|---|
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/stadium` | `GetStadiumUseCase` | JWT · dono do save | Estádio (capacidade, cobertura, gramado, zona climática, nível), setores, política de ingressos, previsão de público e renda por jogo em casa e efeito do clima |
-| ⛔ alvo | `PUT` | `/api/v1/careers/{id}/stadium` | `UpdateStadiumUseCase` | JWT · dono do save | Nome, nível, troca de gramado (GRASS|TURF) e de cobertura (OPEN|DOME|RETRACTABLE, só na offseason) |
+| ⛔ alvo | `PUT` | `/api/v1/careers/{id}/stadium` | `UpdateStadiumUseCase` | JWT · dono do save | Nome, nível, troca de gramado (GRASS\|TURF) e de cobertura (OPEN\|DOME\|RETRACTABLE, só na offseason) |
 | ⛔ alvo | `POST` | `/api/v1/careers/{id}/stadium/sectors` | `BuySectorUseCase` | JWT · dono do save | Compra setor (LOWER_BOWL, UPPER_BOWL, SIDELINE_CLUB, END_ZONE, LUXURY_SUITES) |
 | ⛔ alvo | `PUT` | `/api/v1/careers/{id}/stadium/sectors/{sid}` | `UpdateSectorUseCase` | JWT · dono do save | Reforma (condição), amplia assentos, define preço |
 | ⛔ alvo | `DELETE` | `/api/v1/careers/{id}/stadium/sectors/{sid}` | `RemoveSectorUseCase` | JWT · dono do save | Exclui setor (não obrigatório e sem obra) |
@@ -65,7 +65,7 @@ Fonte: [`RF12-stm-stadium-roof-troca-de-cobertura.puml`](RF12-stm-stadium-roof-t
 | Head coach empregado? | save.employmentStatus == EMPLOYED && save.club != null | 403 SPECTATOR_MODE (só leitura, RF37) |
 | Caixa cobre o custo? | club.cash ≥ custo (setor novo = assentos × preço-base do tipo · reforma = upgradeCost × (100 − condição)/100 · cobertura retrátil ou domo = custo fixo alto) | 422 INSUFFICIENT_CASH (sugere empréstimo RF14) |
 | Capacidade dentro da faixa? | 60 000 ≤ Σ seats ≤ min(80 000, 60 000 + 5 000 × (level − 1)) | 422 CAPACITY_LIMIT |
-| Obra de cobertura na offseason? | troca de roof só com season.phase ∈ OFFSEASON|DRAFT|FREE_AGENCY (sem jogos em casa) | 422 ROOF_CHANGE_IN_SEASON |
+| Obra de cobertura na offseason? | troca de roof só com season.phase ∈ OFFSEASON\|DRAFT\|FREE_AGENCY (sem jogos em casa) | 422 ROOF_CHANGE_IN_SEASON |
 | Cota de camarotes e carnês ok? | LUXURY_SUITES ≤ 5 % dos assentos · carnês ≤ 70 % · desconto de carnê 0–30 % | 422 POLICY_INVALID |
 | Preço dentro da faixa? | ticketPrice entre min e max do tipo (LUXURY_SUITES > SIDELINE_CLUB > LOWER_BOWL > END_ZONE > UPPER_BOWL) e ≤ 3× média da liga | 422 PRICE_OUT_OF_RANGE |
 | Setor removível? | type != LOWER_BOWL, capacidade continua ≥ 60 000 e sem obra em andamento | 422 SECTOR_REQUIRED |

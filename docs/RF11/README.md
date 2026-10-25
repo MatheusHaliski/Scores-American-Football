@@ -57,7 +57,7 @@ Fonte: [`RF11-stm.puml`](RF11-stm.puml)
 | Dono do save? | save.userId == jwt.sub (CareerAccess.requireOwner) | 403 FORBIDDEN + AuditLog ACCESS_DENIED |
 | Há slot livre? | saves ACTIVE do usuário < 5 | 422 SLOT_LIMIT (arquive ou exclua uma carreira) |
 | Nome válido e único? | 3–40 chars e sem homônimo entre os saves do usuário | 422 NAME_INVALID / 409 NAME_TAKEN |
-| Sem partida ao vivo? | nenhuma MatchSession LIVE|HALFTIME|DECISION do save | 409 MATCH_IN_PROGRESS |
+| Sem partida ao vivo? | nenhuma MatchSession LIVE\|HALFTIME\|DECISION do save | 409 MATCH_IN_PROGRESS |
 | Exclusão confirmada? | confirm == nome do save digitado | 422 CONFIRMATION_REQUIRED |
 | Versão otimista confere? | CareerSave.version == versão enviada | 409 CONFLICT |
 

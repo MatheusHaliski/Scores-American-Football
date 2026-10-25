@@ -75,11 +75,11 @@ Fonte: [`RF46-stm-consentrecord-finalidade.puml`](RF46-stm-consentrecord-finalid
 |---|---|---|
 | Reautenticado (step-up)? | reserva atômica (5 em 15 min) antes do hash · e-mail, senha e exclusão | 401 AUTH_FAILED · 6ª tentativa: 429 + Retry-After 900 |
 | Idade mínima? | birthDate ≥ 13 anos (Art. 14) | 422 MIN_AGE |
-| Finalidade válida? | ANALYTICS | MARKETING_EMAIL | PUBLIC_RANKING | AI_ANALYST | BIOMETRIC_AVATAR | 422 INVALID_CONSENT_PURPOSE |
+| Finalidade válida? | ANALYTICS \| MARKETING_EMAIL \| PUBLIC_RANKING \| AI_ANALYST \| BIOMETRIC_AVATAR | 422 INVALID_CONSENT_PURPOSE |
 | Revogou biometria? | BIOMETRIC_AVATAR: concedido → revogado | só registra |
-| Idioma suportado? | pt-BR | en-US | es-ES · termos do esporte em inglês quando é o uso do Brasil (touchdown, snap, sack) (RNF13) | 422 INVALID_LOCALE |
+| Idioma suportado? | pt-BR \| en-US \| es-ES · termos do esporte em inglês quando é o uso do Brasil (touchdown, snap, sack) (RNF13) | 422 INVALID_LOCALE |
 | Unidade válida? | units ∈ {YARDS, METERS} · jardas é o padrão do esporte | 422 INVALID_UNITS |
-| Palavra de confirmação? | EXCLUIR | DELETE | ELIMINAR | 422 DELETION_CONFIRMATION_MISMATCH |
+| Palavra de confirmação? | EXCLUIR \| DELETE \| ELIMINAR | 422 DELETION_CONFIRMATION_MISMATCH |
 | Prazo de arrependimento vencido? | 7 dias após o pedido | pode cancelar |
 
 ---

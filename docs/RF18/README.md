@@ -44,7 +44,7 @@ Fonte: [`RF18-stm.puml`](RF18-stm.puml)
 
 | Estado | Método | Rota | Caso de uso | Autorização | Descrição |
 |---|---|---|---|---|---|
-| ⛔ alvo | `GET` | `/api/v1/careers/{id}/managers/world` | `ListWorldManagersUseCase` | JWT · dono do save | Ranking (Redis ZSET) e esquemas compactos: nome, franquia, overall, estilo de head coach, campanha (V-D-E), vitórias em playoffs, títulos · sort=wins|playoffWins|titles|overall|moraleLeague |
+| ⛔ alvo | `GET` | `/api/v1/careers/{id}/managers/world` | `ListWorldManagersUseCase` | JWT · dono do save | Ranking (Redis ZSET) e esquemas compactos: nome, franquia, overall, estilo de head coach, campanha (V-D-E), vitórias em playoffs, títulos · sort=wins\|playoffWins\|titles\|overall\|moraleLeague |
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/managers/world/{mid}` | `GetManagerHistoryUseCase` | JWT · dono do save | Esquema ampliado: franquias por temporada (ManagerCareerRecord), campanhas, playoffs, série de overall, estilo, prêmios COACH |
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/search` | `SearchUseCase` | JWT · dono do save | type=MANAGER: busca por nome, nacionalidade ou franquia (OpenSearch) |
 

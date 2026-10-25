@@ -50,7 +50,7 @@ Fonte: [`RF34-stm.puml`](RF34-stm.puml)
 | ⛔ alvo | `POST` | `/api/v1/leagues/{id}/clubs` | `CreateClubUseCase` | JWT | Cria franquia (nome, cidade, cores, capacete, divisão) só em mundo editável |
 | ⛔ alvo | `GET` | `/api/v1/catalog/coach-styles` | `ListCoachStylesUseCase` | JWT | Estilos de head coach: OFFENSIVE, DEFENSIVE, DEVELOPER, MOTIVATOR (RF15) |
 | ⛔ alvo | `POST` | `/api/v1/careers` | `CreateCareerUseCase` | JWT | Cria CareerSave CREATING e agenda o bootstrap → 202 {saveId} |
-| ⛔ alvo | `GET` | `/api/v1/careers/{id}` | `GetCareerUseCase` | JWT · dono do save | Status da criação (CREATING → ACTIVE | FAILED) para o poll do wizard |
+| ⛔ alvo | `GET` | `/api/v1/careers/{id}` | `GetCareerUseCase` | JWT · dono do save | Status da criação (CREATING → ACTIVE \| FAILED) para o poll do wizard |
 | ⛔ alvo | `GET` | `/api/v1/careers` | `ListCareersUseCase` | JWT | Carreiras salvas e slots livres (RF11) |
 
 ## Pontos de decisão

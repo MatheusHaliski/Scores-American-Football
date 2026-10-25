@@ -32,6 +32,20 @@ def load_models():
 
 def esc(s): return str(s).replace('"', "'")
 
+def md(s):
+    """Célula de tabela Markdown: `|` vira `\\|` (inclusive dentro de `código`) e quebra de linha vira espaço. O `esc` é só para o PlantUML."""
+    return esc(s).replace("|", "\\|").replace("\n", " ")
+
+def check_tables(text, where):
+    """Toda linha de uma tabela Markdown tem o mesmo número de colunas do cabeçalho (pipes escapados não contam)."""
+    cols = None
+    for n, line in enumerate(text.split("\n"), 1):
+        if not line.startswith("|"):
+            cols = None; continue
+        k = len(re.findall(r"(?<!\\)\|", line))
+        if cols is None: cols = k
+        elif k != cols: raise SystemExit(f"{where}:{n}: tabela com {k - 1} colunas, esperado {cols - 1}: {line[:120]}")
+
 # ---- endpoints implementados (sync_endpoints.py): o README e o diagrama de componentes marcam o que ainda é alvo
 _EP_FILE = os.path.join(HERE, "endpoints_code.json")
 _IMPLEMENTED = set()
@@ -307,11 +321,11 @@ def folder_readme(r, cards, data):
     if r.get("endpoints"):
         L += ["## Endpoints", "", "✅ = existe num controller do `scores-af-web` · ⛔ alvo = previsto no modelo, ainda sem controller (lista em `generator/endpoints_code.json`).", "",
               "| Estado | Método | Rota | Caso de uso | Autorização | Descrição |", "|---|---|---|---|---|---|"]
-        L += [f"| {'✅' if implemented(e) else ('—' if implemented(e) is None else '⛔ alvo')} | `{e['method']}` | `{e['path']}` | `{e.get('usecase','')}` | {e.get('auth','JWT')} | {esc(e.get('desc',''))} |" for e in r["endpoints"]]
+        L += [f"| {'✅' if implemented(e) else ('—' if implemented(e) is None else '⛔ alvo')} | `{md(e['method'])}` | `{md(e['path'])}` | `{md(e.get('usecase',''))}` | {md(e.get('auth','JWT'))} | {md(e.get('desc',''))} |" for e in r["endpoints"]]
         L += [""]
     if r.get("gateways"):
         L += ["## Pontos de decisão", "", "| Gateway | Regra | Se falso |", "|---|---|---|"]
-        L += [f"| {esc(g['name'])} | {esc(g['rule'])} | {esc(g.get('onFalse',''))} |" for g in r["gateways"]]
+        L += [f"| {md(g['name'])} | {md(g['rule'])} | {md(g.get('onFalse',''))} |" for g in r["gateways"]]
         L += [""]
     L += ["---", "Gerado por `../generator/generate.py` a partir de `../generator/model/*.py` e `../generator/common.py`; não edite os .puml à mão."]
     return "\n".join(L) + "\n"
@@ -343,19 +357,20 @@ def catalogs(reqs, outdir):
     for r in reqs:
         d = r["id"]
         more = "".join(f" · [stm:{esc(x['subject']).split('.')[0]}]({d}/{r['id']}-stm-{slug(x['subject'])}.svg)" for x in r.get("moreStates", []))
-        lines.append(f"| [{r['id']}]({d}/) | {r.get('sprint','—')} | {esc(r['title'])} | {', '.join(r.get('actors', []))} | {len(r.get('endpoints', []))} | [act]({d}/{r['id']}-act.svg) · [seq]({d}/{r['id']}-seq.svg) · [cmp]({d}/{r['id']}-cmp.svg) · [cls]({d}/{r['id']}-cls.svg) · [stm]({d}/{r['id']}-stm.svg){more} |")
+        lines.append(f"| [{r['id']}]({d}/) | {r.get('sprint','—')} | {md(r['title'])} | {md(', '.join(r.get('actors', [])))} | {len(r.get('endpoints', []))} | [act]({d}/{r['id']}-act.svg) · [seq]({d}/{r['id']}-seq.svg) · [cmp]({d}/{r['id']}-cmp.svg) · [cls]({d}/{r['id']}-cls.svg) · [stm]({d}/{r['id']}-stm.svg){more} |")
         for e in r.get("endpoints", []):
-            ep_lines.append(f"| {'✅' if implemented(e) else ('—' if implemented(e) is None else '⛔ alvo')} | `{e['method']}` | `{e['path']}` | {r['id']} | `{e.get('usecase','')}` | {e.get('auth','JWT')} | {esc(e.get('desc',''))} |")
+            ep_lines.append(f"| {'✅' if implemented(e) else ('—' if implemented(e) is None else '⛔ alvo')} | `{md(e['method'])}` | `{md(e['path'])}` | {r['id']} | `{md(e.get('usecase',''))}` | {md(e.get('auth','JWT'))} | {md(e.get('desc',''))} |")
         for g in r.get("gateways", []):
-            gw_lines.append(f"| {r['id']} | {esc(g['name'])} | {esc(g['rule'])} | {esc(g.get('onFalse',''))} |")
+            gw_lines.append(f"| {r['id']} | {md(g['name'])} | {md(g['rule'])} | {md(g.get('onFalse',''))} |")
         for a in r.get("actors", []):
             actor_map.setdefault(a, []).append(r["id"])
         for s in state_machines(r):
-            st_lines.append(f"| {r['id']} | {esc(s['subject'])} | {', '.join(x['name'] if isinstance(x, dict) else x for x in s['states'])} | {len(s['transitions'])} |")
+            st_lines.append(f"| {r['id']} | {md(s['subject'])} | {md(', '.join(x['name'] if isinstance(x, dict) else x for x in s['states']))} | {len(s['transitions'])} |")
     for a, rs in actor_map.items():
-        ac_lines.append(f"| {a} | {common.ACTORS.get(a, a)} | {', '.join(rs)} |")
+        ac_lines.append(f"| {md(a)} | {md(common.ACTORS.get(a, a))} | {', '.join(rs)} |")
     for name, content in (("README.md", lines), ("catalogo-endpoints.md", ep_lines), ("catalogo-gateways.md", gw_lines), ("catalogo-atores.md", ac_lines), ("catalogo-estados.md", st_lines)):
-        with open(os.path.join(outdir, name), "w", encoding="utf-8") as f: f.write("\n".join(content) + "\n")
+        text = "\n".join(content) + "\n"; check_tables(text, name)
+        with open(os.path.join(outdir, name), "w", encoding="utf-8") as f: f.write(text)
     with open(os.path.join(outdir, "modelo.json"), "w", encoding="utf-8") as f:
         json.dump(reqs, f, ensure_ascii=False, indent=1, default=str)
 
@@ -374,7 +389,8 @@ def main():
     for r in reqs:
         if only and r["id"] not in only: continue
         d = os.path.join(base, r["id"]); os.makedirs(d, exist_ok=True)
-        with open(os.path.join(d, "README.md"), "w", encoding="utf-8") as f: f.write(folder_readme(r, cards, data))
+        readme = folder_readme(r, cards, data); check_tables(readme, f"{r['id']}/README.md")
+        with open(os.path.join(d, "README.md"), "w", encoding="utf-8") as f: f.write(readme)
         for suffix, fn in (("act", activity), ("seq", sequence), ("cmp", component), ("cls", classes), ("stm", states)):
             with open(os.path.join(d, f"{r['id']}-{suffix}.puml"), "w", encoding="utf-8") as f: f.write(fn(r) + "\n")
             n += 1

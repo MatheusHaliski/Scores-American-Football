@@ -52,7 +52,7 @@ Fonte: [`RF49-stm-salarycapledger-espaco-na-temporada.puml`](RF49-stm-salarycapl
 |---|---|---|---|---|---|
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/cap` | `GetCapSheetUseCase` | JWT · dono do save | SalaryCapLedger da temporada e das 3 seguintes: teto, comprometido, dead money, espaço, rollover |
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/contracts` | `ListContractsUseCase` | JWT · dono do save | Contratos com cap hit por ano, bônus rateado, garantias e dead money se cortado |
-| ⛔ alvo | `POST` | `/api/v1/careers/{id}/players/{pid}/contract/negotiate` | `NegotiateContractUseCase` | JWT · dono do save | Proposta de extensão (anos, salário por ano, bônus, garantias) → ACCEPT | COUNTER | REJECT |
+| ⛔ alvo | `POST` | `/api/v1/careers/{id}/players/{pid}/contract/negotiate` | `NegotiateContractUseCase` | JWT · dono do save | Proposta de extensão (anos, salário por ano, bônus, garantias) → ACCEPT \| COUNTER \| REJECT |
 | ⛔ alvo | `POST` | `/api/v1/careers/{id}/players/{pid}/contract/restructure` | `RestructureContractUseCase` | JWT · dono do save | Converte salário-base em bônus rateado: alivia o ano atual, pesa nos próximos |
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/players/{pid}/release/preview` | `PreviewReleaseUseCase` | JWT · dono do save | Dead money e economia, normal e pós-1º de junho |
 | ⛔ alvo | `POST` | `/api/v1/careers/{id}/players/{pid}/release` | `ReleasePlayerUseCase` | JWT · dono do save | Corta o jogador (waivers, RF65) e lança o dead money · expectedLedgerVersion |

@@ -52,7 +52,7 @@ Fonte: [`RF1-stm.puml`](RF1-stm.puml)
 | Gateway | Regra | Se falso |
 |---|---|---|
 | Dentro do limite da rota? | AuthRateLimitFilter: POST /auth/register ≤ 10 por IP confiável (ClientIpResolver, nunca X-Forwarded-For cru; IPv6 por /64) em 1 h | 429 RATE_LIMITED + Retry-After, corpo com correlationId |
-| Payload válido? | e-mail RFC 5322 (domínios reservados recusados), senha ≥ 8 caracteres, displayName 3–40, locale pt-BR|en-US|es-ES, idade ≥ 13 anos | 422 VALIDATION_ERROR com details por campo |
+| Payload válido? | e-mail RFC 5322 (domínios reservados recusados), senha ≥ 8 caracteres, displayName 3–40, locale pt-BR\|en-US\|es-ES, idade ≥ 13 anos | 422 VALIDATION_ERROR com details por campo |
 | Nome não é reservado? | ReservedNames.isReserved(displayName) == false (admin, scores, velion, suporte… normalizados) | 422 NAME_RESERVED |
 | Consentimento LGPD marcado? | dataProcessingConsent == true (obrigatório) · marketing opcional e nunca pré-marcado | 422 CONSENT_REQUIRED |
 | Teto de hashes livre? | PasswordHasher: semáforo de hashes simultâneos (Argon2id ~19 MiB cada), espera limitada | 503 AUTH_BUSY + Retry-After (nunca 500) |

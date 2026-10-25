@@ -75,7 +75,7 @@ Fonte: [`RF3-stm-dataexportjob-status.puml`](RF3-stm-dataexportjob-status.puml)
 | Sessão pertence ao usuário? | session.user == jwt.sub | 404 NOT_FOUND (não revela) + ACCESS_DENIED |
 | Finalidade válida? | ConsentPurpose conhecido; DATA_PROCESSING não é revogável (equivale a excluir a conta) | 422 INVALID_CONSENT_PURPOSE |
 | Exportação dentro do limite? | nenhum DataExportJob REQUESTED/READY nas últimas 24 h | 429 EXPORT_RATE_LIMITED com o job vigente |
-| Exclusão confirmada? | senha (step-up) + palavra EXCLUIR|DELETE|ELIMINAR | 422 DELETION_CONFIRMATION_MISMATCH |
+| Exclusão confirmada? | senha (step-up) + palavra EXCLUIR\|DELETE\|ELIMINAR | 422 DELETION_CONFIRMATION_MISMATCH |
 | Trilhas preservadas? | FKs de consentimento, compras, carteira e ledger são RESTRICT: a exclusão anonimiza, nunca apaga a conta | DELETE físico recusado pelo banco |
 
 ---

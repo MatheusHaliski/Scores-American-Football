@@ -44,7 +44,7 @@ Fonte: [`RF47-stm.puml`](RF47-stm.puml)
 
 | Estado | Método | Rota | Caso de uso | Autorização | Descrição |
 |---|---|---|---|---|---|
-| ⛔ alvo | `GET` | `/api/v1/careers/{id}/players/{pid}/gauges` | `GetPlayerGaugesUseCase` | JWT · dono do save | ?scope=SEASON|LAST5|CAREER&position= · velocímetros da família da posição com valor, escala, percentil na posição e amostra |
+| ⛔ alvo | `GET` | `/api/v1/careers/{id}/players/{pid}/gauges` | `GetPlayerGaugesUseCase` | JWT · dono do save | ?scope=SEASON\|LAST5\|CAREER&position= · velocímetros da família da posição com valor, escala, percentil na posição e amostra |
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/players/{pid}/gauges/compare` | `ComparePlayerGaugesUseCase` | JWT · dono do save | ?other={pid2} · mesmos velocímetros lado a lado (mesma família) |
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/stats/leaders` | `GetStatLeadersUseCase` | JWT · dono do save | ?position=&metric= · líderes da liga (OpenSearch) |
 | ⛔ alvo | `GET` | `/api/v1/catalog/gauges` | `GaugeCatalogUseCase` | JWT | Definições por família: métrica, fórmula, escala mín./máx., sentido (maior ou menor é melhor), amostra mínima, versão |

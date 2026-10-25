@@ -3,7 +3,7 @@
 | Req | Gateway | Regra | Se falso |
 |---|---|---|---|
 | RF1 | Dentro do limite da rota? | AuthRateLimitFilter: POST /auth/register ≤ 10 por IP confiável (ClientIpResolver, nunca X-Forwarded-For cru; IPv6 por /64) em 1 h | 429 RATE_LIMITED + Retry-After, corpo com correlationId |
-| RF1 | Payload válido? | e-mail RFC 5322 (domínios reservados recusados), senha ≥ 8 caracteres, displayName 3–40, locale pt-BR|en-US|es-ES, idade ≥ 13 anos | 422 VALIDATION_ERROR com details por campo |
+| RF1 | Payload válido? | e-mail RFC 5322 (domínios reservados recusados), senha ≥ 8 caracteres, displayName 3–40, locale pt-BR\|en-US\|es-ES, idade ≥ 13 anos | 422 VALIDATION_ERROR com details por campo |
 | RF1 | Nome não é reservado? | ReservedNames.isReserved(displayName) == false (admin, scores, velion, suporte… normalizados) | 422 NAME_RESERVED |
 | RF1 | Consentimento LGPD marcado? | dataProcessingConsent == true (obrigatório) · marketing opcional e nunca pré-marcado | 422 CONSENT_REQUIRED |
 | RF1 | Teto de hashes livre? | PasswordHasher: semáforo de hashes simultâneos (Argon2id ~19 MiB cada), espera limitada | 503 AUTH_BUSY + Retry-After (nunca 500) |
@@ -27,7 +27,7 @@
 | RF3 | Sessão pertence ao usuário? | session.user == jwt.sub | 404 NOT_FOUND (não revela) + ACCESS_DENIED |
 | RF3 | Finalidade válida? | ConsentPurpose conhecido; DATA_PROCESSING não é revogável (equivale a excluir a conta) | 422 INVALID_CONSENT_PURPOSE |
 | RF3 | Exportação dentro do limite? | nenhum DataExportJob REQUESTED/READY nas últimas 24 h | 429 EXPORT_RATE_LIMITED com o job vigente |
-| RF3 | Exclusão confirmada? | senha (step-up) + palavra EXCLUIR|DELETE|ELIMINAR | 422 DELETION_CONFIRMATION_MISMATCH |
+| RF3 | Exclusão confirmada? | senha (step-up) + palavra EXCLUIR\|DELETE\|ELIMINAR | 422 DELETION_CONFIRMATION_MISMATCH |
 | RF3 | Trilhas preservadas? | FKs de consentimento, compras, carteira e ledger são RESTRICT: a exclusão anonimiza, nunca apaga a conta | DELETE físico recusado pelo banco |
 | RF4 | Dono do save? | save.userId == jwt.sub (CareerAccess.requireOwner) | 403 FORBIDDEN + AuditLog ACCESS_DENIED |
 | RF4 | Jogador do meu clube? | save.employmentStatus == EMPLOYED && player.clubId == save.clubId (inclui practice squad e IR) | 403 NOT_YOUR_PLAYER |
@@ -42,12 +42,12 @@
 | RF5 | Mundo editável pelo usuário? | world.ownerUser == jwt.sub ou (world.ownerUser == null && role == ADMIN) | 403 + ACCESS_DENIED |
 | RF5 | Mundo semente sem ser ADMIN? | world.ownerUser == null && role != ADMIN | edita diretamente |
 | RF5 | Mundo é TEMPLATE? | world.kind == TEMPLATE (mundos SAVE são cópias congeladas) | 422 WORLD_NOT_EDITABLE |
-| RF5 | Regras da liga válidas? | ruleset PRO|COLLEGE · quarterMinutes 5–15 · playClock 40/25 · overtimeMinutes 0–15 · kickoffYardLine 30–40 · rosterMax ≥ gameDayActives · practiceSquadMax 0–16 · salaryFloor ≤ salaryCap | 422 RULES_INVALID com campos |
+| RF5 | Regras da liga válidas? | ruleset PRO\|COLLEGE · quarterMinutes 5–15 · playClock 40/25 · overtimeMinutes 0–15 · kickoffYardLine 30–40 · rosterMax ≥ gameDayActives · practiceSquadMax 0–16 · salaryFloor ≤ salaryCap | 422 RULES_INVALID com campos |
 | RF5 | Estrutura válida? | teamCount 8–32 · conferências 1–2 · cada franquia em exatamente 1 divisão · divisões equilibradas (±1) · vagas de playoff ≤ franquias da conferência | 422 STRUCTURE_INVALID |
 | RF5 | Jogador válido? | posição no catálogo AF (QB…LS) · unidade coerente · subatributos 0–100 · altura e peso na faixa da posição | 422 VALIDATION_ERROR |
 | RF5 | Nome único no mundo? | liga ou franquia sem homônimo no mesmo mundo | 409 NAME_TAKEN |
 | RF5 | Elenco cabe no rosterMax? | players(club) < league.rules.rosterMax (53) ao criar jogador | 422 ROSTER_FULL |
-| RF5 | Mídia válida? | logo, decalque do capacete e textura do uniforme PNG|SVG ≤ 1 MB, ≤ 1024 px, conteúdo verificado (RNF11) | 422 MEDIA_INVALID |
+| RF5 | Mídia válida? | logo, decalque do capacete e textura do uniforme PNG\|SVG ≤ 1 MB, ≤ 1024 px, conteúdo verificado (RNF11) | 422 MEDIA_INVALID |
 | RF5 | Exclusão segura? | liga sem franquias / franquia sem jogadores (ou cascata confirmada) e nenhuma carreira usando o mundo | 409 IN_USE |
 | RF6 | Dono do save? | save.userId == jwt.sub (CareerAccess.requireOwner) | 403 FORBIDDEN + AuditLog ACCESS_DENIED |
 | RF6 | Há jogo nesta semana? | existe Fixture SCHEDULED do clube na semana atual (Week.byeClubs não contém o clube) | semana de folga: edita para a próxima semana (aviso BYE_WEEK) · fim de temporada → 409 NO_NEXT_GAME (RF35) |
@@ -82,7 +82,7 @@
 | RF9 | Elenco pesa na decisão? | moral média do elenco ≥ 70 → aviso: jogadores pedem para ficar | sem alerta |
 | RF9 | Transação única ok? | novo contrato ACTIVE, antigo TRANSFERRED, save.club, club.manager, head coach IA demitido, demais ofertas EXPIRED · versões conferem | rollback · 409 CONFLICT |
 | RF10 | Autenticado e conta ativa? | JWT RS256 válido · família de sessão sid ativa (SessionActiveFilter) · status != DELETED | 401 UNAUTHENTICATED {code, message, details, correlationId} |
-| RF10 | Valores válidos? | simQuarterMinutes 1–15 (tempo real por quarto, RNF2) · playCallingLevel ∈ KEY_MOMENTS|ALL_PLAYS|NONE · decisionTimeoutSeconds 10–60 · difficulty ∈ EASY|NORMAL|HARD|LEGEND · units ∈ YARDS|METERS · fontScale na lista | 422 VALIDATION_ERROR |
+| RF10 | Valores válidos? | simQuarterMinutes 1–15 (tempo real por quarto, RNF2) · playCallingLevel ∈ KEY_MOMENTS\|ALL_PLAYS\|NONE · decisionTimeoutSeconds 10–60 · difficulty ∈ EASY\|NORMAL\|HARD\|LEGEND · units ∈ YARDS\|METERS · fontScale na lista | 422 VALIDATION_ERROR |
 | RF10 | Item visual possuído? | tema, arte ou trilha é padrão ou existe Purchase do usuário para o StoreItem | 422 ITEM_NOT_OWNED |
 | RF10 | Partida ao vivo em andamento? | existe MatchSession LIVE do usuário | aplica já · se sim: duração e nível de controle valem a partir do próximo jogo (o snapshot guarda os da partida) |
 | RF10 | Dificuldade afeta carreiras existentes? | save.difficulty é fixada na criação · só novas carreiras usam o valor | aviso na tela (não bloqueia) |
@@ -90,14 +90,14 @@
 | RF11 | Dono do save? | save.userId == jwt.sub (CareerAccess.requireOwner) | 403 FORBIDDEN + AuditLog ACCESS_DENIED |
 | RF11 | Há slot livre? | saves ACTIVE do usuário < 5 | 422 SLOT_LIMIT (arquive ou exclua uma carreira) |
 | RF11 | Nome válido e único? | 3–40 chars e sem homônimo entre os saves do usuário | 422 NAME_INVALID / 409 NAME_TAKEN |
-| RF11 | Sem partida ao vivo? | nenhuma MatchSession LIVE|HALFTIME|DECISION do save | 409 MATCH_IN_PROGRESS |
+| RF11 | Sem partida ao vivo? | nenhuma MatchSession LIVE\|HALFTIME\|DECISION do save | 409 MATCH_IN_PROGRESS |
 | RF11 | Exclusão confirmada? | confirm == nome do save digitado | 422 CONFIRMATION_REQUIRED |
 | RF11 | Versão otimista confere? | CareerSave.version == versão enviada | 409 CONFLICT |
 | RF12 | Dono do save? | save.userId == jwt.sub (CareerAccess.requireOwner) | 403 FORBIDDEN + AuditLog ACCESS_DENIED |
 | RF12 | Head coach empregado? | save.employmentStatus == EMPLOYED && save.club != null | 403 SPECTATOR_MODE (só leitura, RF37) |
 | RF12 | Caixa cobre o custo? | club.cash ≥ custo (setor novo = assentos × preço-base do tipo · reforma = upgradeCost × (100 − condição)/100 · cobertura retrátil ou domo = custo fixo alto) | 422 INSUFFICIENT_CASH (sugere empréstimo RF14) |
 | RF12 | Capacidade dentro da faixa? | 60 000 ≤ Σ seats ≤ min(80 000, 60 000 + 5 000 × (level − 1)) | 422 CAPACITY_LIMIT |
-| RF12 | Obra de cobertura na offseason? | troca de roof só com season.phase ∈ OFFSEASON|DRAFT|FREE_AGENCY (sem jogos em casa) | 422 ROOF_CHANGE_IN_SEASON |
+| RF12 | Obra de cobertura na offseason? | troca de roof só com season.phase ∈ OFFSEASON\|DRAFT\|FREE_AGENCY (sem jogos em casa) | 422 ROOF_CHANGE_IN_SEASON |
 | RF12 | Cota de camarotes e carnês ok? | LUXURY_SUITES ≤ 5 % dos assentos · carnês ≤ 70 % · desconto de carnê 0–30 % | 422 POLICY_INVALID |
 | RF12 | Preço dentro da faixa? | ticketPrice entre min e max do tipo (LUXURY_SUITES > SIDELINE_CLUB > LOWER_BOWL > END_ZONE > UPPER_BOWL) e ≤ 3× média da liga | 422 PRICE_OUT_OF_RANGE |
 | RF12 | Setor removível? | type != LOWER_BOWL, capacidade continua ≥ 60 000 e sem obra em andamento | 422 SECTOR_REQUIRED |
@@ -105,7 +105,7 @@
 | RF12 | Diretoria autoriza obra grande? | custo > 30 % do caixa exige moralClub ≥ 40 | 422 BOARD_REFUSED + mensagem no inbox |
 | RF12 | Clima afeta o jogo em casa? | roof == OPEN e climateZone fria ou chuvosa → Fixture.weather sorteado por seed (vento, chuva, neve) entra no motor (RF42) · DOME → clima neutro | clima neutro |
 | RF13 | Dono do save? | save.userId == jwt.sub (CareerAccess.requireOwner) | 403 FORBIDDEN + AuditLog ACCESS_DENIED |
-| RF13 | Mensagem aberta? | message.saveId == id && status ∈ UNREAD|READ | 409 MESSAGE_CLOSED |
+| RF13 | Mensagem aberta? | message.saveId == id && status ∈ UNREAD\|READ | 409 MESSAGE_CLOSED |
 | RF13 | Opção válida? | chosenOption ∈ message.options | 422 OPTION_INVALID |
 | RF13 | Prazo respeitado? | deadlineWeek == null ou deadlineWeek ≥ save.currentWeek (prazo de trocas e free agency conferidos na fase da temporada) | 409 DEADLINE_PASSED · Scheduler expira com a opção padrão |
 | RF13 | Resposta muda outro agregado? | kind ∈ TRADE_PROPOSAL (RF50) · FA_OFFER (RF65) · CONTRACT_REQUEST (RF49) · JOB_OFFER (RF9) · BUDGET_RESPONSE (RF14) · INJURY_UPDATE (RF64) | efeito só de moral e relacionamento |
@@ -340,9 +340,9 @@
 | RF42 | Momento decisivo para o humano? | playCallingLevel ALL_PLAYS, ou KEY_MOMENTS e (4ª descida, últimos 2 min de cada tempo, prorrogação, conversão após TD) com posse ou defesa da franquia do usuário | PlayCaller IA chama pelo GamePlan (tendências por situação) |
 | RF42 | Chamada dentro do prazo? | now ≤ decision.deadlineAt (UserSettings.decisionTimeoutSeconds) | decisão automática do PlayCaller IA (auto = true) |
 | RF42 | Chamada válida e versão atual? | PlayDefinition do Playbook da franquia, lado correto, opção permitida na situação (FG só ao alcance do K), expectedVersion == session.version | 422 PLAY_CALL_INVALID / 409 STALE_VERSION |
-| RF42 | Falta antes do snap? | u < P(false start | ruído do estádio, disciplina) ou P(offside/encroachment | pass rush, disciplina) | snap normal |
+| RF42 | Falta antes do snap? | u < P(false start \| ruído do estádio, disciplina) ou P(offside/encroachment \| pass rush, disciplina) | snap normal |
 | RF42 | Turnover na jogada? | sack-fumble, fumble do portador (proteção da bola × impacto) ou INT (precisão × cobertura × pressão) | segue com o resultado em jardas |
-| RF42 | Falta durante a jogada? | u < P(holding, DPI, OPI, roughing, facemask… | confronto, disciplina) | resultado da jogada vale |
+| RF42 | Falta durante a jogada? | u < P(holding, DPI, OPI, roughing, facemask… \| confronto, disciplina) | resultado da jogada vale |
 | RF42 | Aceitar a falta? | a equipe ofendida aceita se o resultado com a penalidade for melhor (jardas, 1ª descida automática, perda de descida) · humano decide só se for momento decisivo | recusa: vale a jogada |
 | RF42 | Primeira descida? | jardas ganhas ≥ distance ou penalidade com 1ª descida automática | down + 1 · na 4ª sem conversão → posse troca (turnover on downs) |
 | RF42 | Pontuou? | TD (bola cruza a end zone) · FG convertido · safety | segue o drive |
@@ -387,11 +387,11 @@
 | RF45 | Fim da temporada online? | dia 42 da temporada | segue |
 | RF46 | Reautenticado (step-up)? | reserva atômica (5 em 15 min) antes do hash · e-mail, senha e exclusão | 401 AUTH_FAILED · 6ª tentativa: 429 + Retry-After 900 |
 | RF46 | Idade mínima? | birthDate ≥ 13 anos (Art. 14) | 422 MIN_AGE |
-| RF46 | Finalidade válida? | ANALYTICS | MARKETING_EMAIL | PUBLIC_RANKING | AI_ANALYST | BIOMETRIC_AVATAR | 422 INVALID_CONSENT_PURPOSE |
+| RF46 | Finalidade válida? | ANALYTICS \| MARKETING_EMAIL \| PUBLIC_RANKING \| AI_ANALYST \| BIOMETRIC_AVATAR | 422 INVALID_CONSENT_PURPOSE |
 | RF46 | Revogou biometria? | BIOMETRIC_AVATAR: concedido → revogado | só registra |
-| RF46 | Idioma suportado? | pt-BR | en-US | es-ES · termos do esporte em inglês quando é o uso do Brasil (touchdown, snap, sack) (RNF13) | 422 INVALID_LOCALE |
+| RF46 | Idioma suportado? | pt-BR \| en-US \| es-ES · termos do esporte em inglês quando é o uso do Brasil (touchdown, snap, sack) (RNF13) | 422 INVALID_LOCALE |
 | RF46 | Unidade válida? | units ∈ {YARDS, METERS} · jardas é o padrão do esporte | 422 INVALID_UNITS |
-| RF46 | Palavra de confirmação? | EXCLUIR | DELETE | ELIMINAR | 422 DELETION_CONFIRMATION_MISMATCH |
+| RF46 | Palavra de confirmação? | EXCLUIR \| DELETE \| ELIMINAR | 422 DELETION_CONFIRMATION_MISMATCH |
 | RF46 | Prazo de arrependimento vencido? | 7 dias após o pedido | pode cancelar |
 | RF47 | Dono do save? | save.userId == jwt.sub | 403 + AuditLog ACCESS_DENIED |
 | RF47 | Família da posição? | QB · RB/FB · WR/TE · OL · DL · LB · DB · K/P pela posição escalada (DepthChartSlot) ou natural | usa a posição natural e avisa fora de posição |

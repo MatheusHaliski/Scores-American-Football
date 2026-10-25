@@ -55,7 +55,7 @@ Fonte: [`RF50-stm-draftpick-propriedade.puml`](RF50-stm-draftpick-propriedade.pu
 | ⛔ alvo | `POST` | `/api/v1/careers/{id}/trades/evaluate` | `EvaluateTradeUseCase` | JWT · dono do save | Prévia: valor de cada lado (tabela de picks + valor do jogador), teto das duas franquias depois, elenco, chance de aceite |
 | ⛔ alvo | `POST` | `/api/v1/careers/{id}/trades` | `ProposeTradeUseCase` | JWT · dono do save | Envia a proposta (expira em 2 semanas ou no prazo de trocas) |
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/trades` | `ListTradesUseCase` | JWT · dono do save | Enviadas e recebidas com status |
-| ⛔ alvo | `POST` | `/api/v1/careers/{id}/trades/{tid}/respond` | `RespondTradeUseCase` | JWT · dono do save | Recebida: ACCEPT | REJECT | COUNTER |
+| ⛔ alvo | `POST` | `/api/v1/careers/{id}/trades/{tid}/respond` | `RespondTradeUseCase` | JWT · dono do save | Recebida: ACCEPT \| REJECT \| COUNTER |
 | ⛔ alvo | `POST` | `/api/v1/careers/{id}/trades/{tid}/withdraw` | `WithdrawTradeUseCase` | JWT · dono do save | Retira proposta enviada ainda pendente |
 
 ## Pontos de decisão

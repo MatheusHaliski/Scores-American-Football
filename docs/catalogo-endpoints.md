@@ -24,7 +24,7 @@
 | ⛔ alvo | `DELETE` | `/api/v1/me` | RF3 | `AccountDeletionUseCases.request` | JWT · senha + palavra (step-up) · 10 por IP/h | PENDING_DELETION, sessões encerradas, 7 dias de arrependimento |
 | ⛔ alvo | `POST` | `/api/v1/me/deletion/cancel` | RF3 | `AccountDeletionUseCases.cancel` | JWT | Cancela dentro do prazo |
 | ⛔ alvo | `PUT` | `/api/v1/me/notification-preferences` | RF3 | `NotificationPreferenceUseCases.update` | JWT | Liga/desliga por tipo (resultado da semana, lesão, proposta, prazo de trocas, draft) |
-| ⛔ alvo | `GET` | `/api/v1/careers/{id}/roster` | RF4 | `GetRosterUseCase` | JWT · dono do save | Cards compactos por unidade (unit=OFFENSE|DEFENSE|SPECIAL): posição, overall na posição, macros da família (D-6), condição, moral, lesão, rosterStatus, contrato e cap hit; contadores 53/46/16 |
+| ⛔ alvo | `GET` | `/api/v1/careers/{id}/roster` | RF4 | `GetRosterUseCase` | JWT · dono do save | Cards compactos por unidade (unit=OFFENSE\|DEFENSE\|SPECIAL): posição, overall na posição, macros da família (D-6), condição, moral, lesão, rosterStatus, contrato e cap hit; contadores 53/46/16 |
 | ⛔ alvo | `PATCH` | `/api/v1/careers/{id}/players/{pid}/roster-status` | RF4 | `ChangeRosterStatusUseCase` | JWT · dono do save | ACTIVE ↔ INACTIVE do dia de jogo (46 ativos) ou move ao practice squad |
 | ⛔ alvo | `POST` | `/api/v1/careers/{id}/players/{pid}/injured-reserve` | RF4 | `PlaceOnInjuredReserveUseCase` | JWT · dono do save | Coloca na IR (mínimo 4 semanas) e libera vaga no elenco de 53; retorno com POST …/activate |
 | ⛔ alvo | `POST` | `/api/v1/careers/{id}/practice-squad/{pid}/elevate` | RF4 | `ElevatePracticeSquadPlayerUseCase` | JWT · dono do save | Sobe um jogador do practice squad para o jogo da semana (até 3 elevações por temporada) |
@@ -33,12 +33,12 @@
 | ⛔ alvo | `POST` | `/api/v1/careers/{id}/players/{pid}/message` | RF4 | `MessagePlayerUseCase` | JWT · dono do save | Mensagem ao jogador (elogio, cobrança, promessa de snaps) com efeito na moral |
 | ⛔ alvo | `GET` | `/api/v1/worlds` | RF5 | `ListWorldsUseCase` | JWT | Mundo semente fictício de 32 times + mundos TEMPLATE do usuário |
 | ⛔ alvo | `POST` | `/api/v1/worlds/{id}/clone` | RF5 | `CloneWorldUseCase` | JWT | Copia o mundo semente (ou outro TEMPLATE) para o usuário editar |
-| ⛔ alvo | `POST` | `/api/v1/worlds/{id}/leagues` | RF5 | `SaveLeagueUseCase` | JWT · dono do mundo | Cria liga com ruleset PRO|COLLEGE, LeagueRules AF (quarto, relógio de jogada, prorrogação, kickoff, 53/46/16), teto e piso salarial |
+| ⛔ alvo | `POST` | `/api/v1/worlds/{id}/leagues` | RF5 | `SaveLeagueUseCase` | JWT · dono do mundo | Cria liga com ruleset PRO\|COLLEGE, LeagueRules AF (quarto, relógio de jogada, prorrogação, kickoff, 53/46/16), teto e piso salarial |
 | ⛔ alvo | `PUT` | `/api/v1/worlds/{id}/leagues/{lid}` | RF5 | `SaveLeagueUseCase` | JWT · dono do mundo | Edita liga e regras (LeagueRules.version + 1) |
 | ⛔ alvo | `PUT` | `/api/v1/worlds/{id}/leagues/{lid}/structure` | RF5 | `SaveLeagueStructureUseCase` | JWT · dono do mundo | Conferências (1–2), divisões por conferência e franquia de cada divisão; vagas de playoff por conferência |
 | ⛔ alvo | `DELETE` | `/api/v1/worlds/{id}/leagues/{lid}` | RF5 | `DeleteCatalogItemUseCase` | JWT · dono do mundo | Exclui liga (sem franquias ou cascata confirmada) |
 | ⛔ alvo | `POST` | `/api/v1/leagues/{id}/clubs` | RF5 | `SaveClubUseCase` | JWT · dono do mundo | Cria franquia (nome, cidade, divisão, cores, capacete, logo, prestígio) |
-| ⛔ alvo | `PUT` | `/api/v1/leagues/{id}/clubs/{cid}` | RF5 | `SaveClubUseCase` | JWT · dono do mundo | Edita franquia, uniformes (HOME|AWAY|ALTERNATE) e capacete |
+| ⛔ alvo | `PUT` | `/api/v1/leagues/{id}/clubs/{cid}` | RF5 | `SaveClubUseCase` | JWT · dono do mundo | Edita franquia, uniformes (HOME\|AWAY\|ALTERNATE) e capacete |
 | ⛔ alvo | `POST` | `/api/v1/clubs/{id}/players` | RF5 | `SavePlayerUseCase` | JWT · dono do mundo | Cria jogador: posição AF, unidade, ≈40 subatributos, altura/peso, college, contrato |
 | ⛔ alvo | `PUT` | `/api/v1/clubs/{id}/players/{pid}` | RF5 | `SavePlayerUseCase` | JWT · dono do mundo | Edita jogador · overall por posição recalculado (OVR v1) |
 | ⛔ alvo | `DELETE` | `/api/v1/clubs/{id}/players/{pid}` | RF5 | `DeleteCatalogItemUseCase` | JWT · dono do mundo | Exclui jogador |
@@ -66,7 +66,7 @@
 | ⛔ alvo | `POST` | `/api/v1/careers/{id}/players/{pid}/message` | RF8 | `MessagePlayerUseCase` | JWT · dono do save | Mensagem a um jogador do elenco (elogio, cobrança, promessa de snaps) |
 | ⛔ alvo | `POST` | `/api/v1/careers/{id}/manager/resign` | RF8 | `ResignUseCase` | JWT · dono do save | Pede demissão: contrato RESIGNED, save UNEMPLOYED, registro de carreira fechado |
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/job-offers` | RF9 | `ListJobOffersUseCase` | JWT · dono do save | Propostas PENDING com franquia, conferência e divisão, salário, duração, metas, prazo e motivo |
-| ⛔ alvo | `POST` | `/api/v1/careers/{id}/job-offers/{jid}/respond` | RF9 | `RespondJobOfferUseCase` | JWT · dono do save | ACCEPT | REJECT | LATER · aceitar em transação única |
+| ⛔ alvo | `POST` | `/api/v1/careers/{id}/job-offers/{jid}/respond` | RF9 | `RespondJobOfferUseCase` | JWT · dono do save | ACCEPT \| REJECT \| LATER · aceitar em transação única |
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/manager` | RF9 | `GetManagerPanelUseCase` | JWT · dono do save | Contrato atual e multa para comparar |
 | ⛔ alvo | `GET` | `/api/v1/me/settings` | RF10 | `GetSettingsUseCase` | JWT | UserSettings: simQuarterMinutes, playCallingLevel, decisionTimeoutSeconds, difficulty, units, theme, highContrast, fontScale, reducedMotion, notificationsEnabled |
 | ⛔ alvo | `PUT` | `/api/v1/me/settings` | RF10 | `UpdateSettingsUseCase` | JWT | Salva preferências validadas |
@@ -77,7 +77,7 @@
 | ⛔ alvo | `PATCH` | `/api/v1/careers/{id}` | RF11 | `UpdateCareerUseCase` | JWT · dono do save | Renomeia, muda slot, arquiva/reativa |
 | ⛔ alvo | `DELETE` | `/api/v1/careers/{id}` | RF11 | `DeleteCareerUseCase` | JWT · dono do save | Exclui save, mundo SAVE e projeções (play-by-play, inbox, cache, índice) |
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/stadium` | RF12 | `GetStadiumUseCase` | JWT · dono do save | Estádio (capacidade, cobertura, gramado, zona climática, nível), setores, política de ingressos, previsão de público e renda por jogo em casa e efeito do clima |
-| ⛔ alvo | `PUT` | `/api/v1/careers/{id}/stadium` | RF12 | `UpdateStadiumUseCase` | JWT · dono do save | Nome, nível, troca de gramado (GRASS|TURF) e de cobertura (OPEN|DOME|RETRACTABLE, só na offseason) |
+| ⛔ alvo | `PUT` | `/api/v1/careers/{id}/stadium` | RF12 | `UpdateStadiumUseCase` | JWT · dono do save | Nome, nível, troca de gramado (GRASS\|TURF) e de cobertura (OPEN\|DOME\|RETRACTABLE, só na offseason) |
 | ⛔ alvo | `POST` | `/api/v1/careers/{id}/stadium/sectors` | RF12 | `BuySectorUseCase` | JWT · dono do save | Compra setor (LOWER_BOWL, UPPER_BOWL, SIDELINE_CLUB, END_ZONE, LUXURY_SUITES) |
 | ⛔ alvo | `PUT` | `/api/v1/careers/{id}/stadium/sectors/{sid}` | RF12 | `UpdateSectorUseCase` | JWT · dono do save | Reforma (condição), amplia assentos, define preço |
 | ⛔ alvo | `DELETE` | `/api/v1/careers/{id}/stadium/sectors/{sid}` | RF12 | `RemoveSectorUseCase` | JWT · dono do save | Exclui setor (não obrigatório e sem obra) |
@@ -96,23 +96,23 @@
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/goals` | RF15 | `ListGoalsUseCase` | JWT · dono do save | Metas que concedem estilo (ex.: 5 temporadas com ataque top-5 em jardas → OFFENSIVE) |
 | ⛔ alvo | `PUT` | `/api/v1/careers/{id}/manager/style` | RF15 | `ApplyCoachStyleUseCase` | JWT · dono do save | Ativa um estilo possuído no head coach do save (1 ativo) |
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/manager` | RF15 | `GetManagerPanelUseCase` | JWT · dono do save | Perfil com estilo ativo, overall e efeitos vigentes |
-| ⛔ alvo | `GET` | `/api/v1/careers/{id}/standings` | RF16 | `GetStandingsUseCase` | JWT · dono do save | view=DIVISION|CONFERENCE|LEAGUE: V-D-E, % de vitórias (empate vale meio), recorde na divisão e na conferência, pontos pró e contra, sequência, últimos 5, seed e nota de desempate |
+| ⛔ alvo | `GET` | `/api/v1/careers/{id}/standings` | RF16 | `GetStandingsUseCase` | JWT · dono do save | view=DIVISION\|CONFERENCE\|LEAGUE: V-D-E, % de vitórias (empate vale meio), recorde na divisão e na conferência, pontos pró e contra, sequência, últimos 5, seed e nota de desempate |
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/weeks/{n}` | RF16 | `GetWeekPanelUseCase` | JWT · dono do save | Placares da semana n (passada: finais por quarto e prorrogação · atual: ao vivo · futura: agendados e horários), times de folga e destaques (líderes em passe, corrida, recepção e defesa, jogador da semana) |
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/playoffs` | RF16 | `GetPlayoffBracketUseCase` | JWT · dono do save | Chave com 7 seeds por conferência, folga do seed 1 e final em campo neutro (RF66) |
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/calendar` | RF16 | `GetCalendarUseCase` | JWT · dono do save | Semanas futuras com jogos de divisão, quinta à noite e semana de folga (RF21) |
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/trophies` | RF17 | `GetTrophyRoomUseCase` | JWT · dono do save | Campeões por temporada (final, conferências, divisões) e meus troféus (títulos do head coach, prêmio COACH) com URL do troféu 3D · filtros season, kind |
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/awards` | RF17 | `ListSeasonAwardsUseCase` | JWT · dono do save | Prêmios individuais por temporada (MVP, OPOY, DPOY, OROY, DROY, COACH) filtráveis por temporada e conferência |
-| ⛔ alvo | `GET` | `/api/v1/careers/{id}/managers/world` | RF18 | `ListWorldManagersUseCase` | JWT · dono do save | Ranking (Redis ZSET) e esquemas compactos: nome, franquia, overall, estilo de head coach, campanha (V-D-E), vitórias em playoffs, títulos · sort=wins|playoffWins|titles|overall|moraleLeague |
+| ⛔ alvo | `GET` | `/api/v1/careers/{id}/managers/world` | RF18 | `ListWorldManagersUseCase` | JWT · dono do save | Ranking (Redis ZSET) e esquemas compactos: nome, franquia, overall, estilo de head coach, campanha (V-D-E), vitórias em playoffs, títulos · sort=wins\|playoffWins\|titles\|overall\|moraleLeague |
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/managers/world/{mid}` | RF18 | `GetManagerHistoryUseCase` | JWT · dono do save | Esquema ampliado: franquias por temporada (ManagerCareerRecord), campanhas, playoffs, série de overall, estilo, prêmios COACH |
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/search` | RF18 | `SearchUseCase` | JWT · dono do save | type=MANAGER: busca por nome, nacionalidade ou franquia (OpenSearch) |
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/market/free-agents` | RF19 | `SearchFreeAgentsUseCase` | JWT · dono do save | Free agents com pedida (anos, valor, garantia), interesse na franquia e overall por posição · filtros position, unit, minOverall, age |
 | ⛔ alvo | `POST` | `/api/v1/careers/{id}/market/free-agents/{pid}/offers` | RF19 | `OfferFreeAgentContractUseCase` | JWT · dono do save | FreeAgentOffer (anos, valor total, garantia, bônus de assinatura); o jogador decide pela oferta mais atraente até expiresAt |
 | ⛔ alvo | `POST` | `/api/v1/careers/{id}/market/trades` | RF19 | `ProposeTradeUseCase` | JWT · dono do save | TradeProposal: jogadores e picks de draft (até 3 temporadas à frente) dos dois lados · impacto no teto calculado no backend |
-| ⛔ alvo | `POST` | `/api/v1/careers/{id}/market/trades/{tid}/respond` | RF19 | `RespondTradeUseCase` | JWT · dono do save | ACCEPT a contraproposta | REJECT | COUNTER · aceite executa a troca em transação única |
+| ⛔ alvo | `POST` | `/api/v1/careers/{id}/market/trades/{tid}/respond` | RF19 | `RespondTradeUseCase` | JWT · dono do save | ACCEPT a contraproposta \| REJECT \| COUNTER · aceite executa a troca em transação única |
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/market/waivers` | RF19 | `ListWaiverWireUseCase` | JWT · dono do save | Jogadores dispensados nas últimas 24 h de jogo com contrato, cap hit e minha prioridade (ordem inversa da classificação) |
 | ⛔ alvo | `POST` | `/api/v1/careers/{id}/market/waivers/{pid}/claim` | RF19 | `ClaimWaiverUseCase` | JWT · dono do save | WaiverClaim PENDING · processado no fim do período pela prioridade |
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/cap` | RF19 | `GetSalaryCapUseCase` | JWT · dono do save | Teto, comprometido, dead money e espaço da temporada (SalaryCapLedger) para validar a oferta |
-| ⛔ alvo | `GET` | `/api/v1/careers/{id}/search` | RF20 | `SearchUseCase` | JWT · dono do save | q, type=PLAYER|CLUB|LEAGUE|MANAGER, position, unit (OFFENSE|DEFENSE|SPECIAL), conference, division, rosterStatus, minOverall, college · facetas e paginação (OpenSearch, fallback MySQL) |
+| ⛔ alvo | `GET` | `/api/v1/careers/{id}/search` | RF20 | `SearchUseCase` | JWT · dono do save | q, type=PLAYER\|CLUB\|LEAGUE\|MANAGER, position, unit (OFFENSE\|DEFENSE\|SPECIAL), conference, division, rosterStatus, minOverall, college · facetas e paginação (OpenSearch, fallback MySQL) |
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/players/{pid}` | RF20 | `GetPlayerExpandedUseCase` | JWT · dono do save | Esquema ampliado do jogador (RF22) |
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/clubs/{cid}` | RF20 | `GetClubSheetUseCase` | JWT · dono do save | Esquema ampliado da franquia: identidade, divisão, campanha, elenco por unidade, depth chart titular, head coach, estádio |
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/standings` | RF20 | `GetStandingsUseCase` | JWT · dono do save | Esquema ampliado da liga: classificação por divisão e líderes estatísticos (jardas de passe, corrida, recepção, sacks) |
@@ -130,7 +130,7 @@
 | ⛔ alvo | `POST` | `/api/v1/careers/{id}/players/{pid}/consumables` | RF22 | `ApplyConsumableUseCase` | JWT · dono do save | Aplica consumível (RF25) |
 | ⛔ alvo | `POST` | `/api/v1/careers/{id}/players/{pid}/message` | RF22 | `MessagePlayerUseCase` | JWT · dono do save | Mensagem ao jogador (inbox, RF24) |
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/players/{pid}` | RF23 | `GetPlayerExpandedUseCase` | JWT · dono do save | model3dUrl, posição, altura e peso, estilos ativos e animationId de cada um |
-| ⛔ alvo | `GET` | `/api/v1/animations` | RF23 | `ListAnimationClipsUseCase` | JWT | Clipes PUBLISHED por target=POSITION|PLAY_STYLE|LOCOMOTION e code (locomoção herdada das 37 do basquete) |
+| ⛔ alvo | `GET` | `/api/v1/animations` | RF23 | `ListAnimationClipsUseCase` | JWT | Clipes PUBLISHED por target=POSITION\|PLAY_STYLE\|LOCOMOTION e code (locomoção herdada das 37 do basquete) |
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/clubs/{cid}/identity` | RF23 | `GetClubIdentityUseCase` | JWT · dono do save | Uniforme ativo e capacete (cores, faixa, decal, grade) para vestir o modelo |
 | ⛔ alvo | `GET` | `/api/v1/me/inventory` | RF23 | `GetInventoryUseCase` | JWT | Animações 3D compradas na loja (RF32) aplicadas ao jogador |
 | ⛔ alvo | `GET` | `/api/v1/me/settings` | RF23 | `GetUserSettingsUseCase` | JWT | reducedMotion (RNF9) |
@@ -162,14 +162,14 @@
 | ⛔ alvo | `PUT` | `/api/v1/clubs/{id}/helmet` | RF28 | `ClubIdentityUseCases.updateHelmet` | JWT · dono do mundo modelo ou do save | Cor da casca, faixa (estilo e cor), cor da grade, decal lateral, acabamento MATTE/GLOSS/CHROME |
 | ⛔ alvo | `PUT` | `/api/v1/clubs/{id}/uniforms/{slot}` | RF28 | `ClubIdentityUseCases.updateUniform` | JWT · dono do mundo modelo ou do save | Camisa, calça, número e contorno, padrão · versão sobe quando muda o visual |
 | ⛔ alvo | `POST` | `/api/v1/media/upload` | RF28 | `UploadMediaUseCase` | JWT | Upload do logo ou decal do capacete (RNF11) → mediaKey |
-| ⛔ alvo | `GET` | `/api/v1/store/catalog` | RF28 | `StoreCatalogService` | JWT | category=HELMET|UNIFORM|CLUB_LOGO (RF32) |
+| ⛔ alvo | `GET` | `/api/v1/store/catalog` | RF28 | `StoreCatalogService` | JWT | category=HELMET\|UNIFORM\|CLUB_LOGO (RF32) |
 | ⛔ alvo | `POST` | `/api/v1/me/inventory/{iid}/apply` | RF28 | `ApplyInventoryItemUseCase` | JWT · dono do save | Aplica capacete, uniforme ou logo comprado |
 | ⛔ alvo | `GET` | `/api/v1/matches/{mid}` | RF29 | `GetMatchStateUseCase` | JWT · dono do save | Snapshot em BREAK ou HALFTIME: placar, tempos técnicos, estatísticas do time, fadiga, lesões e depth chart em uso |
 | ⛔ alvo | `GET` | `/api/v1/matches/{mid}/playbook` | RF29 | `GetMatchPlaybookUseCase` | JWT · dono do save | Plano de jogo vigente, pesos de formações e conceitos, coberturas e blitz, tendências do adversário no jogo (corrida/passe por descida, cobertura mais usada) e sugestões do analista |
 | ⛔ alvo | `POST` | `/api/v1/matches/{mid}/adjustments` | RF29 | `SubmitPlaybookAdjustmentsUseCase` | JWT · dono do save | Ajustes validados: GAME_PLAN (corrida/passe, ritmo, 4ª descida), FORMATION_WEIGHTS, CONCEPT_WEIGHTS, COVERAGE_WEIGHTS, BLITZ_FREQUENCY, DEPTH_SWAP |
 | ⛔ alvo | `POST` | `/api/v1/matches/{mid}/advance` | RF29 | `AdvanceMatchUseCase` | JWT · dono do save | mode=QUARTER: retoma com os ajustes no próximo snap ou kickoff |
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/game-plan` | RF29 | `GetGamePlanUseCase` | JWT · dono do save | Plano padrão da franquia (RF61) para restaurar |
-| ⛔ alvo | `GET` | `/api/v1/careers/{id}/standings` | RF30 | `GetStandingsUseCase` | JWT · dono do save | view=DIVISION|CONFERENCE|LEAGUE: V-D-E, winPct, campanha na divisão e conferência, pontos pró e contra, sequência, seeds 1–7 projetados e nota de desempate |
+| ⛔ alvo | `GET` | `/api/v1/careers/{id}/standings` | RF30 | `GetStandingsUseCase` | JWT · dono do save | view=DIVISION\|CONFERENCE\|LEAGUE: V-D-E, winPct, campanha na divisão e conferência, pontos pró e contra, sequência, seeds 1–7 projetados e nota de desempate |
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/weeks/{n}` | RF30 | `GetWeekBoardUseCase` | JWT · dono do save | Placares da semana n (passada, atual ou futura com prévia) |
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/weeks/{n}/news` | RF30 | `GetWeekNewsUseCase` | JWT · dono do save | Manchetes e comentários da semana (Cassandra) |
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/playoffs` | RF30 | `GetPlayoffBracketUseCase` | JWT · dono do save | Chave de 14 (7 por conferência, bye do seed 1), confrontos em jogo único, final em campo neutro |
@@ -194,7 +194,7 @@
 | ⛔ alvo | `POST` | `/api/v1/leagues/{id}/clubs` | RF34 | `CreateClubUseCase` | JWT | Cria franquia (nome, cidade, cores, capacete, divisão) só em mundo editável |
 | ⛔ alvo | `GET` | `/api/v1/catalog/coach-styles` | RF34 | `ListCoachStylesUseCase` | JWT | Estilos de head coach: OFFENSIVE, DEFENSIVE, DEVELOPER, MOTIVATOR (RF15) |
 | ⛔ alvo | `POST` | `/api/v1/careers` | RF34 | `CreateCareerUseCase` | JWT | Cria CareerSave CREATING e agenda o bootstrap → 202 {saveId} |
-| ⛔ alvo | `GET` | `/api/v1/careers/{id}` | RF34 | `GetCareerUseCase` | JWT · dono do save | Status da criação (CREATING → ACTIVE | FAILED) para o poll do wizard |
+| ⛔ alvo | `GET` | `/api/v1/careers/{id}` | RF34 | `GetCareerUseCase` | JWT · dono do save | Status da criação (CREATING → ACTIVE \| FAILED) para o poll do wizard |
 | ⛔ alvo | `GET` | `/api/v1/careers` | RF34 | `ListCareersUseCase` | JWT | Carreiras salvas e slots livres (RF11) |
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/season/summary` | RF35 | `GetSeasonSummaryUseCase` | JWT · dono do save | Campeão (troféu 3D), classificação final por divisão e conferência, rankings, prêmios, narrativa, fase da entressafra e pendências |
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/playoffs` | RF35 | `GetPlayoffBracketUseCase` | JWT · dono do save | Chave final: 7 por conferência, folga do 1º, final neutra (RF66) |
@@ -233,7 +233,7 @@
 | ⛔ alvo | `POST` | `/api/v1/careers/{id}/inbox/{mid}/respond` | RF41 | `RespondInboxMessageUseCase` | JWT · dono do save | InboxDecisionPolicy → deltas de moral, caixa e follow-up (renovação, promessa de snaps, troca) |
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/analysis` | RF41 | `GetAnalysisReportUseCase` | JWT · dono do save | Previsão de zona e risco de demissão (ClubAnalyst) |
 | ⛔ alvo | `POST` | `/api/v1/careers/{id}/weeks/current/play` | RF42 | `PlayWeekUseCase` | JWT · dono do save | Inicia a semana: MatchSession do usuário (seed derivada) e jogos da IA em job |
-| ⛔ alvo | `POST` | `/api/v1/matches/{mid}/advance` | RF42 | `AdvanceMatchUseCase` | JWT · dono do save | Avança PLAY | DRIVE | QUARTER | TO_DECISION | FULL até o próximo momento decisivo ou intervalo |
+| ⛔ alvo | `POST` | `/api/v1/matches/{mid}/advance` | RF42 | `AdvanceMatchUseCase` | JWT · dono do save | Avança PLAY \| DRIVE \| QUARTER \| TO_DECISION \| FULL até o próximo momento decisivo ou intervalo |
 | ⛔ alvo | `GET` | `/api/v1/matches/{mid}` | RF42 | `GetMatchStateUseCase` | JWT · dono do save | Estado vivo: quarto, relógio, play clock, posse, down, distance, ballOnAbsYd, tempos, placar, decisão aberta, versão |
 | ⛔ alvo | `POST` | `/api/v1/matches/{mid}/play-calls/{did}` | RF42 | `SubmitPlayCallUseCase` | JWT · dono do save | Chamada de jogada no momento decisivo: PlayDefinition escolhida (ou ir para a 4ª, FG, punt, 2 pontos) · expectedVersion |
 | ⛔ alvo | `POST` | `/api/v1/matches/{mid}/timeouts` | RF42 | `CallTimeoutUseCase` | JWT · dono do save | Tempo técnico da franquia do usuário (máx. 3 por tempo) |
@@ -279,7 +279,7 @@
 | ⛔ alvo | `GET` | `/api/v1/me/export/{jobId}/download` | RF46 | `DataExportUseCases.download` | JWT · dono do job | Download (DATA_EXPORT_DOWNLOADED) |
 | ⛔ alvo | `DELETE` | `/api/v1/me` | RF46 | `AccountDeletionUseCases.request` | JWT · senha + palavra (step-up) | Exclusão com 7 dias de arrependimento |
 | ⛔ alvo | `POST` | `/api/v1/me/deletion/cancel` | RF46 | `AccountDeletionUseCases.cancel` | JWT | Cancela dentro do prazo |
-| ⛔ alvo | `GET` | `/api/v1/careers/{id}/players/{pid}/gauges` | RF47 | `GetPlayerGaugesUseCase` | JWT · dono do save | ?scope=SEASON|LAST5|CAREER&position= · velocímetros da família da posição com valor, escala, percentil na posição e amostra |
+| ⛔ alvo | `GET` | `/api/v1/careers/{id}/players/{pid}/gauges` | RF47 | `GetPlayerGaugesUseCase` | JWT · dono do save | ?scope=SEASON\|LAST5\|CAREER&position= · velocímetros da família da posição com valor, escala, percentil na posição e amostra |
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/players/{pid}/gauges/compare` | RF47 | `ComparePlayerGaugesUseCase` | JWT · dono do save | ?other={pid2} · mesmos velocímetros lado a lado (mesma família) |
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/stats/leaders` | RF47 | `GetStatLeadersUseCase` | JWT · dono do save | ?position=&metric= · líderes da liga (OpenSearch) |
 | ⛔ alvo | `GET` | `/api/v1/catalog/gauges` | RF47 | `GaugeCatalogUseCase` | JWT | Definições por família: métrica, fórmula, escala mín./máx., sentido (maior ou menor é melhor), amostra mínima, versão |
@@ -291,7 +291,7 @@
 | ⛔ alvo | `POST` | `/api/v1/admin/overall-weights/{v}/activate` | RF48 | `OverallWeightsAdminUseCase.activate` | JWT · ADMIN | Ativa a versão e agenda o recálculo dos overalls |
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/cap` | RF49 | `GetCapSheetUseCase` | JWT · dono do save | SalaryCapLedger da temporada e das 3 seguintes: teto, comprometido, dead money, espaço, rollover |
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/contracts` | RF49 | `ListContractsUseCase` | JWT · dono do save | Contratos com cap hit por ano, bônus rateado, garantias e dead money se cortado |
-| ⛔ alvo | `POST` | `/api/v1/careers/{id}/players/{pid}/contract/negotiate` | RF49 | `NegotiateContractUseCase` | JWT · dono do save | Proposta de extensão (anos, salário por ano, bônus, garantias) → ACCEPT | COUNTER | REJECT |
+| ⛔ alvo | `POST` | `/api/v1/careers/{id}/players/{pid}/contract/negotiate` | RF49 | `NegotiateContractUseCase` | JWT · dono do save | Proposta de extensão (anos, salário por ano, bônus, garantias) → ACCEPT \| COUNTER \| REJECT |
 | ⛔ alvo | `POST` | `/api/v1/careers/{id}/players/{pid}/contract/restructure` | RF49 | `RestructureContractUseCase` | JWT · dono do save | Converte salário-base em bônus rateado: alivia o ano atual, pesa nos próximos |
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/players/{pid}/release/preview` | RF49 | `PreviewReleaseUseCase` | JWT · dono do save | Dead money e economia, normal e pós-1º de junho |
 | ⛔ alvo | `POST` | `/api/v1/careers/{id}/players/{pid}/release` | RF49 | `ReleasePlayerUseCase` | JWT · dono do save | Corta o jogador (waivers, RF65) e lança o dead money · expectedLedgerVersion |
@@ -302,7 +302,7 @@
 | ⛔ alvo | `POST` | `/api/v1/careers/{id}/trades/evaluate` | RF50 | `EvaluateTradeUseCase` | JWT · dono do save | Prévia: valor de cada lado (tabela de picks + valor do jogador), teto das duas franquias depois, elenco, chance de aceite |
 | ⛔ alvo | `POST` | `/api/v1/careers/{id}/trades` | RF50 | `ProposeTradeUseCase` | JWT · dono do save | Envia a proposta (expira em 2 semanas ou no prazo de trocas) |
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/trades` | RF50 | `ListTradesUseCase` | JWT · dono do save | Enviadas e recebidas com status |
-| ⛔ alvo | `POST` | `/api/v1/careers/{id}/trades/{tid}/respond` | RF50 | `RespondTradeUseCase` | JWT · dono do save | Recebida: ACCEPT | REJECT | COUNTER |
+| ⛔ alvo | `POST` | `/api/v1/careers/{id}/trades/{tid}/respond` | RF50 | `RespondTradeUseCase` | JWT · dono do save | Recebida: ACCEPT \| REJECT \| COUNTER |
 | ⛔ alvo | `POST` | `/api/v1/careers/{id}/trades/{tid}/withdraw` | RF50 | `WithdrawTradeUseCase` | JWT · dono do save | Retira proposta enviada ainda pendente |
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/draft/class` | RF51 | `GetDraftClassUseCase` | JWT · dono do save | Classe do ano: status, prospectos com faixa de potencial (névoa conforme o scouting) |
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/draft/prospects/{pid}` | RF51 | `GetDraftProspectUseCase` | JWT · dono do save | Perfil, college, rodada projetada, combine e relatórios comprados |
@@ -378,9 +378,9 @@
 | ⛔ alvo | `PUT` | `/api/v1/editor/players/{id}` | RNF1 | `WorldEditorUseCases` | JWT | Edita o database do jogo do usuário (TEMPLATE); carreiras existentes não mudam |
 | ⛔ alvo | `PUT` | `/api/v1/careers/{id}/depth-chart` | RNF1 | `UpdateDepthChartUseCase` | JWT · dono do save | Escrita típica de carreira: DepthChart com @Version (409 em conflito) |
 | ⛔ alvo | `POST` | `/api/v1/matches/{mid}/advance` | RNF1 | `AdvanceMatchUseCase` | JWT · dono do save | MatchSession com @Version · play-by-play no Cassandra e estado no Redis só depois do commit |
-| ⛔ alvo | `PUT` | `/api/v1/me/settings` | RNF2 | `UpdateUserSettingsUseCase` | JWT | simQuarterMinutes (0 = instantâneo, 1–15) · playCallingLevel KEY_MOMENTS|ALL_PLAYS|NONE · decisionTimeoutSeconds |
+| ⛔ alvo | `PUT` | `/api/v1/me/settings` | RNF2 | `UpdateUserSettingsUseCase` | JWT | simQuarterMinutes (0 = instantâneo, 1–15) · playCallingLevel KEY_MOMENTS\|ALL_PLAYS\|NONE · decisionTimeoutSeconds |
 | ⛔ alvo | `POST` | `/api/v1/careers/{id}/weeks/current/play` | RNF2 | `PlayWeekUseCase` | JWT · dono do save | Cria a MatchSession com orçamento de tempo congelado no snapshot das configurações |
-| ⛔ alvo | `POST` | `/api/v1/matches/{mid}/advance` | RNF2 | `AdvanceMatchUseCase` | JWT · dono do save | PLAY | DRIVE | QUARTER | FULL · para no próximo momento decisivo |
+| ⛔ alvo | `POST` | `/api/v1/matches/{mid}/advance` | RNF2 | `AdvanceMatchUseCase` | JWT · dono do save | PLAY \| DRIVE \| QUARTER \| FULL · para no próximo momento decisivo |
 | ⛔ alvo | `POST` | `/api/v1/matches/{mid}/decisions/{did}` | RNF2 | `SubmitPlayCallUseCase` | JWT · dono do save | Chamada de jogada (4ª descida, 2 minutos, prorrogação) dentro do tempo limite |
 | ⛔ alvo | `GET` | `/api/v1/matches/{mid}/events` | RNF2 | `GetMatchEventsUseCase` | JWT · dono do save | Play-by-play paginado (after=seq) no ritmo calculado |
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/dashboard` | RNF3 | `GetClubDashboardUseCase` | JWT · dono do save | Recurso do save: CareerAccess.requireOwner(saveId, userId) no caso de uso |
@@ -419,7 +419,7 @@
 | ⛔ alvo | `DELETE` | `/api/v1/me/push-subscriptions/{sid}` | RNF10 | `RevokePushSubscriptionUseCase` | JWT | Revoga a assinatura |
 | ⛔ alvo | `PUT` | `/api/v1/me/notification-preferences` | RNF10 | `UpdateNotificationPreferencesUseCase` | JWT | Liga ou desliga por tipo |
 | ⛔ alvo | `GET` | `/api/v1/me/notifications` | RNF10 | `GetNotificationsUseCase` | JWT | Central in-app (Cassandra, TTL 90 d) |
-| ⛔ alvo | `POST` | `/api/v1/media/upload` | RNF11 | `UploadMediaUseCase` | JWT | multipart {file, purpose: CLUB_LOGO|HELMET_DECAL|END_ZONE_ART|UNIFORM|AVATAR|MODEL_3D} → {mediaKey, url, width, height} |
+| ⛔ alvo | `POST` | `/api/v1/media/upload` | RNF11 | `UploadMediaUseCase` | JWT | multipart {file, purpose: CLUB_LOGO\|HELMET_DECAL\|END_ZONE_ART\|UNIFORM\|AVATAR\|MODEL_3D} → {mediaKey, url, width, height} |
 | ⛔ alvo | `GET` | `/api/v1/media/{key}` | RNF11 | `ResolveMediaUseCase` | JWT | 302 para URL assinada (15 min) após conferir posse ou visibilidade |
 | ⛔ alvo | `DELETE` | `/api/v1/media/{key}` | RNF11 | `DeleteMediaUseCase` | JWT | Remove mídia não referenciada (dono ou ADMIN) |
 | ⛔ alvo | `PUT` | `/api/v1/careers/{id}/club/identity` | RNF11 | `UpdateClubIdentityUseCase` | JWT · dono do save | Consumidor: vincula mediaKey ao logo, decalque e end zone |
@@ -428,5 +428,5 @@
 | ⛔ alvo | `GET` | `/api/v1/me/wallet` | RNF12 | `WalletUseCases` | JWT | Saldo e ledger com balanceAfter |
 | ⛔ alvo | `POST` | `/api/v1/admin/store/purchases/{id}/refund` | RNF12 | `RefundPurchaseUseCase` | JWT · ADMIN | Lançamento compensatório · nunca edita o ledger |
 | ⛔ alvo | `GET` | `/api/v1/me/settings` | RNF13 | `SettingsUseCases.get` | JWT | Lê locale da conta, regionalFormat e units |
-| ⛔ alvo | `PUT` | `/api/v1/me/settings` | RNF13 | `SettingsUseCases.update` | JWT | Salva locale (pt-BR | en-US | es-ES) · vale para e-mails e conteúdo gerado |
+| ⛔ alvo | `PUT` | `/api/v1/me/settings` | RNF13 | `SettingsUseCases.update` | JWT | Salva locale (pt-BR \| en-US \| es-ES) · vale para e-mails e conteúdo gerado |
 | — | `*` | `/api/v1/** (Accept-Language)` | RNF13 | `LocaleResolver + MessageSource` | — | Erro RFC 7807 e e-mail no idioma da conta ou do cabeçalho, com fallback pt-BR · campo locale no corpo |

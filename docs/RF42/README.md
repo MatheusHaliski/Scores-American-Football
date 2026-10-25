@@ -63,7 +63,7 @@ Fonte: [`RF42-stm-drive-result.puml`](RF42-stm-drive-result.puml)
 | Estado | Método | Rota | Caso de uso | Autorização | Descrição |
 |---|---|---|---|---|---|
 | ⛔ alvo | `POST` | `/api/v1/careers/{id}/weeks/current/play` | `PlayWeekUseCase` | JWT · dono do save | Inicia a semana: MatchSession do usuário (seed derivada) e jogos da IA em job |
-| ⛔ alvo | `POST` | `/api/v1/matches/{mid}/advance` | `AdvanceMatchUseCase` | JWT · dono do save | Avança PLAY | DRIVE | QUARTER | TO_DECISION | FULL até o próximo momento decisivo ou intervalo |
+| ⛔ alvo | `POST` | `/api/v1/matches/{mid}/advance` | `AdvanceMatchUseCase` | JWT · dono do save | Avança PLAY \| DRIVE \| QUARTER \| TO_DECISION \| FULL até o próximo momento decisivo ou intervalo |
 | ⛔ alvo | `GET` | `/api/v1/matches/{mid}` | `GetMatchStateUseCase` | JWT · dono do save | Estado vivo: quarto, relógio, play clock, posse, down, distance, ballOnAbsYd, tempos, placar, decisão aberta, versão |
 | ⛔ alvo | `POST` | `/api/v1/matches/{mid}/play-calls/{did}` | `SubmitPlayCallUseCase` | JWT · dono do save | Chamada de jogada no momento decisivo: PlayDefinition escolhida (ou ir para a 4ª, FG, punt, 2 pontos) · expectedVersion |
 | ⛔ alvo | `POST` | `/api/v1/matches/{mid}/timeouts` | `CallTimeoutUseCase` | JWT · dono do save | Tempo técnico da franquia do usuário (máx. 3 por tempo) |
@@ -80,9 +80,9 @@ Fonte: [`RF42-stm-drive-result.puml`](RF42-stm-drive-result.puml)
 | Momento decisivo para o humano? | playCallingLevel ALL_PLAYS, ou KEY_MOMENTS e (4ª descida, últimos 2 min de cada tempo, prorrogação, conversão após TD) com posse ou defesa da franquia do usuário | PlayCaller IA chama pelo GamePlan (tendências por situação) |
 | Chamada dentro do prazo? | now ≤ decision.deadlineAt (UserSettings.decisionTimeoutSeconds) | decisão automática do PlayCaller IA (auto = true) |
 | Chamada válida e versão atual? | PlayDefinition do Playbook da franquia, lado correto, opção permitida na situação (FG só ao alcance do K), expectedVersion == session.version | 422 PLAY_CALL_INVALID / 409 STALE_VERSION |
-| Falta antes do snap? | u < P(false start | ruído do estádio, disciplina) ou P(offside/encroachment | pass rush, disciplina) | snap normal |
+| Falta antes do snap? | u < P(false start \| ruído do estádio, disciplina) ou P(offside/encroachment \| pass rush, disciplina) | snap normal |
 | Turnover na jogada? | sack-fumble, fumble do portador (proteção da bola × impacto) ou INT (precisão × cobertura × pressão) | segue com o resultado em jardas |
-| Falta durante a jogada? | u < P(holding, DPI, OPI, roughing, facemask… | confronto, disciplina) | resultado da jogada vale |
+| Falta durante a jogada? | u < P(holding, DPI, OPI, roughing, facemask… \| confronto, disciplina) | resultado da jogada vale |
 | Aceitar a falta? | a equipe ofendida aceita se o resultado com a penalidade for melhor (jardas, 1ª descida automática, perda de descida) · humano decide só se for momento decisivo | recusa: vale a jogada |
 | Primeira descida? | jardas ganhas ≥ distance ou penalidade com 1ª descida automática | down + 1 · na 4ª sem conversão → posse troca (turnover on downs) |
 | Pontuou? | TD (bola cruza a end zone) · FG convertido · safety | segue o drive |

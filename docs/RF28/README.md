@@ -50,7 +50,7 @@ Fonte: [`RF28-stm.puml`](RF28-stm.puml)
 | ⛔ alvo | `PUT` | `/api/v1/clubs/{id}/helmet` | `ClubIdentityUseCases.updateHelmet` | JWT · dono do mundo modelo ou do save | Cor da casca, faixa (estilo e cor), cor da grade, decal lateral, acabamento MATTE/GLOSS/CHROME |
 | ⛔ alvo | `PUT` | `/api/v1/clubs/{id}/uniforms/{slot}` | `ClubIdentityUseCases.updateUniform` | JWT · dono do mundo modelo ou do save | Camisa, calça, número e contorno, padrão · versão sobe quando muda o visual |
 | ⛔ alvo | `POST` | `/api/v1/media/upload` | `UploadMediaUseCase` | JWT | Upload do logo ou decal do capacete (RNF11) → mediaKey |
-| ⛔ alvo | `GET` | `/api/v1/store/catalog` | `StoreCatalogService` | JWT | category=HELMET|UNIFORM|CLUB_LOGO (RF32) |
+| ⛔ alvo | `GET` | `/api/v1/store/catalog` | `StoreCatalogService` | JWT | category=HELMET\|UNIFORM\|CLUB_LOGO (RF32) |
 | ⛔ alvo | `POST` | `/api/v1/me/inventory/{iid}/apply` | `ApplyInventoryItemUseCase` | JWT · dono do save | Aplica capacete, uniforme ou logo comprado |
 
 ## Pontos de decisão

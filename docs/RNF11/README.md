@@ -44,7 +44,7 @@ Fonte: [`RNF11-stm.puml`](RNF11-stm.puml)
 
 | Estado | Método | Rota | Caso de uso | Autorização | Descrição |
 |---|---|---|---|---|---|
-| ⛔ alvo | `POST` | `/api/v1/media/upload` | `UploadMediaUseCase` | JWT | multipart {file, purpose: CLUB_LOGO|HELMET_DECAL|END_ZONE_ART|UNIFORM|AVATAR|MODEL_3D} → {mediaKey, url, width, height} |
+| ⛔ alvo | `POST` | `/api/v1/media/upload` | `UploadMediaUseCase` | JWT | multipart {file, purpose: CLUB_LOGO\|HELMET_DECAL\|END_ZONE_ART\|UNIFORM\|AVATAR\|MODEL_3D} → {mediaKey, url, width, height} |
 | ⛔ alvo | `GET` | `/api/v1/media/{key}` | `ResolveMediaUseCase` | JWT | 302 para URL assinada (15 min) após conferir posse ou visibilidade |
 | ⛔ alvo | `DELETE` | `/api/v1/media/{key}` | `DeleteMediaUseCase` | JWT | Remove mídia não referenciada (dono ou ADMIN) |
 | ⛔ alvo | `PUT` | `/api/v1/careers/{id}/club/identity` | `UpdateClubIdentityUseCase` | JWT · dono do save | Consumidor: vincula mediaKey ao logo, decalque e end zone |

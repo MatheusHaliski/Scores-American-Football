@@ -54,7 +54,7 @@ Fonte: [`RF13-stm.puml`](RF13-stm.puml)
 | Gateway | Regra | Se falso |
 |---|---|---|
 | Dono do save? | save.userId == jwt.sub (CareerAccess.requireOwner) | 403 FORBIDDEN + AuditLog ACCESS_DENIED |
-| Mensagem aberta? | message.saveId == id && status ∈ UNREAD|READ | 409 MESSAGE_CLOSED |
+| Mensagem aberta? | message.saveId == id && status ∈ UNREAD\|READ | 409 MESSAGE_CLOSED |
 | Opção válida? | chosenOption ∈ message.options | 422 OPTION_INVALID |
 | Prazo respeitado? | deadlineWeek == null ou deadlineWeek ≥ save.currentWeek (prazo de trocas e free agency conferidos na fase da temporada) | 409 DEADLINE_PASSED · Scheduler expira com a opção padrão |
 | Resposta muda outro agregado? | kind ∈ TRADE_PROPOSAL (RF50) · FA_OFFER (RF65) · CONTRACT_REQUEST (RF49) · JOB_OFFER (RF9) · BUDGET_RESPONSE (RF14) · INJURY_UPDATE (RF64) | efeito só de moral e relacionamento |

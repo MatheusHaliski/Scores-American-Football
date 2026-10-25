@@ -1,0 +1,52 @@
+@startuml
+title RF31 — Público e renda da partida · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Manager|
+start
+:No painel da partida clica em Detalhes da partida;
+|Frontend|
+:GET /matches/{mid}/report (+ /careers/{id}/stadium);
+|Backend|
+if (dono do save?) then (sim)
+else (não)
+  :403 + auditoria ACCESS_DENIED;
+  stop
+endif
+if (partida finalizada?) then (sim)
+  :Lê MatchReport (attendance, revenue) e ledger TICKETS;
+else (não)
+  :FinanceEngine.estimateAttendance com o snapshot do kickoff (Redis);
+endif
+if (clima pesa?) then (sim)
+  :Ajusta a demanda pelo clima do estádio aberto;
+endif
+if (preço dinâmico ativo?) then (sim)
+  :±20 % pela importância do jogo;
+endif
+if (setor vendável?) then (sim)
+else (não)
+  :Exclui setores em obra ou reforma;
+endif
+if (lotação?) then (sim)
+  :Público = capacidade · alerta de preço;
+else (não)
+  :Público = demanda;
+endif
+if (campo neutro?) then (sim)
+  :Só público e atmosfera (renda da liga);
+else (não)
+  if (minha franquia é a mandante?) then (sim)
+    :Renda por setor, desconto de sócios e comparação com a média dos jogos em casa;
+  else (não)
+    :Só público, atmosfera e fatores;
+  endif
+endif
+|Frontend|
+:Cards: público/capacidade, renda total, receita por setor, fatores explicados, clima e atmosfera;
+|Manager|
+:Fecha ou vai ao estádio (RF26) ajustar preços;
+end
+@enduml

@@ -1,0 +1,67 @@
+@startuml
+title RF54 — Catálogo de eventos de partida · Diagrama de componentes
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 36
+actor "Head coach / manager (usuário autenticado)" as c1
+actor "Franquia adversária (IA)" as c2
+package "Frontend (Next.js)" as pkg_fe {
+  component "PlayByPlayFeed" as c3
+  frame "componentes de PlayByPlayFeed" as pkg_fe_sub {
+    component "PlayEventRow" as c4
+    component "PenaltyFlagChip" as c5
+    component "EventFilters" as c6
+  }
+}
+package "scores-af-web (REST)" as pkg_web {
+  component "MatchController" as c7
+  component "CatalogController" as c8
+}
+package "scores-af-application (casos de uso)" as pkg_app {
+  component "ListMatchEventsUseCase" as c9
+  component "DecidePenaltyUseCase" as c10
+  component "ListPlayEventTypesUseCase" as c11
+}
+package "scores-af-domain/engine" as pkg_eng {
+  component "MatchSimulator" as c12
+  component "PlayResolver" as c13
+  component "PenaltyEnforcer" as c14
+  component "DriveTracker" as c15
+  component "ClockManager" as c16
+}
+package "portas (port.out)" as pkg_ports {
+  interface "MatchStatePort" as c17
+  interface "TimelinePort" as c18
+  interface "MatchStatsRepository" as c19
+  interface "EventPublisher" as c20
+}
+package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
+  component "cache-redis" as c21
+  component "persistence-cassandra" as c22
+  component "persistence-mysql" as c23
+  component "messaging-eventbus" as c24
+}
+database "Redis 7" as s1
+database "Cassandra 4.1" as s2
+database "MySQL 8" as s3
+c1 --> c3 : usa
+c3 --> c7 : GET /catalog/play-events (alvo)\nGET /matches/{mid}/events (alvo)\nPOST /matches/{mid}/penalties/{seq}/decision (alvo)
+c3 --> c8
+c7 --> c9
+c8 --> c9
+c9 ..> pkg_app : orquestra
+c9 --> c12 : usa
+c9 --> c13 : usa
+c9 --> c14 : usa
+c9 --> c15 : usa
+c9 --> c16 : usa
+pkg_app --> pkg_ports : depende (DIP)
+c21 .up.|> c17
+c22 .up.|> c18
+c23 .up.|> c19
+c24 .up.|> c20
+c21 --> s1
+c22 --> s2
+c23 --> s3
+@enduml

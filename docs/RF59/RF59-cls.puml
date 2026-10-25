@@ -1,0 +1,90 @@
+@startuml
+title RF59 — Mini campo com a jogada real · Diagrama de classes
+skinparam classAttributeIconSize 0
+hide empty methods
+package "season" {
+  class Fixture {
+    week: int
+    date: LocalDate
+    slot: KickoffSlot (THU_NIGHT|SUN_EARLY|SUN_LATE|SUN_NIGHT|MON_NIGHT)
+    status: FixtureStatus
+    homeScore: int
+    awayScore: int
+    quarterScores: JSON
+    overtime: boolean
+    isDivisional: boolean
+    isConference: boolean
+    neutralSite: boolean
+    weather: Weather
+    attendance: int
+    revenue: long
+    importance: FixtureImportance
+    seed: long
+    isUserFixture: boolean
+  }
+}
+package "match" {
+  class Drive {
+    seq: int
+    club: Club
+    quarter: int
+    startAbsYd: int
+    plays: int
+    yards: int
+    timeOfPossessionSec: int
+    result: DriveResult (TD|FG|PUNT|TURNOVER|DOWNS|SAFETY|END_HALF)
+  }
+  class PlayEvent {
+    «Cassandra» fixtureId: UUID
+    seq: int
+    drive: int
+    quarter: int
+    clock: String
+    down: int
+    distance: int
+    ballOnAbsYd: int
+    playType: PlayType
+    formation: Formation
+    defense: Coverage
+    yards: int
+    result: PlayResult
+    penalty: Penalty?
+    playerIds: List<UUID>
+    text: String
+    homeScore: int
+    awayScore: int
+  }
+  class PlayDefinition {
+    code: String
+    side: Side (OFFENSE|DEFENSE|SPECIAL)
+    formation: Formation (I|SINGLEBACK|SHOTGUN|PISTOL|EMPTY|GOAL_LINE)
+    personnel: String (11, 12, 21…)
+    concept: PlayConcept (INSIDE_RUN|OUTSIDE_RUN|SHORT|MEDIUM|DEEP|SCREEN|PLAY_ACTION|SNEAK|PUNT|FG)
+    coverage: Coverage (COVER_0..COVER_6, MAN|ZONE)
+    blitz: boolean
+    diagram: JSON (rotas, bloqueios)
+  }
+}
+class GetPlayDiagramUseCase <<UseCase>> {
+  execute(saveId, matchId, seq): PlayDiagramDto
+}
+class PlayDiagramBuilder <<Engine>> {
+  build(PlayEvent, PlayDefinition): PlayDiagramDto
+}
+class PlayDiagramDto <<record>> {
+  formation: Formation
+  players: List<FieldDot>
+  routes: List<Path>
+  blocks: List<Path>
+  coverage: List<Zone>
+  ballPath: Path
+  lineOfScrimmage: int
+  firstDownLine: int
+}
+Fixture "1" -- "*" Drive : drives
+Fixture "1" -- "*" PlayEvent : play-by-play
+GetPlayDiagramUseCase ..> PlayDiagramBuilder : usa
+PlayDiagramBuilder ..> PlayEvent : lê
+PlayDiagramBuilder ..> PlayDefinition : lê
+GetPlayDiagramUseCase ..> PlayDiagramDto : devolve
+@enduml

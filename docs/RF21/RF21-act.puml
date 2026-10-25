@@ -1,0 +1,60 @@
+@startuml
+title RF21 — Calendário de semanas com IA · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Scheduler|
+start
+:WeekCompleted / SeasonStarted: SeasonEngine classifica as fixtures das próximas semanas;
+if (clássico de divisão?) then (sim)
+  :importance = DIVISIONAL;
+else (não)
+  if (jogo decisivo?) then (sim)
+    :importance = DECISIVE;
+  else (não)
+    :PRIMETIME | REVENGE | TRAP | MILESTONE | REGULAR;
+  endif
+endif
+:Monta CalendarInsight: manchete, texto, clima previsto (estádio aberto x coberto) e imageKey;
+if (narrativa via Claude?) then (sim)
+|Claude|
+  :Gera manchete e texto curtos em PT-BR · AuditLog AI_CALL;
+else (não)
+|Scheduler|
+  :Template determinístico pela seed;
+endif
+|Imprensa|
+:Manchete da semana ligada ao insight (RF30);
+|Manager|
+:Abre o Calendário;
+|Frontend|
+:GET /careers/{id}/calendar?season=;
+|Backend|
+if (dono do save?) then (sim)
+else (não)
+  :403 + auditoria ACCESS_DENIED;
+  stop
+endif
+if (insights das próximas semanas gerados?) then (sim)
+else (não)
+  :Insight por template agora · narrativa assíncrona;
+endif
+:Carrega semanas, fixtures por horário, byes e placares (cache calendar:{saveId}:{season});
+if (semana de bye?) then (sim)
+  :Marca BYE na semana com dica de descanso e recuperação de lesões;
+endif
+|Frontend|
+if (arte dinâmica disponível?) then (sim)
+  :Carrega arte do S3 por importância;
+else (não)
+  :SVG padrão com as cores das franquias;
+endif
+:Linha de semanas com selos TNF, SNF, MNF, DIVISIONAL, DECISIVE e clima;
+|Manager|
+if (clica em uma semana?) then (sim)
+|Frontend|
+  :GET /weeks/{n} → placares (passada) ou insight + Preparar time (próxima);
+endif
+end
+@enduml

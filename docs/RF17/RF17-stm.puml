@@ -1,0 +1,29 @@
+@startuml
+title RF17 — Sala de troféus · Máquina de estados: Sala de troféus (interação)
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "Carregando" as Carregando
+Carregando : GET inicial
+state "Erro" as Erro
+Erro : 403 / 404 / rede
+Erro : tentar de novo
+state "Campeoes" as Campeoes
+Campeoes : linha do tempo: final, conferências, divisões
+state "Aba Meus troféus" as MeusTrofeus
+MeusTrofeus : estante 3D ou vazia com metas
+state "Filtrando" as Filtrando
+Filtrando : temporada / tipo
+state "Troféu 3D aberto" as Trofeu3D
+Trofeu3D : GLB do S3 ou genérico
+[*] --> Carregando
+Carregando --> Erro : falha
+Erro --> Carregando : tentar de novo
+Carregando --> Campeoes : 200
+Campeoes --> MeusTrofeus : aba
+MeusTrofeus --> Campeoes : aba
+Campeoes --> Filtrando : escolhe temporada/tipo
+Filtrando --> Campeoes : 200
+MeusTrofeus --> Trofeu3D : clica no troféu
+Campeoes --> Trofeu3D : clica no campeão
+Trofeu3D --> MeusTrofeus : fechar
+@enduml

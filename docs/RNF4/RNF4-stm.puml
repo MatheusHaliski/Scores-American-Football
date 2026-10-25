@@ -1,0 +1,24 @@
+@startuml
+title RNF4 — JWT RSA, refresh rotativo em cookie __Host- · Máquina de estados: UserSession (família sid, refresh em cookie HttpOnly)
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "ACTIVE" as ACTIVE
+ACTIVE : refresh válido (hash) no cookie HttpOnly
+ACTIVE : access renovável · session:family no Redis
+state "ROTATED" as ROTATED
+ROTATED : replacedBy = nova sessão
+ROTATED : reuso do antigo = ataque
+state "REVOKED (família)" as REVOKED
+REVOKED : logout · revogação · troca de senha · reuso
+REVOKED : access recusado na hora · cookie apagado
+state "EXPIRED" as EXPIRED
+EXPIRED : 7 dias sem refresh
+[*] --> ACTIVE
+ACTIVE --> ROTATED : POST /auth/refresh ok (nova sessão ACTIVE)
+ROTATED --> REVOKED : reuso do refresh antigo
+ACTIVE --> REVOKED : logout / revogação / troca de senha / conta excluída
+ACTIVE --> EXPIRED : 7 dias sem refresh
+ACTIVE --> ACTIVE : reabrir o navegador: refresh silencioso pelo cookie
+REVOKED --> [*]
+EXPIRED --> [*]
+@enduml

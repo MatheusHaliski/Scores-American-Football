@@ -1,0 +1,23 @@
+@startuml
+title RNF5 — Criptografia de dados sensíveis · Máquina de estados: Dado sensível (ciclo de cifra)
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "Cifrado" as DadoCifrado
+DadoCifrado : nonce + AES-256-GCM
+DadoCifrado : emailHash para busca
+state "Decifrado em memória" as DadoDecifrado
+DadoDecifrado : só titular ou processo interno
+DadoDecifrado : nunca logado
+state "Recifrado" as DadoRecifrado
+DadoRecifrado : rotação por kid em lotes
+state "Segredo detectado" as Vazado
+Vazado : gitleaks no CI ou pre-push
+Vazado : rotacionar no Cofre
+[*] --> DadoCifrado
+DadoCifrado --> DadoDecifrado : leitura autorizada
+DadoDecifrado --> DadoCifrado : escrita (nonce novo)
+DadoCifrado --> DadoRecifrado : rotação de chave
+DadoRecifrado --> DadoCifrado : kid nova ativa
+DadoCifrado --> Vazado : segredo commitado
+Vazado --> DadoCifrado : segredo rotacionado
+@enduml

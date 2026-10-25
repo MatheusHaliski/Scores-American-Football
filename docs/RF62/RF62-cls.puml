@@ -1,0 +1,95 @@
+@startuml
+title RF62 — Chamada de jogada em momentos decisivos · Diagrama de classes
+skinparam classAttributeIconSize 0
+hide empty methods
+package "match" {
+  class MatchSession {
+    status: LiveStatus
+    quarter: int
+    clockSeconds: int
+    playClockSeconds: int
+    possession: Club
+    down: int (1–4)
+    distance: int
+    ballOnAbsYd: int (0–100)
+    homeScore: int
+    awayScore: int
+    timeoutsHome: int
+    timeoutsAway: int
+    seed: long
+    rngCursor: long
+    snapshotJson: TEXT
+    decisionsLog: JSON
+    version: long
+  }
+  class PlayCallDecision {
+    session: MatchSession
+    situation: Situation (FOURTH_DOWN|TWO_MINUTE|OVERTIME|ALL_PLAYS)
+    down: int
+    distance: int
+    ballOnAbsYd: int
+    options: List<PlayDefinition>
+    chosen: PlayDefinition?
+    deadlineAt: Instant
+    auto: boolean
+    status: DecisionStatus
+  }
+  class PlayDefinition {
+    code: String
+    side: Side (OFFENSE|DEFENSE|SPECIAL)
+    formation: Formation (I|SINGLEBACK|SHOTGUN|PISTOL|EMPTY|GOAL_LINE)
+    personnel: String (11, 12, 21…)
+    concept: PlayConcept (INSIDE_RUN|OUTSIDE_RUN|SHORT|MEDIUM|DEEP|SCREEN|PLAY_ACTION|SNEAK|PUNT|FG)
+    coverage: Coverage (COVER_0..COVER_6, MAN|ZONE)
+    blitz: boolean
+    diagram: JSON (rotas, bloqueios)
+  }
+  class GamePlan {
+    runPassBalance: int (0–100)
+    fourthDownAggression: Aggression
+    tempo: Tempo (HURRY_UP|NORMAL|MILK_CLOCK)
+    offensiveFocus: JSON
+    defensiveFocus: DefensiveFocus
+    blitzFrequency: Emphasis
+    baseDefense: DefensePackage (4-3|3-4)
+    keyPlayers: List<UUID>
+    situationTendencies: JSON (3ª e curta, red zone, 2 minutos)
+  }
+}
+package "account" {
+  class UserSettings {
+    simQuarterMinutes: int
+    playCallingLevel: PlayCallingLevel (KEY_MOMENTS|ALL_PLAYS|NONE)
+    decisionTimeoutSeconds: int
+    difficulty: Difficulty
+    theme: ThemeMode
+    highContrast: boolean
+    fontScale: FontScale
+    reducedMotion: boolean
+    regionalFormat: String
+    units: YardsOrMeters
+    notificationsEnabled: boolean
+  }
+}
+class SubmitPlayCallUseCase <<UseCase>> {
+  execute(saveId, matchId, decisionId, playId, expectedVersion): DecisionResult
+}
+class PlayCaller <<Engine>> {
+  isKeyMoment(state, level): boolean
+  options(state, playbook): List<PlayDefinition>
+  autoChoose(state, plan, rng): PlayDefinition
+}
+class KeyMomentPolicy <<Policy>> {
+  situation(state): Situation?
+}
+interface DecisionTimerPort <<Port>> {
+  schedule(decisionId, deadlineAt)
+  cancel(decisionId)
+}
+MatchSession "1" -- "*" PlayCallDecision : momentos decisivos
+PlayCallDecision "*" -- "0..1" PlayDefinition : escolhida
+SubmitPlayCallUseCase ..> PlayCallDecision : fecha
+PlayCaller ..> KeyMomentPolicy : usa
+PlayCaller ..> GamePlan : lê tendências
+SubmitPlayCallUseCase ..> DecisionTimerPort : cancela
+@enduml

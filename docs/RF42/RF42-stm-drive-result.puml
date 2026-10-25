@@ -1,0 +1,30 @@
+@startuml
+title RF42 — Motor de partida por descida (determinístico por semente) · Máquina de estados: Drive.result
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "Em andamento" as EM_ANDAMENTO
+EM_ANDAMENTO : startAbsYd, jogadas, jardas
+state "TD" as TD
+state "FG" as FG
+state "PUNT" as PUNT
+state "TURNOVER" as TURNOVER
+state "DOWNS" as DOWNS
+state "SAFETY" as SAFETY
+state "END_HALF" as END_HALF
+[*] --> EM_ANDAMENTO
+EM_ANDAMENTO --> EM_ANDAMENTO : 1ª descida
+EM_ANDAMENTO --> TD : touchdown
+EM_ANDAMENTO --> FG : field goal
+EM_ANDAMENTO --> PUNT : punt na 4ª
+EM_ANDAMENTO --> TURNOVER : INT ou fumble perdido
+EM_ANDAMENTO --> DOWNS : 4ª sem conversão
+EM_ANDAMENTO --> SAFETY : tackle na própria end zone
+EM_ANDAMENTO --> END_HALF : relógio zera
+TD --> [*]
+FG --> [*]
+PUNT --> [*]
+TURNOVER --> [*]
+DOWNS --> [*]
+SAFETY --> [*]
+END_HALF --> [*]
+@enduml

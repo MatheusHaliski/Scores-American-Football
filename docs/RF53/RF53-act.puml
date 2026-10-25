@@ -1,0 +1,52 @@
+@startuml
+title RF53 — Regulamentos profissional e college · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Manager|
+start
+:Abre o regulamento da liga no editor;
+|Frontend|
+:GET /rulesets · GET /leagues/{id}/rules;
+|Manager|
+:Escolhe o preset PRO ou COLLEGE e ajusta valores;
+|Frontend|
+:POST /leagues/{id}/rules/preview;
+|Backend|
+if (valores nos limites?) then (sim)
+else (não)
+  :422 RULES_INVALID;
+  stop
+endif
+if (combinação coerente?) then (sim)
+else (não)
+|Frontend|
+  :Mostra aviso;
+endif
+|Manager|
+:Confirma;
+|Frontend|
+:PUT /leagues/{id}/rules com expectedVersion;
+|Backend|
+if (mundo editável?) then (sim)
+else (não)
+  :403 / 422 WORLD_READ_ONLY;
+  stop
+endif
+if (versão atual?) then (sim)
+else (não)
+  :409;
+  stop
+endif
+if (temporada em curso?) then (sim)
+  :Agenda a versão para a próxima temporada;
+else (não)
+  :Aplica já: version+1;
+endif
+note right: a partida ao vivo usa as regras fixadas no snapshot do kickoff
+:Invalida cache das regras;
+|Manager|
+:Vê a versão vigente e a agendada;
+end
+@enduml

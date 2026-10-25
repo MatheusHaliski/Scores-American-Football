@@ -1,0 +1,55 @@
+@startuml
+title RNF4 — JWT RSA, refresh rotativo em cookie __Host- · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Visitante (não autenticado)" as Visitante
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "Filtros" as Filtros
+boundary "API" as API
+control "UseCase" as UseCase
+control "AuditService" as AuditService
+database "MySQL 8" as MySQL
+database "Redis 7" as Redis
+Visitante -> Frontend: login
+Frontend -> API: POST /auth/login (credentials: include)
+API -> UseCase: LoginUseCase.execute
+UseCase -> UseCase: TokenService: access RS256 15 min (sid = família) · refresh opaco 256 bits
+UseCase -> MySQL: INSERT user_session (refreshTokenHash, familyId, ip, userAgent, expiresAt)
+UseCase -> Redis: SET session:family:{sid} TTL 7 d
+UseCase -> AuditService: ok(LOGIN_OK)
+API --> Frontend: 200 {accessToken, expiresIn} + Set-Cookie __Host-scores_af_rt HttpOnly Secure SameSite=Strict Path=/
+Frontend -> Frontend: access só em memória (nada em localStorage)
+Manager -> Frontend: usa o app (access expira em 15 min)
+Frontend -> API: GET /careers (Bearer expirado)
+API --> Frontend: 401 UNAUTHENTICATED (RFC 7807, correlationId)
+Frontend -> API: POST /auth/refresh (cookie enviado pelo navegador, Origin)
+API -> Filtros: Origin / Sec-Fetch-Site same-origin?
+alt sem cookie ou Origin estranho
+  Filtros --> Frontend: 401 / 403 CSRF_REJECTED
+else senão
+  API -> UseCase: RefreshTokenUseCase.execute(cookie, ip, userAgent)
+  UseCase -> MySQL: findByRefreshTokenHash(hash)
+  alt replacedBy preenchido (reuso) ou revogada/expirada
+    UseCase -> MySQL: revokeFamily(familyId)
+    UseCase -> Redis: DEL session:family:{sid}
+    UseCase -> AuditService: failed(TOKEN_REUSE_DETECTED)
+    API --> Frontend: 401 + Set-Cookie Max-Age=0
+  else senão
+    UseCase -> MySQL: UPDATE user_session SET replacedBy = nova WHERE id = antiga AND replacedBy IS NULL
+    UseCase -> MySQL: INSERT nova user_session (mesma família)
+    UseCase -> AuditService: ok(TOKEN_REFRESHED)
+    API --> Frontend: 200 novo access + novo cookie __Host-
+    Frontend -> API: reenvia GET /careers
+    API --> Frontend: 200
+  end
+end
+Manager -> Frontend: sair
+Frontend -> API: POST /auth/logout
+API -> UseCase: LogoutUseCase.execute(sid)
+UseCase -> MySQL: UPDATE revokedAt WHERE familyId = sid
+UseCase -> Redis: DEL session:family:{sid}
+API --> Frontend: 204 + Set-Cookie Max-Age=0
+Frontend -> Frontend: BroadcastChannel logout → outras abas limpam o access
+@enduml

@@ -1,0 +1,68 @@
+@startuml
+title RF31 — Público e renda da partida · Diagrama de componentes
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 36
+actor "Head coach / manager (usuário autenticado)" as c1
+package "Frontend (Next.js)" as pkg_fe {
+  component "MatchDetailsDrawer" as c2
+  frame "componentes de MatchDetailsDrawer" as pkg_fe_sub {
+    component "AttendanceGauge" as c3
+    component "RevenueSummaryCard" as c4
+    component "SectorRevenueChart" as c5
+    component "AttendanceFactorsList" as c6
+    component "WeatherImpactChip" as c7
+    component "AtmosphereMeter" as c8
+  }
+}
+package "scores-af-web (REST)" as pkg_web {
+  component "MatchController" as c9
+  component "StadiumController" as c10
+  component "FinanceController" as c11
+}
+package "scores-af-application (casos de uso)" as pkg_app {
+  component "GetMatchReportUseCase" as c12
+  component "GetStadiumUseCase" as c13
+  component "GetFinanceOverviewUseCase" as c14
+  component "CareerAccess" as c15
+  component "AttendanceAssembler" as c16
+}
+package "scores-af-domain/engine" as pkg_eng {
+  component "FinanceEngine" as c17
+  component "AttendanceModel" as c18
+}
+package "portas (port.out)" as pkg_ports {
+  interface "CareerSaveRepository" as c19
+  interface "FixtureRepository" as c20
+  interface "MatchReportRepository" as c21
+  interface "StadiumRepository" as c22
+  interface "FinanceLedgerRepository" as c23
+  interface "LiveMatchStatePort" as c24
+}
+package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
+  component "persistence-mysql" as c25
+  component "cache-redis" as c26
+}
+database "MySQL 8" as s1
+database "Redis 7" as s2
+c1 --> c2 : usa
+c2 --> c9 : GET /matches/{mid}/report (alvo)\nGET /careers/{id}/stadium (alvo)\nGET /careers/{id}/finance (alvo)
+c2 --> c10
+c2 --> c11
+c9 --> c12
+c10 --> c12
+c11 --> c12
+c12 ..> pkg_app : orquestra
+c12 --> c17 : usa
+c12 --> c18 : usa
+pkg_app --> pkg_ports : depende (DIP)
+c25 .up.|> c19
+c25 .up.|> c20
+c25 .up.|> c21
+c25 .up.|> c22
+c25 .up.|> c23
+c26 .up.|> c24
+c25 --> s1
+c26 --> s2
+@enduml

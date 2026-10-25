@@ -1,0 +1,42 @@
+@startuml
+title RNF3 — Controle de acesso e autorização por perfil · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Visitante (não autenticado)" as Visitante
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "Filtros" as Filtros
+boundary "API" as API
+control "UseCase" as UseCase
+control "AuditService" as AuditService
+database "MySQL 8" as MySQL
+database "Redis 7" as Redis
+Manager -> Frontend: abre save de outro usuário (id adivinhado)
+Frontend -> API: GET /careers/{idDeB}/dashboard (Bearer de A)
+API -> Filtros: CorrelationId → Bearer RS256 → SessionActive(sid) → AuditContext
+Filtros -> Redis: família {sid} ativa?
+alt JWT inválido ou família revogada
+  Filtros --> Frontend: 401 RFC 7807 {type, title, status, code, message, details, correlationId, locale}
+else senão
+  alt rota /admin/** sem ROLE_ADMIN
+    API -> AuditService: denied(ACCESS_DENIED, rota)
+    API --> Frontend: 403 FORBIDDEN
+  else senão
+    API -> UseCase: GetClubDashboardUseCase.execute(idDeB, userId = A)
+    UseCase -> MySQL: findSave(idDeB)
+    MySQL --> UseCase: save.user = B
+    alt save.user != A
+      UseCase -> AuditService: denied(ACCESS_DENIED, CareerSave, idDeB)
+      AuditService -> MySQL: INSERT audit_log (transação própria)
+      API --> Frontend: 403 sem dados do save
+    else senão
+      UseCase --> API: DashboardDto
+      API --> Frontend: 200
+    end
+  end
+end
+Visitante -> Frontend: tenta /actuator/env
+Frontend -> API: GET /actuator/env
+API --> Frontend: 403 (só /actuator/health é público)
+@enduml

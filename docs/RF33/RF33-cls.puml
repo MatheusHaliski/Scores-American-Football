@@ -1,0 +1,102 @@
+@startuml
+title RF33 — Scores Points por metas em qualquer modo · Diagrama de classes
+skinparam classAttributeIconSize 0
+hide empty methods
+package "career" {
+  class CareerSave {
+    id: UUID
+    name: String
+    seed: long
+    employmentStatus: EmploymentStatus
+    currentWeek: int
+    difficulty: Difficulty
+    seasonMode: SeasonMode
+    scoresPoints: int
+    status: SaveStatus
+    slot: int
+    lastPlayedAt: Instant
+  }
+  class Goal {
+    code: String
+    description: String
+    target: int
+    progress: int
+    rewardPoints: int
+    status: GoalStatus
+  }
+  class ScoresPointsWallet {
+    balance: int
+    lifetimeEarned: int
+  }
+  class PointsTransaction {
+    amount: int
+    reason: PointsReason
+    refId: UUID
+    createdAt: Instant
+  }
+}
+package "season" {
+  class Fixture {
+    week: int
+    date: LocalDate
+    slot: KickoffSlot (THU_NIGHT|SUN_EARLY|SUN_LATE|SUN_NIGHT|MON_NIGHT)
+    status: FixtureStatus
+    homeScore: int
+    awayScore: int
+    quarterScores: JSON
+    overtime: boolean
+    isDivisional: boolean
+    isConference: boolean
+    neutralSite: boolean
+    weather: Weather
+    attendance: int
+    revenue: long
+    importance: FixtureImportance
+    seed: long
+    isUserFixture: boolean
+  }
+  class Season {
+    number: int
+    year: int
+    phase: SeasonPhase (PRESEASON|REGULAR|PLAYOFFS|DRAFT|FREE_AGENCY|OFFSEASON)
+    currentWeek: int
+    tradeDeadlineWeek: int
+    championClub: Club?
+    mvpPlayer: Player?
+  }
+}
+package "inbox" {
+  class Notification {
+    kind: String
+    title: String
+    body: String
+    read: boolean
+    createdAt: Instant «TTL 90d»
+  }
+}
+class GameRewardService <<Service>> {
+  on(MatchFinished)
+  on(WeekCompleted)
+  on(SeasonEnded)
+  on(OnlineMatchFinished)
+  award(save, amount, reason, refId) «teto diário · ×dificuldade»
+}
+class PointsService <<Service>> {
+  walletOf(save): ScoresPointsWallet
+  credit(save, amount, reason, refId): boolean «idempotente por refId»
+}
+enum PointsReason {
+  GOAL_COMPLETED · MATCH_WON · PLAYOFF_WIN · DIVISION_TITLE · CONFERENCE_TITLE · TITLE · AWARD
+  PURCHASE · REFUND · ADMIN_ADJUST · WELCOME_BONUS
+  MULTIPLAYER_* · ONLINE_*
+}
+CareerSave "1" -- "1" ScoresPointsWallet
+ScoresPointsWallet "1" -- "*" PointsTransaction
+CareerSave "1" -- "*" Goal
+CareerSave "1" -- "*" Season
+GameRewardService ..> Goal : progride
+GameRewardService ..> PointsService : credit
+PointsService ..> ScoresPointsWallet : credita (@Version)
+PointsService ..> PointsTransaction : cria
+PointsTransaction ..> PointsReason : reason
+@enduml

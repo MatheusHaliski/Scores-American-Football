@@ -1,0 +1,17 @@
+@startuml
+title RF66 — Playoffs com chave · Máquina de estados: PlayoffMatchup (confronto)
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "AGUARDANDO" as AGUARDANDO
+state "AGENDADO" as AGENDADO
+state "EM_JOGO" as EM_JOGO
+state "PRORROGACAO" as PRORROGACAO
+state "DECIDIDO" as DECIDIDO
+[*] --> AGUARDANDO
+AGUARDANDO --> AGENDADO : rodada anterior concluída
+AGENDADO --> EM_JOGO : kickoff
+EM_JOGO --> PRORROGACAO : empate no 4º quarto
+EM_JOGO --> DECIDIDO : placar final
+PRORROGACAO --> DECIDIDO : alguém pontua
+DECIDIDO --> [*]
+@enduml

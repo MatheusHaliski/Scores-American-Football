@@ -1,0 +1,27 @@
+@startuml
+title RF64 — Relatório de lesões semanal · Máquina de estados: InjuryReport.status
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "SAUDAVEL" as SAUDAVEL
+SAUDAVEL : fora do relatório
+state "QUESTIONABLE" as QUESTIONABLE
+QUESTIONABLE : treino LIMITED
+QUESTIONABLE : joga provável
+state "DOUBTFUL" as DOUBTFUL
+DOUBTFUL : treino LIMITED ou DNP
+state "OUT" as OUT
+OUT : não joga a semana
+state "IR" as IR
+IR : mínimo de 4 semanas
+IR : vaga no 53 liberada
+[*] --> SAUDAVEL
+SAUDAVEL --> QUESTIONABLE : lesão leve
+SAUDAVEL --> OUT : lesão grave
+QUESTIONABLE --> DOUBTFUL : piora
+DOUBTFUL --> QUESTIONABLE : melhora
+DOUBTFUL --> OUT : DNP
+OUT --> IR : manager coloca na IR
+OUT --> QUESTIONABLE : recuperação
+QUESTIONABLE --> SAUDAVEL : treino FULL
+IR --> SAUDAVEL : designado para retorno
+@enduml

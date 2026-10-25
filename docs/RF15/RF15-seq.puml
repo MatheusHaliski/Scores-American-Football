@@ -1,0 +1,56 @@
+@startuml
+title RF15 — Estilos de head coach por recompensa e Scores Points · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+control "AuditService" as AuditService
+control "MoraleEngine" as MoraleEngine
+queue "EventBus" as EventBus
+database "MySQL 8" as MySQL
+database "Redis 7" as Redis
+participant "Agendador/Job assíncrono" as Scheduler
+Manager -> Frontend: abre estilos de head coach
+Frontend -> API: GET /store/items?kind=COACH_STYLE
+API -> UseCase: ListStoreItemsUseCase.execute(kind)
+UseCase -> MySQL: store_item × manager_style (efeitos, preço, rewardGoal)
+API --> Frontend: 200 List<StoreItemDto>
+Manager -> Frontend: comprar DEFENSIVE
+Frontend -> API: POST /store/purchase {itemCode} (Idempotency-Key)
+API -> UseCase: PurchaseStoreItemUseCase.execute(cmd) «@Transactional»
+UseCase -> MySQL: item, rewardGoal, compras do usuário
+alt estilo só por meta
+  API --> Frontend: 422 STYLE_REWARD_ONLY
+else senão
+  UseCase -> Redis: DECRBY wallet:{userId} price (atômico)
+  alt saldo insuficiente
+    UseCase -> Redis: INCRBY (compensação)
+    API --> Frontend: 422 INSUFFICIENT_POINTS
+  else senão
+    UseCase -> MySQL: TX: INSERT points_transaction PURCHASE · purchase
+    UseCase -> AuditService: record(STORE_PURCHASE)
+    API --> Frontend: 201 PurchaseDto
+  end
+end
+Scheduler -> UseCase: SeasonCompleted → GoalEvaluationJob (RF33)
+alt Goal COMPLETED com rewardGoal de estilo
+  UseCase -> MySQL: INSERT purchase (estilo, pricePaid 0)
+  UseCase -> EventBus: StyleUnlocked
+else senão
+end
+Manager -> Frontend: ativar DEFENSIVE
+Frontend -> API: PUT /careers/{id}/manager/style {styleCode}
+API -> UseCase: ApplyCoachStyleUseCase.execute(careerId, code, userId)
+UseCase -> MySQL: save + owner check · purchase do estilo · season.phase · última troca
+alt não é dono / não possui / fora da janela
+  UseCase -> AuditService: record(ACCESS_DENIED) se 403
+  API --> Frontend: 403 | 422
+else senão
+  UseCase -> MySQL: UPDATE manager_profile.coachStyle · overall
+  UseCase -> MoraleEngine: efeitos do estilo nos próximos updates (RF41)
+  API --> Frontend: 200 ManagerProfileDto
+end
+@enduml

@@ -1,0 +1,118 @@
+@startuml
+title RF32 — Loja de itens customizáveis (Scores Points) · Diagrama de classes
+skinparam classAttributeIconSize 0
+hide empty methods
+package "account" {
+  class UserAccount {
+    id: UUID
+    email: String «AES-GCM»
+    emailHash: String «unique»
+    passwordHash: String «Argon2id»
+    displayName: String
+    locale: Locale
+    role: Role
+    status: AccountStatus
+    failedLoginAttempts: int
+    lockedUntil: Instant
+    marketingConsent: boolean
+    deletionRequestedAt: Instant
+    profileVisibility: ProfileVisibility
+    birthDate: LocalDate
+    pendingEmail: String
+  }
+}
+package "career" {
+  class CareerSave {
+    id: UUID
+    name: String
+    seed: long
+    employmentStatus: EmploymentStatus
+    currentWeek: int
+    difficulty: Difficulty
+    seasonMode: SeasonMode
+    scoresPoints: int
+    status: SaveStatus
+    slot: int
+    lastPlayedAt: Instant
+  }
+  class ScoresPointsWallet {
+    balance: int
+    lifetimeEarned: int
+  }
+  class PointsTransaction {
+    amount: int
+    reason: PointsReason
+    refId: UUID
+    createdAt: Instant
+  }
+}
+package "store" {
+  class StoreItem {
+    code: String
+    kind: StoreItemKind
+    name: String
+    priceScoresPoints: int
+    assetUrl: String
+    payload: JSON
+    rarity: Rarity
+  }
+  class Purchase {
+    purchasedAt: Instant
+    pricePaid: int
+  }
+}
+class PurchaseService <<Service>> {
+  purchase(PurchaseCommand, userId, idempotencyKey): PurchaseResult «uma transação»
+  refund(purchaseId, adminId, reason)
+  history(userId, page)
+}
+class PurchaseCommand <<record>> {
+  productCode: String
+  variantCode: String?
+  walletScope: USER|SAVE
+  saveId: UUID?
+  targetPlayerId: UUID?
+  — nunca price —
+}
+class PricingService <<Service>> {
+  resolve(product, now): Price
+}
+class StorePolicy <<Policy (RNF12)>> {
+  affectsEngine(product): boolean
+  walletScopeFor(product): USER|SAVE
+  isUnique(product): boolean
+}
+class Entitlement <<alvo (fora do catálogo AF)>> {
+  user: UserAccount
+  product: StoreItem
+  grantedAt: Instant
+  revokedAt: Instant?
+}
+class PlayerLoadout <<alvo (fora do catálogo AF)>> {
+  user: UserAccount
+  slots: Map<EquipmentSlot, UUID>
+  version: long
+}
+enum StoreCategory {
+  STADIUM_3D
+  PLAYER_ANIMATION_3D
+  UNIFORM
+  HELMET
+  CLUB_LOGO
+  LEGENDARY_PLAYER
+  CONSUMABLE
+}
+UserAccount "1" -- "*" CareerSave : carreiras
+CareerSave "1" -- "1" ScoresPointsWallet
+ScoresPointsWallet "1" -- "*" PointsTransaction
+UserAccount "1" -- "*" Purchase
+Purchase "*" -- "1" StoreItem
+PurchaseService ..> PurchaseCommand : recebe
+PurchaseService ..> PricingService : preço só aqui
+PurchaseService ..> StorePolicy : RNF12
+PurchaseService ..> Purchase : cria
+PurchaseService ..> Entitlement : concede
+PurchaseService ..> PointsTransaction : PURCHASE / REFUND
+StoreItem ..> StoreCategory : kind
+PlayerLoadout ..> Entitlement : equipa
+@enduml

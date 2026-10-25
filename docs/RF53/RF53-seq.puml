@@ -1,0 +1,36 @@
+@startuml
+title RF53 — Regulamentos profissional e college · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+control "AuditService" as AuditService
+queue "EventBus" as EventBus
+database "MySQL 8" as MySQL
+database "Redis 7" as Redis
+Manager -> Frontend: abre regulamento
+Frontend -> API: GET /rulesets
+API -> UseCase: ListRulesetsUseCase
+UseCase --> API: PRO, COLLEGE
+API --> Frontend: 200
+Manager -> Frontend: ajusta e confirma
+Frontend -> API: PUT /leagues/{id}/rules
+API -> UseCase: UpdateLeagueRulesUseCase
+UseCase -> MySQL: liga, mundo, saves ativos
+alt não editável / inválido / versão velha
+  UseCase -> AuditService: record(ACCESS_DENIED) quando 403
+  API --> Frontend: 403 / 422 / 409
+else senão
+  alt temporada em curso
+    UseCase -> MySQL: INSERT rules versão agendada
+  else senão
+    UseCase -> MySQL: UPDATE league.rules version+1
+  end
+  UseCase -> Redis: DEL rules:{leagueId}
+  UseCase -> EventBus: LeagueRulesChanged
+  API --> Frontend: 200 versão
+end
+@enduml

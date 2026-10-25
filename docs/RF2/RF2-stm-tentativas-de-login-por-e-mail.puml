@@ -1,0 +1,17 @@
+@startuml
+title RF2 — Autenticação e recuperação de senha · Máquina de estados: Tentativas de login por e-mail
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "Livre" as Livre
+Livre : contador < 5
+state "Tentativa reservada" as Reservada
+Reservada : INCR atômico antes do hash
+state "Bloqueado (15 min)" as Bloqueado
+Bloqueado : 401 AUTH_FAILED idêntico
+[*] --> Livre
+Livre --> Reservada : POST /auth/login
+Reservada --> Livre : senha correta → clearLogin
+Reservada --> Livre : senha errada (contador fica)
+Reservada --> Bloqueado : 5ª falha
+Bloqueado --> Livre : janela expira / redefinição
+@enduml

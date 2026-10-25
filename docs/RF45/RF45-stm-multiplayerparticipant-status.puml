@@ -1,0 +1,15 @@
+@startuml
+title RF45 — Multiplayer online: salas por turnos e Ultimate Team · Máquina de estados: MultiplayerParticipant.status
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "ACTIVE" as ACTIVE
+state "LEFT" as LEFT
+state "AI_TAKEOVER" as AI_TAKEOVER
+AI_TAKEOVER : IA assume
+AI_TAKEOVER : sem Scores Points
+[*] --> ACTIVE
+ACTIVE --> LEFT : sai no lobby
+ACTIVE --> AI_TAKEOVER : abandona em andamento
+AI_TAKEOVER --> ACTIVE : volta antes do próximo turno
+LEFT --> [*]
+@enduml

@@ -1,0 +1,29 @@
+@startuml
+title RF5 — Editor de ligas (conferências e divisões), franquias e jogadores · Máquina de estados: World no editor (kind × ownerUser)
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "Mundo semente" as SEED
+SEED : 32 times fictícios, 2 conferências × 4 divisões
+SEED : somente leitura (ADMIN edita)
+state "TEMPLATE do usuário" as OWN_TEMPLATE
+OWN_TEMPLATE : cópia clonada
+OWN_TEMPLATE : editável pelo dono
+state "Formulário aberto" as EDITING
+EDITING : regras, estrutura, franquia ou jogador
+EDITING : validação local
+state "Salvando" as SAVING
+SAVING : PUT/POST em andamento
+SAVING : mídia no S3
+state "Cópia SAVE" as SAVE_COPY
+SAVE_COPY : clonado por Nova carreira (RF34)
+SAVE_COPY : imutável pelo editor
+[*] --> SEED
+SEED --> OWN_TEMPLATE : POST /worlds/{id}/clone
+OWN_TEMPLATE --> EDITING : abre formulário
+EDITING --> SAVING : salvar
+SAVING --> OWN_TEMPLATE : 200 · CatalogChanged
+SAVING --> EDITING : 422 / 409 (corrige)
+EDITING --> OWN_TEMPLATE : cancelar
+OWN_TEMPLATE --> SAVE_COPY : Nova carreira clona (RF34)
+SAVE_COPY --> [*]
+@enduml

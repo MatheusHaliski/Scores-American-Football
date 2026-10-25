@@ -1,0 +1,27 @@
+@startuml
+title RNF7 — Auditoria e registro de atividades (logging) · Máquina de estados: AuditLog (pipeline de um registro)
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "Capturado" as Capturado
+Capturado : correlationId no MDC
+state "Sanitizado" as Sanitizado
+Sanitizado : sem senha, token ou cifrado
+state "Persistido" as Persistido
+Persistido : REQUIRES_NEW
+Persistido : imutável
+state "Falha de escrita" as FalhaEscrita
+FalhaEscrita : log ERROR
+FalhaEscrita : operação segue
+state "Consultável" as Consultavel
+Consultavel : titular e ADMIN
+state "Arquivado" as Arquivado
+Arquivado : retenção 12 meses
+[*] --> Capturado
+Capturado --> Sanitizado : LogSafe
+Sanitizado --> Persistido : INSERT ok
+Sanitizado --> FalhaEscrita : INSERT falhou
+Persistido --> Consultavel : imediato
+Consultavel --> Arquivado : retenção vencida
+Arquivado --> [*]
+FalhaEscrita --> [*]
+@enduml

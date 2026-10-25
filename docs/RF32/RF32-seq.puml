@@ -1,0 +1,56 @@
+@startuml
+title RF32 — Loja de itens customizáveis (Scores Points) · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+actor "Administrador" as Admin
+participant "Frontend" as Frontend
+boundary "Filtros" as Filtros
+boundary "API" as API
+control "UseCase" as UseCase
+control "AuditService" as AuditService
+queue "EventBus" as EventBus
+database "MySQL 8" as MySQL
+database "Redis 7" as Redis
+database "S3/MinIO" as S3
+Manager -> Frontend: abre a loja e filtra capacetes
+Frontend -> API: GET /store/catalog?category=HELMET&cursor=
+API -> Filtros: rate limit store 20/min · sessão ativa
+API -> UseCase: StoreCatalogService.list(filtro, userId)
+UseCase -> MySQL: StoreItem PUBLISHED + posse do usuário
+MySQL --> UseCase: página + possuídos
+API --> Frontend: 200 (ETag)
+Frontend -> S3: thumbnails (CDN)
+Manager -> Frontend: Comprar → Confirmar
+Frontend -> API: POST /store/purchases {productCode} Idempotency-Key
+API -> UseCase: PurchaseService.purchase(cmd, userId, key)
+UseCase -> MySQL: SELECT purchase WHERE idempotency_key = key
+alt chave repetida
+  API --> Frontend: 200 Idempotent-Replayed
+else senão
+  UseCase -> MySQL: produto + promoção + posse + compatibilidade
+  alt indisponível / incompatível / já possuído
+    API --> Frontend: 409 / 422
+  else senão
+    UseCase -> MySQL: BEGIN · SELECT wallet (USER ou SAVE) FOR UPDATE
+    alt saldo insuficiente
+      UseCase -> MySQL: ROLLBACK
+      API --> Frontend: 422 INSUFFICIENT_POINTS
+    else senão
+      UseCase -> MySQL: PointsTransaction PURCHASE (balanceAfter) · Purchase · direito · inventário
+      UseCase -> AuditService: record(STORE_PURCHASE, product, preço, correlationId)
+      UseCase -> MySQL: COMMIT
+      UseCase -> Redis: espelho do saldo
+      UseCase -> EventBus: PurchaseCompleted
+      API --> Frontend: 201 {purchase, wallet}
+    end
+  end
+end
+Admin -> Frontend: reembolsar compra
+Frontend -> API: POST /admin/store/purchases/{id}/refund
+API -> UseCase: PurchaseService.refund
+UseCase -> MySQL: TX: PointsTransaction REFUND · direito revogado · unequip
+UseCase -> AuditService: record(STORE_REFUND)
+API --> Frontend: 200
+@enduml

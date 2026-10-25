@@ -1,0 +1,35 @@
+@startuml
+title RF30 — Classificação, seeds e notícias com IA · Máquina de estados: Painel Classificação e semanas (interação)
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "Idle" as Idle
+Idle : pós-jogo / central
+state "Carregando" as Carregando
+Carregando : GET standings + weeks + news
+state "Tabela provisória" as Provisoria
+Provisoria : semana em andamento
+state "Tabela consolidada" as Consolidada
+Consolidada : seeds e desempates
+Consolidada : manchetes da semana
+state "Chave dos playoffs" as Playoffs
+Playoffs : jogo único
+Playoffs : final neutra
+state "Semana n±1" as Navegando
+Navegando : passada: resultados e notícias
+Navegando : futura: prévia
+state "Erro" as Erro
+Erro : 403 / 404 / rede
+[*] --> Idle
+Idle --> Carregando : abrir painel
+Carregando --> Erro : falha
+Erro --> Carregando : tentar de novo
+Carregando --> Provisoria : semana em andamento
+Carregando --> Consolidada : semana concluída
+Carregando --> Playoffs : phase PLAYOFFS
+Provisoria --> Consolidada : WeekCompleted (poll)
+Consolidada --> Navegando : semana n±1
+Navegando --> Consolidada : voltar
+Consolidada --> Playoffs : fim da temporada regular
+Playoffs --> Idle : fechar
+Consolidada --> Idle : fechar
+@enduml

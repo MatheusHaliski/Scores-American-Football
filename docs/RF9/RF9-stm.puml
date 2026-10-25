@@ -1,0 +1,23 @@
+@startuml
+title RF9 — Propostas de contrato de outras franquias · Máquina de estados: JobOffer.status
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "PENDING" as PENDING
+PENDING : gerada por (seed, semana)
+PENDING : expiresWeek = semana + 2
+state "ACCEPTED" as ACCEPTED
+ACCEPTED : transação única
+ACCEPTED : novo contrato ACTIVE
+state "REJECTED" as REJECTED
+REJECTED : recusa ou bloqueio da diretoria
+state "EXPIRED" as EXPIRED
+EXPIRED : prazo vencido ou outra oferta aceita
+[*] --> PENDING
+PENDING --> ACCEPTED : ACCEPT · diretoria libera
+PENDING --> REJECTED : REJECT ou bloqueio
+PENDING --> PENDING : LATER
+PENDING --> EXPIRED : prazo / outra aceita
+ACCEPTED --> [*]
+REJECTED --> [*]
+EXPIRED --> [*]
+@enduml

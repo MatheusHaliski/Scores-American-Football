@@ -1,0 +1,65 @@
+@startuml
+title RNF10 — Notificações via Chrome (Web Push) · Diagrama de componentes
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 36
+actor "Head coach / manager (usuário autenticado)" as c1
+actor "Agendador/Job assíncrono" as c2
+package "Frontend (Next.js)" as pkg_fe {
+  component "NotificationsSettings" as c3
+  frame "componentes de NotificationsSettings" as pkg_fe_sub {
+    component "ServiceWorker" as c4
+    component "PushSubscriber" as c5
+    component "NotificationCenter" as c6
+  }
+}
+package "scores-af-web (REST)" as pkg_web {
+  component "AccountController" as c7
+  component "NotificationController" as c8
+}
+package "scores-af-application (casos de uso)" as pkg_app {
+  component "NotificationDispatcher" as c9
+  component "RegisterPushSubscriptionUseCase" as c10
+  component "RevokePushSubscriptionUseCase" as c11
+  component "UpdateNotificationPreferencesUseCase" as c12
+  component "GetNotificationsUseCase" as c13
+}
+package "portas (port.out)" as pkg_ports {
+  interface "PushSubscriptionRepository" as c14
+  interface "NotificationPreferenceRepository" as c15
+  interface "TimelinePort" as c16
+  interface "WebPushPort" as c17
+  interface "CounterPort" as c18
+  interface "SecretsPort" as c19
+}
+package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
+  component "persistence-mysql" as c20
+  component "persistence-cassandra" as c21
+  component "webpush-vapid" as c22
+  component "cache-redis" as c23
+  component "secrets-cofre" as c24
+}
+database "MySQL 8" as s1
+database "Cassandra 4.1" as s2
+database "Redis 7" as s3
+database "Cofre de segredos do provedor (Railway Variables / GitHub Secrets)" as s4
+c1 --> c3 : usa
+c2 --> c9 : dispara
+c3 --> c7 : POST /me/push-subscriptions (alvo)\nDELETE /me/push-subscriptions/{sid} (alvo)\nPUT /me/notification-preferences (alvo)\n…
+c3 --> c8
+c7 --> c9
+c8 --> c9
+c9 ..> pkg_app : orquestra
+pkg_app --> pkg_ports : depende (DIP)
+c20 .up.|> c14
+c20 .up.|> c15
+c21 .up.|> c16
+c22 .up.|> c17
+c23 .up.|> c18
+c24 .up.|> c19
+c20 --> s1
+c21 --> s2
+c23 --> s3
+c24 --> s4
+@enduml

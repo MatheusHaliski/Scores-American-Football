@@ -1,0 +1,174 @@
+@startuml
+title RF16 — Classificação (divisões, conferências) e placares das semanas · Diagrama de classes
+skinparam classAttributeIconSize 0
+hide empty methods
+package "season" {
+  class Season {
+    number: int
+    year: int
+    phase: SeasonPhase (PRESEASON|REGULAR|PLAYOFFS|DRAFT|FREE_AGENCY|OFFSEASON)
+    currentWeek: int
+    tradeDeadlineWeek: int
+    championClub: Club?
+    mvpPlayer: Player?
+  }
+  class Week {
+    number: int
+    kind: WeekKind (PRESEASON|REGULAR|WILD_CARD|DIVISIONAL|CONFERENCE|FINAL)
+    startsOn: LocalDate
+    status: WeekStatus
+    byeClubs: List<Club>
+  }
+  class Standing {
+    wins: int
+    losses: int
+    ties: int
+    winPct: double
+    divisionRecord: String
+    conferenceRecord: String
+    pointsFor: int
+    pointsAgainst: int
+    streak: int
+    last5: JSON
+    divisionRank: int
+    conferenceSeed: Integer
+    tiebreakerNote: String
+  }
+  class PlayoffSeed {
+    conference: Conference
+    seed: int (1–7)
+    club: Club
+    divisionWinner: boolean
+    hasBye: boolean (seed 1)
+  }
+  class Fixture {
+    week: int
+    date: LocalDate
+    slot: KickoffSlot (THU_NIGHT|SUN_EARLY|SUN_LATE|SUN_NIGHT|MON_NIGHT)
+    status: FixtureStatus
+    homeScore: int
+    awayScore: int
+    quarterScores: JSON
+    overtime: boolean
+    isDivisional: boolean
+    isConference: boolean
+    neutralSite: boolean
+    weather: Weather
+    attendance: int
+    revenue: long
+    importance: FixtureImportance
+    seed: long
+    isUserFixture: boolean
+  }
+}
+package "catalog" {
+  class League {
+    id: UUID
+    name: String
+    country: String
+    ruleset: Ruleset (PRO|COLLEGE)
+    rules: LeagueRules
+    teamCount: int (8–32)
+    conferenceCount: int
+    divisionsPerConference: int
+    regularSeasonWeeks: int = 18
+    gamesPerTeam: int = 17
+    playoffSeedsPerConference: int = 7
+    neutralSiteFinal: boolean
+    salaryCap: long
+    salaryFloor: long
+    prestige: int
+    tvRightsPerSeason: long
+  }
+  class Conference {
+    name: String
+    shortName: String
+    logoKey: String
+  }
+  class Division {
+    name: String
+    conference: Conference
+    teamCount: int = 4
+  }
+  class Club {
+    id: UUID
+    name: String
+    shortName: String
+    city: String
+    conference: Conference
+    division: Division
+    logoKey: String
+    primaryColor: String
+    secondaryColor: String
+    accentColor: String
+    prestige: int
+    reputationBoard: int
+    reputationFans: int
+    cash: long
+    capSpace: long
+    isUserControlled: boolean
+    expectedWins: int
+    scoutingLevel: int
+    scoutingBudget: long
+  }
+}
+package "match" {
+  class PlayerMatchStats {
+    snaps: int
+    passing: cmp/att, yds, td, int, rating, sacked
+    rushing: att, yds, avg, td, fum
+    receiving: tgt, rec, yds, yac, td, drops
+    defense: tkl solo/ast, tfl, sacks, qbHits, int, pd, ff, fr
+    kicking: fg por distância, pat, punts, avg, in20
+    returns: kr/pr, yds, td
+    rating: double
+  }
+}
+class GetStandingsUseCase <<UseCase>> {
+  execute(careerId, view, userId): StandingsResult
+}
+class StandingsResult <<record>> {
+  view: DIVISION|CONFERENCE|LEAGUE
+  groups: List<StandingGroupDto>
+  seeds: List<PlayoffSeedDto>
+  myClubId: UUID
+  clinched: Map<UUID, String>
+}
+class GetWeekPanelUseCase <<UseCase>> {
+  execute(careerId, week, userId): WeekPanelResult
+}
+class WeekPanelResult <<record>> {
+  week: int
+  kind: WeekKind
+  status: PAST|CURRENT|FUTURE
+  games: List<ScoreCardDto>
+  byeClubs: List<ClubCompactDto>
+  leaders: Map<categoria, PlayerLineDto>
+  playerOfTheWeek: PlayerLineDto?
+}
+class TiebreakerPolicy <<Engine>> {
+  rank(tied, season): List<Standing> «confronto direto → divisão → jogos em comum → conferência → força das vitórias → força da tabela → saldo → seed»
+}
+interface SeasonEngine <<Engine>> {
+  rank(standings, policy): List<Standing>
+  seeds(conference, standings): List<PlayoffSeed>
+}
+League "1" -- "1..2" Conference : conferências
+Conference "1" -- "*" Division : divisões
+Division "1" -- "*" Club : franquias
+Club "*" -- "*" Club : rivais da divisão
+Season "1" -- "18..22" Week : semanas
+Week "1" -- "*" Fixture
+Season "1" -- "*" Standing
+Season "1" -- "14" PlayoffSeed : 7 por conferência
+Fixture "*" -- "1" Club : mandante
+Fixture "1" -- "*" PlayerMatchStats
+GetStandingsUseCase ..> StandingsResult : produz
+GetStandingsUseCase ..> SeasonEngine : rank e seeds
+SeasonEngine ..> TiebreakerPolicy : usa
+SeasonEngine ..> PlayoffSeed : produz
+TiebreakerPolicy ..> Standing : tiebreakerNote
+GetWeekPanelUseCase ..> WeekPanelResult : produz
+GetWeekPanelUseCase ..> Week : byeClubs
+GetWeekPanelUseCase ..> PlayerMatchStats : líderes
+@enduml

@@ -1,0 +1,66 @@
+@startuml
+title RF51 — Draft, scouting universitário e combine · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+control "AuditService" as AuditService
+control "CapEngine" as CapEngine
+control "DraftEngine" as DraftEngine
+queue "EventBus" as EventBus
+database "MySQL 8" as MySQL
+database "Redis 7" as Redis
+database "Cassandra 4.1" as Cassandra
+database "OpenSearch 2" as OpenSearch
+participant "Agendador/Job assíncrono" as Scheduler
+actor "Franquia adversária (IA)" as ClubeIA
+Scheduler -> UseCase: OpenDraftClass(season)
+UseCase -> DraftEngine: ordem inversa da classificação + classe da semente
+DraftEngine -> MySQL: INSERT draft_class SCOUTING, draft_prospect[], picks overall
+Manager -> Frontend: abre Draft
+Frontend -> API: GET /careers/{id}/draft/class
+API -> UseCase: GetDraftClassUseCase.execute
+UseCase -> MySQL: save, classe, relatórios do clube
+alt não é dono
+  UseCase -> AuditService: record(ACCESS_DENIED)
+  API --> Frontend: 403
+else senão
+  UseCase --> API: DraftClassView com névoa por scouting
+  API --> Frontend: 200
+end
+Manager -> Frontend: compra relatório
+Frontend -> API: POST /draft/prospects/{pid}/scouting
+API -> UseCase: BuyScoutingReportUseCase
+alt fase errada ou sem verba
+  API --> Frontend: 422 DRAFT_PHASE_INVALID / SCOUTING_BUDGET_EXCEEDED
+else senão
+  UseCase -> DraftEngine: report(prospect, scoutLevel, seed)
+  UseCase -> MySQL: INSERT scouting_report + ledger
+  API --> Frontend: 201 relatório
+end
+Scheduler -> UseCase: StartDraft: status LIVE
+loop cada pick até o fim da 7ª rodada
+  alt pick da IA
+    UseCase -> DraftEngine: choose(club, needs, board)
+    DraftEngine -> ClubeIA: decide prospecto
+    ClubeIA --> DraftEngine: prospectId
+  else senão
+    Manager -> Frontend: seleciona prospecto
+    Frontend -> API: POST /draft/picks/{pickId}/select
+    API -> UseCase: MakeDraftPickUseCase
+    alt fora da vez ou prospecto já escolhido
+      API --> Frontend: 409 NOT_ON_THE_CLOCK / PROSPECT_TAKEN
+    end
+  end
+  UseCase -> CapEngine: contrato ROOKIE pela escala do pick
+  UseCase -> MySQL: TX: prospect.draftedBy, INSERT player, cap ledger
+  UseCase -> Redis: PUBLISH draft:{saveId} PickMade
+end
+UseCase -> EventBus: DraftCompleted
+EventBus -> Cassandra: notícia e notas do draft
+EventBus -> OpenSearch: indexa rookies; não escolhidos como free agents
+API --> Frontend: SSE PickMade / DraftCompleted
+@enduml

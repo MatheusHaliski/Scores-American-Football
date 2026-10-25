@@ -1,0 +1,89 @@
+@startuml
+title RF2 — Autenticação e recuperação de senha · Diagrama de componentes
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 36
+actor "Visitante (não autenticado)" as c1
+actor "Head coach / manager (usuário autenticado)" as c2
+package "Frontend (Next.js)" as pkg_fe {
+  component "AuthPage" as c3
+  frame "componentes de AuthPage" as pkg_fe_sub {
+    component "LoginForm" as c4
+    component "ForgotPasswordForm" as c5
+    component "ResetPasswordForm" as c6
+    component "SessionStore (access em memória)" as c7
+    component "ApiClient (refresh silencioso)" as c8
+    component "CrossTabLogout (BroadcastChannel)" as c9
+  }
+}
+package "scores-af-web (REST)" as pkg_web {
+  component "AuthController" as c10
+  component "CorrelationIdFilter" as c11
+  component "AuthRateLimitFilter" as c12
+  component "ClientIpResolver" as c13
+  component "BearerTokenAuthenticationFilter" as c14
+  component "SessionActiveFilter" as c15
+  component "RefreshCookieWriter" as c16
+  component "OriginCheck" as c17
+  component "TokenService" as c18
+  component "ErrorWriter" as c19
+}
+package "scores-af-application (casos de uso)" as pkg_app {
+  component "LoginUseCase" as c20
+  component "RefreshTokenUseCase" as c21
+  component "LogoutUseCase" as c22
+  component "ForgotPasswordUseCase" as c23
+  component "ResetPasswordUseCase" as c24
+  component "PasswordAttemptGuard" as c25
+  component "PasswordHasher" as c26
+  component "AuditService" as c27
+}
+package "portas (port.out)" as pkg_ports {
+  interface "UserAccountRepository" as c28
+  interface "UserSessionRepository" as c29
+  interface "AuditLogRepository" as c30
+  interface "SessionCachePort" as c31
+  interface "RateLimiterPort" as c32
+  interface "EmailPort" as c33
+}
+package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
+  component "persistence-mysql" as c34
+  component "cache-redis" as c35
+  component "notify (LoggingEmailAdapter)" as c36
+}
+database "MySQL 8" as s1
+database "Redis 7" as s2
+c1 --> c3 : usa
+c2 --> c3 : usa
+c3 --> c10 : POST /auth/login (alvo)\nPOST /auth/refresh (alvo)\nPOST /auth/logout (alvo)\n…
+c3 --> c11
+c3 --> c12
+c3 --> c13
+c3 --> c14
+c3 --> c15
+c3 --> c16
+c3 --> c17
+c3 --> c18
+c3 --> c19
+c10 --> c20
+c11 --> c20
+c12 --> c20
+c13 --> c20
+c14 --> c20
+c15 --> c20
+c16 --> c20
+c17 --> c20
+c18 --> c20
+c19 --> c20
+c20 ..> pkg_app : orquestra
+pkg_app --> pkg_ports : depende (DIP)
+c34 .up.|> c28
+c34 .up.|> c29
+c34 .up.|> c30
+c35 .up.|> c31
+c35 .up.|> c32
+c36 .up.|> c33
+c34 --> s1
+c35 --> s2
+@enduml

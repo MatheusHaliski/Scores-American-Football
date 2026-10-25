@@ -1,0 +1,95 @@
+@startuml
+title RF12 — Estádio (aberto ou coberto), setores e ingressos · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Manager|
+start
+:Abre Estádio 3D;
+|Frontend|
+:GET /careers/{id}/stadium;
+|Backend|
+if (dono do save?) then (sim)
+else (não)
+  :403 + ACCESS_DENIED;
+  stop
+endif
+if (head coach empregado?) then (sim)
+else (não)
+  :403 SPECTATOR_MODE;
+  stop
+endif
+:Carrega estádio, setores, política e projeta público e renda dos próximos jogos em casa (FinanceEngine);
+if (clima afeta o jogo em casa?) then (sim)
+|Frontend|
+  :Mostra previsão de clima do próximo jogo em casa;
+endif
+:Modelo 3D (campo, traves em Y, arquibancadas, cobertura), setores clicáveis, preços, previsão de renda;
+|Manager|
+if (compra ou reforma setor?) then (sim)
+|Backend|
+  if (obra em andamento?) then (sim)
+    :409 UNDER_CONSTRUCTION;
+    stop
+  endif
+  if (capacidade dentro da faixa?) then (sim)
+  else (não)
+    :422 CAPACITY_LIMIT;
+    stop
+  endif
+  if (cota de camarotes e carnês ok?) then (sim)
+  else (não)
+    :422 POLICY_INVALID;
+    stop
+  endif
+  if (caixa cobre o custo?) then (sim)
+  else (não)
+    :422 INSUFFICIENT_CASH;
+    stop
+  endif
+|Diretoria|
+  if (diretoria autoriza obra grande?) then (sim)
+  else (não)
+|Backend|
+    :422 BOARD_REFUSED · inbox;
+    stop
+  endif
+  :Debita ledger STADIUM · setor em obra por N semanas;
+endif
+|Manager|
+if (troca a cobertura?) then (sim)
+|Backend|
+  if (obra de cobertura na offseason?) then (sim)
+  else (não)
+    :422 ROOF_CHANGE_IN_SEASON;
+    stop
+  endif
+  :Debita ledger STADIUM · nova cobertura vale na próxima temporada;
+endif
+|Manager|
+if (remove setor?) then (sim)
+|Backend|
+  if (setor removível?) then (sim)
+  else (não)
+    :422 SECTOR_REQUIRED;
+    stop
+  endif
+  :Remove setor · capacidade recalculada;
+endif
+|Manager|
+if (define preços ou carnês?) then (sim)
+|Backend|
+  if (preço dentro da faixa?) then (sim)
+  else (não)
+    :422 PRICE_OUT_OF_RANGE;
+    stop
+  endif
+  :Grava e reprojeta ocupação = f(prestígio, campanha, rival da divisão, clima, preço);
+endif
+|Scheduler|
+:Fim de cada semana: avança obras · após jogo em casa: público e renda no ledger GATE;
+|Frontend|
+:Atualiza 3D e previsão de renda;
+end
+@enduml

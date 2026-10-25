@@ -1,0 +1,56 @@
+@startuml
+title RF14 — Orçamento da franquia, teto salarial e empréstimo · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+control "AuditService" as AuditService
+control "MoraleEngine" as MoraleEngine
+control "CapEngine" as CapEngine
+control "FinanceEngine" as FinanceEngine
+queue "EventBus" as EventBus
+database "MySQL 8" as MySQL
+database "Redis 7" as Redis
+database "Cassandra 4.1" as Cassandra
+participant "Agendador/Job assíncrono" as Scheduler
+Manager -> Frontend: abre Orçamento
+Frontend -> API: GET /careers/{id}/finance
+API -> UseCase: GetFinanceOverviewUseCase.execute(id, userId, page)
+UseCase -> MySQL: save + owner check · club · loans · budget requests · ledger (paginado) · receitas por fixture em casa
+alt não é dono
+  UseCase -> AuditService: record(ACCESS_DENIED)
+  API --> Frontend: 403
+else senão
+  API --> Frontend: 200 FinanceOverviewResult
+end
+Frontend -> API: GET /careers/{id}/finance/cap
+API -> UseCase: GetSalaryCapUseCase.execute(id, userId)
+UseCase -> CapEngine: capSpace(ledger, contratos, dead money, rollover)
+CapEngine --> UseCase: teto, comprometido, espaço, cap hit por jogador
+API --> Frontend: 200 SalaryCapView
+Manager -> Frontend: contratar empréstimo
+Frontend -> API: POST /careers/{id}/finance/loans {principal, weeks}
+API -> UseCase: ContractBankLoanUseCase.execute(cmd) «@Transactional»
+UseCase -> FinanceEngine: loanTerms(principal, weeks, prestige, dívida atual, receita)
+FinanceEngine --> UseCase: juros por semana, parcela, limite
+alt limite ou parcela excedidos
+  API --> Frontend: 422 LOAN_LIMIT_EXCEEDED | INSTALLMENT_TOO_HIGH
+else senão
+  UseCase -> MySQL: TX: INSERT bank_loan · club.cash += principal · INSERT ledger LOAN (teto intocado)
+  UseCase -> AuditService: record(LOAN_CONTRACTED)
+  UseCase -> EventBus: InboxMessageCreated(BANK)
+  EventBus -> Cassandra: appendInbox(saveId)
+  EventBus -> Redis: invalida finance:{saveId}
+  API --> Frontend: 201 BankLoanDto
+end
+Scheduler -> FinanceEngine: WeekCompleted: parcelas dos empréstimos ativos
+FinanceEngine -> MySQL: club.cash −= installment · remainingWeeks − 1 · INSERT ledger INTEREST
+alt caixa negativo
+  FinanceEngine -> MySQL: INSERT ledger FINE (2 %)
+  FinanceEngine -> MoraleEngine: fator financeiro negativo (RF41)
+else senão
+end
+@enduml

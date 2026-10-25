@@ -1,0 +1,30 @@
+@startuml
+title RF56 — Practice squad · Máquina de estados: PracticeSquadMember (vínculo)
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "NO_PRACTICE_SQUAD" as NO_PRACTICE_SQUAD
+NO_PRACTICE_SQUAD : contrato PRACTICE
+state "PROTEGIDO" as PROTEGIDO
+PROTEGIDO : semana atual
+PROTEGIDO : IA não leva
+state "ELEVADO" as ELEVADO
+ELEVADO : nos 46 do jogo
+state "PROMOVIDO" as PROMOVIDO
+PROMOVIDO : elenco de 53
+state "LEVADO_POR_OUTRO" as LEVADO_POR_OUTRO
+LEVADO_POR_OUTRO : assinou com franquia IA
+state "DISPENSADO" as DISPENSADO
+DISPENSADO : free agent
+[*] --> NO_PRACTICE_SQUAD
+NO_PRACTICE_SQUAD --> PROTEGIDO : protege
+PROTEGIDO --> NO_PRACTICE_SQUAD : semana vira
+NO_PRACTICE_SQUAD --> ELEVADO : eleva
+PROTEGIDO --> ELEVADO : eleva
+ELEVADO --> NO_PRACTICE_SQUAD : fim do jogo
+NO_PRACTICE_SQUAD --> PROMOVIDO : promove
+NO_PRACTICE_SQUAD --> LEVADO_POR_OUTRO : IA contrata
+NO_PRACTICE_SQUAD --> DISPENSADO : dispensa
+PROMOVIDO --> [*]
+LEVADO_POR_OUTRO --> [*]
+DISPENSADO --> [*]
+@enduml

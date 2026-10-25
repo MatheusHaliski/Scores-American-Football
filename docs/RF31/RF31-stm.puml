@@ -1,0 +1,28 @@
+@startuml
+title RF31 — Público e renda da partida · Máquina de estados: Painel Detalhes da partida (interação)
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "Fechado" as Fechado
+Fechado : painel da partida
+state "Carregando" as Carregando
+Carregando : GET report + stadium
+state "Estimativa" as Estimativa
+Estimativa : antes ou durante o jogo
+state "Consolidado" as Consolidado
+Consolidado : MatchReport e ledger TICKETS
+state "Visão de visitante ou campo neutro" as Visitante
+Visitante : só público e atmosfera
+state "Erro" as Erro
+Erro : 403 / rede
+[*] --> Fechado
+Fechado --> Carregando : Detalhes da partida
+Carregando --> Erro : falha
+Erro --> Carregando : tentar de novo
+Carregando --> Estimativa : não finalizada
+Carregando --> Consolidado : FINISHED e mandante
+Carregando --> Visitante : FINISHED, visitante ou neutro
+Estimativa --> Consolidado : MatchFinished
+Consolidado --> Fechado : fechar
+Visitante --> Fechado : fechar
+Estimativa --> Fechado : fechar
+@enduml

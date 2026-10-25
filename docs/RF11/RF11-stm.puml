@@ -1,0 +1,23 @@
+@startuml
+title RF11 — Central de carreiras salvas · Máquina de estados: CareerSave.status
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "Em criação (RF34)" as NEW
+NEW : assistente: mundo, liga, franquia, estilo de head coach
+state "ACTIVE" as ACTIVE
+ACTIVE : ocupa slot (máx. 5)
+ACTIVE : jogável
+state "ARCHIVED" as ARCHIVED
+ARCHIVED : não conta no limite
+ARCHIVED : somente leitura até reativar
+state "Excluído" as DELETED
+DELETED : save, mundo SAVE e projeções removidos
+[*] --> NEW
+NEW --> ACTIVE : 201 · mundo clonado, temporada gerada
+NEW --> DELETED : cancela assistente
+ACTIVE --> ARCHIVED : PATCH ARCHIVED (sem partida ao vivo)
+ARCHIVED --> ACTIVE : PATCH ACTIVE (slot livre)
+ACTIVE --> DELETED : DELETE confirmado
+ARCHIVED --> DELETED : DELETE confirmado
+DELETED --> [*]
+@enduml

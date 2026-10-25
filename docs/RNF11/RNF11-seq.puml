@@ -1,0 +1,38 @@
+@startuml
+title RNF11 — Tratamento de uploads de formulários · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+control "AuditService" as AuditService
+database "MySQL 8" as MySQL
+database "Redis 7" as Redis
+database "S3/MinIO" as S3
+Manager -> Frontend: envia o decalque do capacete
+Frontend -> API: POST /media/upload {file, purpose: HELMET_DECAL}
+API -> UseCase: UploadMediaUseCase.execute
+UseCase -> Redis: INCR upload:{userId}:hora
+alt limite, cota, tamanho, tipo ou dimensão inválidos
+  API --> Frontend: 413 / 415 / 422 / 429 (RFC 7807)
+else senão
+  UseCase -> UseCase: ClamAV scan
+  alt infectado
+    UseCase -> S3: PUT quarentena
+    UseCase -> AuditService: record(MEDIA_REJECTED)
+    API --> Frontend: 422 MEDIA_INFECTED
+  else senão
+    UseCase -> UseCase: recodifica WebP sem EXIF
+    UseCase -> S3: PUT helmet_decal/{userId}/{uuid}.webp (privado)
+    UseCase -> MySQL: INSERT media_asset · cota
+    UseCase -> AuditService: record(MEDIA_UPLOADED)
+    API --> Frontend: 201 {mediaKey, url assinada}
+  end
+end
+Frontend -> API: PUT /careers/{id}/club/identity {helmetDecalKey}
+API -> UseCase: UpdateClubIdentityUseCase.execute
+UseCase -> MySQL: UPDATE helmet_design.decalKey
+API --> Frontend: 200
+@enduml

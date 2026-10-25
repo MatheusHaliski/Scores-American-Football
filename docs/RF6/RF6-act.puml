@@ -1,0 +1,80 @@
+@startuml
+title RF6 — Depth chart e plano de jogo na preparação · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Manager|
+start
+:Clica em Preparar time na central;
+|Frontend|
+:GET /careers/{id}/next-game/preparation;
+|Backend|
+if (dono do save?) then (sim)
+else (não)
+  :403 + ACCESS_DENIED;
+  stop
+endif
+if (há jogo nesta semana?) then (sim)
+else (não)
+|Frontend|
+  :Aviso de semana de folga: prepara a próxima;
+endif
+|Backend|
+:Carrega adversário, ativos, relatório de lesões, depth chart, plano e análise;
+|Frontend|
+:Campo com 11 + 11 slots por unidade, colunas de profundidade e papéis de times especiais;
+|Backend|
+while (head coach ajusta o depth chart?) is (sim)
+|Manager|
+  :Arrasta jogadores entre slots e profundidades;
+|Frontend|
+  if (fora de posição?) then (sim)
+    :Mostra o overall na nova posição e o aviso;
+  endif
+|Manager|
+  if (pede Preencher automático?) then (sim)
+|Frontend|
+    :POST /careers/{id}/depth-chart/auto;
+|Backend|
+    :ClubAnalyst: melhor overall por posição, com fadiga e lesões;
+  endif
+endwhile (não)
+|Frontend|
+:PUT /careers/{id}/depth-chart;
+|Backend|
+if (depth chart completo?) then (sim)
+else (não)
+  :422 DEPTH_CHART_INCOMPLETE;
+  stop
+endif
+if (titulares disponíveis?) then (sim)
+else (não)
+  :422 STARTER_UNAVAILABLE;
+  stop
+endif
+if (só os 46 ativos?) then (sim)
+else (não)
+  :422 NOT_GAME_DAY_ACTIVE;
+  stop
+endif
+if (versão otimista confere?) then (sim)
+else (não)
+  :409 CONFLICT;
+  stop
+endif
+:Grava DepthChart validated = true;
+|Manager|
+:Ajusta o plano de jogo (corrida/passe, 4ª descida, ritmo, blitz, defesa base, jogadores-chave);
+|Frontend|
+:PUT /careers/{id}/game-plan;
+|Backend|
+if (plano de jogo coerente?) then (sim)
+else (não)
+  :Marca aviso de fit reduzido;
+endif
+:Grava GamePlan · recalcula gamePlanFit contra o adversário;
+|Frontend|
+:Habilita Jogar partida (RF7);
+end
+@enduml

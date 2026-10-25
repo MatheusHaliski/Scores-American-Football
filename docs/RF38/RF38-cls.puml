@@ -1,0 +1,55 @@
+@startuml
+title RF38 — Animações 3D por atributo, posição e estilo (IA do sistema) · Diagrama de classes
+skinparam classAttributeIconSize 0
+hide empty methods
+package "catalog" {
+  class AnimationClip {
+    code: String «unique»
+    target: AnimationTarget (ATTRIBUTE|POSITION|PLAY_STYLE|LOCOMOTION)
+    targetCode: String
+    version: int
+    status: AnimationClipStatus
+    params: JSON
+    createdByKind: AnimationAuthor
+    publishedAt: Instant
+    previousVersionId: UUID
+  }
+  class PlayStyle {
+    code: PlayStyleCode
+    name: String
+    positions: List<Position>
+    tier: Tier
+    effects: JSON
+    animationId: String
+    priceScoresPoints: int
+  }
+  class PlayerAttributes {
+    «embedded» físicos: 7 (VEL, ACE, AGI, FOR, IMPULSAO, RES, DUR)
+    passe: 8 (precisão curta/média/longa, braço, em movimento, play-action, leitura, calma)
+    corrida e posse: 7 (visão, quebra de tackle, juke, spin, stiff arm, proteção, carregar)
+    recepção: 7 (mãos, tráfego, espetacular, rota curta/média/funda, soltura)
+    bloqueio: 5 (passe, corrida, técnica, finesse, potência)
+    defesa: 9 (tackle, impacto, perseguição, leitura, cobertura individual/zona, press, rush finesse/potência)
+    chute: 3 (potência, precisão, retorno)
+    mental: 2 (consciência, liderança)
+  }
+}
+class AnimationAdminUseCases <<UseCase>> {
+  generate(target, code, brief)
+  update(id, params)
+  publish(id)
+  coverage()
+}
+interface AiAnimationPort <<Port>> {
+  generate(target, code, brief): Params
+}
+class AnimationParamsValidator <<Policy>> {
+  validate(kind, params): List<Violation>
+  gearClearance(params): boolean
+}
+PlayStyle "1" -- "*" AnimationClip : animações
+AnimationClip "0..1" -- "0..1" AnimationClip : versão anterior
+AnimationAdminUseCases ..> AiAnimationPort : usa
+AnimationAdminUseCases ..> AnimationParamsValidator : valida
+AnimationAdminUseCases ..> AnimationClip : versiona
+@enduml

@@ -1,0 +1,30 @@
+@startuml
+title RF43 — Mini campo 3D no intervalo · Máquina de estados: MiniField3D (cena do intervalo)
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "Oculta" as Oculta
+state "Detectando" as Detectando
+Detectando : WebGL? primeiros quadros
+state "Qualidade alta" as Alta
+state "Qualidade baixa" as Baixa
+state "Visão 2D" as Visao2D
+Visao2D : sem WebGL
+state "Atleta selecionado" as Selecionado
+state "Prévia de ajuste" as Previa
+Previa : troca no depth chart ou jogada
+Previa : pendência na sessão
+[*] --> Oculta
+Oculta --> Detectando : BREAK
+Detectando --> Alta : WebGL rápido
+Detectando --> Baixa : quadros lentos
+Detectando --> Visao2D : sem WebGL
+Alta --> Baixa : fps cai
+Alta --> Selecionado : toque/clique/Tab
+Baixa --> Selecionado : toque/clique/Tab
+Visao2D --> Selecionado : clique
+Selecionado --> Previa : trocar / escolher jogada
+Previa --> Selecionado : desfazer
+Previa --> Oculta : confirmar (motor aceita)
+Previa --> Previa : motor recusa
+Selecionado --> Oculta : confirmar sem mudanças
+@enduml

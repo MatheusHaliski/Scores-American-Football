@@ -1,0 +1,54 @@
+@startuml
+title RF62 — Chamada de jogada em momentos decisivos · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+control "AuditService" as AuditService
+control "MatchSimulator" as MatchSimulator
+control "PlayCaller" as PlayCaller
+database "Redis 7" as Redis
+database "Cassandra 4.1" as Cassandra
+participant "Agendador/Job assíncrono" as Scheduler
+actor "Franquia adversária (IA)" as ClubeIA
+MatchSimulator -> Redis: estado: 4ª descida do clube do usuário
+MatchSimulator -> PlayCaller: isKeyMoment(state, settings)
+alt não é momento decisivo
+  PlayCaller --> MatchSimulator: jogada pelo GamePlan
+else senão
+  PlayCaller --> MatchSimulator: opções do playbook
+  MatchSimulator -> Redis: SET decision:{mid} OPEN + deadlineAt, status AWAITING_DECISION
+  MatchSimulator -> Scheduler: agenda timeout(did, deadlineAt)
+  MatchSimulator -> Frontend: SSE DecisionOpened
+  Frontend -> Manager: opções + contagem
+  alt manager escolhe a tempo
+    Manager -> Frontend: escolhe jogada
+    Frontend -> API: POST /matches/{mid}/decisions/{did}
+    API -> UseCase: SubmitPlayCallUseCase
+    UseCase -> Redis: lock decision:{did} + version
+    alt não é dono / fechada / opção inválida / versão velha
+      UseCase -> AuditService: record(ACCESS_DENIED) quando 403
+      API --> Frontend: 403 / 409 / 422
+    else senão
+      UseCase -> Redis: status CHOSEN, chosen
+      UseCase -> MatchSimulator: retoma com a jogada
+      API --> Frontend: 200
+    end
+  else prazo vence
+    Scheduler -> UseCase: DecisionTimeout(did)
+    UseCase -> PlayCaller: autoChoose(state, GamePlan, seed)
+    PlayCaller --> UseCase: jogada
+    UseCase -> Redis: status AUTO, auto = true
+    UseCase -> MatchSimulator: retoma
+  end
+end
+MatchSimulator -> ClubeIA: chamada defensiva
+ClubeIA --> MatchSimulator: pacote e cobertura
+MatchSimulator -> Cassandra: INSERT play_event
+MatchSimulator -> Redis: estado + decisionsLog, version+1
+MatchSimulator -> Frontend: SSE DecisionResolved + PlayResolved
+note over PlayCaller: a escolha automática é determinística: mesma semente e mesmo estado dão a mesma jogada
+@enduml

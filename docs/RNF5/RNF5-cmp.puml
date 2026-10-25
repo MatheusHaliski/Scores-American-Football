@@ -1,0 +1,64 @@
+@startuml
+title RNF5 — Criptografia de dados sensíveis · Diagrama de componentes
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 36
+actor "Visitante (não autenticado)" as c1
+actor "Head coach / manager (usuário autenticado)" as c2
+actor "Administrador" as c3
+actor "Agendador/Job assíncrono" as c4
+package "Frontend (Next.js)" as pkg_fe {
+  component "AuthPage" as c5
+  frame "componentes de AuthPage" as pkg_fe_sub {
+    component "SettingsScreen" as c6
+  }
+}
+package "scores-af-web (REST)" as pkg_web {
+  component "AuthController" as c7
+  component "AccountController" as c8
+  component "ProductionConfigGuard" as c9
+  component "LogSafe" as c10
+}
+package "scores-af-application (casos de uso)" as pkg_app {
+  component "RegisterUserUseCase" as c11
+  component "AccountUseCases" as c12
+  component "PasswordHasher" as c13
+  component "AuditService" as c14
+  component "RotateEncryptionKeyUseCase" as c15
+}
+package "portas (port.out)" as pkg_ports {
+  interface "UserAccountRepository" as c16
+  interface "AuditLogRepository" as c17
+  interface "EmailPort" as c18
+  interface "SecretsPort" as c19
+}
+package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
+  component "persistence-mysql (AesGcmConverter · Hashing)" as c20
+  component "secrets-cofre" as c21
+  component "ci-gitleaks" as c22
+}
+database "MySQL 8" as s1
+database "Cofre de segredos do provedor (Railway Variables / GitHub Secrets)" as s2
+database "GitHub Actions" as s3
+c1 --> c5 : usa
+c2 --> c5 : usa
+c3 --> c5 : usa
+c4 --> c11 : dispara
+c5 --> c7 : POST /auth/register (alvo)\nPUT /me (alvo)\nGET /me (alvo)\n…
+c5 --> c8
+c5 --> c9
+c5 --> c10
+c7 --> c11
+c8 --> c11
+c9 --> c11
+c10 --> c11
+c11 ..> pkg_app : orquestra
+pkg_app --> pkg_ports : depende (DIP)
+c20 .up.|> c16
+c20 .up.|> c17
+c21 .up.|> c19
+c20 --> s1
+c21 --> s2
+c22 --> s3
+@enduml

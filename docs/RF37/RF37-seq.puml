@@ -1,0 +1,51 @@
+@startuml
+title RF37 — Head coach desempregado e propostas pela moral com a liga · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+control "AuditService" as AuditService
+control "MoraleEngine" as MoraleEngine
+control "MatchSimulator" as MatchSimulator
+queue "EventBus" as EventBus
+database "MySQL 8" as MySQL
+database "Cassandra 4.1" as Cassandra
+participant "Agendador/Job assíncrono" as Scheduler
+actor "Franquia adversária (IA)" as ClubeIA
+Scheduler -> MoraleEngine: WeekCompleted → updateAfterWeek (RF41)
+MoraleEngine --> Scheduler: dismissed = true
+Scheduler -> MySQL: TX: contrato DISMISSED · club nulo · UNEMPLOYED · ManagerCareerRecord
+Scheduler -> AuditService: MANAGER_DISMISSED
+Scheduler -> EventBus: ManagerDismissed(saveId)
+EventBus -> Cassandra: inbox BOARD + notificação
+loop por semana enquanto desempregado
+  Manager -> Frontend: Avançar semana
+  Frontend -> API: POST /careers/{id}/weeks/current/play
+  API -> UseCase: PlayWeekUseCase (espectador)
+  UseCase -> MatchSimulator: jogos da semana (seeds derivadas)
+  UseCase -> EventBus: WeekCompleted
+  EventBus -> Scheduler: JobOfferGenerationJob
+  Scheduler -> MoraleEngine: JobOfferPolicy.generate(moral, vagas, standings, seed, semana)
+  MoraleEngine -> ClubeIA: tercil permitido? interesse?
+  ClubeIA --> MoraleEngine: 0–3 propostas
+  alt há propostas
+    Scheduler -> MySQL: INSERT job_offer PENDING
+    Scheduler -> AuditService: JOB_OFFER_GENERATED
+    EventBus -> Cassandra: inbox JOB_OFFER
+  else senão
+    Scheduler -> Cassandra: notícia sem propostas
+  end
+end
+Frontend -> API: POST /job-offers/{jid}/respond {ACCEPT}
+API -> UseCase: RespondJobOfferUseCase «@Transactional»
+alt não PENDING ou expirada
+  API --> Frontend: 409 OFFER_NOT_PENDING
+else senão
+  UseCase -> MySQL: TX: contrato ACTIVE · save.club · EMPLOYED · outras EXPIRED · moral 60
+  UseCase -> AuditService: JOB_OFFER_ACCEPTED
+  API --> Frontend: 200 → central da nova franquia
+end
+@enduml

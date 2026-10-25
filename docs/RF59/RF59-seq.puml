@@ -1,0 +1,34 @@
+@startuml
+title RF59 — Mini campo com a jogada real · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+database "MySQL 8" as MySQL
+database "Redis 7" as Redis
+database "Cassandra 4.1" as Cassandra
+Manager -> Frontend: escolhe a jogada
+Frontend -> API: GET /matches/{mid}/plays/{seq}/diagram
+API -> UseCase: GetPlayDiagramUseCase
+UseCase -> MySQL: fixture do save
+alt não é dono
+  API --> Frontend: 403
+else senão
+  UseCase -> Cassandra: SELECT play_event (fixtureId, seq)
+  alt não existe
+    API --> Frontend: 404
+  else senão
+    UseCase -> Redis: GET diagram:{mid}:{seq}
+    alt sem cache
+      UseCase -> MySQL: PlayDefinition.diagram
+      UseCase -> Redis: SET diagram TTL
+    end
+    UseCase --> API: PlayDiagramDto
+    API --> Frontend: 200
+    Frontend -> Manager: mini campo animado ou em quadros
+  end
+end
+@enduml

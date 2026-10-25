@@ -1,0 +1,26 @@
+@startuml
+title RF42 — Motor de partida por descida (determinístico por semente) · Máquina de estados: PlayCallDecision.status
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "OPEN" as OPEN
+OPEN : 3–5 opções
+OPEN : deadlineAt
+state "CHOSEN" as CHOSEN
+state "AUTO" as AUTO
+AUTO : prazo vencido
+AUTO : PlayCaller IA
+state "APPLIED" as APPLIED
+APPLIED : decisionsLog
+APPLIED : version + 1
+state "REJECTED" as REJECTED
+REJECTED : 422 / 409
+REJECTED : segue OPEN
+[*] --> OPEN
+OPEN --> CHOSEN : head coach escolhe
+OPEN --> AUTO : prazo vencido
+OPEN --> REJECTED : jogada inválida / versão antiga
+REJECTED --> OPEN : nova tentativa
+CHOSEN --> APPLIED : motor executa
+AUTO --> APPLIED : motor executa
+APPLIED --> [*]
+@enduml

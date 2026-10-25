@@ -1,0 +1,57 @@
+@startuml
+title RF8 — Contrato do head coach e relação com a diretoria · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+control "AuditService" as AuditService
+control "MoraleEngine" as MoraleEngine
+queue "EventBus" as EventBus
+database "MySQL 8" as MySQL
+database "Redis 7" as Redis
+database "Cassandra 4.1" as Cassandra
+actor "Diretoria da franquia (IA)" as Diretoria
+Manager -> Frontend: abre painel do head coach
+Frontend -> API: GET /careers/{id}/manager
+API -> UseCase: GetManagerPanelUseCase.execute(id, userId)
+UseCase -> MySQL: save + owner check · contrato · metas · standing · moral · histórico · propostas
+alt não é dono
+  UseCase -> AuditService: record(ACCESS_DENIED)
+  API --> Frontend: 403
+else senão
+  UseCase --> API: ManagerPanelResult
+  API --> Frontend: 200
+end
+Manager -> Frontend: pedir aumento
+Frontend -> API: POST /careers/{id}/manager/raise-request {amount, reason}
+API -> UseCase: RequestSalaryRaiseUseCase.execute(cmd)
+UseCase -> MySQL: contrato ACTIVE? intervalo? moral?
+alt não empregado / intervalo / moral < 50
+  API --> Frontend: 409 | 422
+else senão
+  UseCase -> MoraleEngine: boardDecision(moralClub, vitórias × expectedWins, playoffs, títulos, seed)
+  MoraleEngine -> Diretoria: score determinístico
+  Diretoria --> UseCase: ACCEPT | COUNTER | REJECT
+  alt ACCEPT
+    UseCase -> MySQL: UPDATE manager_contract.salaryPerSeason · INSERT ledger WAGES
+    UseCase -> EventBus: InboxMessageCreated(BOARD, aumento aprovado)
+  else senão
+    UseCase -> MySQL: moralClub −5 se REJECT · INSERT inbox_message
+    UseCase -> EventBus: InboxMessageCreated(BOARD)
+  end
+  EventBus -> Cassandra: appendInbox(saveId)
+  API --> Frontend: 200 RaiseResult
+end
+Manager -> Frontend: pedir demissão (confirmado)
+Frontend -> API: POST /careers/{id}/manager/resign {confirm: true}
+API -> UseCase: ResignUseCase.execute(id, userId) «@Transactional»
+UseCase -> MySQL: TX: contrato RESIGNED · save.club = null · UNEMPLOYED · ManagerCareerRecord(endReason RESIGNED)
+UseCase -> AuditService: record(MANAGER_RESIGNED)
+UseCase -> EventBus: ManagerDismissed(saveId, RESIGNED)
+EventBus -> Cassandra: inbox: despedida da diretoria · notícia
+EventBus -> Redis: ranking de head coaches atualizado
+API --> Frontend: 200 → modo espectador
+@enduml

@@ -1,0 +1,25 @@
+@startuml
+title RF61 — Playbook e plano de jogo · Máquina de estados: GamePlan (semana)
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "PADRAO" as PADRAO
+PADRAO : herdado da semana anterior
+state "EDITADO" as EDITADO
+EDITADO : ajustes do manager
+state "FIXADO" as FIXADO
+FIXADO : snapshot do kickoff
+state "AJUSTADO_INTERVALO" as AJUSTADO_INTERVALO
+AJUSTADO_INTERVALO : playbook do intervalo (RF29)
+state "ARQUIVADO" as ARQUIVADO
+ARQUIVADO : fim da partida
+ARQUIVADO : base da próxima semana
+[*] --> PADRAO
+PADRAO --> EDITADO : salva
+EDITADO --> EDITADO : salva de novo
+PADRAO --> FIXADO : kickoff
+EDITADO --> FIXADO : kickoff
+FIXADO --> AJUSTADO_INTERVALO : intervalo
+AJUSTADO_INTERVALO --> ARQUIVADO : fim
+FIXADO --> ARQUIVADO : fim
+ARQUIVADO --> PADRAO : nova semana
+@enduml

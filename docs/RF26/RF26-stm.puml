@@ -1,0 +1,29 @@
+@startuml
+title RF26 — Estádio 3D e loja de estádio modular · Máquina de estados: StadiumSector (ciclo de vida de um setor)
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "Planejado" as Planejado
+Planejado : POST /sectors validado
+Planejado : ledger STADIUM
+state "Em obra" as EmObra
+EmObra : não vende ingresso
+state "Ativo" as Ativo
+Ativo : gera bilheteria nos jogos em casa (RF31)
+state "Degradado" as Degradado
+Degradado : condition < 50
+Degradado : ocupação e atmosfera menores
+state "Em reforma" as Reforma
+Reforma : 1 jogo em casa sem venda
+state "Removido" as Removido
+Removido : capacidade e manutenção recalculadas
+[*] --> Planejado
+Planejado --> EmObra : commit
+EmObra --> Ativo : semanas da obra concluídas
+Ativo --> Degradado : desgaste por jogo em casa
+Degradado --> Reforma : PUT reforma
+Reforma --> Ativo : concluída
+Ativo --> EmObra : PUT ampliar
+Ativo --> Removido : DELETE
+Degradado --> Removido : DELETE
+Removido --> [*]
+@enduml

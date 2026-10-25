@@ -1,0 +1,20 @@
+@startuml
+title RF48 — Subatributos ampliados, macros e overall por posição · Máquina de estados: OverallWeights.status
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "DRAFT" as DRAFT
+DRAFT : editável
+state "VERIFIED" as VERIFIED
+VERIFIED : soma = 1
+VERIFIED : vetor de ouro Java ↔ TS
+state "ACTIVE" as ACTIVE
+ACTIVE : 1 por vez
+ACTIVE : recálculo agendado
+state "RETIRED" as RETIRED
+[*] --> DRAFT
+DRAFT --> VERIFIED : validação
+VERIFIED --> DRAFT : editar
+VERIFIED --> ACTIVE : ativar
+ACTIVE --> RETIRED : nova versão ativa
+RETIRED --> [*]
+@enduml

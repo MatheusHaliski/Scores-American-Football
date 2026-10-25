@@ -1,0 +1,23 @@
+@startuml
+title RF51 — Draft, scouting universitário e combine · Máquina de estados: DraftClass.status
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "SCOUTING" as SCOUTING
+SCOUTING : classe gerada pela semente
+SCOUTING : relatórios à venda
+state "COMBINE" as COMBINE
+COMBINE : resultados publicados
+COMBINE : entrevistas
+state "LIVE" as LIVE
+LIVE : relógio por pick
+LIVE : 7 rodadas
+state "DONE" as DONE
+DONE : rookies no elenco
+DONE : sobras viram free agents
+[*] --> SCOUTING
+SCOUTING --> COMBINE : semana do combine
+COMBINE --> LIVE : abre o draft
+LIVE --> LIVE : pick feito
+LIVE --> DONE : último pick da 7ª rodada
+DONE --> [*]
+@enduml

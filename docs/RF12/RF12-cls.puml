@@ -1,0 +1,146 @@
+@startuml
+title RF12 — Estádio (aberto ou coberto), setores e ingressos · Diagrama de classes
+skinparam classAttributeIconSize 0
+hide empty methods
+package "career" {
+  class CareerSave {
+    id: UUID
+    name: String
+    seed: long
+    employmentStatus: EmploymentStatus
+    currentWeek: int
+    difficulty: Difficulty
+    seasonMode: SeasonMode
+    scoresPoints: int
+    status: SaveStatus
+    slot: int
+    lastPlayedAt: Instant
+  }
+}
+package "catalog" {
+  class Club {
+    id: UUID
+    name: String
+    shortName: String
+    city: String
+    conference: Conference
+    division: Division
+    logoKey: String
+    primaryColor: String
+    secondaryColor: String
+    accentColor: String
+    prestige: int
+    reputationBoard: int
+    reputationFans: int
+    cash: long
+    capSpace: long
+    isUserControlled: boolean
+    expectedWins: int
+    scoutingLevel: int
+    scoutingBudget: long
+  }
+  class Stadium {
+    name: String
+    capacity: int (60–80 mil)
+    roof: RoofType (OPEN|DOME|RETRACTABLE)
+    surface: Surface (GRASS|TURF)
+    climateZone: ClimateZone
+    level: int
+    atmosphere: int
+    maintenanceCostPerWeek: long
+    model3dUrl: String
+    endZoneArtKey: String
+    ticketPolicy: TicketPolicy (preço por setor, carnê de temporada)
+  }
+  class StadiumSector {
+    type: StadiumSectorType (LOWER_BOWL|UPPER_BOWL|SIDELINE_CLUB|END_ZONE|LUXURY_SUITES)
+    seats: int
+    ticketPrice: long
+    condition: int
+    upgradeCost: long
+  }
+}
+package "season" {
+  class Season {
+    number: int
+    year: int
+    phase: SeasonPhase (PRESEASON|REGULAR|PLAYOFFS|DRAFT|FREE_AGENCY|OFFSEASON)
+    currentWeek: int
+    tradeDeadlineWeek: int
+    championClub: Club?
+    mvpPlayer: Player?
+  }
+  class Fixture {
+    week: int
+    date: LocalDate
+    slot: KickoffSlot (THU_NIGHT|SUN_EARLY|SUN_LATE|SUN_NIGHT|MON_NIGHT)
+    status: FixtureStatus
+    homeScore: int
+    awayScore: int
+    quarterScores: JSON
+    overtime: boolean
+    isDivisional: boolean
+    isConference: boolean
+    neutralSite: boolean
+    weather: Weather
+    attendance: int
+    revenue: long
+    importance: FixtureImportance
+    seed: long
+    isUserFixture: boolean
+  }
+}
+package "finance" {
+  class FinanceLedgerEntry {
+    week: int
+    kind: LedgerKind
+    amount: long
+    balanceAfter: long
+    description: String
+  }
+}
+class UpdateSectorUseCase <<UseCase>> {
+  execute(UpdateSectorCommand): SectorDto «@Transactional»
+}
+class UpdateStadiumUseCase <<UseCase>> {
+  execute(careerId, name, level, surface, roof, userId) «roof só na offseason»
+}
+class UpdateTicketPolicyUseCase <<UseCase>> {
+  execute(careerId, TicketPolicyDto, userId)
+}
+class TicketPolicyDto <<record>> {
+  seasonTicketShare: int (≤ 70 %)
+  seasonTicketDiscountPct: int (0–30)
+  dynamicPricing: boolean
+  divisionRivalMarkupPct: int
+  playoffMarkupPct: int
+  suitesQuota: int (≤ 5 %)
+}
+class StadiumConstructionJob <<Job>> {
+  onWeekCompleted(saveId, week)
+}
+interface FinanceEngine <<Engine>> {
+  forecastAttendance(sectors, prices, prestige, record, rival, roof, climate): AttendanceForecast
+  sectorCost(type, seats, condition): long
+  boardApproves(cost, cash, moralClub): boolean
+}
+class WeatherModel <<Engine>> {
+  forecast(climateZone, roof, week, seed): Weather «DOME = neutro»
+}
+Club "1" -- "1" Stadium
+Stadium "1" -- "*" StadiumSector : setores
+Club "*" -- "*" Club : rivais da divisão
+CareerSave "*" -- "0..1" Club : franquia atual
+CareerSave "1" -- "*" Season
+Fixture "*" -- "1" Club : mandante
+Club "1" -- "*" FinanceLedgerEntry : ledger
+UpdateSectorUseCase ..> StadiumSector : atualiza
+UpdateSectorUseCase ..> FinanceEngine : usa
+UpdateSectorUseCase ..> FinanceLedgerEntry : STADIUM
+UpdateStadiumUseCase ..> Stadium : roof, surface
+UpdateStadiumUseCase ..> Season : phase
+UpdateTicketPolicyUseCase ..> TicketPolicyDto : recebe
+StadiumConstructionJob ..> StadiumSector : conclui obra
+WeatherModel ..> Fixture : weather
+FinanceEngine ..> Fixture : attendance, revenue
+@enduml

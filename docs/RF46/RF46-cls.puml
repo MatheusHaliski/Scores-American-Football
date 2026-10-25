@@ -1,0 +1,81 @@
+@startuml
+title RF46 — Configurações com padrão LGPD e tradução completa · Diagrama de classes
+skinparam classAttributeIconSize 0
+hide empty methods
+package "account" {
+  class UserAccount {
+    id: UUID
+    email: String «AES-GCM»
+    emailHash: String «unique»
+    passwordHash: String «Argon2id»
+    displayName: String
+    locale: Locale
+    role: Role
+    status: AccountStatus
+    failedLoginAttempts: int
+    lockedUntil: Instant
+    marketingConsent: boolean
+    deletionRequestedAt: Instant
+    profileVisibility: ProfileVisibility
+    birthDate: LocalDate
+    pendingEmail: String
+  }
+  class UserSettings {
+    simQuarterMinutes: int
+    playCallingLevel: PlayCallingLevel (KEY_MOMENTS|ALL_PLAYS|NONE)
+    decisionTimeoutSeconds: int
+    difficulty: Difficulty
+    theme: ThemeMode
+    highContrast: boolean
+    fontScale: FontScale
+    reducedMotion: boolean
+    regionalFormat: String
+    units: YardsOrMeters
+    notificationsEnabled: boolean
+  }
+  class ConsentRecord {
+    user: UserAccount
+    purpose: ConsentPurpose
+    granted: boolean
+    textVersion: String
+    source: ConsentSource
+    ipHash: String
+    recordedAt: Instant
+  }
+  class DataExportJob {
+    user: UserAccount
+    status: ExportStatus
+    requestedAt: Instant
+    readyAt: Instant
+    expiresAt: Instant
+    jsonKey: String
+    csvKey: String
+  }
+  class UserSession {
+    id: UUID
+    refreshTokenHash: String «cookie __Host-»
+    ip: String
+    userAgent: String
+    expiresAt: Instant
+    revokedAt: Instant
+    replacedBy: UUID
+  }
+}
+class PrivacyUseCases <<UseCase>> {
+  view(user): PrivacyView
+  update(user, cmd)
+  history(user)
+}
+class AccountDeletionUseCases <<UseCase>> {
+  GRACE = 7 dias
+  request(user, senha, palavra)
+  cancel(user)
+  purgeDue(now)
+}
+UserAccount "1" -- "*" UserSession : sessões
+UserAccount "1" -- "1" UserSettings : configurações
+UserAccount "1" -- "*" ConsentRecord : consentimentos
+UserAccount "1" -- "*" DataExportJob : exportações
+PrivacyUseCases ..> ConsentRecord : registra
+AccountDeletionUseCases ..> UserAccount : anonimiza
+@enduml

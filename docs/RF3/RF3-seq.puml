@@ -1,0 +1,73 @@
+@startuml
+title RF3 — Gerenciar a conta (dados, sessões, segurança, LGPD, notificações) · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "Filtros" as Filtros
+boundary "API" as API
+control "UseCase" as UseCase
+control "AuditService" as AuditService
+database "MySQL 8" as MySQL
+database "Redis 7" as Redis
+database "S3/MinIO" as S3
+participant "Agendador/Job assíncrono" as Scheduler
+Manager -> Frontend: troca a senha
+Frontend -> API: PUT /me/password {currentPassword, newPassword}
+API -> Filtros: AuthRateLimitFilter(20/h) · SessionActiveFilter(sid)
+API -> UseCase: AccountUseCases.changePassword(userId, cmd)
+UseCase -> Redis: verifyStepUp: tryAcquire(stepup:{userId}, 5, 15 min)
+alt 6ª tentativa na janela
+  API --> Frontend: 429 TOO_MANY_ATTEMPTS + Retry-After 900
+else senão
+  UseCase -> UseCase: PasswordHasher.verify(atual) fora da TX
+  alt senha atual incorreta
+    UseCase -> AuditService: failed(STEP_UP_FAILED)
+    API --> Frontend: 401 AUTH_FAILED
+  else senão
+    UseCase -> MySQL: TX curta: UPDATE passwordHash · revoga outras famílias
+    UseCase -> Redis: DEL session:family:{outras}
+    UseCase -> AuditService: ok(PASSWORD_CHANGED)
+    API --> Frontend: 204
+  end
+end
+Manager -> Frontend: encerrar sessão de outro dispositivo
+Frontend -> API: DELETE /me/sessions/{id}
+API -> UseCase: AccountUseCases.revokeSession(id, userId)
+UseCase -> MySQL: findById · user == jwt.sub?
+alt de outro usuário
+  UseCase -> AuditService: denied(ACCESS_DENIED)
+  API --> Frontend: 404
+else senão
+  UseCase -> MySQL: UPDATE revokedAt WHERE familyId
+  UseCase -> Redis: DEL session:family:{sid}
+  API --> Frontend: 204
+end
+Manager -> Frontend: exportar meus dados
+Frontend -> API: POST /me/export
+API -> UseCase: DataExportUseCases.request(userId)
+alt job nas últimas 24 h
+  API --> Frontend: 429 EXPORT_RATE_LIMITED {jobId}
+else senão
+  UseCase -> MySQL: INSERT data_export_job REQUESTED
+  API --> Frontend: 202 {jobId}
+  Scheduler -> UseCase: DataExportUseCases.process(job)
+  UseCase -> MySQL: conta, settings, consents, saves, compras, atividades
+  UseCase -> S3: PUT exports/{userId}/{jobId}.json + .csv (privado)
+  UseCase -> MySQL: job READY (expira em 24 h)
+end
+Manager -> Frontend: excluir conta (senha + palavra)
+Frontend -> API: DELETE /me {password, confirmation}
+API -> UseCase: AccountDeletionUseCases.request(userId, cmd)
+alt senha ou palavra inválida
+  API --> Frontend: 401 / 422
+else senão
+  UseCase -> MySQL: TX: PENDING_DELETION · revoga todas as famílias
+  UseCase -> S3: apaga mídia do Meu jogador
+  UseCase -> AuditService: ok(ACCOUNT_DELETION_REQUESTED)
+  API --> Frontend: 202 (7 dias para cancelar)
+  Scheduler -> UseCase: AccountDeletionUseCases.purgeDue (diário)
+  UseCase -> MySQL: anonimiza · saves ARCHIVED · DELETED (FKs RESTRICT mantêm trilhas)
+end
+@enduml

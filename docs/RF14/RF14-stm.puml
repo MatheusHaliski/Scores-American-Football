@@ -1,0 +1,36 @@
+@startuml
+title RF14 — Orçamento da franquia, teto salarial e empréstimo · Máquina de estados: BankLoan (ciclo do empréstimo) × BudgetRequest.status
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "ACTIVE" as ACTIVE
+ACTIVE : principal creditado no caixa (não no teto)
+ACTIVE : parcela a cada WeekCompleted
+state "OVERDUE" as OVERDUE
+OVERDUE : caixa negativo na parcela
+OVERDUE : FINE 2 % · alerta da diretoria
+state "RENEGOTIATED" as RENEGOTIATED
+RENEGOTIATED : prazo +8 semanas
+RENEGOTIATED : juros +0,5 pp
+state "SETTLED" as SETTLED
+SETTLED : última parcela ou quitação (×0,97)
+state "BudgetRequest PENDING" as REQ_PENDING
+REQ_PENDING : aguarda a diretoria
+state "BudgetRequest APPROVED / PARTIAL" as REQ_APPROVED
+REQ_APPROVED : ledger BOARD_GRANT
+state "BudgetRequest REJECTED" as REQ_REJECTED
+REQ_REJECTED : boardResponse no inbox
+REQ_REJECTED : moralClub −2
+[*] --> ACTIVE
+ACTIVE --> OVERDUE : caixa < parcela
+OVERDUE --> ACTIVE : caixa recuperado
+ACTIVE --> RENEGOTIATED : settle EXTEND
+OVERDUE --> RENEGOTIATED : settle EXTEND
+RENEGOTIATED --> ACTIVE : novo cronograma
+ACTIVE --> SETTLED : última parcela ou PAYOFF
+RENEGOTIATED --> SETTLED : PAYOFF
+REQ_PENDING --> REQ_APPROVED : moralClub ≥ 40 e caixa ok
+REQ_PENDING --> REQ_REJECTED : moralClub < 40 ou metas atrasadas
+SETTLED --> [*]
+REQ_APPROVED --> [*]
+REQ_REJECTED --> [*]
+@enduml

@@ -1,0 +1,97 @@
+@startuml
+title RF35 — Fim de temporada: playoffs, renovações, free agency e draft · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Backend|
+start
+:Final decidida → SeasonEnded(leagueId);
+|Scheduler|
+if (resumo já computado?) then (sim)
+  :Reutiliza (idempotente);
+else (não)
+  :ChampionHistory (campeão, vice, head coach, placar da final) · prestígio ± por vitórias vs esperadas;
+  :SeasonAward: MVP, OPOY, DPOY, OROY, DROY, COACH (amostra mínima);
+  :Ordem do draft: não classificados por campanha inversa, depois pela fase em que caíram nos playoffs;
+|Diretoria|
+  if (metas cumpridas?) then (sim)
+    :moralClub +10 · bônus;
+  else (não)
+    :moralClub −15 · aviso (RF41);
+  endif
+  if (contrato do head coach venceu?) then (sim)
+    :Renovação (moralClub ≥ 50) ou EXPIRED;
+  endif
+|ClubeIA|
+  :Janela de contratação de head coaches: 0–3 JobOffer pela moral com a liga (RF37);
+|Imprensa|
+  if (narrativa via Claude?) then (sim)
+|Claude|
+    :Retrospectiva e manchetes;
+  else (não)
+|Imprensa|
+    :Template determinístico;
+  endif
+|Scheduler|
+  :SeasonSummary · Season.phase OFFSEASON · notificação;
+endif
+|Manager|
+:Abre o painel de fim de temporada;
+|Frontend|
+:GET /season/summary · /playoffs · /awards · /contracts/expiring · /job-offers;
+|Backend|
+if (dono do save?) then (sim)
+else (não)
+  :403 + auditoria;
+  stop
+endif
+|Frontend|
+:Campeão com troféu 3D (GLB do S3), chave, classificação, prêmios, linha do tempo da entressafra;
+partition "OFFSEASON — renovações e franchise tag" {
+|Manager|
+  while (há contrato vencendo sem decisão?) is (sim)
+    :Renova, aplica franchise tag ou deixa ir (RF49);
+|JogadorIA|
+    :Aceita, contrapropõe ou recusa;
+  endwhile (não)
+|Backend|
+  if (decisões de contrato no prazo?) then (sim)
+  else (não)
+    :Não decididos entram na free agency;
+  endif
+}
+|Frontend|
+:POST /season/advance (→ FREE_AGENCY);
+|Backend|
+if (teto da nova temporada respeitado?) then (sim)
+else (não)
+  :422 CAP_OVER_LIMIT;
+  stop
+endif
+partition "FREE_AGENCY e DRAFT" {
+|Manager|
+  :Ofertas a agentes livres (RF65) · trocas (RF50);
+|Frontend|
+  :POST /season/advance (→ DRAFT);
+|Manager|
+  :Draft de 7 rodadas (RF51) · contratos de calouro pela escala do pick;
+}
+|Frontend|
+:POST /season/advance (→ PRESEASON);
+|Backend|
+if (pendências resolvidas?) then (sim)
+else (não)
+  :422 PENDING_DECISIONS;
+  stop
+endif
+if (fase já avançada?) then (sim)
+  :200 idempotente;
+  end
+endif
+|Scheduler|
+:Idade e evolução (potencial, snaps, estilo DEVELOPER), aposentadorias, cortes para 53, novo calendário, metas e ledger n+1;
+|Manager|
+:Volta à central do clube (RF40);
+end
+@enduml

@@ -1,0 +1,15 @@
+@startuml
+title RF38 — Animações 3D por atributo, posição e estilo (IA do sistema) · Máquina de estados: AnimationClip.status
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "DRAFT" as DRAFT
+DRAFT : editável
+state "PUBLISHED" as PUBLISHED
+PUBLISHED : 1 por alvo
+state "ARCHIVED" as ARCHIVED
+[*] --> DRAFT
+DRAFT --> PUBLISHED : publicar
+PUBLISHED --> ARCHIVED : nova versão publicada
+DRAFT --> ARCHIVED : descartar
+ARCHIVED --> [*]
+@enduml

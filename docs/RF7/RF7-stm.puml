@@ -1,0 +1,43 @@
+@startuml
+title RF7 — Preparar time (LED 3D, relatório do adversário) e jogar partida · Máquina de estados: Modal Preparar time → partida (interação) × Fixture.status
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "Fechado" as CLOSED
+CLOSED : central da franquia (RF40)
+state "Carregando" as LOADING
+LOADING : preparation + opponent-report + settings
+LOADING : GLB do S3
+state "Preparando (LED 3D)" as PREPARING
+PREPARING : confrontos-chave
+PREPARING : depth chart e plano
+state "Depth chart inválido" as INVALID
+INVALID : Jogar desabilitado
+state "Pronto" as READY
+READY : validated = true
+READY : Jogar habilitado
+state "Iniciando" as STARTING
+STARTING : POST weeks/current/play
+STARTING : MatchSession KICKOFF · Fixture LIVE
+state "Em partida (RF27)" as IN_MATCH
+IN_MATCH : por descida
+IN_MATCH : chamadas de jogada (RF62)
+state "Semana de folga" as BYE
+BYE : Simular semana
+state "Espectador" as SPECTATOR
+SPECTATOR : desempregado (RF37)
+[*] --> CLOSED
+CLOSED --> LOADING : Preparar time
+LOADING --> PREPARING : 200
+LOADING --> SPECTATOR : 403 SPECTATOR_MODE
+LOADING --> BYE : sem jogo nesta semana
+BYE --> CLOSED : semana simulada
+LOADING --> IN_MATCH : partida em andamento (retoma)
+PREPARING --> INVALID : 422 DEPTH_CHART_INVALID
+INVALID --> PREPARING : corrige
+PREPARING --> READY : depth chart + plano salvos
+READY --> STARTING : Jogar partida
+STARTING --> READY : 409 WEEK_NOT_COMPLETED
+STARTING --> IN_MATCH : 201 matchId
+IN_MATCH --> CLOSED : Fixture FINISHED · pós-jogo
+SPECTATOR --> CLOSED : voltar
+@enduml

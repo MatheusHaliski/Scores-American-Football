@@ -1,0 +1,80 @@
+@startuml
+title RF13 — Notificações e mensagens (diretoria, jogadores, franquias) · Diagrama de componentes
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 36
+actor "Head coach / manager (usuário autenticado)" as c1
+actor "Diretoria da franquia (IA)" as c2
+actor "Jogador (IA)" as c3
+actor "Franquia adversária (IA)" as c4
+actor "Agendador/Job assíncrono" as c5
+package "Frontend (Next.js)" as pkg_fe {
+  component "InboxPage" as c6
+  frame "componentes de InboxPage" as pkg_fe_sub {
+    component "MessageList" as c7
+    component "MessageDetail" as c8
+    component "ReplyOptions" as c9
+    component "SenderFilter" as c10
+    component "DeadlineChip (semanas)" as c11
+    component "NotificationBell" as c12
+    component "NotificationDrawer" as c13
+  }
+}
+package "scores-af-web (REST)" as pkg_web {
+  component "InboxController" as c14
+  component "NotificationController" as c15
+}
+package "scores-af-application (casos de uso)" as pkg_app {
+  component "ListInboxUseCase" as c16
+  component "RespondInboxMessageUseCase" as c17
+  component "ListNotificationsUseCase" as c18
+  component "MarkNotificationsReadUseCase" as c19
+  component "InboxEffectDispatcher" as c20
+  component "InboxGenerationJob" as c21
+  component "InboxExpiryJob" as c22
+  component "CareerAccess" as c23
+}
+package "scores-af-domain/engine" as pkg_eng {
+  component "MoraleEngine" as c24
+}
+package "portas (port.out)" as pkg_ports {
+  interface "CareerSaveRepository" as c25
+  interface "InboxMessageRepository" as c26
+  interface "ManagerMoraleRepository" as c27
+  interface "PlayerRepository" as c28
+  interface "TimelinePort" as c29
+  interface "CounterPort" as c30
+  interface "AiNarrativePort" as c31
+}
+package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
+  component "persistence-mysql" as c32
+  component "persistence-cassandra" as c33
+  component "cache-redis" as c34
+  component "ai-providers" as c35
+}
+database "MySQL 8" as s1
+database "Cassandra 4.1" as s2
+database "Redis 7" as s3
+database "Anthropic Claude" as s4
+c1 --> c6 : usa
+c5 --> c16 : dispara
+c6 --> c14 : GET /careers/{id}/inbox (alvo)\nPOST /careers/{id}/inbox/{mid}/respond (alvo)\nGET /me/notifications (alvo)\n…
+c6 --> c15
+c14 --> c16
+c15 --> c16
+c16 ..> pkg_app : orquestra
+c16 --> c24 : usa
+pkg_app --> pkg_ports : depende (DIP)
+c32 .up.|> c25
+c32 .up.|> c26
+c32 .up.|> c27
+c32 .up.|> c28
+c33 .up.|> c29
+c34 .up.|> c30
+c35 .up.|> c31
+c32 --> s1
+c33 --> s2
+c34 --> s3
+c35 --> s4
+@enduml

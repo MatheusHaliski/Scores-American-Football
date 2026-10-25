@@ -1,0 +1,40 @@
+@startuml
+title RF64 — Relatório de lesões semanal · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+control "ClubAnalyst" as ClubAnalyst
+queue "EventBus" as EventBus
+database "MySQL 8" as MySQL
+database "Cassandra 4.1" as Cassandra
+participant "Agendador/Job assíncrono" as Scheduler
+Scheduler -> UseCase: PublishWeeklyInjuryReport(week)
+UseCase -> MySQL: jogadores com Injury
+UseCase -> ClubAnalyst: status de treino e de jogo
+ClubAnalyst --> UseCase: QUESTIONABLE / DOUBTFUL / OUT
+UseCase -> MySQL: INSERT injury_report da semana; depth chart validated = false se titular fora
+UseCase -> EventBus: InjuryReportPublished
+EventBus -> Cassandra: notificação e notícia
+Manager -> Frontend: abre relatório
+Frontend -> API: GET /careers/{id}/injury-report?week
+API -> UseCase: GetInjuryReportUseCase
+alt não é dono
+  API --> Frontend: 403
+else senão
+  UseCase -> MySQL: relatório
+  API --> Frontend: 200
+end
+Manager -> Frontend: coloca na IR
+Frontend -> API: POST /injury-report/{rid}/ir
+API -> UseCase: PlaceOnInjuredReserveUseCase
+alt semanas mínimas não atingidas
+  API --> Frontend: 422 IR_MIN_WEEKS
+else senão
+  UseCase -> MySQL: TX: status IR, rosterStatus IR
+  API --> Frontend: 200 vaga aberta
+end
+@enduml

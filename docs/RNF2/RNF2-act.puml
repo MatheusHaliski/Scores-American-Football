@@ -1,0 +1,71 @@
+@startuml
+title RNF2 — Partida completa dentro do tempo configurado · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Manager|
+start
+:Define minutos por quarto simulado, nível de chamada e tempo limite em Configurações;
+|Frontend|
+:PUT /me/settings;
+|Manager|
+:Clica em Jogar partida;
+|Frontend|
+:POST /careers/{id}/weeks/current/play;
+|Backend|
+if (orçamento de tempo definido?) then (sim)
+else (não)
+  :Usa 3 min por quarto;
+endif
+:MatchSession criada com timeBudget e seed no snapshot;
+|Scheduler|
+:Jogos da IA da semana simulados FULL em job (fora do tempo do usuário);
+|Backend|
+if (instantâneo?) then (sim)
+  :advance(FULL) em < 5 s · relatório direto;
+|Frontend|
+  :Placar final e pós-jogo;
+  stop
+endif
+|Backend|
+while (partida não terminou?) is (sim)
+|Frontend|
+  :POST /matches/{mid}/advance {QUARTER};
+|Backend|
+  :MatchSimulator joga snap a snap em memória até o fim do quarto ou um momento decisivo;
+  if (quarto simulado dentro do SLA?) then (sim)
+  else (não)
+    :Métrica e alerta;
+  endif
+  if (persistência fora do caminho crítico?) then (sim)
+    :Redis snapshot · Cassandra em lote · MySQL no fim do quarto;
+  else (não)
+    :Alerta de latência;
+  endif
+|Frontend|
+  :Calcula msPorJogada para as jogadas restantes;
+  if (ritmo cabe no orçamento?) then (sim)
+  else (não)
+    :Acelera: resume jogadas sem lance relevante;
+  endif
+  :Reproduz play-by-play, descida e distância, drive atual e placar;
+|Backend|
+  if (momento decisivo?) then (sim)
+|Frontend|
+    :Mostra opções de jogada com contagem regressiva (orçamento pausado);
+|Manager|
+    if (decisão dentro do tempo limite?) then (sim)
+|Frontend|
+      :POST /matches/{mid}/decisions/{did};
+    else (não)
+|Backend|
+      :PlayCaller decide sozinho (auto);
+    endif
+  endif
+endwhile (não)
+:finish(): relatório · métrica match.total.duration vs timeBudget;
+|Frontend|
+:Pós-jogo;
+end
+@enduml

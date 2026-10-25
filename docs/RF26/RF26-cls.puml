@@ -1,0 +1,140 @@
+@startuml
+title RF26 — Estádio 3D e loja de estádio modular · Diagrama de classes
+skinparam classAttributeIconSize 0
+hide empty methods
+package "career" {
+  class CareerSave {
+    id: UUID
+    name: String
+    seed: long
+    employmentStatus: EmploymentStatus
+    currentWeek: int
+    difficulty: Difficulty
+    seasonMode: SeasonMode
+    scoresPoints: int
+    status: SaveStatus
+    slot: int
+    lastPlayedAt: Instant
+  }
+  class ScoresPointsWallet {
+    balance: int
+    lifetimeEarned: int
+  }
+}
+package "catalog" {
+  class Club {
+    id: UUID
+    name: String
+    shortName: String
+    city: String
+    conference: Conference
+    division: Division
+    logoKey: String
+    primaryColor: String
+    secondaryColor: String
+    accentColor: String
+    prestige: int
+    reputationBoard: int
+    reputationFans: int
+    cash: long
+    capSpace: long
+    isUserControlled: boolean
+    expectedWins: int
+    scoutingLevel: int
+    scoutingBudget: long
+  }
+  class Stadium {
+    name: String
+    capacity: int (60–80 mil)
+    roof: RoofType (OPEN|DOME|RETRACTABLE)
+    surface: Surface (GRASS|TURF)
+    climateZone: ClimateZone
+    level: int
+    atmosphere: int
+    maintenanceCostPerWeek: long
+    model3dUrl: String
+    endZoneArtKey: String
+    ticketPolicy: TicketPolicy (preço por setor, carnê de temporada)
+  }
+  class StadiumSector {
+    type: StadiumSectorType (LOWER_BOWL|UPPER_BOWL|SIDELINE_CLUB|END_ZONE|LUXURY_SUITES)
+    seats: int
+    ticketPrice: long
+    condition: int
+    upgradeCost: long
+  }
+}
+package "season" {
+  class Season {
+    number: int
+    year: int
+    phase: SeasonPhase (PRESEASON|REGULAR|PLAYOFFS|DRAFT|FREE_AGENCY|OFFSEASON)
+    currentWeek: int
+    tradeDeadlineWeek: int
+    championClub: Club?
+    mvpPlayer: Player?
+  }
+}
+package "finance" {
+  class FinanceLedgerEntry {
+    week: int
+    kind: LedgerKind
+    amount: long
+    balanceAfter: long
+    description: String
+  }
+}
+package "store" {
+  class StoreItem {
+    code: String
+    kind: StoreItemKind
+    name: String
+    priceScoresPoints: int
+    assetUrl: String
+    payload: JSON
+    rarity: Rarity
+  }
+  class Purchase {
+    purchasedAt: Instant
+    pricePaid: int
+  }
+}
+class StartStadiumRenovationUseCase <<UseCase>> {
+  execute(RenovationCommand): StadiumDto «@Transactional»
+}
+class UpgradeStadiumSectorUseCase <<UseCase>> {
+  execute(UpgradeSectorCommand): StadiumDto «@Transactional»
+}
+class BoardInvestmentPolicy <<Policy>> {
+  approve(cost, cash, reputationBoard): boolean
+}
+class StadiumDto <<record>> {
+  name
+  capacity
+  roof: RoofType
+  surface: Surface
+  climateZone
+  sectors: List<SectorDto>
+  endZoneArtKey
+  model3dUrl
+  renovation: RenovationDto?
+  maintenanceCostPerWeek
+}
+interface LiveMatchStatePort <<Port>> {
+  hasLiveMatch(clubId): boolean
+}
+Club "1" -- "1" Stadium
+Stadium "1" -- "*" StadiumSector : setores
+Club "*" -- "*" Club : rivais da divisão
+CareerSave "*" -- "0..1" Club : franquia atual
+CareerSave "1" -- "1" ScoresPointsWallet
+CareerSave "1" -- "*" Season
+Club "1" -- "*" FinanceLedgerEntry : ledger
+Purchase "*" -- "1" StoreItem
+StartStadiumRenovationUseCase ..> BoardInvestmentPolicy : usa
+StartStadiumRenovationUseCase ..> Stadium : roof / surface
+UpgradeStadiumSectorUseCase ..> StadiumSector : atualiza
+UpgradeStadiumSectorUseCase ..> FinanceLedgerEntry : STADIUM
+UpgradeStadiumSectorUseCase ..> LiveMatchStatePort : usa
+StartStadiumRenovationUseCase ..> StadiumDto : produz
+@enduml

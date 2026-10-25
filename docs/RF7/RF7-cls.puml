@@ -1,0 +1,224 @@
+@startuml
+title RF7 — Preparar time (LED 3D, relatório do adversário) e jogar partida · Diagrama de classes
+skinparam classAttributeIconSize 0
+hide empty methods
+package "career" {
+  class CareerSave {
+    id: UUID
+    name: String
+    seed: long
+    employmentStatus: EmploymentStatus
+    currentWeek: int
+    difficulty: Difficulty
+    seasonMode: SeasonMode
+    scoresPoints: int
+    status: SaveStatus
+    slot: int
+    lastPlayedAt: Instant
+  }
+}
+package "season" {
+  class Season {
+    number: int
+    year: int
+    phase: SeasonPhase (PRESEASON|REGULAR|PLAYOFFS|DRAFT|FREE_AGENCY|OFFSEASON)
+    currentWeek: int
+    tradeDeadlineWeek: int
+    championClub: Club?
+    mvpPlayer: Player?
+  }
+  class Week {
+    number: int
+    kind: WeekKind (PRESEASON|REGULAR|WILD_CARD|DIVISIONAL|CONFERENCE|FINAL)
+    startsOn: LocalDate
+    status: WeekStatus
+    byeClubs: List<Club>
+  }
+  class Fixture {
+    week: int
+    date: LocalDate
+    slot: KickoffSlot (THU_NIGHT|SUN_EARLY|SUN_LATE|SUN_NIGHT|MON_NIGHT)
+    status: FixtureStatus
+    homeScore: int
+    awayScore: int
+    quarterScores: JSON
+    overtime: boolean
+    isDivisional: boolean
+    isConference: boolean
+    neutralSite: boolean
+    weather: Weather
+    attendance: int
+    revenue: long
+    importance: FixtureImportance
+    seed: long
+    isUserFixture: boolean
+  }
+}
+package "catalog" {
+  class Club {
+    id: UUID
+    name: String
+    shortName: String
+    city: String
+    conference: Conference
+    division: Division
+    logoKey: String
+    primaryColor: String
+    secondaryColor: String
+    accentColor: String
+    prestige: int
+    reputationBoard: int
+    reputationFans: int
+    cash: long
+    capSpace: long
+    isUserControlled: boolean
+    expectedWins: int
+    scoutingLevel: int
+    scoutingBudget: long
+  }
+  class Stadium {
+    name: String
+    capacity: int (60–80 mil)
+    roof: RoofType (OPEN|DOME|RETRACTABLE)
+    surface: Surface (GRASS|TURF)
+    climateZone: ClimateZone
+    level: int
+    atmosphere: int
+    maintenanceCostPerWeek: long
+    model3dUrl: String
+    endZoneArtKey: String
+    ticketPolicy: TicketPolicy (preço por setor, carnê de temporada)
+  }
+}
+package "match" {
+  class DepthChart {
+    club: Club
+    version: long
+    updatedAt: Instant
+    validated: boolean
+  }
+  class GamePlan {
+    runPassBalance: int (0–100)
+    fourthDownAggression: Aggression
+    tempo: Tempo (HURRY_UP|NORMAL|MILK_CLOCK)
+    offensiveFocus: JSON
+    defensiveFocus: DefensiveFocus
+    blitzFrequency: Emphasis
+    baseDefense: DefensePackage (4-3|3-4)
+    keyPlayers: List<UUID>
+    situationTendencies: JSON (3ª e curta, red zone, 2 minutos)
+  }
+  class MatchSession {
+    status: LiveStatus
+    quarter: int
+    clockSeconds: int
+    playClockSeconds: int
+    possession: Club
+    down: int (1–4)
+    distance: int
+    ballOnAbsYd: int (0–100)
+    homeScore: int
+    awayScore: int
+    timeoutsHome: int
+    timeoutsAway: int
+    seed: long
+    rngCursor: long
+    snapshotJson: TEXT
+    decisionsLog: JSON
+    version: long
+  }
+}
+package "account" {
+  class UserSettings {
+    simQuarterMinutes: int
+    playCallingLevel: PlayCallingLevel (KEY_MOMENTS|ALL_PLAYS|NONE)
+    decisionTimeoutSeconds: int
+    difficulty: Difficulty
+    theme: ThemeMode
+    highContrast: boolean
+    fontScale: FontScale
+    reducedMotion: boolean
+    regionalFormat: String
+    units: YardsOrMeters
+    notificationsEnabled: boolean
+  }
+}
+package "analysis" {
+  class AiAnalysisReport {
+    week: int
+    summary: TEXT
+    strengthsByUnit: JSON
+    weaknessesByUnit: JSON
+    depthChartSuggestion: JSON
+    gamePlanFit: int
+    keyMatchups: JSON
+    riskAlerts: JSON
+    winProbabilityNext: double
+    narrative: TEXT
+  }
+}
+class PlayWeekUseCase <<UseCase>> {
+  execute(careerId, userId): PlayWeekResult «@Transactional»
+}
+class PlayWeekResult <<record>> {
+  matchId: UUID
+  fixtureId: UUID
+  seed: long
+  resumed: boolean
+  byeWeek: boolean
+}
+class GetOpponentReportUseCase <<UseCase>> {
+  execute(careerId, userId): OpponentReport
+}
+class OpponentReport <<record>> {
+  offenseTendencies: JSON (formações, conceitos, corrida/passe)
+  defenseTendencies: JSON (pacotes, coberturas, blitz)
+  specialTeams: JSON
+  injuries: List<InjuryReportDto>
+  keyMatchups: List<MatchupDto> (WR×CB, OL×DL, TE×LB)
+}
+class MatchSetupAssembler <<Assembler>> {
+  assemble(save, fixture, depthChart, gamePlan, settings): MatchSetup
+}
+class MatchSetup <<record>> {
+  fixtureId
+  home: TeamSnapshot
+  away: TeamSnapshot
+  rules: LeagueRulesSnapshot
+  weather: Weather
+  seed: long
+  userSide
+  playCallingLevel
+}
+interface MatchSimulator <<Engine>> {
+  start(MatchSetup): MatchSnapshot
+  advance(snapshot, mode, calls): MatchSnapshot «por jogada»
+  finish(snapshot): MatchResult
+}
+interface LiveMatchStatePort <<Port>> {
+  put(fixtureId, MatchSnapshot, ttl)
+  get(fixtureId): Optional<MatchSnapshot>
+}
+Club "1" -- "1" Stadium
+Club "*" -- "*" Club : rivais da divisão
+Club "1" -- "1" DepthChart
+CareerSave "*" -- "0..1" Club : franquia atual
+CareerSave "1" -- "*" Season
+CareerSave "1" -- "1" GamePlan
+Season "1" -- "18..22" Week : semanas
+Week "1" -- "*" Fixture
+Fixture "*" -- "1" Club : mandante
+Fixture "1" -- "0..1" MatchSession : estado vivo
+CareerSave "1" -- "*" AiAnalysisReport
+PlayWeekUseCase ..> PlayWeekResult : produz
+PlayWeekUseCase ..> MatchSetupAssembler : usa
+MatchSetupAssembler ..> MatchSetup : produz
+MatchSetupAssembler ..> DepthChart : lê
+MatchSetupAssembler ..> GamePlan : lê
+MatchSetupAssembler ..> UserSettings : playCallingLevel
+PlayWeekUseCase ..> MatchSimulator : start
+PlayWeekUseCase ..> LiveMatchStatePort : usa
+PlayWeekUseCase ..> MatchSession : cria
+GetOpponentReportUseCase ..> OpponentReport : produz
+GetOpponentReportUseCase ..> AiAnalysisReport : keyMatchups
+@enduml

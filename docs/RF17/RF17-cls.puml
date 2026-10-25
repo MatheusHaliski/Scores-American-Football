@@ -1,0 +1,162 @@
+@startuml
+title RF17 — Sala de troféus · Diagrama de classes
+skinparam classAttributeIconSize 0
+hide empty methods
+package "career" {
+  class CareerSave {
+    id: UUID
+    name: String
+    seed: long
+    employmentStatus: EmploymentStatus
+    currentWeek: int
+    difficulty: Difficulty
+    seasonMode: SeasonMode
+    scoresPoints: int
+    status: SaveStatus
+    slot: int
+    lastPlayedAt: Instant
+  }
+  class ManagerCareerRecord {
+    seasonFrom: int
+    seasonTo: int
+    games: int
+    wins: int
+    losses: int
+    ties: int
+    playoffAppearances: int
+    titles: int
+    endReason: EndReason
+  }
+}
+package "catalog" {
+  class League {
+    id: UUID
+    name: String
+    country: String
+    ruleset: Ruleset (PRO|COLLEGE)
+    rules: LeagueRules
+    teamCount: int (8–32)
+    conferenceCount: int
+    divisionsPerConference: int
+    regularSeasonWeeks: int = 18
+    gamesPerTeam: int = 17
+    playoffSeedsPerConference: int = 7
+    neutralSiteFinal: boolean
+    salaryCap: long
+    salaryFloor: long
+    prestige: int
+    tvRightsPerSeason: long
+  }
+  class Conference {
+    name: String
+    shortName: String
+    logoKey: String
+  }
+  class Division {
+    name: String
+    conference: Conference
+    teamCount: int = 4
+  }
+  class ManagerProfile {
+    name: String
+    nationality: String
+    isHuman: boolean
+    overall: int
+    coachStyle: CoachStyleCode
+    reputationLeague: int
+    careerTitles: int
+    careerGames: int
+    careerWins: int
+    careerPlayoffWins: int
+  }
+  class Club {
+    id: UUID
+    name: String
+    shortName: String
+    city: String
+    conference: Conference
+    division: Division
+    logoKey: String
+    primaryColor: String
+    secondaryColor: String
+    accentColor: String
+    prestige: int
+    reputationBoard: int
+    reputationFans: int
+    cash: long
+    capSpace: long
+    isUserControlled: boolean
+    expectedWins: int
+    scoutingLevel: int
+    scoutingBudget: long
+  }
+}
+package "season" {
+  class Season {
+    number: int
+    year: int
+    phase: SeasonPhase (PRESEASON|REGULAR|PLAYOFFS|DRAFT|FREE_AGENCY|OFFSEASON)
+    currentWeek: int
+    tradeDeadlineWeek: int
+    championClub: Club?
+    mvpPlayer: Player?
+  }
+  class ChampionHistory {
+    seasonYear: int
+    managerName: String
+    finalScore: String
+  }
+  class PlayoffMatchup {
+    round: PlayoffRound (WILD_CARD|DIVISIONAL|CONFERENCE|FINAL)
+    higherSeed: PlayoffSeed
+    lowerSeed: PlayoffSeed
+    fixture: Fixture
+    winner: Club?
+    neutralSite: boolean
+    status: MatchupStatus (SCHEDULED|LIVE|DECIDED)
+  }
+  class SeasonAward {
+    type: AwardType (MVP|OPOY|DPOY|OROY|DROY|COACH)
+    value: double
+  }
+}
+class GetTrophyRoomUseCase <<UseCase>> {
+  execute(careerId, season?, kind?, userId): TrophyRoomResult
+}
+class TrophyRoomResult <<record>> {
+  champions: List<ChampionRowDto>
+  conferenceChampions: List<TrophyDto>
+  divisionChampions: List<TrophyDto>
+  myTrophies: List<TrophyDto>
+  awards: List<AwardDto>
+}
+class TrophyDto <<record>> {
+  seasonYear: int
+  kind: FINAL|CONFERENCE|DIVISION|COACH|MVP
+  clubName: String
+  finalScore: String?
+  model3dUrl: String
+}
+interface MediaStoragePort <<Port>> {
+  urlFor(key): String
+  exists(key): boolean
+}
+League "1" -- "1..2" Conference : conferências
+Conference "1" -- "*" Division : divisões
+Division "1" -- "*" Club : franquias
+Club "*" -- "*" Club : rivais da divisão
+Club "0..1" -- "1" ManagerProfile : head coach
+ManagerProfile "1" -- "*" ManagerCareerRecord : histórico
+CareerSave "1" -- "1" ManagerProfile : manager humano
+CareerSave "*" -- "0..1" Club : franquia atual
+CareerSave "1" -- "*" Season
+Season "1" -- "13" PlayoffMatchup : chave
+Season "1" -- "*" SeasonAward
+League "1" -- "*" ChampionHistory
+GetTrophyRoomUseCase ..> TrophyRoomResult : produz
+TrophyRoomResult ..> TrophyDto : *
+GetTrophyRoomUseCase ..> ChampionHistory : lê
+GetTrophyRoomUseCase ..> PlayoffMatchup : campeões de conferência
+GetTrophyRoomUseCase ..> ManagerCareerRecord : títulos
+GetTrophyRoomUseCase ..> MediaStoragePort : usa
+@enduml

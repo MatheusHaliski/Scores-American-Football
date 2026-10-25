@@ -1,0 +1,37 @@
+@startuml
+title RF4 — Gerenciar o elenco de 53 (unidades, practice squad, IR) · Máquina de estados: Player.rosterStatus (elenco do usuário)
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "ACTIVE" as ACTIVE
+ACTIVE : entre os 46 do dia de jogo
+ACTIVE : pode estar no depth chart
+state "INACTIVE" as INACTIVE
+INACTIVE : no elenco de 53
+INACTIVE : fora do jogo da semana
+state "PRACTICE_SQUAD" as PRACTICE_SQUAD
+PRACTICE_SQUAD : até 16
+PRACTICE_SQUAD : elevação até 3 por temporada
+state "IR" as IR
+IR : lesão ≥ 4 semanas
+IR : não conta nos 53
+state "WAIVED" as WAIVED
+WAIVED : dispensado
+WAIVED : claims por prioridade inversa (RF65)
+state "FREE_AGENT" as FREE_AGENT
+FREE_AGENT : ninguém reivindicou
+FREE_AGENT : fora do clube
+[*] --> ACTIVE
+ACTIVE --> INACTIVE : PATCH roster-status
+INACTIVE --> ACTIVE : PATCH roster-status (≤ 46)
+INACTIVE --> PRACTICE_SQUAD : move (elegível, < 16)
+PRACTICE_SQUAD --> ACTIVE : elevação para o jogo
+ACTIVE --> PRACTICE_SQUAD : fim do jogo (elevado volta)
+ACTIVE --> IR : POST injured-reserve
+INACTIVE --> IR : POST injured-reserve
+IR --> ACTIVE : ativa após 4 semanas (elenco < 53)
+ACTIVE --> WAIVED : POST release
+INACTIVE --> WAIVED : POST release
+PRACTICE_SQUAD --> WAIVED : POST release
+WAIVED --> FREE_AGENT : sem claim
+FREE_AGENT --> [*]
+@enduml

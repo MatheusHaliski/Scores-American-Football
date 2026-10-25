@@ -1,0 +1,149 @@
+@startuml
+title RF24 — Responder mensagens do inbox · Diagrama de classes
+skinparam classAttributeIconSize 0
+hide empty methods
+package "career" {
+  class CareerSave {
+    id: UUID
+    name: String
+    seed: long
+    employmentStatus: EmploymentStatus
+    currentWeek: int
+    difficulty: Difficulty
+    seasonMode: SeasonMode
+    scoresPoints: int
+    status: SaveStatus
+    slot: int
+    lastPlayedAt: Instant
+  }
+  class ManagerMorale {
+    moraleClub: int
+    moraleLeague: int
+    factorsClub: JSON
+    factorsLeague: JSON
+    weeksUnderCritical: int
+    trend: Trend
+    updatedWeek: int
+  }
+}
+package "inbox" {
+  class InboxMessage {
+    sender: InboxSender
+    subject: String
+    body: TEXT
+    kind: InboxKind
+    options: JSON
+    chosenOption: String
+    deadlineWeek: int
+    status: MessageStatus
+    refType: String
+    refId: UUID
+  }
+  class Notification {
+    kind: String
+    title: String
+    body: String
+    read: boolean
+    createdAt: Instant «TTL 90d»
+  }
+  class NewsItem {
+    week: int
+    headline: String
+    body: TEXT
+    journalist: String
+    tone: Tone
+  }
+}
+package "catalog" {
+  class Player {
+    id: UUID
+    name: String
+    nationality: String
+    college: String
+    birthDate: LocalDate
+    age: int
+    heightCm: int
+    weightKg: int
+    position: Position (QB|RB|FB|WR|TE|LT|LG|C|RG|RT|DE|DT|OLB|MLB|CB|FS|SS|K|P|LS)
+    unit: Unit (OFFENSE|DEFENSE|SPECIAL)
+    attributes: PlayerAttributes
+    overall: int «por posição, OVR v1»
+    potential: int
+    experienceYears: int
+    rosterStatus: RosterStatus (ACTIVE|INACTIVE|PRACTICE_SQUAD|IR|PUP|FREE_AGENT|WAIVED)
+    condition: int
+    morale: int
+    moraleFactors: JSON
+    injury: Injury?
+    suspensionWeeks: int
+    contract: PlayerContract
+    jerseyNumber: int
+    isLegendary: boolean
+    model3dUrl: String
+  }
+}
+package "market" {
+  class TradeProposal {
+    playersOut: List<UUID>
+    playersIn: List<UUID>
+    picksOut: List<DraftPick>
+    picksIn: List<DraftPick>
+    capImpact: long
+    status: OfferStatus
+    reason: String
+    beforeDeadline: boolean
+  }
+  class FreeAgentOffer {
+    player: Player
+    years: int
+    totalValue: long
+    guaranteed: long
+    signingBonus: long
+    status: OfferStatus
+    phase: FAPhase (NEGOTIATION|OPEN|IN_SEASON)
+    expiresAt: Instant
+    playerInterest: int
+  }
+}
+package "finance" {
+  class BudgetRequest {
+    amount: long
+    reason: String
+    status: RequestStatus
+    boardResponse: String
+  }
+}
+class RespondInboxMessageUseCase <<UseCase>> {
+  execute(RespondInboxCommand): InboxDecisionResultDto
+}
+class GetInboxUseCase <<UseCase>> {
+  execute(careerId, userId, page): PageResponse<InboxMessageDto>
+}
+class InboxConsequenceResolver <<Service>> {
+  resolve(message, option): Consequence
+}
+class Consequence <<record>> {
+  moraleClubDelta: int
+  moraleLeagueDelta: int
+  playerMoraleDelta: int
+  cashDelta: long
+  holdoutEnds: boolean
+  offerAction: OfferAction
+  newsTone: Tone
+}
+interface TimelinePort <<Port>> {
+  appendInbox(saveId, InboxRecord)
+  readInbox(saveId, cursor, size)
+}
+CareerSave "1" -- "1" ManagerMorale
+CareerSave "1" -- "*" FreeAgentOffer
+FreeAgentOffer "*" -- "1" Player
+CareerSave "1" -- "*" TradeProposal
+CareerSave "1" -- "*" BudgetRequest
+CareerSave "1" -- "*" InboxMessage
+RespondInboxMessageUseCase ..> InboxConsequenceResolver : usa
+InboxConsequenceResolver ..> Consequence : produz
+RespondInboxMessageUseCase ..> InboxMessage : ANSWERED
+RespondInboxMessageUseCase ..> TradeProposal : COUNTER
+GetInboxUseCase ..> TimelinePort : usa
+@enduml

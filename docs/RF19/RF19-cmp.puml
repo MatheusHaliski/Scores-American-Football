@@ -1,0 +1,102 @@
+@startuml
+title RF19 — Reforçar o elenco: free agency, trocas e waivers · Diagrama de componentes
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 36
+actor "Head coach / manager (usuário autenticado)" as c1
+actor "Franquia adversária (IA)" as c2
+actor "Jogador (IA)" as c3
+actor "Diretoria da franquia (IA)" as c4
+actor "Agendador/Job assíncrono" as c5
+package "Frontend (Next.js)" as pkg_fe {
+  component "MarketPage" as c6
+  frame "componentes de MarketPage" as pkg_fe_sub {
+    component "FreeAgentsTab" as c7
+    component "TradeBuilder" as c8
+    component "DraftPickPicker" as c9
+    component "WaiverWireTab" as c10
+    component "CapSpaceMeter" as c11
+    component "OfferDialog" as c12
+    component "OffersTracker" as c13
+    component "CounterOfferBanner" as c14
+  }
+}
+package "scores-af-web (REST)" as pkg_web {
+  component "MarketController" as c15
+  component "CapController" as c16
+}
+package "scores-af-application (casos de uso)" as pkg_app {
+  component "SearchFreeAgentsUseCase" as c17
+  component "OfferFreeAgentContractUseCase" as c18
+  component "ProposeTradeUseCase" as c19
+  component "RespondTradeUseCase" as c20
+  component "ListWaiverWireUseCase" as c21
+  component "ClaimWaiverUseCase" as c22
+  component "GetSalaryCapUseCase" as c23
+  component "WaiverProcessingJob" as c24
+  component "OfferExpiryJob" as c25
+  component "CareerAccess" as c26
+  component "AuditService" as c27
+}
+package "scores-af-domain/engine" as pkg_eng {
+  component "MarketEngine" as c28
+  component "CapEngine" as c29
+  component "TradeValueChart" as c30
+  component "MoraleEngine" as c31
+}
+package "portas (port.out)" as pkg_ports {
+  interface "CareerSaveRepository" as c32
+  interface "PlayerRepository" as c33
+  interface "ClubRepository" as c34
+  interface "FreeAgentOfferRepository" as c35
+  interface "TradeProposalRepository" as c36
+  interface "DraftPickRepository" as c37
+  interface "WaiverClaimRepository" as c38
+  interface "SalaryCapLedgerRepository" as c39
+  interface "StandingRepository" as c40
+  interface "AuditLogRepository" as c41
+  interface "SearchPort" as c42
+  interface "TimelinePort" as c43
+  interface "CounterPort" as c44
+}
+package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
+  component "persistence-mysql" as c45
+  component "search-opensearch" as c46
+  component "persistence-cassandra" as c47
+  component "cache-redis" as c48
+}
+database "MySQL 8" as s1
+database "Cassandra 4.1" as s2
+database "Redis 7" as s3
+database "OpenSearch 2" as s4
+c1 --> c6 : usa
+c5 --> c17 : dispara
+c6 --> c15 : GET /careers/{id}/market/free-agents (alvo)\nPOST /careers/{id}/market/free-agents/{pid}/offers (alvo)\nPOST /careers/{id}/market/trades (alvo)\n…
+c6 --> c16
+c15 --> c17
+c16 --> c17
+c17 ..> pkg_app : orquestra
+c17 --> c28 : usa
+c17 --> c29 : usa
+c17 --> c30 : usa
+c17 --> c31 : usa
+pkg_app --> pkg_ports : depende (DIP)
+c45 .up.|> c32
+c45 .up.|> c33
+c45 .up.|> c34
+c45 .up.|> c35
+c45 .up.|> c36
+c45 .up.|> c37
+c45 .up.|> c38
+c45 .up.|> c39
+c45 .up.|> c40
+c45 .up.|> c41
+c46 .up.|> c42
+c47 .up.|> c43
+c48 .up.|> c44
+c45 --> s1
+c46 --> s4
+c47 --> s2
+c48 --> s3
+@enduml

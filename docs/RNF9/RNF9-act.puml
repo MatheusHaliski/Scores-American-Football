@@ -1,0 +1,54 @@
+@startuml
+title RNF9 — Desempenho e usabilidade da interface (3D com 22 atletas) · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Manager|
+start
+:Abre a partida ao vivo;
+|Frontend|
+:Skeleton imediato · lê settings;
+if (orçamento de bundle respeitado?) then (sim)
+else (não)
+  :Build reprovado no CI (size-limit);
+  stop
+endif
+if (viewport móvel?) then (sim)
+  :Coluna única, placar grande, ações embaixo;
+else (não)
+  :Layout desktop;
+endif
+if (reducedMotion?) then (sim)
+  :Câmera fixa, sem loops, feedback por cor e texto;
+endif
+if (GPU/WebGL suficiente?) then (sim)
+  :Carrega chunk 3D sob demanda · campo, traves e GLB dos atletas via CDN;
+  :22 atletas em InstancedMesh (um por time) com uniforme, capacete e número;
+  if (cena 3D dentro do orçamento?) then (sim)
+  else (não)
+    :Rebaixa LOD e efeitos · abaixo de 20 fps vai ao 2D;
+  endif
+else (não)
+  :Campo 2D em SVG com as 22 posições;
+endif
+:GET com If-None-Match;
+|Backend|
+if (cache válido?) then (sim)
+  :304 ou resposta do Redis;
+else (não)
+  :Consulta projetada no MySQL · grava cache com TTL;
+endif
+if (p95 dentro do orçamento?) then (sim)
+else (não)
+  :Alerta operacional;
+endif
+|Frontend|
+if (rede lenta ou offline?) then (sim)
+  :Skeleton, retry e banner;
+endif
+:Foco visível, teclado, contraste ≥ 4,5:1, aria-live no placar;
+|Manager|
+:Interage (LCP ≤ 2,5 s · TTI ≤ 3 s);
+end
+@enduml

@@ -1,0 +1,77 @@
+@startuml
+title RF9 — Propostas de contrato de outras franquias · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Scheduler|
+start
+:Ao fim da semana (WeekCompleted) avalia interesse das franquias IA;
+if (janela de contratação aberta?) then (sim)
+else (não)
+  :Sem propostas;
+  stop
+endif
+|ClubeIA|
+if (franquia IA quer o head coach?) then (sim)
+|Scheduler|
+  :Cria JobOffer PENDING (prazo 2 semanas) · inbox JOB_OFFER + notificação;
+else (não)
+  :Sem proposta nesta semana;
+  stop
+endif
+|Manager|
+:Abre o painel e vê a proposta;
+|Frontend|
+:GET /careers/{id}/job-offers;
+|Backend|
+if (dono do save?) then (sim)
+else (não)
+  :403 + ACCESS_DENIED;
+  stop
+endif
+|Frontend|
+:Modal: franquia, divisão, campanha, salário, duração, metas, prazo · comparação com o contrato atual;
+if (elenco pesa na decisão?) then (sim)
+  :Aviso: elenco pede para ficar;
+endif
+|Manager|
+:Decide: Aceitar, Recusar ou Decidir depois;
+|Frontend|
+:POST /job-offers/{jid}/respond {decision};
+|Backend|
+if (proposta PENDING e no prazo?) then (sim)
+else (não)
+  :409 OFFER_NOT_PENDING;
+  stop
+endif
+|Manager|
+if (aceitar?) then (sim)
+|Diretoria|
+  if (diretoria libera o head coach?) then (sim)
+  else (não)
+|Backend|
+    :422 BOARD_BLOCKS_TRANSFER · oferta REJECTED;
+    stop
+  endif
+  if (transação única ok?) then (sim)
+  else (não)
+    :Rollback · 409 CONFLICT;
+    stop
+  endif
+  :AuditLog JOB_OFFER_ACCEPTED · evento JobOfferAccepted · notícia e inbox;
+|Frontend|
+  :Redireciona à central da nova franquia (RF40);
+else (não)
+|Manager|
+  if (recusar?) then (sim)
+|Backend|
+    :Oferta REJECTED · penalidade da franquia por 4 semanas;
+  else (não)
+    :Decidir depois: permanece PENDING até expiresWeek;
+  endif
+endif
+|Scheduler|
+:Expira ofertas PENDING com prazo vencido;
+end
+@enduml

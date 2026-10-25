@@ -1,0 +1,49 @@
+@startuml
+title RF17 — Sala de troféus · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Manager|
+start
+:Abre a Sala de troféus;
+|Frontend|
+:GET /careers/{id}/trophies;
+|Backend|
+if (dono do save?) then (sim)
+else (não)
+  :403 + auditoria ACCESS_DENIED;
+  stop
+endif
+:Carrega ChampionHistory da liga (temporada, campeão, placar da final, head coach) e MVP da temporada;
+:Deriva campeões de conferência (PlayoffMatchup CONFERENCE) e de divisão (Standing.divisionRank == 1);
+:Carrega meus troféus: ManagerCareerRecord, títulos de divisão e conferência, SeasonAward COACH;
+if (há títulos do head coach?) then (sim)
+  :Monta estante por temporada com URL do troféu 3D por tipo;
+else (não)
+  :Estante vazia com metas de troféu (RF33);
+endif
+|Frontend|
+:Abas Campeões (linha do tempo: final, AFC/NFC fictícias, 8 divisões) e Meus troféus;
+|Manager|
+if (filtra por temporada ou tipo?) then (sim)
+|Frontend|
+  :GET /trophies?season=&kind=FINAL|CONFERENCE|DIVISION;
+|Backend|
+  if (liga do mundo do save?) then (sim)
+  else (não)
+    :404 LEAGUE_NOT_FOUND;
+    stop
+  endif
+endif
+|Manager|
+if (clica em um troféu?) then (sim)
+|Frontend|
+  if (asset 3D disponível?) then (sim)
+    :Carrega GLB do S3 e mostra o troféu 3D com temporada, franquia, placar da final e MVP;
+  else (não)
+    :Troféu genérico;
+  endif
+endif
+end
+@enduml

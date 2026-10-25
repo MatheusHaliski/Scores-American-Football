@@ -1,0 +1,58 @@
+@startuml
+title RF36 — Simular a temporada pelo calendário · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Manager|
+start
+:No calendário, escolhe Simular até aqui ou um atalho e a velocidade;
+|Frontend|
+:Modal: semanas, depth chart e plano de jogo que a IA usará · chamadas de jogada automáticas;
+:POST /careers/{id}/simulate;
+|Backend|
+if (dono do save?) then (sim)
+else (não)
+  :403;
+  stop
+endif
+if (alvo válido?) then (sim)
+else (não)
+  :422 INVALID_SIMULATION_TARGET;
+  stop
+endif
+if (sem execução ativa?) then (sim)
+else (não)
+  :409 SIMULATION_ACTIVE;
+  stop
+endif
+:SimulationRun QUEUED → RUNNING · SEASON_SIMULATION_STARTED;
+|Scheduler|
+while (semana atual ≤ semana alvo?) is (sim)
+  if (depth chart jogável?) then (sim)
+  else (não)
+    :IA preenche as vagas e anota no resumo;
+  endif
+  :WeekProcessor: joga a semana (RF42 com PlayCaller IA nas duas franquias, mesma seed de uma semana jogada) · bye conta como semana;
+  :Classificação, moral, lesões, finanças, notícias · 50 % dos Scores Points;
+|Diretoria|
+  if (parada obrigatória?) then (sim)
+|Scheduler|
+    :PAUSED (pauseReason) · nada além do ponto de parada;
+|Manager|
+    :Resolve: proposta, prazo de trocas, lesão, draft ou free agency;
+|Frontend|
+    :POST /simulate/{runId}/resume;
+  endif
+|Manager|
+  if (parada pedida?) then (sim)
+|Scheduler|
+    :Conclui a semana · CANCELLED;
+    stop
+  endif
+endwhile (não)
+:DONE · resumo (campanha, posição na divisão, moral, lesões, destaques) · SEASON_SIMULATION_FINISHED;
+|Frontend|
+:Painel-resumo com links para relatórios e classificação;
+end
+@enduml

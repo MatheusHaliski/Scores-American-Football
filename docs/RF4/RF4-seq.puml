@@ -1,0 +1,60 @@
+@startuml
+title RF4 — Gerenciar o elenco de 53 (unidades, practice squad, IR) · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+control "AuditService" as AuditService
+control "MoraleEngine" as MoraleEngine
+control "MarketEngine" as MarketEngine
+control "CapEngine" as CapEngine
+queue "EventBus" as EventBus
+database "MySQL 8" as MySQL
+database "Redis 7" as Redis
+database "Cassandra 4.1" as Cassandra
+database "OpenSearch 2" as OpenSearch
+participant "Agendador/Job assíncrono" as Scheduler
+Manager -> Frontend: abre Elenco
+Frontend -> API: GET /careers/{id}/roster?unit=DEFENSE
+API -> UseCase: GetRosterUseCase.execute(id, unit, userId)
+UseCase -> MySQL: save + owner check · players(club) + contratos + practice squad + IR + cap ledger
+alt não é dono
+  UseCase -> AuditService: record(ACCESS_DENIED)
+  API --> Frontend: 403
+else senão
+  UseCase -> UseCase: OverallByPosition (OVR v1) + macros da família (D-6)
+  UseCase --> API: RosterView (cards, contadores 53/46/16)
+  API --> Frontend: 200
+end
+Manager -> Frontend: coloca o CB lesionado na IR
+Frontend -> API: POST /careers/{id}/players/{pid}/injured-reserve
+API -> UseCase: PlaceOnInjuredReserveUseCase.execute(cmd)
+UseCase -> MySQL: player.injury, rosterStatus, depth chart
+alt lesão < 4 semanas
+  API --> Frontend: 422 IR_NOT_ALLOWED
+else senão
+  UseCase -> MySQL: UPDATE rosterStatus = IR · remove slots do depth chart · validated = false
+  UseCase -> EventBus: RosterChanged(saveId, playerId, IR)
+  EventBus -> OpenSearch: reindexa jogador (status)
+  EventBus -> Redis: invalida cache roster:{saveId}
+  API --> Frontend: 200 (vaga no elenco liberada)
+end
+Manager -> Frontend: dispensa um WR
+Frontend -> API: POST /careers/{id}/players/{pid}/release
+API -> UseCase: ReleasePlayerUseCase.execute(cmd) «@Transactional»
+UseCase -> CapEngine: deadMoney(contract, fase da temporada)
+CapEngine --> UseCase: dead money desta e da próxima temporada
+alt estoura o teto
+  API --> Frontend: 422 CAP_EXCEEDED
+else senão
+  UseCase -> MySQL: UPDATE player WAIVED · salary_cap_ledger.deadMoney · INSERT waiver (prioridade inversa)
+  UseCase -> MoraleEngine: onRelease(elenco)
+  UseCase -> EventBus: PlayerWaived + InboxMessageCreated
+  EventBus -> Cassandra: appendInbox(saveId)
+  API --> Frontend: 200
+  Scheduler -> MarketEngine: processa waiver claims no fim do dia do jogo (RF65)
+end
+@enduml

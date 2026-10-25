@@ -1,0 +1,75 @@
+@startuml
+title RNF2 — Partida completa dentro do tempo configurado · Diagrama de componentes
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 36
+actor "Head coach / manager (usuário autenticado)" as c1
+actor "Agendador/Job assíncrono" as c2
+package "Frontend (Next.js)" as pkg_fe {
+  component "LiveMatchPage" as c3
+  frame "componentes de LiveMatchPage" as pkg_fe_sub {
+    component "PlaybackController" as c4
+    component "Scoreboard (descida e distância)" as c5
+    component "PlayByPlayFeed" as c6
+    component "PlayCallDialog" as c7
+    component "SettingsPage" as c8
+  }
+}
+package "scores-af-web (REST)" as pkg_web {
+  component "MatchController" as c9
+  component "WeekController" as c10
+  component "AccountController" as c11
+}
+package "scores-af-application (casos de uso)" as pkg_app {
+  component "UpdateUserSettingsUseCase" as c12
+  component "PlayWeekUseCase" as c13
+  component "AdvanceMatchUseCase" as c14
+  component "SubmitPlayCallUseCase" as c15
+  component "GetMatchEventsUseCase" as c16
+  component "MatchTimeBudgetPolicy" as c17
+  component "WeekSimulationJob" as c18
+  component "MatchMetrics" as c19
+}
+package "scores-af-domain/engine" as pkg_eng {
+  component "MatchSimulator" as c20
+  component "PlayCaller" as c21
+  component "GameClock" as c22
+}
+package "portas (port.out)" as pkg_ports {
+  interface "UserSettingsRepository" as c23
+  interface "FixtureRepository" as c24
+  interface "MatchSessionRepository" as c25
+  interface "LiveMatchStatePort" as c26
+  interface "TimelinePort" as c27
+}
+package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
+  component "persistence-mysql" as c28
+  component "cache-redis" as c29
+  component "persistence-cassandra" as c30
+}
+database "MySQL 8" as s1
+database "Redis 7" as s2
+database "Cassandra 4.1" as s3
+c1 --> c3 : usa
+c2 --> c12 : dispara
+c3 --> c9 : PUT /me/settings (alvo)\nPOST /careers/{id}/weeks/current/play (alvo)\nPOST /matches/{mid}/advance (alvo)\n…
+c3 --> c10
+c3 --> c11
+c9 --> c12
+c10 --> c12
+c11 --> c12
+c12 ..> pkg_app : orquestra
+c12 --> c20 : usa
+c12 --> c21 : usa
+c12 --> c22 : usa
+pkg_app --> pkg_ports : depende (DIP)
+c28 .up.|> c23
+c28 .up.|> c24
+c28 .up.|> c25
+c29 .up.|> c26
+c30 .up.|> c27
+c28 --> s1
+c29 --> s2
+c30 --> s3
+@enduml

@@ -1,0 +1,65 @@
+@startuml
+title RF41 — Moral do head coach (franquia e liga) e do jogador · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+control "MoraleEngine" as MoraleEngine
+control "ClubAnalyst" as ClubAnalyst
+queue "EventBus" as EventBus
+database "MySQL 8" as MySQL
+database "Redis 7" as Redis
+database "Cassandra 4.1" as Cassandra
+participant "Agendador/Job assíncrono" as Scheduler
+actor "Diretoria da franquia (IA)" as Diretoria
+actor "Franquia adversária (IA)" as ClubeIA
+actor "Jogador (IA)" as JogadorIA
+actor "Imprensa (IA)" as Imprensa
+Scheduler -> EventBus: consome WeekCompleted(saveId, week)
+EventBus -> MoraleEngine: MoraleWeekJob (AFTER_COMMIT, @Async)
+MoraleEngine -> Redis: SETNX morale:processed:{saveId}:{week}
+alt já processado
+  Redis --> MoraleEngine: 0 → ignora
+else senão
+  MoraleEngine -> MySQL: franquias, fixtures da semana, standings, contratos, snaps por jogador, depth chart
+  loop por franquia
+    alt head coach humano empregado
+      MoraleEngine -> MoraleEngine: ManagerMoraleEngine.updateAfterWeek
+      MoraleEngine -> Diretoria: zona e paciência
+      alt weeksUnderCritical ≥ paciência
+        MoraleEngine -> MySQL: TX: demissão
+        MoraleEngine -> EventBus: ManagerDismissed → RF37
+      else senão
+        MoraleEngine -> ClubeIA: JobOfferPolicy (moralLiga ≥ 70)
+      end
+    else senão
+      MoraleEngine -> MySQL: head coach IA: reputação
+    end
+    loop por jogador
+      MoraleEngine -> MoraleEngine: PlayerMoraleEngine.updateAfterWeek(snaps × esperado, contrato, vitórias)
+      alt pede troca
+        JogadorIA -> Cassandra: inbox PLAYER: pedido de troca
+        MoraleEngine -> ClubeIA: TradeInterestPolicy
+        ClubeIA -> MySQL: TradeProposal recebida
+      else senão
+      end
+      MoraleEngine -> MySQL: UPDATE player.morale, moraleFactors
+    end
+  end
+  MoraleEngine -> Imprensa: tom das notícias
+  MoraleEngine -> ClubAnalyst: moraleOutlook
+end
+Manager -> Frontend: responde mensagem (PROMISE_SNAPS)
+Frontend -> API: POST /careers/{id}/inbox/{mid}/respond
+API -> UseCase: RespondInboxMessageUseCase
+UseCase -> MoraleEngine: InboxDecisionPolicy.resolve(kind, option, contexto)
+alt opção não suportada
+  API --> Frontend: 422 OPTION_NOT_SUPPORTED
+else senão
+  UseCase -> MySQL: TX: inbox ANSWERED · moral ± · promessa registrada
+  API --> Frontend: 200
+end
+@enduml

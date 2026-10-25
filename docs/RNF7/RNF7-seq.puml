@@ -1,0 +1,41 @@
+@startuml
+title RNF7 — Auditoria e registro de atividades (logging) · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+actor "Administrador" as Admin
+participant "Frontend" as Frontend
+boundary "Filtros" as Filtros
+boundary "API" as API
+control "UseCase" as UseCase
+control "AuditService" as AuditService
+control "MatchSimulator" as MatchSimulator
+database "MySQL 8" as MySQL
+Manager -> Frontend: login com senha errada
+Frontend -> API: POST /auth/login (X-Correlation-Id: abc)
+API -> Filtros: CorrelationIdFilter: abc é seguro → MDC
+API -> UseCase: LoginUseCase.execute
+UseCase -> MySQL: leitura curta da conta
+UseCase -> UseCase: PasswordHasher.verify fora da transação
+UseCase -> AuditService: failed(LOGIN_FAILED, emailHash, ip, abc)
+AuditService -> MySQL: INSERT audit_log «REQUIRES_NEW»
+API --> Frontend: 401 AUTH_FAILED {code, message, correlationId: abc, locale}
+Manager -> Frontend: joga a semana
+Frontend -> API: POST /careers/{id}/weeks/current/play
+API -> UseCase: PlayWeekUseCase.execute
+UseCase -> MatchSimulator: simulate(seed)
+UseCase -> AuditService: ok(MATCH_SIMULATED, fixture, {seed, placar})
+AuditService -> MySQL: INSERT audit_log «REQUIRES_NEW»
+API --> Frontend: 200
+Admin -> Frontend: Auditoria: filtra por correlationId
+Frontend -> API: GET /admin/audit?correlationId=abc
+alt sem ADMIN
+  API -> AuditService: denied(ACCESS_DENIED)
+  API --> Frontend: 403
+else senão
+  API -> UseCase: QueryAuditLogUseCase.execute
+  UseCase -> MySQL: SELECT audit_log WHERE correlation_id = abc
+  API --> Frontend: 200 página de registros
+end
+@enduml

@@ -1,0 +1,80 @@
+@startuml
+title RF11 — Central de carreiras salvas · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Manager|
+start
+:Abre Carreiras salvas;
+|Frontend|
+:GET /careers;
+|Backend|
+:Lista saves com franquia, liga, temporada, semana, campanha e último acesso;
+|Frontend|
+:Slots (ativos e arquivados) e botão Nova carreira;
+|Manager|
+if (cria nova carreira?) then (sim)
+|Backend|
+  if (há slot livre?) then (sim)
+  else (não)
+    :422 SLOT_LIMIT;
+    stop
+  endif
+|Frontend|
+  :Abre o assistente Nova carreira (RF34) → POST /careers;
+  :Abre a central da franquia (RF40);
+  stop
+endif
+|Manager|
+:Seleciona um save;
+|Backend|
+if (dono do save?) then (sim)
+else (não)
+  :403 + ACCESS_DENIED;
+  stop
+endif
+|Manager|
+if (renomeia, muda slot ou arquiva?) then (sim)
+|Frontend|
+  :PATCH /careers/{id};
+|Backend|
+  if (nome válido e único?) then (sim)
+  else (não)
+    :422 / 409;
+    stop
+  endif
+  if (sem partida ao vivo?) then (sim)
+  else (não)
+    :409 MATCH_IN_PROGRESS;
+    stop
+  endif
+  if (versão otimista confere?) then (sim)
+  else (não)
+    :409 CONFLICT;
+    stop
+  endif
+  :Atualiza name, slot, status;
+endif
+|Manager|
+if (exclui o save?) then (sim)
+|Frontend|
+  :Modal: digite o nome do save para confirmar;
+|Backend|
+  if (exclusão confirmada?) then (sim)
+  else (não)
+    :422 CONFIRMATION_REQUIRED;
+    stop
+  endif
+  if (sem partida ao vivo?) then (sim)
+  else (não)
+    :409 MATCH_IN_PROGRESS;
+    stop
+  endif
+  :Transação: remove save, mundo SAVE e agregados · AuditLog CAREER_DELETED;
+  :Evento CareerDeleted → purga play-by-play, inbox, cache e índice;
+endif
+|Frontend|
+:Atualiza a lista de slots;
+end
+@enduml

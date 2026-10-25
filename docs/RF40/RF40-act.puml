@@ -1,0 +1,48 @@
+@startuml
+title RF40 — Central do clube · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Manager|
+start
+:Abre a central da franquia;
+|Frontend|
+:GET /careers/{id}/dashboard;
+|Backend|
+if (dono do save?) then (sim)
+else (não)
+  :403 + ACCESS_DENIED;
+  stop
+endif
+if (head coach empregado?) then (sim)
+  :Franquia, elenco por unidade, moral, contrato, metas, cap space;
+else (não)
+  :Painel de espectador: classificação + propostas;
+endif
+if (há próximo jogo?) then (sim)
+  :Próximo jogo (slot, clima) + próximos adversários da divisão;
+else (não)
+  :Card de bye ou de fim de temporada;
+endif
+if (partida ao vivo?) then (sim)
+  :Card ao vivo: placar, quarto, relógio, '3rd & 7 at OPP 34' (Redis);
+endif
+if (depth chart com titular indisponível?) then (sim)
+  :Alerta com atalho para o depth chart (RF60);
+endif
+:Classificação da divisão, últimas 5 semanas, relatório de lesões (MySQL) · inbox (Cassandra) · Scores Points (Redis);
+if (relatório IA atual?) then (sim)
+else (não)
+  :Pede análise assíncrona (ClubAnalyst);
+endif
+|Frontend|
+:Header, card do jogo, divisão, lesões, teto, alertas, inbox, sidebar;
+|Manager|
+if (clica em Preparar time?) then (sim)
+  :Abre o relatório do adversário (RF7);
+else (não)
+  :Navega: elenco, depth chart, playbook, contratos, draft, calendário;
+endif
+end
+@enduml

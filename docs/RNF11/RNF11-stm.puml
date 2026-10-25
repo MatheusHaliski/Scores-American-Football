@@ -1,0 +1,37 @@
+@startuml
+title RNF11 — Tratamento de uploads de formulários · Máquina de estados: Upload de mídia (MediaAsset.status)
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "Recebido" as Recebido
+Recebido : multipart em streaming
+state "Validando" as Validando
+Validando : taxa, cota, tamanho, tipo, dimensões
+state "Escaneando" as Escaneando
+Escaneando : ClamAV
+state "QUARANTINED" as QUARANTINED
+QUARANTINED : bucket isolado
+state "Processando" as Processando
+Processando : WebP sem EXIF
+state "STORED" as STORED
+STORED : S3 privado, chave opaca
+state "Vinculado" as Vinculado
+Vinculado : usado por franquia, capacete, estádio ou jogador
+state "Rejeitado" as Rejeitado
+Rejeitado : 4xx
+state "DELETED" as DELETED
+DELETED : órfã > 24 h ou DELETE
+[*] --> Recebido
+Recebido --> Validando : início
+Validando --> Rejeitado : regra violada
+Validando --> Escaneando : ok
+Escaneando --> QUARANTINED : infectado
+Escaneando --> Processando : limpo
+Processando --> Rejeitado : corrompido
+Processando --> STORED : PUT ok
+STORED --> Vinculado : consumidor salva
+STORED --> DELETED : órfã > 24 h
+Vinculado --> DELETED : desvinculada e apagada
+Rejeitado --> [*]
+QUARANTINED --> [*]
+DELETED --> [*]
+@enduml

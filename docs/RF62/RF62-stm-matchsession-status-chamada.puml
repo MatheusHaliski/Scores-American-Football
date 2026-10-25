@@ -1,0 +1,16 @@
+@startuml
+title RF62 — Chamada de jogada em momentos decisivos · Máquina de estados: MatchSession.status (chamada)
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "LIVE" as LIVE
+state "AWAITING_DECISION" as AWAITING_DECISION
+state "BREAK" as BREAK
+state "FINISHED" as FINISHED
+[*] --> LIVE
+LIVE --> AWAITING_DECISION : momento decisivo
+AWAITING_DECISION --> LIVE : CHOSEN / AUTO
+LIVE --> BREAK : fim do quarto / intervalo
+BREAK --> LIVE : retoma
+LIVE --> FINISHED : fim do jogo
+FINISHED --> [*]
+@enduml

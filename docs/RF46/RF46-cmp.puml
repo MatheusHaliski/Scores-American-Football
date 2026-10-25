@@ -1,0 +1,60 @@
+@startuml
+title RF46 — Configurações com padrão LGPD e tradução completa · Diagrama de componentes
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 36
+actor "Head coach / manager (usuário autenticado)" as c1
+actor "Agendador/Job assíncrono" as c2
+package "Frontend (Next.js)" as pkg_fe {
+  component "SettingsScreen" as c3
+  frame "componentes de SettingsScreen" as pkg_fe_sub {
+    component "AccountSection" as c4
+    component "PrivacySection" as c5
+    component "AppearanceSection" as c6
+    component "LanguageSection (idioma e unidades)" as c7
+    component "DataSection" as c8
+    component "I18nProvider" as c9
+  }
+}
+package "scores-af-web (REST)" as pkg_web {
+  component "AccountController" as c10
+  component "EmailVerificationController" as c11
+}
+package "scores-af-application (casos de uso)" as pkg_app {
+  component "AccountUseCases" as c12
+  component "PrivacyUseCases" as c13
+  component "SettingsUseCases" as c14
+  component "DataExportUseCases" as c15
+  component "AccountDeletionUseCases" as c16
+}
+package "portas (port.out)" as pkg_ports {
+  interface "UserAccountRepository" as c17
+  interface "ConsentRecordRepository" as c18
+  interface "DataExportJobRepository" as c19
+  interface "MediaStoragePort" as c20
+  interface "AuditLogRepository" as c21
+}
+package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
+  component "persistence-mysql" as c22
+  component "storage-s3" as c23
+}
+database "MySQL 8" as s1
+database "S3/MinIO" as s2
+database "Redis 7" as s3
+c1 --> c3 : usa
+c2 --> c12 : dispara
+c3 --> c10 : PUT /me (alvo)\nPUT /me/email (alvo)\nPUT /me/password (alvo)\n…
+c3 --> c11
+c10 --> c12
+c11 --> c12
+c12 ..> pkg_app : orquestra
+pkg_app --> pkg_ports : depende (DIP)
+c22 .up.|> c17
+c22 .up.|> c18
+c22 .up.|> c19
+c23 .up.|> c20
+c22 .up.|> c21
+c22 --> s1
+c23 --> s2
+@enduml

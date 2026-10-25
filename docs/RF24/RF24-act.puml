@@ -1,0 +1,76 @@
+@startuml
+title RF24 — Responder mensagens do inbox · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Diretoria|
+start
+:Evento do jogo gera mensagem: fim de semana, proposta de troca, holdout, pedido de mais snaps, entrevista;
+|Backend|
+:InboxMessageCreated → MySQL + timeline Cassandra + Notification;
+|Manager|
+:Abre o inbox pela central (RF40);
+|Frontend|
+:GET /careers/{id}/inbox?page=0;
+|Backend|
+if (dono do save?) then (sim)
+else (não)
+  :403 + auditoria ACCESS_DENIED;
+  stop
+endif
+:Lê timeline (Cassandra) e status e opções (MySQL) · UNREAD → READ ao abrir;
+|Frontend|
+:Lista com remetente, assunto, prazo em semanas e botões de opção;
+|Manager|
+:Abre uma mensagem e escolhe uma opção;
+|Frontend|
+:POST /inbox/{mid}/respond {option};
+|Backend|
+if (ainda pendente?) then (sim)
+else (não)
+  :409 MESSAGE_ALREADY_ANSWERED;
+  stop
+endif
+if (dentro do prazo?) then (sim)
+else (não)
+  :EXPIRED + consequência padrão;
+  stop
+endif
+if (opção válida?) then (sim)
+else (não)
+  :422 INVALID_OPTION;
+  stop
+endif
+if (resposta exige recurso?) then (sim)
+  if (caixa e teto suficientes?) then (sim)
+  else (não)
+    :422 INSUFFICIENT_CASH / CAP_SPACE_EXCEEDED;
+    stop
+  endif
+endif
+if (remetente é a diretoria?) then (sim)
+|Diretoria|
+  :moralClub ±, verba concedida ou negada, meta de vitórias ajustada;
+else (não)
+|Backend|
+  if (remetente é jogador?) then (sim)
+|JogadorIA|
+    :moral ±, encerra ou mantém holdout, pede troca;
+  else (não)
+|Backend|
+    if (resposta abre negociação?) then (sim)
+|ClubeIA|
+      :Recebe a contraproposta → TradeProposal COUNTERED (RF19);
+    else (não)
+|Imprensa|
+      :Entrevista publicada como NewsItem · moralLeague ±;
+    endif
+  endif
+endif
+|Backend|
+:MoraleEngine aplica fatores (RF41) · status ANSWERED · chosenOption gravada;
+|Frontend|
+:Mostra o resultado e atualiza o badge de não lidas;
+end
+@enduml

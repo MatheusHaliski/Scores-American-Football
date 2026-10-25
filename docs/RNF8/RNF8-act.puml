@@ -1,0 +1,60 @@
+@startuml
+title RNF8 — Privacidade e conformidade com a LGPD · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Manager|
+start
+:Abre Configurações → Privacidade;
+|Backend|
+if (autenticado?) then (sim)
+else (não)
+  :401;
+  stop
+endif
+|Manager|
+if (altera consentimento?) then (sim)
+|Backend|
+  if (finalidade válida e não pré-marcada?) then (sim)
+  else (não)
+    :422;
+    stop
+  endif
+  :ConsentRecord append-only · CONSENT_GRANTED ou CONSENT_REVOKED · biometria revogada apaga a mídia;
+endif
+|Manager|
+if (pede exportação?) then (sim)
+|Backend|
+  if (exportação recente?) then (sim)
+    :429 com link vigente;
+    stop
+  endif
+|Scheduler|
+  :Coleta conta, configurações, carreiras, compras, consentimentos e auditoria própria · JSON + CSV no S3 privado;
+  :E-mail com link de 24 h · DATA_EXPORT_READY;
+endif
+|Manager|
+if (pede exclusão?) then (sim)
+|Backend|
+  if (reautenticação (step-up)?) then (sim)
+  else (não)
+    :401 / 429;
+    stop
+  endif
+  if (conta é o último ADMIN?) then (sim)
+    :422 LAST_ADMIN;
+    stop
+  endif
+  :PENDING_DELETION · revoga todas as famílias de sessão · e-mail com como cancelar;
+|Scheduler|
+  if (carência de 7 dias vencida?) then (sim)
+    if (trilhas preservadas?) then (sim)
+      :Anonimiza e-mail e nome · apaga mídia e saves · Cassandra com TTL curto · DELETED;
+    else (não)
+      :Banco recusa DELETE físico;
+    endif
+  endif
+endif
+end
+@enduml

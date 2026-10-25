@@ -1,0 +1,80 @@
+@startuml
+title RF13 — Notificações e mensagens (diretoria, jogadores, franquias) · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Scheduler|
+start
+:Ao fim da semana gera mensagens (MoraleEngine, seed);
+|Diretoria|
+:Metas, avisos sobre a campanha, resposta a verba;
+|JogadorIA|
+:Reclamações de snaps, elogios, pedido de contrato, atualização de lesão;
+|ClubeIA|
+:Propostas de troca com picks, interesse em free agents, waivers;
+|Backend|
+:Grava InboxMessage (MySQL) · projeta timeline (Cassandra) · notificação do usuário;
+|Manager|
+:Vê o sino e abre a Inbox;
+|Frontend|
+:GET /careers/{id}/inbox e GET /me/notifications;
+|Backend|
+if (dono do save?) then (sim)
+else (não)
+  :403 + ACCESS_DENIED;
+  stop
+endif
+|Frontend|
+:Lista por remetente e tipo com opções e prazo · marca READ ao abrir;
+|Manager|
+:Escolhe uma opção de resposta;
+|Frontend|
+:POST /inbox/{mid}/respond {option};
+|Backend|
+if (mensagem aberta?) then (sim)
+else (não)
+  :409 MESSAGE_CLOSED;
+  stop
+endif
+if (opção válida?) then (sim)
+else (não)
+  :422 OPTION_INVALID;
+  stop
+endif
+if (prazo respeitado?) then (sim)
+else (não)
+  :409 DEADLINE_PASSED;
+  stop
+endif
+if (resposta muda outro agregado?) then (sim)
+  :Delega ao caso de uso do RF (RF9, RF14, RF49, RF50, RF64, RF65) na mesma transação;
+else (não)
+  :Aplica efeito de moral e relacionamento;
+endif
+if (reação positiva?) then (sim)
+  :Moral + · resposta de agradecimento;
+else (não)
+  :Moral − · resposta negativa;
+endif
+if (narrativa por IA disponível?) then (sim)
+  :Texto da resposta pelo Claude;
+else (não)
+  :Texto por template;
+endif
+:Mensagem ANSWERED com chosenOption · retorno e notificação;
+|Manager|
+if (marca notificações como lidas?) then (sim)
+|Frontend|
+  :POST /me/notifications/read {ids};
+|Backend|
+  if (notificação do usuário?) then (sim)
+    :read = true;
+  else (não)
+    :Ignora id;
+  endif
+endif
+|Scheduler|
+:Expira mensagens vencidas aplicando a opção padrão;
+end
+@enduml

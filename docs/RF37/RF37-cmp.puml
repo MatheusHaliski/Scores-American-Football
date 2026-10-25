@@ -1,0 +1,82 @@
+@startuml
+title RF37 — Head coach desempregado e propostas pela moral com a liga · Diagrama de componentes
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 36
+actor "Head coach / manager (usuário autenticado)" as c1
+actor "Agendador/Job assíncrono" as c2
+actor "Franquia adversária (IA)" as c3
+actor "Diretoria da franquia (IA)" as c4
+package "Frontend (Next.js)" as pkg_fe {
+  component "ClubCentralPage" as c5
+  frame "componentes de ClubCentralPage" as pkg_fe_sub {
+    component "SpectatorBanner" as c6
+    component "SpectatorWeekControls" as c7
+    component "JobOffersPanel" as c8
+    component "JobOfferModal" as c9
+    component "WorldManagersPage" as c10
+  }
+}
+package "scores-af-web (REST)" as pkg_web {
+  component "CareerController" as c11
+  component "WeekController" as c12
+  component "ManagerController" as c13
+}
+package "scores-af-application (casos de uso)" as pkg_app {
+  component "GetClubDashboardUseCase" as c14
+  component "PlayWeekUseCase" as c15
+  component "ListJobOffersUseCase" as c16
+  component "RespondJobOfferUseCase" as c17
+  component "JobOfferGenerationJob" as c18
+  component "JobOfferExpiryJob" as c19
+  component "DismissManagerHandler" as c20
+}
+package "scores-af-domain/engine" as pkg_eng {
+  component "MoraleEngine" as c21
+  component "JobOfferPolicy" as c22
+  component "MatchSimulator" as c23
+}
+package "portas (port.out)" as pkg_ports {
+  interface "CareerSaveRepository" as c24
+  interface "JobOfferRepository" as c25
+  interface "ManagerContractRepository" as c26
+  interface "ManagerMoraleRepository" as c27
+  interface "ManagerCareerRecordRepository" as c28
+  interface "ClubRepository" as c29
+  interface "TimelinePort" as c30
+  interface "CounterPort" as c31
+}
+package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
+  component "persistence-mysql" as c32
+  component "persistence-cassandra" as c33
+  component "cache-redis" as c34
+}
+database "MySQL 8" as s1
+database "Cassandra 4.1" as s2
+database "Redis 7" as s3
+c1 --> c5 : usa
+c2 --> c14 : dispara
+c5 --> c11 : GET /careers/{id}/dashboard (alvo)\nPOST /careers/{id}/weeks/current/play (alvo)\nGET /careers/{id}/job-offers (alvo)\n…
+c5 --> c12
+c5 --> c13
+c11 --> c14
+c12 --> c14
+c13 --> c14
+c14 ..> pkg_app : orquestra
+c14 --> c21 : usa
+c14 --> c22 : usa
+c14 --> c23 : usa
+pkg_app --> pkg_ports : depende (DIP)
+c32 .up.|> c24
+c32 .up.|> c25
+c32 .up.|> c26
+c32 .up.|> c27
+c32 .up.|> c28
+c32 .up.|> c29
+c33 .up.|> c30
+c34 .up.|> c31
+c32 --> s1
+c33 --> s2
+c34 --> s3
+@enduml

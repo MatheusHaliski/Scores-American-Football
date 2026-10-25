@@ -1,0 +1,16 @@
+@startuml
+title RF46 — Configurações com padrão LGPD e tradução completa · Máquina de estados: DataExportJob.status
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "REQUESTED" as REQUESTED
+state "READY" as READY
+READY : link 24 h
+state "EXPIRED" as EXPIRED
+state "FAILED" as FAILED
+[*] --> REQUESTED
+REQUESTED --> READY : JSON + CSV gerados
+REQUESTED --> FAILED : erro
+READY --> EXPIRED : 24 h
+EXPIRED --> [*]
+FAILED --> [*]
+@enduml

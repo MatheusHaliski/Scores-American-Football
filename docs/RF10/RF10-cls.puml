@@ -1,0 +1,104 @@
+@startuml
+title RF10 — Configurações de jogo e interface · Diagrama de classes
+skinparam classAttributeIconSize 0
+hide empty methods
+package "account" {
+  class UserAccount {
+    id: UUID
+    email: String «AES-GCM»
+    emailHash: String «unique»
+    passwordHash: String «Argon2id»
+    displayName: String
+    locale: Locale
+    role: Role
+    status: AccountStatus
+    failedLoginAttempts: int
+    lockedUntil: Instant
+    marketingConsent: boolean
+    deletionRequestedAt: Instant
+    profileVisibility: ProfileVisibility
+    birthDate: LocalDate
+    pendingEmail: String
+  }
+  class UserSettings {
+    simQuarterMinutes: int
+    playCallingLevel: PlayCallingLevel (KEY_MOMENTS|ALL_PLAYS|NONE)
+    decisionTimeoutSeconds: int
+    difficulty: Difficulty
+    theme: ThemeMode
+    highContrast: boolean
+    fontScale: FontScale
+    reducedMotion: boolean
+    regionalFormat: String
+    units: YardsOrMeters
+    notificationsEnabled: boolean
+  }
+}
+package "store" {
+  class StoreItem {
+    code: String
+    kind: StoreItemKind
+    name: String
+    priceScoresPoints: int
+    assetUrl: String
+    payload: JSON
+    rarity: Rarity
+  }
+  class Purchase {
+    purchasedAt: Instant
+    pricePaid: int
+  }
+}
+package "match" {
+  class MatchSession {
+    status: LiveStatus
+    quarter: int
+    clockSeconds: int
+    playClockSeconds: int
+    possession: Club
+    down: int (1–4)
+    distance: int
+    ballOnAbsYd: int (0–100)
+    homeScore: int
+    awayScore: int
+    timeoutsHome: int
+    timeoutsAway: int
+    seed: long
+    rngCursor: long
+    snapshotJson: TEXT
+    decisionsLog: JSON
+    version: long
+  }
+}
+class UpdateSettingsUseCase <<UseCase>> {
+  execute(UpdateSettingsCommand): SettingsResult
+}
+class UpdateSettingsCommand <<record>> {
+  userId: UUID
+  simQuarterMinutes: int (1–15)
+  playCallingLevel: PlayCallingLevel
+  decisionTimeoutSeconds: int (10–60)
+  difficulty: Difficulty
+  units: YardsOrMeters
+  theme: ThemeMode
+  highContrast: boolean
+  fontScale: FontScale
+  reducedMotion: boolean
+}
+class SettingsResult <<record>> {
+  settings: SettingsDto
+  appliesFromNextGame: boolean
+}
+class SettingsValidator <<Policy>> {
+  validate(cmd, ownedItems): List<String>
+}
+UserAccount "1" -- "1" UserSettings : configurações
+UserAccount "1" -- "*" Purchase
+Purchase "*" -- "1" StoreItem
+UpdateSettingsUseCase ..> UpdateSettingsCommand : recebe
+UpdateSettingsUseCase ..> SettingsResult : produz
+UpdateSettingsUseCase ..> SettingsValidator : usa
+UpdateSettingsUseCase ..> UserSettings : grava
+UpdateSettingsUseCase ..> MatchSession : partida ao vivo?
+SettingsValidator ..> Purchase : checa posse
+@enduml

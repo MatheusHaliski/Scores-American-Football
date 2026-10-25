@@ -1,0 +1,80 @@
+@startuml
+title RF28 — Editar logo, cores, capacete e uniformes · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Manager|
+start
+:Clica em Editar franquia na central (RF40) ou no editor (RF5);
+|Frontend|
+:GET /clubs/{id}/identity + GET /store/catalog?category=HELMET,UNIFORM,CLUB_LOGO;
+|Backend|
+if (pode ler o mundo?) then (sim)
+else (não)
+  :403;
+  stop
+endif
+|Frontend|
+:Modal com abas Logo, Cores, Capacete, Uniformes e prévia 3D (capacete girando, atleta com uniforme, daltonismo);
+|Manager|
+if (envia logo ou decal?) then (sim)
+|Frontend|
+  :POST /media/upload (multipart);
+|Backend|
+  if (logo válido (RNF11)?) then (sim)
+  else (não)
+    :422 MEDIA_INVALID / MEDIA_INFECTED;
+    stop
+  endif
+  :Re-encode sem EXIF, grava no S3 (chave UUID);
+else (não)
+|Manager|
+  if (usa item da loja?) then (sim)
+|Frontend|
+    :POST /me/inventory/{iid}/apply {clubId};
+|Backend|
+    if (item da loja possuído?) then (sim)
+    else (não)
+      :422 ITEM_NOT_OWNED;
+      stop
+    endif
+  endif
+endif
+|Manager|
+:Ajusta cores, capacete (casca, faixa, grade, acabamento) e uniformes HOME, AWAY, ALTERNATE;
+|Frontend|
+:POST /identity/preview (valida sem gravar);
+:PUT /identity · PUT /helmet · PUT /uniforms/{slot};
+|Backend|
+if (franquia editável?) then (sim)
+else (não)
+  :422 WORLD_READ_ONLY / 403;
+  stop
+endif
+if (versão atual?) then (sim)
+else (não)
+  :409 IDENTITY_VERSION_CONFLICT;
+  stop
+endif
+if (identidade válida?) then (sim)
+else (não)
+  :422 IDENTITY_INVALID;
+  stop
+endif
+if (capacete válido?) then (sim)
+else (não)
+  :422 HELMET_INVALID;
+  stop
+endif
+if (casa e fora distinguíveis?) then (sim)
+else (não)
+  :422 KIT_CLASH;
+  stop
+endif
+:TX: Club, HelmetDesign e Uniform[slot] com versão +1 → CatalogChanged;
+note right: a partida em andamento não muda: uniforme e capacete ficam fixos no snapshot do kickoff
+|Frontend|
+:Atualiza header, cards, end zone e painel LED 3D;
+end
+@enduml

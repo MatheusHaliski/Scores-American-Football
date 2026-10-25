@@ -1,0 +1,44 @@
+@startuml
+title RF33 — Scores Points por metas em qualquer modo · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+control "AuditService" as AuditService
+queue "EventBus" as EventBus
+database "MySQL 8" as MySQL
+database "Redis 7" as Redis
+database "Cassandra 4.1" as Cassandra
+participant "Agendador/Job assíncrono" as Scheduler
+EventBus -> Scheduler: MatchFinished / WeekCompleted / SeasonEnded / ONLINE_* (AFTER_COMMIT)
+Scheduler -> UseCase: GameRewardService.on(event)
+UseCase -> MySQL: goals ACTIVE + wallet SAVE + difficulty, seasonMode
+loop cada meta afetada
+  UseCase -> MySQL: UPDATE goal.progress
+  alt progress ≥ target e não recompensada (refId)
+    UseCase -> Redis: pontos ganhos hoje (teto 500)
+    UseCase -> MySQL: TX: goal REWARDED · PointsTransaction GOAL_COMPLETED (balanceAfter) · wallet @Version
+    UseCase -> Redis: INCRBY espelho do saldo
+    UseCase -> EventBus: PointsEarned
+    EventBus -> Cassandra: Notification: Meta concluída (+N)
+  else senão
+  end
+end
+Manager -> Frontend: abre Metas
+Frontend -> API: GET /careers/{id}/goals
+API -> UseCase: GetGoalsUseCase.execute(id, userId)
+UseCase -> MySQL: requireOwner + goals
+alt não é dono
+  UseCase -> AuditService: record(ACCESS_DENIED)
+  API --> Frontend: 403
+else senão
+  API --> Frontend: 200 List<GoalDto>
+  Frontend -> API: GET /careers/{id}/wallet
+  API -> UseCase: WalletService.of(save)
+  UseCase -> MySQL: wallet + últimas PointsTransaction
+  API --> Frontend: 200 WalletDto
+end
+@enduml

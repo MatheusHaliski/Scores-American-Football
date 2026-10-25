@@ -1,0 +1,41 @@
+@startuml
+title RNF5 — Criptografia de dados sensíveis · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Visitante (não autenticado)" as Visitante
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+control "AuditService" as AuditService
+database "MySQL 8" as MySQL
+participant "Email" as Email
+participant "Agendador/Job assíncrono" as Scheduler
+Visitante -> Frontend: cadastro
+Frontend -> API: POST /auth/register (TLS)
+API -> UseCase: RegisterUserUseCase.execute
+UseCase -> UseCase: emailHash = HMAC-SHA256(normalize(email))
+UseCase -> UseCase: PasswordHasher.hash «Argon2id, semáforo, fora da TX»
+alt teto de hashes cheio
+  API --> Frontend: 503 AUTH_BUSY RFC 7807 {type, title, status, code, message, details, correlationId, locale}
+else senão
+  UseCase -> MySQL: INSERT user_account (email AES-GCM, emailHash, displayName AES-GCM, passwordHash)
+  UseCase -> AuditService: ok(REGISTER) sem valores sensíveis
+  UseCase -> Email: verificação (destinatário mascarado no log)
+  API --> Frontend: 201
+end
+Manager -> Frontend: abre a conta
+Frontend -> API: GET /me
+API -> UseCase: AccountUseCases.profile(sub)
+UseCase -> MySQL: SELECT user_account WHERE id = sub
+MySQL --> UseCase: ciphertexts
+UseCase -> UseCase: AesGcmConverter.decrypt (só titular)
+API --> Frontend: 200 {email, displayName}
+Scheduler -> Scheduler: CI: gitleaks git --redact (histórico inteiro) · npm audit · testes de guarda
+alt segredo encontrado
+  Scheduler -> Scheduler: job vermelho (valor redigido) · rotacionar no Cofre
+else senão
+  Scheduler -> Scheduler: verde
+end
+@enduml

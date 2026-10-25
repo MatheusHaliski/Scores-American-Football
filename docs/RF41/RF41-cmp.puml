@@ -1,0 +1,94 @@
+@startuml
+title RF41 — Moral do head coach (franquia e liga) e do jogador · Diagrama de componentes
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 36
+actor "Agendador/Job assíncrono" as c1
+actor "Head coach / manager (usuário autenticado)" as c2
+actor "Diretoria da franquia (IA)" as c3
+actor "Franquia adversária (IA)" as c4
+actor "Jogador (IA)" as c5
+actor "Imprensa (IA)" as c6
+package "Frontend (Next.js)" as pkg_fe {
+  component "MoraleGauges" as c7
+  frame "componentes de MoraleGauges" as pkg_fe_sub {
+    component "MoraleFactorsPanel" as c8
+    component "DismissalRiskBadge" as c9
+    component "PlayerMoraleChip" as c10
+    component "InboxDecisionDialog" as c11
+  }
+}
+package "scores-af-web (REST)" as pkg_web {
+  component "ManagerController" as c12
+  component "InboxController" as c13
+  component "SquadController" as c14
+  component "WeekController" as c15
+}
+package "scores-af-application (casos de uso)" as pkg_app {
+  component "MoraleWeekJob" as c16
+  component "GetManagerMoraleUseCase" as c17
+  component "RespondInboxMessageUseCase" as c18
+  component "PlayWeekUseCase" as c19
+  component "MoraleContextAssembler" as c20
+}
+package "scores-af-domain/engine" as pkg_eng {
+  component "ManagerMoraleEngine" as c21
+  component "PlayerMoraleEngine" as c22
+  component "SnapExpectationTable" as c23
+  component "JobOfferPolicy" as c24
+  component "TradeInterestPolicy" as c25
+  component "InboxDecisionPolicy" as c26
+  component "ContextFactors" as c27
+  component "ClubAnalyst" as c28
+}
+package "portas (port.out)" as pkg_ports {
+  interface "ManagerMoraleRepository" as c29
+  interface "PlayerRepository" as c30
+  interface "PlayerMatchStatsRepository" as c31
+  interface "DepthChartRepository" as c32
+  interface "TradeProposalRepository" as c33
+  interface "InboxMessageRepository" as c34
+  interface "TimelinePort" as c35
+  interface "CounterPort" as c36
+}
+package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
+  component "persistence-mysql" as c37
+  component "persistence-cassandra" as c38
+  component "cache-redis" as c39
+}
+database "MySQL 8" as s1
+database "Cassandra 4.1" as s2
+database "Redis 7" as s3
+c1 --> c16 : dispara
+c2 --> c7 : usa
+c7 --> c12 : GET /careers/{id}/morale (alvo)\nGET /careers/{id}/players/{pid} (alvo)\nPOST /careers/{id}/weeks/current/play (alvo)\n…
+c7 --> c13
+c7 --> c14
+c7 --> c15
+c12 --> c16
+c13 --> c16
+c14 --> c16
+c15 --> c16
+c16 ..> pkg_app : orquestra
+c16 --> c21 : usa
+c16 --> c22 : usa
+c16 --> c23 : usa
+c16 --> c24 : usa
+c16 --> c25 : usa
+c16 --> c26 : usa
+c16 --> c27 : usa
+c16 --> c28 : usa
+pkg_app --> pkg_ports : depende (DIP)
+c37 .up.|> c29
+c37 .up.|> c30
+c37 .up.|> c31
+c37 .up.|> c32
+c37 .up.|> c33
+c37 .up.|> c34
+c38 .up.|> c35
+c39 .up.|> c36
+c37 --> s1
+c38 --> s2
+c39 --> s3
+@enduml

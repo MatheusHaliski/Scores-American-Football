@@ -1,0 +1,74 @@
+@startuml
+title RF16 — Classificação (divisões, conferências) e placares das semanas · Diagrama de componentes
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 36
+actor "Head coach / manager (usuário autenticado)" as c1
+package "Frontend (Next.js)" as pkg_fe {
+  component "StandingsPage" as c2
+  frame "componentes de StandingsPage" as pkg_fe_sub {
+    component "ViewSelector (divisão/conferência/liga)" as c3
+    component "DivisionTable" as c4
+    component "TiebreakerNotePopover" as c5
+    component "SeedBadges" as c6
+    component "WeekNavigator" as c7
+    component "ScoreCard" as c8
+    component "WeekLeadersPanel" as c9
+    component "PlayoffBracket" as c10
+  }
+}
+package "scores-af-web (REST)" as pkg_web {
+  component "SeasonController" as c11
+  component "WeekController" as c12
+}
+package "scores-af-application (casos de uso)" as pkg_app {
+  component "GetStandingsUseCase" as c13
+  component "GetWeekPanelUseCase" as c14
+  component "GetPlayoffBracketUseCase" as c15
+  component "GetCalendarUseCase" as c16
+  component "CareerAccess" as c17
+  component "StandingsAssembler" as c18
+}
+package "scores-af-domain/engine" as pkg_eng {
+  component "SeasonEngine" as c19
+  component "TiebreakerPolicy" as c20
+}
+package "portas (port.out)" as pkg_ports {
+  interface "CareerSaveRepository" as c21
+  interface "SeasonRepository" as c22
+  interface "LeagueRepository" as c23
+  interface "StandingRepository" as c24
+  interface "FixtureRepository" as c25
+  interface "PlayerMatchStatsRepository" as c26
+  interface "PlayoffSeedRepository" as c27
+  interface "CounterPort" as c28
+  interface "LiveMatchStatePort" as c29
+}
+package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
+  component "persistence-mysql" as c30
+  component "cache-redis" as c31
+}
+database "MySQL 8" as s1
+database "Redis 7" as s2
+c1 --> c2 : usa
+c2 --> c11 : GET /careers/{id}/standings (alvo)\nGET /careers/{id}/weeks/{n} (alvo)\nGET /careers/{id}/playoffs (alvo)\n…
+c2 --> c12
+c11 --> c13
+c12 --> c13
+c13 ..> pkg_app : orquestra
+c13 --> c19 : usa
+c13 --> c20 : usa
+pkg_app --> pkg_ports : depende (DIP)
+c30 .up.|> c21
+c30 .up.|> c22
+c30 .up.|> c23
+c30 .up.|> c24
+c30 .up.|> c25
+c30 .up.|> c26
+c30 .up.|> c27
+c31 .up.|> c28
+c31 .up.|> c29
+c30 --> s1
+c31 --> s2
+@enduml

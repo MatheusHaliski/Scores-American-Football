@@ -1,0 +1,93 @@
+@startuml
+title RF64 — Relatório de lesões semanal · Diagrama de classes
+skinparam classAttributeIconSize 0
+hide empty methods
+package "catalog" {
+  class Club {
+    id: UUID
+    name: String
+    shortName: String
+    city: String
+    conference: Conference
+    division: Division
+    logoKey: String
+    primaryColor: String
+    secondaryColor: String
+    accentColor: String
+    prestige: int
+    reputationBoard: int
+    reputationFans: int
+    cash: long
+    capSpace: long
+    isUserControlled: boolean
+    expectedWins: int
+    scoutingLevel: int
+    scoutingBudget: long
+  }
+  class Player {
+    id: UUID
+    name: String
+    nationality: String
+    college: String
+    birthDate: LocalDate
+    age: int
+    heightCm: int
+    weightKg: int
+    position: Position (QB|RB|FB|WR|TE|LT|LG|C|RG|RT|DE|DT|OLB|MLB|CB|FS|SS|K|P|LS)
+    unit: Unit (OFFENSE|DEFENSE|SPECIAL)
+    attributes: PlayerAttributes
+    overall: int «por posição, OVR v1»
+    potential: int
+    experienceYears: int
+    rosterStatus: RosterStatus (ACTIVE|INACTIVE|PRACTICE_SQUAD|IR|PUP|FREE_AGENT|WAIVED)
+    condition: int
+    morale: int
+    moraleFactors: JSON
+    injury: Injury?
+    suspensionWeeks: int
+    contract: PlayerContract
+    jerseyNumber: int
+    isLegendary: boolean
+    model3dUrl: String
+  }
+}
+package "match" {
+  class Injury {
+    «embedded» kind: InjuryKind
+    bodyPart: String
+    severity: Severity
+    weeksOut: int
+    occurredWeek: int
+  }
+  class InjuryReport {
+    week: int
+    player: Player
+    status: InjuryStatus (QUESTIONABLE|DOUBTFUL|OUT|IR)
+    practice: PracticeStatus (FULL|LIMITED|DNP)
+    returnEstimateWeek: Integer
+    publishedAt: Instant
+  }
+  class DepthChart {
+    club: Club
+    version: long
+    updatedAt: Instant
+    validated: boolean
+  }
+}
+class PlaceOnInjuredReserveUseCase <<UseCase>> {
+  execute(saveId, reportId): RosterResult «@Transactional»
+}
+class InjuryStatusPolicy <<Policy>> {
+  practice(injury, day): PracticeStatus
+  gameStatus(injury, practice): InjuryStatus
+}
+Club "1" -- "0..53" Player : elenco ativo
+Club "*" -- "*" Club : rivais da divisão
+Club "1" -- "1" DepthChart
+Player "1" -- "0..1" Injury : «embedded»
+Club "1" -- "*" InjuryReport : semanal
+InjuryReport "*" -- "1" Player
+PlaceOnInjuredReserveUseCase ..> InjuryReport : atualiza
+InjuryStatusPolicy ..> Injury : lê
+InjuryStatusPolicy ..> InjuryReport : define status
+@enduml

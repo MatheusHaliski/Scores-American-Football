@@ -1,0 +1,22 @@
+@startuml
+title RF45 — Multiplayer online: salas por turnos e Ultimate Team · Máquina de estados: CupEntry.status
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "ENTERED" as ENTERED
+state "ACTIVE" as ACTIVE
+state "ELIMINATED" as ELIMINATED
+state "CHAMPION" as CHAMPION
+state "WITHDRAWN" as WITHDRAWN
+state "CLOSED_BY_WINDOW" as CLOSED_BY_WINDOW
+[*] --> ENTERED
+ENTERED --> ACTIVE : chave sorteada
+ACTIVE --> ACTIVE : vence e avança
+ACTIVE --> ELIMINATED : perde · WO por prazo
+ACTIVE --> CHAMPION : vence a final
+ENTERED --> WITHDRAWN : desistência
+ENTERED --> CLOSED_BY_WINDOW : janela fecha
+ELIMINATED --> [*]
+CHAMPION --> [*]
+WITHDRAWN --> [*]
+CLOSED_BY_WINDOW --> [*]
+@enduml

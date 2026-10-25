@@ -1,0 +1,20 @@
+@startuml
+title RF50 — Trocas com jogadores e picks de draft · Máquina de estados: DraftPick (propriedade)
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "Próprio" as PROPRIO
+PROPRIO : ownerClub == originalClub
+state "Adquirido" as ADQUIRIDO
+ADQUIRIDO : veio em troca
+state "Numerado" as NUMERADO
+NUMERADO : overall definido no fim da temporada
+state "Usado no draft (RF51)" as USADO
+[*] --> PROPRIO
+PROPRIO --> ADQUIRIDO : trocado
+ADQUIRIDO --> ADQUIRIDO : trocado de novo
+ADQUIRIDO --> PROPRIO : volta ao dono original
+PROPRIO --> NUMERADO : ordem do draft
+ADQUIRIDO --> NUMERADO : ordem do draft
+NUMERADO --> USADO : escolha feita
+USADO --> [*]
+@enduml

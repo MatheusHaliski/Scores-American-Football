@@ -1,0 +1,57 @@
+@startuml
+title RF12 — Estádio (aberto ou coberto), setores e ingressos · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+control "AuditService" as AuditService
+control "FinanceEngine" as FinanceEngine
+queue "EventBus" as EventBus
+database "MySQL 8" as MySQL
+database "Cassandra 4.1" as Cassandra
+database "S3/MinIO" as S3
+participant "Agendador/Job assíncrono" as Scheduler
+actor "Diretoria da franquia (IA)" as Diretoria
+Manager -> Frontend: abre Estádio 3D
+Frontend -> API: GET /careers/{id}/stadium
+API -> UseCase: GetStadiumUseCase.execute(id, userId)
+UseCase -> MySQL: save + owner check · stadium · sectors · club.cash · jogos em casa restantes
+alt não é dono / desempregado
+  UseCase -> AuditService: record(ACCESS_DENIED)
+  API --> Frontend: 403
+else senão
+  UseCase -> FinanceEngine: forecastAttendance(sectors, prices, prestige, record, rival, roof, climate)
+  FinanceEngine --> UseCase: público e renda por jogo em casa
+  UseCase -> S3: publicUrl(models3d/stadium)
+  API --> Frontend: 200 StadiumResult
+end
+Manager -> Frontend: reformar setor da end zone
+Frontend -> API: PUT /careers/{id}/stadium/sectors/{sid} {renovate, seats, ticketPrice}
+API -> UseCase: UpdateSectorUseCase.execute(cmd) «@Transactional»
+UseCase -> FinanceEngine: sectorCost + validações de faixa, capacidade e cota
+alt capacidade / cota / preço inválidos
+  API --> Frontend: 422 CAPACITY_LIMIT | POLICY_INVALID | PRICE_OUT_OF_RANGE
+else senão
+  alt cash < custo
+    API --> Frontend: 422 INSUFFICIENT_CASH
+  else senão
+    alt custo > 30 % do caixa
+      UseCase -> FinanceEngine: boardApproves(moralClub)
+      FinanceEngine -> Diretoria: avaliação
+      Diretoria --> UseCase: aprova / recusa
+    else senão
+    end
+    UseCase -> MySQL: UPDATE sector · club.cash −= custo · INSERT ledger STADIUM
+    UseCase -> EventBus: StadiumChanged + InboxMessageCreated(BOARD)
+    EventBus -> Cassandra: appendInbox
+    API --> Frontend: 200 SectorDto
+  end
+end
+Scheduler -> UseCase: WeekCompleted → StadiumConstructionJob
+UseCase -> MySQL: semanas de obra −1 · concluída: condition 100, capacidade, atmosfera
+Scheduler -> FinanceEngine: após jogo em casa: attendance e revenue da fixture
+FinanceEngine -> MySQL: UPDATE fixture.attendance, revenue · INSERT ledger GATE
+@enduml

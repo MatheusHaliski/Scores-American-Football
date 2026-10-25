@@ -1,0 +1,30 @@
+@startuml
+title RF12 — Estádio (aberto ou coberto), setores e ingressos · Máquina de estados: StadiumSector (obra e operação)
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "Comprado" as PLANNED
+PLANNED : ledger STADIUM debitado
+state "Em obra" as UNDER_CONSTRUCTION
+UNDER_CONSTRUCTION : semanas de obra > 0
+UNDER_CONSTRUCTION : não vende ingressos
+state "Operacional" as OPERATIONAL
+OPERATIONAL : condition ≥ 40
+OPERATIONAL : preço e carnês ativos
+state "Degradado" as DEGRADED
+DEGRADED : condition < 40
+DEGRADED : atmosfera e ocupação menores
+state "Em reforma" as RENOVATING
+RENOVATING : condition → 100 ao concluir
+state "Removido" as REMOVED
+REMOVED : capacidade recalculada (≥ 60 mil)
+[*] --> PLANNED
+PLANNED --> UNDER_CONSTRUCTION : obra iniciada
+UNDER_CONSTRUCTION --> OPERATIONAL : obra concluída (Scheduler)
+OPERATIONAL --> DEGRADED : desgaste por jogo em casa
+DEGRADED --> RENOVATING : PUT renovate
+OPERATIONAL --> RENOVATING : PUT renovate / amplia
+RENOVATING --> OPERATIONAL : obra concluída
+OPERATIONAL --> REMOVED : DELETE
+DEGRADED --> REMOVED : DELETE
+REMOVED --> [*]
+@enduml

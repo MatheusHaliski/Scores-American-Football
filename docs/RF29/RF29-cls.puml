@@ -1,0 +1,194 @@
+@startuml
+title RF29 — Playbook no intervalo · Diagrama de classes
+skinparam classAttributeIconSize 0
+hide empty methods
+package "season" {
+  class Fixture {
+    week: int
+    date: LocalDate
+    slot: KickoffSlot (THU_NIGHT|SUN_EARLY|SUN_LATE|SUN_NIGHT|MON_NIGHT)
+    status: FixtureStatus
+    homeScore: int
+    awayScore: int
+    quarterScores: JSON
+    overtime: boolean
+    isDivisional: boolean
+    isConference: boolean
+    neutralSite: boolean
+    weather: Weather
+    attendance: int
+    revenue: long
+    importance: FixtureImportance
+    seed: long
+    isUserFixture: boolean
+  }
+}
+package "match" {
+  class MatchSession {
+    status: LiveStatus
+    quarter: int
+    clockSeconds: int
+    playClockSeconds: int
+    possession: Club
+    down: int (1–4)
+    distance: int
+    ballOnAbsYd: int (0–100)
+    homeScore: int
+    awayScore: int
+    timeoutsHome: int
+    timeoutsAway: int
+    seed: long
+    rngCursor: long
+    snapshotJson: TEXT
+    decisionsLog: JSON
+    version: long
+  }
+  class GamePlan {
+    runPassBalance: int (0–100)
+    fourthDownAggression: Aggression
+    tempo: Tempo (HURRY_UP|NORMAL|MILK_CLOCK)
+    offensiveFocus: JSON
+    defensiveFocus: DefensiveFocus
+    blitzFrequency: Emphasis
+    baseDefense: DefensePackage (4-3|3-4)
+    keyPlayers: List<UUID>
+    situationTendencies: JSON (3ª e curta, red zone, 2 minutos)
+  }
+  class Playbook {
+    name: String
+    offensiveScheme: OffensiveScheme (WEST_COAST|AIR_RAID|SPREAD|POWER_RUN)
+    defensiveScheme: DefensiveScheme
+    plays: List<PlayDefinition>
+    custom: boolean
+  }
+  class PlayDefinition {
+    code: String
+    side: Side (OFFENSE|DEFENSE|SPECIAL)
+    formation: Formation (I|SINGLEBACK|SHOTGUN|PISTOL|EMPTY|GOAL_LINE)
+    personnel: String (11, 12, 21…)
+    concept: PlayConcept (INSIDE_RUN|OUTSIDE_RUN|SHORT|MEDIUM|DEEP|SCREEN|PLAY_ACTION|SNEAK|PUNT|FG)
+    coverage: Coverage (COVER_0..COVER_6, MAN|ZONE)
+    blitz: boolean
+    diagram: JSON (rotas, bloqueios)
+  }
+  class DepthChart {
+    club: Club
+    version: long
+    updatedAt: Instant
+    validated: boolean
+  }
+  class DepthChartSlot {
+    unit: Unit
+    position: Position | Role (KR|PR|3RD_DOWN_BACK|SNAPPER|HOLDER)
+    depth: int (1, 2, 3…)
+    player: Player
+    outOfPosition: boolean
+  }
+  class TeamMatchStats {
+    firstDowns: int
+    thirdDown: String
+    fourthDown: String
+    redZone: String
+    totalYards: int
+    passYards: int
+    rushYards: int
+    timeOfPossession: String
+    turnovers: int
+    penalties: int
+    penaltyYards: int
+    sacks: int
+  }
+}
+package "catalog" {
+  class Player {
+    id: UUID
+    name: String
+    nationality: String
+    college: String
+    birthDate: LocalDate
+    age: int
+    heightCm: int
+    weightKg: int
+    position: Position (QB|RB|FB|WR|TE|LT|LG|C|RG|RT|DE|DT|OLB|MLB|CB|FS|SS|K|P|LS)
+    unit: Unit (OFFENSE|DEFENSE|SPECIAL)
+    attributes: PlayerAttributes
+    overall: int «por posição, OVR v1»
+    potential: int
+    experienceYears: int
+    rosterStatus: RosterStatus (ACTIVE|INACTIVE|PRACTICE_SQUAD|IR|PUP|FREE_AGENT|WAIVED)
+    condition: int
+    morale: int
+    moraleFactors: JSON
+    injury: Injury?
+    suspensionWeeks: int
+    contract: PlayerContract
+    jerseyNumber: int
+    isLegendary: boolean
+    model3dUrl: String
+  }
+  class LeagueRules {
+    «embedded» version: int
+    quarterMinutes: int = 15
+    playClockSeconds: int = 40
+    playClockAfterStoppageSeconds: int = 25
+    twoMinuteWarning: boolean
+    timeoutsPerHalf: int = 3
+    overtimeMinutes: int = 10
+    overtimeBothPossess: boolean
+    regularSeasonTiesAllowed: boolean
+    kickoffYardLine: int = 35
+    touchbackYardLine: int
+    patYardLine: int = 15
+    clockStopsOnFirstDown: boolean (COLLEGE)
+    oneFootInbounds: boolean (COLLEGE)
+    hashFromSidelineFeet: double
+    rosterMax: int = 53
+    gameDayActives: int = 46
+    practiceSquadMax: int = 16
+    offseasonRosterMax: int «Q-7»
+    irReturnsPerSeason: int «Q-7»
+    irMinWeeks: int «Q-7»
+  }
+}
+class SubmitPlaybookAdjustmentsUseCase <<UseCase>> {
+  execute(AdjustmentsCommand): MatchPlaybookDto
+}
+class AdjustmentsCommand <<record>> {
+  matchId: UUID
+  version: long
+  adjustments: List<PlaybookAdjustment>
+  userId: UUID
+}
+class PlaybookAdjustment <<record>> {
+  type: GAME_PLAN|FORMATION_WEIGHTS|CONCEPT_WEIGHTS|COVERAGE_WEIGHTS|BLITZ_FREQUENCY|DEPTH_SWAP
+  weights: Map<String,int>?
+  gamePlan: GamePlanPatch?
+  playerOut: UUID?
+  playerIn: UUID?
+  quarter: int
+  clock: String
+}
+class AdjustmentValidator <<Policy>> {
+  validate(snapshot, adjustments, playbook, rules): List<AdjustmentError>
+}
+class PlayCaller <<Engine>> {
+  call(situation, gamePlan, weights, seed): PlayDefinition
+  opponentTendencies(plays): Tendencies
+}
+interface LiveMatchStatePort <<Port>> {
+  get(fixtureId)
+  compareAndSet(fixtureId, snapshot, expectedVersion): boolean
+}
+DepthChart "1" -- "*" DepthChartSlot : slots
+DepthChartSlot "*" -- "1" Player
+Playbook "1" -- "*" PlayDefinition : jogadas
+Fixture "1" -- "0..1" MatchSession : estado vivo
+Fixture "1" -- "2" TeamMatchStats
+SubmitPlaybookAdjustmentsUseCase ..> AdjustmentsCommand : recebe
+AdjustmentsCommand ..> PlaybookAdjustment : *
+SubmitPlaybookAdjustmentsUseCase ..> AdjustmentValidator : usa
+SubmitPlaybookAdjustmentsUseCase ..> LiveMatchStatePort : CAS
+PlayCaller ..> PlayDefinition : escolhe
+PlayCaller ..> GamePlan : pesos
+AdjustmentValidator ..> DepthChartSlot : valida troca
+@enduml

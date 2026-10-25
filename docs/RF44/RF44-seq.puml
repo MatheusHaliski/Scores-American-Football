@@ -1,0 +1,41 @@
+@startuml
+title RF44 — Meu jogador: atleta 3D a partir da foto · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+control "AvatarPipeline" as AvatarPipeline
+database "MySQL 8" as MySQL
+database "S3/MinIO" as S3
+participant "Agendador/Job assíncrono" as Scheduler
+Manager -> Frontend: salva dados e atributos
+Frontend -> API: PUT /me/player {position, heightCm, weightKg, jerseyNumber, attributes}
+API -> UseCase: CustomPlayerUseCases.save
+alt posição, corpo, número ou orçamento inválido
+  API --> Frontend: 422 com código
+else senão
+  UseCase -> MySQL: CustomPlayer
+  API --> Frontend: 200
+end
+Frontend -> API: POST /me/player/photo
+alt sem consentimento
+  API --> Frontend: 403 CONSENT_REQUIRED
+else consentido
+  UseCase -> AvatarPipeline: valida, remove EXIF, normaliza
+  UseCase -> S3: photoKey (privado)
+  API --> Frontend: 200
+end
+Frontend -> API: PUT /me/player/double {expectedRevision, traços}
+alt revisão desatualizada
+  API --> Frontend: 409 REVISION_CONFLICT
+else senão
+  UseCase -> MySQL: revisão N+1
+  API --> Frontend: 200
+end
+Frontend -> API: POST /me/player/double/approve
+UseCase -> MySQL: aprovação · observed → confirmed
+Scheduler -> UseCase: purgeExpiredReferences
+@enduml

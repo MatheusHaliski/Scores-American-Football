@@ -1,0 +1,32 @@
+@startuml
+title RF38 — Animações 3D por atributo, posição e estilo (IA do sistema) · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+actor "Administrador" as Admin
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+control "AuditService" as AuditService
+control "AiAnimation" as AiAnimation
+database "MySQL 8" as MySQL
+database "Redis 7" as Redis
+participant "Claude (LLM, narrativa)" as Claude
+Admin -> Frontend: Gerar com IA (POSITION · WR rota funda)
+Frontend -> API: POST /admin/animations/generate
+API -> UseCase: AnimationAdminUseCases.generate
+UseCase -> AiAnimation: gerar parâmetros
+alt IA disponível
+  AiAnimation -> Claude: prompt com limites do rig AF
+  Claude --> AiAnimation: JSON de parâmetros
+else fallback
+  AiAnimation --> UseCase: template determinístico
+end
+UseCase -> MySQL: AnimationClip DRAFT
+UseCase -> AuditService: ANIMATION_GENERATED
+Admin -> API: POST /admin/animations/{id}/publish
+API -> UseCase: publish: arquiva anterior
+UseCase -> Redis: invalida catalog:animations
+Manager -> API: GET /catalog/animations (ETag)
+@enduml

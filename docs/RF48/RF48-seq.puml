@@ -1,0 +1,40 @@
+@startuml
+title RF48 — Subatributos ampliados, macros e overall por posição · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+actor "Administrador" as Admin
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+control "AuditService" as AuditService
+database "MySQL 8" as MySQL
+database "Redis 7" as Redis
+database "OpenSearch 2" as OpenSearch
+participant "Agendador/Job assíncrono" as Scheduler
+Manager -> Frontend: aba Atributos
+Frontend -> API: GET /careers/{id}/players/{pid}/attributes
+API -> UseCase: GetPlayerAttributesUseCase
+UseCase -> MySQL: owner check · Player.attributes · estilos e consumíveis ativos · slot no depth chart
+alt não é dono
+  API --> Frontend: 403
+else senão
+  UseCase -> Redis: GET overall-weights:active
+  UseCase -> UseCase: MacroCalculator(família) · OverallCalculator(20 posições)
+  UseCase --> API: PlayerAttributesDto (grupos, macros, overall por posição, nível)
+  API --> Frontend: 200
+end
+Admin -> API: POST /admin/overall-weights {pesos, vetorDeOuro}
+API -> UseCase: OverallWeightsAdminUseCase.propose
+alt soma ≠ 1 ou vetor de ouro falha
+  API --> Admin: 422 WEIGHTS_INVALID
+else senão
+  UseCase -> MySQL: OverallWeights DRAFT
+  Admin -> API: POST /admin/overall-weights/{v}/activate
+  UseCase -> MySQL: ACTIVE · anterior RETIRED
+  UseCase -> Scheduler: RecomputeOverallsJob
+  Scheduler -> OpenSearch: reindexa overalls
+  UseCase -> AuditService: OVERALL_WEIGHTS_ACTIVATED
+end
+@enduml

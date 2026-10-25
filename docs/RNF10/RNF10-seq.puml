@@ -1,0 +1,41 @@
+@startuml
+title RNF10 — Notificações via Chrome (Web Push) · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+queue "EventBus" as EventBus
+database "MySQL 8" as MySQL
+database "Redis 7" as Redis
+database "Cassandra 4.1" as Cassandra
+participant "Agendador/Job assíncrono" as Scheduler
+Manager -> Frontend: ativar notificações
+Frontend -> Frontend: requestPermission · pushManager.subscribe(VAPID pública)
+Frontend -> API: POST /me/push-subscriptions
+API -> UseCase: RegisterPushSubscriptionUseCase.execute
+alt assinatura inválida
+  API --> Frontend: 422 PUSH_SUBSCRIPTION_INVALID (RFC 7807)
+else senão
+  UseCase -> MySQL: UPSERT push_subscription
+  API --> Frontend: 201
+end
+Scheduler -> EventBus: JobOfferReceived / WeekCompleted / GoalCompleted
+EventBus -> Cassandra: INSERT notification (TTL 90 d)
+EventBus -> UseCase: NotificationDispatcher
+UseCase -> MySQL: preferências e assinaturas
+UseCase -> Redis: heartbeat e contador da hora
+alt desabilitado ou usuário ativo
+  UseCase -> Frontend: in-app (badge)
+else senão
+  UseCase -> UseCase: payload aes128gcm + assinatura VAPID (chave do Cofre)
+  alt 404/410
+    UseCase -> MySQL: DELETE push_subscription
+  else senão
+    UseCase -> Frontend: push entregue ao Service Worker
+  end
+end
+Frontend -> Manager: showNotification · clique abre a tela
+@enduml

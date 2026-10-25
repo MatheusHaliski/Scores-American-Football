@@ -1,0 +1,73 @@
+@startuml
+title RF58 — Gêmeos digitais licenciados · Diagrama de classes
+skinparam classAttributeIconSize 0
+hide empty methods
+package "catalog" {
+  class Player {
+    id: UUID
+    name: String
+    nationality: String
+    college: String
+    birthDate: LocalDate
+    age: int
+    heightCm: int
+    weightKg: int
+    position: Position (QB|RB|FB|WR|TE|LT|LG|C|RG|RT|DE|DT|OLB|MLB|CB|FS|SS|K|P|LS)
+    unit: Unit (OFFENSE|DEFENSE|SPECIAL)
+    attributes: PlayerAttributes
+    overall: int «por posição, OVR v1»
+    potential: int
+    experienceYears: int
+    rosterStatus: RosterStatus (ACTIVE|INACTIVE|PRACTICE_SQUAD|IR|PUP|FREE_AGENT|WAIVED)
+    condition: int
+    morale: int
+    moraleFactors: JSON
+    injury: Injury?
+    suspensionWeeks: int
+    contract: PlayerContract
+    jerseyNumber: int
+    isLegendary: boolean
+    model3dUrl: String
+  }
+  class DigitalTwinLicense {
+    licensor: String
+    scope: LicenseScope
+    validFrom: LocalDate
+    validUntil: LocalDate
+    status: LicenseStatus
+    athleteRef: String
+  }
+}
+package "account" {
+  class AuditLog {
+    actor: String
+    action: String
+    resource: String
+    resourceId: String
+    result: String
+    ip: String
+    userAgent: String
+    correlationId: String
+    timestamp: Instant
+  }
+}
+class GetDigitalTwinUseCase <<UseCase>> {
+  execute(playerId): TwinView
+}
+class LicenseScopePolicy <<Policy>> {
+  isValid(license, today): boolean
+  apply(player, license): TwinView
+}
+class TwinView <<record>> {
+  playerId: UUID
+  licensed: boolean
+  displayName: String
+  imageUrl: String
+  model3dUrl: String
+  fieldsFromLicense: List<String>
+}
+Player "1" -- "0..1" DigitalTwinLicense : licença
+GetDigitalTwinUseCase ..> LicenseScopePolicy : usa
+LicenseScopePolicy ..> DigitalTwinLicense : lê
+GetDigitalTwinUseCase ..> TwinView : devolve
+@enduml

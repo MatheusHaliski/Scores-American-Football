@@ -1,0 +1,34 @@
+@startuml
+title RF34 — Nova carreira de head coach · Máquina de estados: CareerSave (criação) — status
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "Rascunho (wizard)" as Rascunho
+Rascunho : passos 1–6 no cliente
+Rascunho : validação local
+state "Validando" as Validando
+Validando : slots, mundo, liga, franquia, formato
+state "CREATING" as CREATING
+CREATING : seed gerada
+CREATING : job CareerBootstrap
+state "Semeando temporada" as Semeando
+Semeando : depth chart, playbook, teto, picks
+Semeando : calendário de 17 jogos + bye
+state "ACTIVE" as ACTIVE
+ACTIVE : central do clube disponível
+state "FAILED" as FAILED
+FAILED : 3 tentativas
+FAILED : slot liberado
+state "Rejeitada" as Rejeitada
+Rejeitada : 403 / 409 / 422
+[*] --> Rascunho
+Rascunho --> Validando : POST /careers
+Validando --> Rejeitada : regra violada
+Rejeitada --> Rascunho : corrigir
+Validando --> CREATING : 202 saveId
+CREATING --> Semeando : clone concluído
+CREATING --> FAILED : retries esgotados
+Semeando --> ACTIVE : COMMIT
+Semeando --> FAILED : erro
+FAILED --> Rascunho : tentar de novo
+ACTIVE --> [*]
+@enduml

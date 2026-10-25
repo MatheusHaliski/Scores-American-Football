@@ -1,0 +1,151 @@
+@startuml
+title RF51 — Draft, scouting universitário e combine · Diagrama de classes
+skinparam classAttributeIconSize 0
+hide empty methods
+package "season" {
+  class Season {
+    number: int
+    year: int
+    phase: SeasonPhase (PRESEASON|REGULAR|PLAYOFFS|DRAFT|FREE_AGENCY|OFFSEASON)
+    currentWeek: int
+    tradeDeadlineWeek: int
+    championClub: Club?
+    mvpPlayer: Player?
+  }
+}
+package "catalog" {
+  class Club {
+    id: UUID
+    name: String
+    shortName: String
+    city: String
+    conference: Conference
+    division: Division
+    logoKey: String
+    primaryColor: String
+    secondaryColor: String
+    accentColor: String
+    prestige: int
+    reputationBoard: int
+    reputationFans: int
+    cash: long
+    capSpace: long
+    isUserControlled: boolean
+    expectedWins: int
+    scoutingLevel: int
+    scoutingBudget: long
+  }
+  class Player {
+    id: UUID
+    name: String
+    nationality: String
+    college: String
+    birthDate: LocalDate
+    age: int
+    heightCm: int
+    weightKg: int
+    position: Position (QB|RB|FB|WR|TE|LT|LG|C|RG|RT|DE|DT|OLB|MLB|CB|FS|SS|K|P|LS)
+    unit: Unit (OFFENSE|DEFENSE|SPECIAL)
+    attributes: PlayerAttributes
+    overall: int «por posição, OVR v1»
+    potential: int
+    experienceYears: int
+    rosterStatus: RosterStatus (ACTIVE|INACTIVE|PRACTICE_SQUAD|IR|PUP|FREE_AGENT|WAIVED)
+    condition: int
+    morale: int
+    moraleFactors: JSON
+    injury: Injury?
+    suspensionWeeks: int
+    contract: PlayerContract
+    jerseyNumber: int
+    isLegendary: boolean
+    model3dUrl: String
+  }
+}
+package "market" {
+  class DraftClass {
+    season: int
+    size: int
+    status: DraftStatus (SCOUTING|COMBINE|LIVE|DONE)
+  }
+  class DraftProspect {
+    name: String
+    college: String
+    position: Position
+    projectedRound: int
+    trueOverall: int «oculto»
+    potentialRangeMin: int
+    potentialRangeMax: int
+    draftedBy: Club?
+  }
+  class CombineResult {
+    prospect: DraftProspect
+    fortyYardSec: double
+    benchReps: int
+    verticalIn: double
+    broadJumpIn: double
+    threeConeSec: double
+    shuttleSec: double
+    interviewScore: int
+  }
+  class ScoutingReport {
+    prospect: DraftProspect
+    scoutLevel: int
+    accuracy: double
+    notes: TEXT
+    grade: String
+    bought: boolean
+  }
+  class DraftPick {
+    season: int (até 3 à frente)
+    round: int (1–7)
+    overall: Integer
+    originalClub: Club
+    ownerClub: Club
+    compensatory: boolean
+  }
+  class PlayerContract {
+    «embedded» years: int
+    baseSalaryByYear: JSON
+    signingBonus: long «rateado»
+    guaranteed: long
+    capHitByYear: JSON
+    deadMoneyIfCut: long
+    franchiseTag: boolean
+    type: ContractType (ROOKIE|VETERAN|MINIMUM|TAG|PRACTICE)
+    endSeason: int
+  }
+}
+class MakeDraftPickUseCase <<UseCase>> {
+  execute(saveId, pickId, prospectId): PickResult «@Transactional»
+}
+class DraftEngine <<Engine>> {
+  order(standings, playoffs): List<DraftPick>
+  generateClass(seed, size): List<DraftProspect>
+  combine(prospect, seed): CombineResult
+  choose(club, needs, board): DraftProspect
+}
+class ScoutingFogPolicy <<Policy>> {
+  range(prospect, reports, scoutLevel): PotentialRange
+}
+class RookieScalePolicy <<Policy>> {
+  contractFor(overallPick): PlayerContract
+}
+class DraftBoard <<record>> {
+  saveId: UUID
+  prospectIds: List<UUID>
+  updatedAt: Instant
+}
+Club "1" -- "0..53" Player : elenco ativo
+Club "*" -- "*" Club : rivais da divisão
+Player "1" -- "1" PlayerContract : «embedded»
+Club "1" -- "*" DraftPick : picks próprios
+Season "1" -- "1" DraftClass
+DraftClass "1" -- "*" DraftProspect
+DraftProspect "1" -- "0..1" CombineResult
+DraftProspect "1" -- "*" ScoutingReport
+MakeDraftPickUseCase ..> DraftEngine : usa
+MakeDraftPickUseCase ..> RookieScalePolicy : contrato
+DraftEngine ..> ScoutingFogPolicy : névoa
+MakeDraftPickUseCase ..> DraftBoard : auto-pick
+@enduml

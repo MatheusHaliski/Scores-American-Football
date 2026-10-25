@@ -1,0 +1,87 @@
+@startuml
+title RNF3 — Controle de acesso e autorização por perfil · Diagrama de classes
+skinparam classAttributeIconSize 0
+hide empty methods
+package "account" {
+  class UserAccount {
+    id: UUID
+    email: String «AES-GCM»
+    emailHash: String «unique»
+    passwordHash: String «Argon2id»
+    displayName: String
+    locale: Locale
+    role: Role
+    status: AccountStatus
+    failedLoginAttempts: int
+    lockedUntil: Instant
+    marketingConsent: boolean
+    deletionRequestedAt: Instant
+    profileVisibility: ProfileVisibility
+    birthDate: LocalDate
+    pendingEmail: String
+  }
+  class UserSession {
+    id: UUID
+    refreshTokenHash: String «cookie __Host-»
+    ip: String
+    userAgent: String
+    expiresAt: Instant
+    revokedAt: Instant
+    replacedBy: UUID
+  }
+  class AuditLog {
+    actor: String
+    action: String
+    resource: String
+    resourceId: String
+    result: String
+    ip: String
+    userAgent: String
+    correlationId: String
+    timestamp: Instant
+  }
+}
+package "career" {
+  class CareerSave {
+    id: UUID
+    name: String
+    seed: long
+    employmentStatus: EmploymentStatus
+    currentWeek: int
+    difficulty: Difficulty
+    seasonMode: SeasonMode
+    scoresPoints: int
+    status: SaveStatus
+    slot: int
+    lastPlayedAt: Instant
+  }
+}
+class SecurityConfig <<Config>> {
+  allowlist: /auth/**, /actuator/health, /api-docs/**, /error
+  /actuator/** → denyAll
+  /api/v1/admin/** → ADMIN
+  STATELESS · HSTS · CSP
+}
+class SessionActiveFilter <<Filter>> {
+  doFilter: sid → família ativa? senão 401()
+}
+class CareerAccess <<Policy>> {
+  requireOwner(saveId, userId): CareerSave «403 + ACCESS_DENIED»
+}
+class ProblemDetailWriter <<Helper>> {
+  type, title, status
+  code, message, details
+  correlationId, locale
+  write(req, res, status, code)
+}
+class AuditService <<Service>> {
+  denied(action, resource, id) «REQUIRES_NEW»
+}
+UserAccount "1" -- "*" UserSession : sessões
+UserAccount "1" -- "*" CareerSave : carreiras
+SecurityConfig ..> SessionActiveFilter : depois do Bearer
+SessionActiveFilter ..> UserSession : família ativa
+CareerAccess ..> CareerSave : user == sub
+CareerAccess ..> AuditService : ACCESS_DENIED
+AuditService ..> AuditLog : grava
+@enduml

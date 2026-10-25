@@ -1,0 +1,61 @@
+@startuml
+title RF47 — Estatísticas em velocímetros por posição · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Manager|
+start
+:Abre o modal do jogador → aba Estatísticas;
+|Frontend|
+:GET /players/{pid}/gauges?scope=SEASON;
+|Backend|
+if (dono do save?) then (sim)
+else (não)
+  :403;
+  stop
+endif
+if (família da posição?) then (sim)
+else (não)
+  :Usa a posição natural · aviso fora de posição;
+endif
+if (cache válido?) then (sim)
+  :Lê do Redis;
+else (não)
+  :Agrega PlayerMatchStats do escopo (MySQL) e média da liga na posição (OpenSearch);
+  :Calcula: QB rating, cmp%, Y/A, TD-INT · RB jardas por corrida, YAC, fumbles · WR/TE taxa de recepção, jardas por alvo, drops · OL sacks e pressões permitidas · DL/LB pressões, sacks, TFL, tackles · DB rating permitido, PD, INT · K/P FG% por distância, média líquida, dentro da 20;
+  :Grava no Redis;
+endif
+while (há métrica da família?) is (sim)
+  if (métrica gerada pelo motor?) then (sim)
+  else (não)
+    :Valor nulo → '—';
+  endif
+  if (amostra mínima?) then (sim)
+  else (não)
+    :Selo Amostra pequena;
+  endif
+endwhile (não)
+|Frontend|
+if (movimento reduzido?) then (sim)
+  :Ponteiros estáticos;
+else (não)
+  :Ponteiros animados · faixa da média da liga no arco;
+endif
+|Manager|
+if (quer comparar?) then (sim)
+|Frontend|
+  :GET /gauges/compare?other={pid2};
+|Backend|
+  if (mesma família para comparar?) then (sim)
+  else (não)
+    :422 GAUGE_FAMILY_MISMATCH;
+    stop
+  endif
+|Frontend|
+  :Velocímetros lado a lado;
+endif
+|Manager|
+:Hover no velocímetro → animação do atributo ligado (RF38);
+end
+@enduml

@@ -1,0 +1,71 @@
+@startuml
+title RF57 — All-Star · Diagrama de classes
+skinparam classAttributeIconSize 0
+hide empty methods
+package "season" {
+  class Season {
+    number: int
+    year: int
+    phase: SeasonPhase (PRESEASON|REGULAR|PLAYOFFS|DRAFT|FREE_AGENCY|OFFSEASON)
+    currentWeek: int
+    tradeDeadlineWeek: int
+    championClub: Club?
+    mvpPlayer: Player?
+  }
+  class AllStarEvent {
+    season: Season
+    rosters: JSON
+    skillsChallenges: JSON (40 jardas, precisão de passe, chute de distância)
+    winnerConference: Conference?
+    status: EventStatus
+  }
+}
+package "catalog" {
+  class Player {
+    id: UUID
+    name: String
+    nationality: String
+    college: String
+    birthDate: LocalDate
+    age: int
+    heightCm: int
+    weightKg: int
+    position: Position (QB|RB|FB|WR|TE|LT|LG|C|RG|RT|DE|DT|OLB|MLB|CB|FS|SS|K|P|LS)
+    unit: Unit (OFFENSE|DEFENSE|SPECIAL)
+    attributes: PlayerAttributes
+    overall: int «por posição, OVR v1»
+    potential: int
+    experienceYears: int
+    rosterStatus: RosterStatus (ACTIVE|INACTIVE|PRACTICE_SQUAD|IR|PUP|FREE_AGENT|WAIVED)
+    condition: int
+    morale: int
+    moraleFactors: JSON
+    injury: Injury?
+    suspensionWeeks: int
+    contract: PlayerContract
+    jerseyNumber: int
+    isLegendary: boolean
+    model3dUrl: String
+  }
+  class Conference {
+    name: String
+    shortName: String
+    logoKey: String
+  }
+}
+class AllStarVote <<record>> {
+  saveId: UUID
+  position: Position
+  playerId: UUID
+}
+class AllStarSelectionPolicy <<Policy>> {
+  select(conference, players, votes): Roster
+}
+class SkillsChallengeSimulator <<Engine>> {
+  run(roster, seed): List<ChallengeResult>
+}
+Season "1" -- "0..1" AllStarEvent
+AllStarSelectionPolicy ..> AllStarVote : conta
+AllStarSelectionPolicy ..> AllStarEvent : monta elencos
+SkillsChallengeSimulator ..> AllStarEvent : grava desafios
+@enduml

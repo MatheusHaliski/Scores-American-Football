@@ -1,0 +1,30 @@
+@startuml
+title RNF13 — Traduções de idiomas escolhidas na aba de configurações · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+database "MySQL 8" as MySQL
+database "Cassandra 4.1" as Cassandra
+participant "Email" as Email
+participant "Agendador/Job assíncrono" as Scheduler
+Manager -> Frontend: Configurações → Idioma → Español
+Frontend -> Frontend: carrega o catálogo es-ES (ICU) e re-renderiza
+Frontend -> API: PUT /me/settings {locale: es-ES}
+API -> UseCase: SettingsUseCases.update
+alt idioma não suportado
+  API --> Frontend: 400 VALIDATION {code, message, correlationId, locale}
+else senão
+  UseCase -> MySQL: UPDATE user_account.locale
+  API --> Frontend: 200 (Content-Language: es-ES)
+end
+Frontend -> API: GET /matches/{mid}/events (Accept-Language: es-ES)
+API -> UseCase: GetMatchEventsUseCase
+UseCase -> Cassandra: PlayEvent como chave + parâmetros
+API --> Frontend: eventos (MessageRef)
+Frontend -> Frontend: formata: touchdown e sack mantidos · 3.ª y 7 en la 34 rival
+Scheduler -> Email: e-mail no idioma salvo do titular
+@enduml

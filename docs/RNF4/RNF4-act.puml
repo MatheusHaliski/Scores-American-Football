@@ -1,0 +1,83 @@
+@startuml
+title RNF4 — JWT RSA, refresh rotativo em cookie __Host- · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Visitante|
+start
+:Faz login;
+|Backend|
+if (chaves RSA carregadas do Cofre?) then (sim)
+else (não)
+  :Produção recusa subir (cita só o nome da variável);
+  stop
+endif
+:Emite access RS256 (15 min, sid = família) e refresh opaco (7 dias) · grava só o hash em user_session;
+:Responde access no corpo e refresh no cookie __Host- HttpOnly, Secure, SameSite=Strict;
+|Frontend|
+:Guarda o access só em memória · o JavaScript nunca vê o refresh;
+if (access só em memória?) then (sim)
+else (não)
+  :Teste de guarda vermelho no CI;
+  stop
+endif
+|Manager|
+:Usa o app;
+|Frontend|
+while (sessão em uso?) is (sim)
+  :Chama a API com Bearer;
+|Backend|
+  if (access token válido?) then (sim)
+    if (família ativa?) then (sim)
+      :Processa;
+    else (não)
+      :401;
+|Frontend|
+      :Volta ao login;
+      stop
+    endif
+  else (não)
+    :POST /auth/refresh (uma vez, com fila de pendentes · o navegador envia o cookie);
+|Backend|
+    if (cookie __Host- presente e Origin confiável?) then (sim)
+    else (não)
+      :401 / 403 CSRF_REJECTED;
+      stop
+    endif
+    if (refresh válido e não rotacionado?) then (sim)
+      if (rotação atômica?) then (sim)
+        :Novo access + novo cookie na mesma família · TOKEN_REFRESHED;
+|Frontend|
+        :Reenvia as pendentes;
+      else (não)
+|Backend|
+        :Corrida: 401 + revoga a família;
+        stop
+      endif
+    else (não)
+      :401 · reuso → revoga a família + TOKEN_REUSE_DETECTED;
+|Frontend|
+      :Volta ao login;
+      stop
+    endif
+  endif
+endwhile (não)
+|Manager|
+if (fechou e reabriu o navegador?) then (sim)
+|Frontend|
+  if (recuperação de sessão possível?) then (sim)
+    :Refresh silencioso pelo cookie → sessão recuperada;
+  else (não)
+    :Tela de entrada;
+  endif
+endif
+|Manager|
+if (sair?) then (sim)
+|Backend|
+  :Revoga a família · apaga o cookie · LOGOUT;
+|Frontend|
+  :BroadcastChannel avisa as outras abas, que limpam o access e voltam ao login;
+endif
+end
+@enduml

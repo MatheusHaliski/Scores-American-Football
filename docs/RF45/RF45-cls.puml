@@ -1,0 +1,352 @@
+@startuml
+title RF45 — Multiplayer online: salas por turnos e Ultimate Team · Diagrama de classes
+skinparam classAttributeIconSize 0
+hide empty methods
+package "online" {
+  class MultiplayerRoom {
+    id: UUID
+    code: String(6) «unique»
+    host: UserAccount
+    format: RoomFormat (DUEL_1X1|PLAYOFFS_ONLY|FULL_SEASON)
+    rules: JSON
+    maxHumans: int (2–8)
+    turnDeadlineHours: int = 24
+    status: RoomStatus
+    sharedWorld: World
+    seed: long
+    currentTurn: int
+  }
+  class MultiplayerParticipant {
+    room: MultiplayerRoom
+    user: UserAccount
+    save: CareerSave
+    club: Club
+    ready: boolean
+    status: ParticipantStatus (ACTIVE|LEFT|AI_TAKEOVER)
+    joinedAt: Instant
+  }
+  class MultiplayerTurn {
+    room: MultiplayerRoom
+    number: int
+    deadline: Instant
+    confirmedUserIds: JSON
+    status: TurnStatus (OPEN|SIMULATED)
+    simulatedAt: Instant
+  }
+  class UltimateSquad {
+    user: UserAccount «unique»
+    name: String
+    crestKey: String
+    primaryColor: String
+    secondaryColor: String
+    rating: int
+    overall: int
+    chemistry: int
+    currentDivision: int
+    fairPlayScore: int
+    status: SquadStatus
+    placementMatches: int
+    cardCount: int
+    lastPlayedAt: Instant
+    divisionQuotaPenaltyNextSeason: int
+    depthChart: JSON «53 cartas, 46 ativas»
+    chemistry: por divisão e conferência
+  }
+  class PlayerCard {
+    squad: UltimateSquad
+    template: CardTemplate
+    acquiredAt: Instant
+    source: CardSource
+    tradeable: boolean
+    contractsRemaining: int
+    slot: CardSlot
+    chemistryStyle: String
+    boosts: JSON
+    condition: int
+  }
+  class CardTemplate {
+    code: String «unique»
+    edition: int
+    tier: CardTier
+    playerName: String
+    nationality: String
+    position: Position «AF»
+    secondaryPosition: Position
+    overall: int
+    attributes: PlayerAttributes
+    macros: 6 por família de posição (D-6)
+    clubCard: ClubCard
+    leagueCard: LeagueCard
+    artKey: String
+    priceScoresPoints: long
+    rarityWeight: int
+    sourcePlayerId: UUID
+    active: boolean
+  }
+  class ClubCard {
+    code: String «unique»
+    name: String
+    shortName: String
+    crestKey: String
+    primaryColor: String
+    secondaryColor: String
+    leagueCard: LeagueCard
+    prestige: int
+    chemistryBonus: int
+    active: boolean
+  }
+  class LeagueCard {
+    code: String «unique»
+    name: String
+    country: String
+    badgeKey: String
+    tier: int
+    chemistryBonus: int
+    active: boolean
+  }
+  class OnlineSeason {
+    number: int «unique»
+    year: int
+    indexInYear: int
+    startsAt: Instant
+    playEndsAt: Instant
+    endsAt: Instant
+    status: OnlineSeasonStatus
+    divisionEntriesAllowed: int
+    cupEntriesAllowed: int
+    processedAt: Instant
+  }
+  class CompetitionWindow {
+    season: OnlineSeason
+    mode: OnlineMode
+    indexInSeason: int
+    opensAt: Instant
+    entryCutoffAt: Instant
+    closesAt: Instant
+    status: CompetitionWindowStatus
+    matchesPerRun: int
+    bracketSize: int
+    roundDeadlineHours: int
+    bracketDrawnAt: Instant
+    closedAt: Instant
+  }
+  class DivisionGroup {
+    season: OnlineSeason
+    tier: int
+    groupIndex: int
+    seats: int
+    members: int
+  }
+  class DivisionMembership {
+    squad: UltimateSquad
+    group: DivisionGroup
+    season: OnlineSeason
+    points: int
+    played: int
+    wins: int
+    losses: int
+    walkoversFor: int
+    walkoversAgainst: int
+    fairPlayDelta: int
+    pointsFor: int
+    pointsAgainst: int
+    rank: int
+    outcome: DivisionOutcome
+    cupQualified: boolean
+    runsUsed: int
+    cupEntriesUsed: int
+    withdrawals: int
+    abandonments: int
+  }
+  class DivisionRun {
+    squad: UltimateSquad
+    window: CompetitionWindow
+    membership: DivisionMembership
+    status: DivisionRunStatus
+    matchesTarget: int
+    played: int
+    wins: int
+    losses: int
+    walkoversFor: int
+    walkoversAgainst: int
+    pointsEarned: int
+    voidReplaysUsed: int
+    enteredAt: Instant
+    startedAt: Instant
+    finishedAt: Instant
+    withdrawalReason: WithdrawalReason
+  }
+  class CupTicket {
+    squad: UltimateSquad
+    season: OnlineSeason
+    sourceTier: int
+    issuedAt: Instant
+    expiresAt: Instant
+    status: CupTicketStatus
+    usedInWindowId: UUID
+  }
+  class CupEntry {
+    squad: UltimateSquad
+    window: CompetitionWindow
+    ticket: CupTicket «unique»
+    seed: int
+    status: CupEntryStatus
+    currentRound: int
+    eliminatedInRound: Integer
+    roundReached: int
+    enteredAt: Instant
+    finishedAt: Instant
+    withdrawalReason: WithdrawalReason
+  }
+  class CupTie {
+    window: CompetitionWindow
+    round: int
+    position: int
+    entryA: CupEntry
+    entryB: CupEntry
+    deadlineAt: Instant
+    matchId: UUID
+    winner: CupEntry
+    status: CupTieStatus
+    resolvedAt: Instant
+  }
+  class OnlineMatch {
+    mode: OnlineMode
+    window: CompetitionWindow
+    squadHome: UltimateSquad
+    squadAway: UltimateSquad
+    runHome: DivisionRun
+    runAway: DivisionRun
+    tie: CupTie
+    seed: long
+    status: OnlineMatchStatus
+    homeScore: int
+    awayScore: int
+    quarter: int · down/distance/ballOn
+    matchedAt: Instant
+    acceptedHomeAt: Instant
+    acceptedAwayAt: Instant
+    startedAt: Instant
+    finishedAt: Instant
+    lastHeartbeatHome: Instant
+    lastHeartbeatAway: Instant
+    pausedAt: Instant
+    disconnectsHome: int
+    disconnectsAway: int
+    disconnectLog: JSON
+    walkoverTo: UUID
+    walkoverReason: WalkoverReason
+    ratingDeltaHome: int
+    ratingDeltaAway: int
+    pointsWithheld: boolean
+  }
+  class MatchmakingTicket {
+    squad: UltimateSquad
+    mode: OnlineMode
+    window: CompetitionWindow
+    runId: UUID
+    rating: int
+    enqueuedAt: Instant
+    status: MatchmakingStatus
+    declines: int
+    matchedMatchId: UUID
+    deviceHash: String
+    ipHash: String
+  }
+  class EntryAttempt {
+    squad: UltimateSquad
+    userId: UUID
+    mode: OnlineMode
+    window: CompetitionWindow
+    attemptedAt: Instant
+    outcome: EntryOutcome
+    reasonCode: EntryRejection
+    ipHash: String
+    deviceHash: String
+  }
+  class OnlineSanction {
+    squad: UltimateSquad
+    kind: SanctionKind
+    reason: SanctionReason
+    details: String
+    sourceMatchId: UUID
+    season: OnlineSeason
+    issuedAt: Instant
+    startsAt: Instant
+    endsAt: Instant
+    active: boolean
+    occurrenceIndex: int
+    appealStatus: AppealStatus
+    appealRequestedAt: Instant
+    appealDecidedAt: Instant
+  }
+}
+class OnlineEntryPolicy <<Policy>> {
+  evaluate(Context): Decision
+}
+class ChemistryPolicy <<Policy>> {
+  SAME_DIVISION = +
+  SAME_CONFERENCE = +
+  OL_UNIT e QB_WR = +
+  OUT_OF_POSITION = −
+  compute(depthChart, cards): int (0–100)
+}
+class WalkoverPolicy <<Policy>> {
+  ACCEPT = 30 s
+  HEARTBEAT = 5 s
+  GRACE = 90 s
+  RECONNECT = 60 s
+  MAX_DISCONNECTS = 2
+  FORFEIT = 2×0
+  evaluate(home, away, pausedAt, now): Decision
+}
+class SanctionPolicy <<Policy>> {
+  abandonment(n): Outcome
+  runWithdrawal(n)
+  entrySpam(n)
+}
+class OnlineCompetitionUseCases <<UseCase>> {
+  enterDivisions(user, window, latency)
+  enterCup(user, window, latency)
+  withdraw(user, run)
+  appeal(user, sanction)
+}
+class OnlineMatchUseCases <<UseCase>> {
+  accept(user, match)
+  playCall(user, match, decision)
+  heartbeat(user, match)
+  quit(user, match)
+  sweep(now)
+}
+OnlineSeason "1" -- "6" CompetitionWindow : 4 Divisões + 2 Copas
+OnlineSeason "1" -- "*" DivisionGroup : 10 divisões
+DivisionGroup "1" -- "0..20" DivisionMembership : vagas
+MultiplayerRoom "1" -- "2..8" MultiplayerParticipant : humanos
+MultiplayerRoom "1" -- "*" MultiplayerTurn : turnos
+UltimateSquad "1" -- "*" PlayerCard : cartas
+PlayerCard "*" -- "1" CardTemplate
+CardTemplate "*" -- "0..1" ClubCard
+CardTemplate "*" -- "0..1" LeagueCard
+ClubCard "*" -- "0..1" LeagueCard
+UltimateSquad "1" -- "*" DivisionMembership : por temporada
+CompetitionWindow "1" -- "*" DivisionRun
+DivisionMembership "1" -- "0..4" DivisionRun : cota 4/temporada
+UltimateSquad "1" -- "*" CupTicket : ingressos
+CupTicket "1" -- "0..1" CupEntry : consumido
+CompetitionWindow "1" -- "0..64" CupEntry : chave
+CompetitionWindow "1" -- "*" CupTie : confrontos
+CupTie "*" -- "2" CupEntry : A × B
+CupTie "1" -- "0..1" OnlineMatch
+DivisionRun "1" -- "*" OnlineMatch : partidas da corrida
+UltimateSquad "2" -- "*" OnlineMatch : mandante/visitante
+UltimateSquad "1" -- "*" MatchmakingTicket
+UltimateSquad "1" -- "*" EntryAttempt : tentativas
+UltimateSquad "1" -- "*" OnlineSanction : sanções
+OnlineMatch "1" -- "*" OnlineSanction : origem
+OnlineCompetitionUseCases ..> OnlineEntryPolicy : avalia
+OnlineCompetitionUseCases ..> SanctionPolicy : aplica
+OnlineMatchUseCases ..> WalkoverPolicy : monitora
+ChemistryPolicy ..> UltimateSquad : chemistry
+ChemistryPolicy ..> ClubCard : divisão
+ChemistryPolicy ..> LeagueCard : conferência
+@enduml

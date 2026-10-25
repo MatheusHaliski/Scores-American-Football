@@ -1,0 +1,101 @@
+@startuml
+title RF8 — Contrato do head coach e relação com a diretoria · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Manager|
+start
+:Abre o painel do head coach;
+|Frontend|
+:GET /careers/{id}/manager e /morale;
+|Backend|
+if (dono do save?) then (sim)
+else (não)
+  :403 + ACCESS_DENIED;
+  stop
+endif
+:Carrega contrato, metas com progresso (vitórias, playoffs, título), moral, histórico e propostas;
+|Frontend|
+:Contrato, metas, medidores de moral e ações;
+|Backend|
+if (empregado com contrato ACTIVE?) then (sim)
+else (não)
+|Frontend|
+  :Painel só leitura + propostas de emprego (RF9);
+  stop
+endif
+|Manager|
+if (pede aumento?) then (sim)
+|Frontend|
+  :POST /manager/raise-request {amount, reason};
+|Backend|
+  if (pedido de aumento permitido?) then (sim)
+  else (não)
+    :422 RAISE_NOT_ALLOWED;
+    stop
+  endif
+  :MoraleEngine calcula o score da diretoria (vitórias × esperado, playoffs, títulos);
+|Diretoria|
+  if (diretoria aceita o aumento?) then (sim)
+|Backend|
+    :Contrato com novo salário · ledger WAGES;
+  else (não)
+|Diretoria|
+    :Contraproposta ou recusa no inbox · moralClub ajustada;
+  endif
+endif
+|Manager|
+if (envia mensagem à diretoria?) then (sim)
+|Backend|
+  if (mensagem à diretoria válida?) then (sim)
+  else (não)
+    :422 MESSAGE_INVALID;
+    stop
+  endif
+|Diretoria|
+  :Responde no inbox (tom conforme moralClub);
+endif
+|Manager|
+if (solicita verba?) then (sim)
+|Backend|
+  :Cria BudgetRequest PENDING;
+|Diretoria|
+  if (diretoria concede a verba?) then (sim)
+|Backend|
+    :APPROVED · ledger BOARD_GRANT (caixa, não teto);
+  else (não)
+    :REJECTED ou PARTIAL com boardResponse;
+  endif
+endif
+|Manager|
+if (envia mensagem a um jogador?) then (sim)
+|Backend|
+  if (jogador do meu clube?) then (sim)
+  else (não)
+    :403 NOT_YOUR_PLAYER;
+    stop
+  endif
+|JogadorIA|
+  :Reage: moral ajustada e resposta no inbox;
+endif
+|Manager|
+if (pede demissão?) then (sim)
+|Frontend|
+  :Modal de confirmação com multa e consequências;
+|Manager|
+  if (demissão confirmada?) then (sim)
+  else (não)
+|Frontend|
+    :Cancela;
+    stop
+  endif
+  :POST /manager/resign;
+|Backend|
+  :Transação: contrato RESIGNED, club = null, UNEMPLOYED, ManagerCareerRecord fechado (V-D-E, playoffs, títulos);
+  :AuditLog MANAGER_RESIGNED · evento ManagerDismissed(RESIGNED);
+|Frontend|
+  :Modo espectador (RF37);
+endif
+end
+@enduml

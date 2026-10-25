@@ -1,0 +1,54 @@
+@startuml
+title RF44 — Meu jogador: atleta 3D a partir da foto · Diagrama de componentes
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 36
+actor "Head coach / manager (usuário autenticado)" as c1
+actor "Agendador/Job assíncrono" as c2
+package "Frontend (Next.js)" as pkg_fe {
+  component "MyPlayerEditor (/me/player)" as c3
+  frame "componentes de MyPlayerEditor (/me/player)" as pkg_fe_sub {
+    component "PositionBodyForm (faixas por posição)" as c4
+    component "AttributeBudgetEditor (8 grupos)" as c5
+    component "PhotoPanel + quality gate" as c6
+    component "LandmarkEditor" as c7
+    component "MyPlayerPreview (AthleteFigure)" as c8
+  }
+}
+package "scores-af-web (REST)" as pkg_web {
+  component "CustomPlayerController" as c9
+  component "DigitalDoubleController" as c10
+}
+package "scores-af-application (casos de uso)" as pkg_app {
+  component "CustomPlayerUseCases" as c11
+  component "DigitalDoubleUseCases" as c12
+  component "CustomPlayerPolicy (posição, corpo, número, orçamento)" as c13
+  component "AvatarPolicy" as c14
+}
+package "portas (port.out)" as pkg_ports {
+  interface "CustomPlayerRepository" as c15
+  interface "ConsentRecordRepository" as c16
+  interface "MediaStoragePort" as c17
+}
+package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
+  component "persistence-mysql" as c18
+  component "storage-s3" as c19
+}
+database "MySQL 8" as s1
+database "S3/MinIO" as s2
+database "Navegador" as s3
+c1 --> c3 : usa
+c2 --> c11 : dispara
+c3 --> c9 : GET /me/player (alvo)\nGET /me/player/rules (alvo)\nPUT /me/player (alvo)\n…
+c3 --> c10
+c9 --> c11
+c10 --> c11
+c11 ..> pkg_app : orquestra
+pkg_app --> pkg_ports : depende (DIP)
+c18 .up.|> c15
+c18 .up.|> c16
+c19 .up.|> c17
+c18 --> s1
+c19 --> s2
+@enduml

@@ -1,0 +1,37 @@
+@startuml
+title RF50 — Trocas com jogadores e picks de draft · Máquina de estados: TradeProposal.status
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "DRAFT" as DRAFT
+DRAFT : montagem e prévia no cliente
+state "PENDING" as PENDING
+PENDING : expira em 2 semanas ou no prazo
+state "COUNTERED" as COUNTERED
+COUNTERED : contraproposta da outra parte
+state "ACCEPTED" as ACCEPTED
+state "EXECUTED" as EXECUTED
+EXECUTED : transação única
+state "REJECTED" as REJECTED
+state "EXPIRED" as EXPIRED
+state "WITHDRAWN" as WITHDRAWN
+state "INVALIDATED" as INVALIDATED
+INVALIDATED : ativo mudou
+INVALIDATED : teto ou elenco não fecham mais
+[*] --> DRAFT
+DRAFT --> PENDING : enviar
+PENDING --> ACCEPTED : aceita
+PENDING --> REJECTED : recusa
+PENDING --> COUNTERED : contraproposta
+COUNTERED --> PENDING : nova versão enviada
+COUNTERED --> REJECTED : recusa
+ACCEPTED --> EXECUTED : TX ok
+ACCEPTED --> INVALIDATED : ativos mudaram
+PENDING --> EXPIRED : 2 semanas / prazo de trocas
+PENDING --> WITHDRAWN : retirada
+PENDING --> INVALIDATED : ativo saiu do elenco
+EXECUTED --> [*]
+REJECTED --> [*]
+EXPIRED --> [*]
+WITHDRAWN --> [*]
+INVALIDATED --> [*]
+@enduml

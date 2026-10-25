@@ -1,0 +1,82 @@
+@startuml
+title RF27 — Painel da semana e partida ao vivo · Diagrama de componentes
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 36
+actor "Head coach / manager (usuário autenticado)" as c1
+actor "Agendador/Job assíncrono" as c2
+actor "Franquia adversária (IA)" as c3
+package "Frontend (Next.js)" as pkg_fe {
+  component "MatchPanelPage" as c4
+  frame "componentes de MatchPanelPage" as pkg_fe_sub {
+    component "WeekBoard" as c5
+    component "KickoffSlotTabs" as c6
+    component "ScoreCard" as c7
+    component "LedScoreboard" as c8
+    component "DownDistanceBar" as c9
+    component "FieldPositionStrip" as c10
+    component "DriveSummary" as c11
+    component "PlayByPlayFeed" as c12
+    component "MatchControls" as c13
+    component "SpectatorBanner" as c14
+  }
+}
+package "scores-af-web (REST)" as pkg_web {
+  component "WeekController" as c15
+  component "MatchController" as c16
+}
+package "scores-af-application (casos de uso)" as pkg_app {
+  component "PlayWeekUseCase" as c17
+  component "GetWeekBoardUseCase" as c18
+  component "GetMatchStateUseCase" as c19
+  component "GetPlayByPlayUseCase" as c20
+  component "GetDrivesUseCase" as c21
+  component "AdvanceMatchUseCase" as c22
+  component "WeekSimulationJob" as c23
+  component "CareerAccess" as c24
+}
+package "scores-af-domain/engine" as pkg_eng {
+  component "MatchSimulator" as c25
+  component "PlayCaller" as c26
+  component "ClockManager" as c27
+}
+package "portas (port.out)" as pkg_ports {
+  interface "CareerSaveRepository" as c28
+  interface "FixtureRepository" as c29
+  interface "MatchSessionRepository" as c30
+  interface "DriveRepository" as c31
+  interface "UserSettingsRepository" as c32
+  interface "LiveMatchStatePort" as c33
+  interface "PlayByPlayPort" as c34
+}
+package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
+  component "persistence-mysql" as c35
+  component "cache-redis" as c36
+  component "persistence-cassandra" as c37
+}
+database "MySQL 8" as s1
+database "Redis 7" as s2
+database "Cassandra 4.1" as s3
+c1 --> c4 : usa
+c2 --> c17 : dispara
+c4 --> c15 : POST /careers/{id}/weeks/current/play (alvo)\nGET /careers/{id}/weeks/{n} (alvo)\nGET /matches/{mid} (alvo)\n…
+c4 --> c16
+c15 --> c17
+c16 --> c17
+c17 ..> pkg_app : orquestra
+c17 --> c25 : usa
+c17 --> c26 : usa
+c17 --> c27 : usa
+pkg_app --> pkg_ports : depende (DIP)
+c35 .up.|> c28
+c35 .up.|> c29
+c35 .up.|> c30
+c35 .up.|> c31
+c35 .up.|> c32
+c36 .up.|> c33
+c37 .up.|> c34
+c35 --> s1
+c36 --> s2
+c37 --> s3
+@enduml

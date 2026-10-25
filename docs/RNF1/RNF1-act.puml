@@ -1,0 +1,65 @@
+@startuml
+title RNF1 — Transações ACID em dados de usuários, carreiras e database do jogo · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Manager|
+start
+if (nova carreira?) then (sim)
+  :Escolhe liga, franquia, estilo de head coach e o database do jogo;
+|Backend|
+  :BEGIN · carrega o mundo TEMPLATE e confere dono e tipo;
+  if (mundo é modelo do usuário ou o padrão?) then (sim)
+  else (não)
+    :403 / 422 WORLD_NOT_TEMPLATE;
+    stop
+  endif
+  :Clona ligas, conferências, divisões, franquias, jogadores, depth charts, playbooks e LeagueRules (ids novos);
+  :Cria salvamento, head coach, contrato, moral, plano de jogo e temporada;
+  if (todos os passos ok?) then (sim)
+  else (não)
+    :ROLLBACK: nada fica gravado;
+    stop
+  endif
+  if (elenco do clone consistente?) then (sim)
+  else (não)
+    :ROLLBACK · 422 WORLD_INCONSISTENT;
+    stop
+  endif
+  :COMMIT: primeiro salvamento = cópia do database do jogo;
+else (não)
+|Manager|
+  :Retoma uma carreira salva;
+|Backend|
+  :Lê o mundo SAVE: último commit;
+endif
+|Manager|
+:Joga: ajusta depth chart, plano de jogo, avança a partida;
+|Backend|
+:Cada ação é uma transação curta com @Version;
+if (versão otimista confere?) then (sim)
+else (não)
+  :409 CONCURRENT_UPDATE · estado anterior intacto;
+  stop
+endif
+if (commit ok?) then (sim)
+  :afterCommit: play-by-play no Cassandra, estado vivo no Redis, índice de busca;
+else (não)
+  :ROLLBACK · efeitos descartados;
+  stop
+endif
+|Scheduler|
+:CI em todo PR: MigrationVersionsTest · ForeignKeyPolicyTest (H2 e MySQL 8 real);
+if (toda FK tem ON DELETE explícito?) then (sim)
+else (não)
+  :CI vermelho: FK nova entra na política;
+  stop
+endif
+if (migration válida?) then (sim)
+else (não)
+  :CI vermelho;
+  stop
+endif
+end
+@enduml

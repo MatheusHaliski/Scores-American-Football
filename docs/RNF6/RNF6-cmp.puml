@@ -1,0 +1,83 @@
+@startuml
+title RNF6 — Backup e recuperação do banco de dados · Diagrama de componentes
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 36
+actor "Agendador/Job assíncrono" as c1
+actor "Administrador" as c2
+package "Frontend (Next.js)" as pkg_fe {
+  component "AdminBackupsPage" as c3
+  frame "componentes de AdminBackupsPage" as pkg_fe_sub {
+    component "BackupStatusCard" as c4
+    component "RestoreConfirmDialog" as c5
+  }
+}
+package "scores-af-web (REST)" as pkg_web {
+  component "AdminBackupController" as c6
+  component "AdminProjectionsController" as c7
+  component "BackupHealthIndicator" as c8
+  component "ReadOnlyModeGuard" as c9
+}
+package "scores-af-application (casos de uso)" as pkg_app {
+  component "DailyBackupJob" as c10
+  component "ListBackupsUseCase" as c11
+  component "RunBackupUseCase" as c12
+  component "RestoreBackupUseCase" as c13
+  component "RebuildProjectionsUseCase" as c14
+  component "BinlogShipJob" as c15
+  component "AuditService" as c16
+}
+package "scores-af-domain/engine" as pkg_eng {
+  component "MatchSimulator (replay por seed)" as c17
+}
+package "portas (port.out)" as pkg_ports {
+  interface "BackupRecordRepository" as c18
+  interface "DatabaseDumpPort" as c19
+  interface "BackupStoragePort" as c20
+  interface "DistributedLockPort" as c21
+  interface "TimelinePort" as c22
+  interface "SearchPort" as c23
+  interface "SecretsPort" as c24
+}
+package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
+  component "persistence-mysql" as c25
+  component "storage-s3" as c26
+  component "cache-redis" as c27
+  component "persistence-cassandra" as c28
+  component "search-opensearch" as c29
+  component "secrets-cofre" as c30
+}
+database "MySQL 8" as s1
+database "S3/MinIO" as s2
+database "Cassandra 4.1" as s3
+database "Redis 7" as s4
+database "OpenSearch 2" as s5
+database "Cofre de segredos do provedor (Railway Variables / GitHub Secrets)" as s6
+c1 --> c10 : dispara
+c2 --> c3 : usa
+c3 --> c6 : GET /admin/backups (alvo)\nPOST /admin/backups/run (alvo)\nPOST /admin/backups/{id}/restore (alvo)\n…
+c3 --> c7
+c3 --> c8
+c3 --> c9
+c6 --> c10
+c7 --> c10
+c8 --> c10
+c9 --> c10
+c10 ..> pkg_app : orquestra
+c10 --> c17 : usa
+pkg_app --> pkg_ports : depende (DIP)
+c25 .up.|> c18
+c25 .up.|> c19
+c26 .up.|> c20
+c27 .up.|> c21
+c28 .up.|> c22
+c29 .up.|> c23
+c30 .up.|> c24
+c25 --> s1
+c26 --> s2
+c27 --> s4
+c28 --> s3
+c29 --> s5
+c30 --> s6
+@enduml

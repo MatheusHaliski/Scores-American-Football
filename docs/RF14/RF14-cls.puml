@@ -1,0 +1,156 @@
+@startuml
+title RF14 — Orçamento da franquia, teto salarial e empréstimo · Diagrama de classes
+skinparam classAttributeIconSize 0
+hide empty methods
+package "career" {
+  class CareerSave {
+    id: UUID
+    name: String
+    seed: long
+    employmentStatus: EmploymentStatus
+    currentWeek: int
+    difficulty: Difficulty
+    seasonMode: SeasonMode
+    scoresPoints: int
+    status: SaveStatus
+    slot: int
+    lastPlayedAt: Instant
+  }
+  class ManagerMorale {
+    moraleClub: int
+    moraleLeague: int
+    factorsClub: JSON
+    factorsLeague: JSON
+    weeksUnderCritical: int
+    trend: Trend
+    updatedWeek: int
+  }
+}
+package "catalog" {
+  class Club {
+    id: UUID
+    name: String
+    shortName: String
+    city: String
+    conference: Conference
+    division: Division
+    logoKey: String
+    primaryColor: String
+    secondaryColor: String
+    accentColor: String
+    prestige: int
+    reputationBoard: int
+    reputationFans: int
+    cash: long
+    capSpace: long
+    isUserControlled: boolean
+    expectedWins: int
+    scoutingLevel: int
+    scoutingBudget: long
+  }
+  class League {
+    id: UUID
+    name: String
+    country: String
+    ruleset: Ruleset (PRO|COLLEGE)
+    rules: LeagueRules
+    teamCount: int (8–32)
+    conferenceCount: int
+    divisionsPerConference: int
+    regularSeasonWeeks: int = 18
+    gamesPerTeam: int = 17
+    playoffSeedsPerConference: int = 7
+    neutralSiteFinal: boolean
+    salaryCap: long
+    salaryFloor: long
+    prestige: int
+    tvRightsPerSeason: long
+  }
+}
+package "finance" {
+  class SalaryCapLedger {
+    season: int
+    cap: long
+    committed: long
+    deadMoney: long
+    space: long
+    rolloverFromPrevious: long
+  }
+  class FinanceLedgerEntry {
+    week: int
+    kind: LedgerKind
+    amount: long
+    balanceAfter: long
+    description: String
+  }
+  class BankLoan {
+    principal: long
+    interestRatePerWeek: double
+    remainingWeeks: int
+    installment: long
+  }
+  class BudgetRequest {
+    amount: long
+    reason: String
+    status: RequestStatus
+    boardResponse: String
+  }
+}
+class ContractBankLoanUseCase <<UseCase>> {
+  execute(ContractLoanCommand): BankLoanDto «@Transactional»
+}
+class ContractLoanCommand <<record>> {
+  careerId: UUID
+  principal: long
+  weeks: int (8–72)
+  userId: UUID
+}
+class GetSalaryCapUseCase <<UseCase>> {
+  execute(careerId, userId): SalaryCapView
+}
+class SalaryCapView <<record>> {
+  cap: long
+  committed: long
+  deadMoney: long
+  space: long
+  rollover: long
+  topCapHits: List<CapHitDto>
+}
+class FinanceOverviewResult <<record>> {
+  cash: long
+  gateRevenueSeason: long
+  tvRevenueSeason: long
+  expensesSeason: long
+  loans: List<BankLoanDto>
+  budgetRequests: List<BudgetRequestDto>
+  ledger: PageResponse<LedgerEntryDto>
+}
+class LoanInstallmentJob <<Job>> {
+  onWeekCompleted(saveId, week)
+}
+interface FinanceEngine <<Engine>> {
+  loanTerms(principal, weeks, prestige, debt, revenue): LoanTerms
+  boardGrantPolicy(cash, moralClub, objectives, history): GrantDecision
+  applyInstallments(club, loans, week): List<FinanceLedgerEntry>
+}
+interface CapEngine <<Engine>> {
+  capSpace(ledger, contracts): long «hard cap»
+}
+Club "*" -- "*" Club : rivais da divisão
+CareerSave "*" -- "0..1" Club : franquia atual
+CareerSave "1" -- "1" ManagerMorale
+Club "1" -- "*" SalaryCapLedger : por temporada
+Club "1" -- "*" FinanceLedgerEntry : ledger
+Club "1" -- "*" BankLoan
+CareerSave "1" -- "*" BudgetRequest
+ContractBankLoanUseCase ..> ContractLoanCommand : recebe
+ContractBankLoanUseCase ..> FinanceEngine : loanTerms
+ContractBankLoanUseCase ..> BankLoan : cria
+ContractBankLoanUseCase ..> FinanceLedgerEntry : LOAN
+GetSalaryCapUseCase ..> CapEngine : usa
+GetSalaryCapUseCase ..> SalaryCapView : produz
+CapEngine ..> SalaryCapLedger : lê
+CapEngine ..> League : salaryCap
+RequestBudgetUseCase ..> BudgetRequest : cria
+LoanInstallmentJob ..> FinanceEngine : applyInstallments
+@enduml

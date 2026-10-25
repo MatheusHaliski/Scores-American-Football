@@ -1,0 +1,41 @@
+@startuml
+title RF27 — Painel da semana e partida ao vivo · Máquina de estados: MatchSession.status visto pelo painel da semana
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "NOT_STARTED" as NOT_STARTED
+NOT_STARTED : card Aguardando kickoff
+NOT_STARTED : botão Jogar semana
+state "LIVE" as LIVE
+LIVE : relógio corre
+LIVE : feed por jogada (poll 2 s)
+state "DECISION" as DECISION
+DECISION : PlayCallDecision OPEN
+DECISION : 4ª descida, 2 minutos, prorrogação
+state "BREAK" as BREAK
+BREAK : fim do 1º ou 3º quarto
+BREAK : playbook (RF29)
+state "HALFTIME" as HALFTIME
+HALFTIME : intervalo
+HALFTIME : playbook completo (RF29)
+state "OVERTIME" as OVERTIME
+OVERTIME : 10 min · ambos com posse salvo TD inicial
+state "FINISHED" as FINISHED
+FINISHED : placar final (empate possível na regular)
+state "Espectador / bye" as Espectador
+Espectador : sem partida própria
+Espectador : só placares
+[*] --> NOT_STARTED
+NOT_STARTED --> LIVE : kickoff
+LIVE --> DECISION : momento decisivo
+DECISION --> LIVE : jogada chamada ou prazo vencido
+LIVE --> BREAK : fim do 1º/3º quarto
+BREAK --> LIVE : advance
+LIVE --> HALFTIME : fim do 2º quarto
+HALFTIME --> LIVE : kickoff do 2º tempo
+LIVE --> OVERTIME : fim do 4º empatado
+OVERTIME --> FINISHED : regra de posse e pontuação
+LIVE --> FINISHED : fim do 4º com vencedor
+NOT_STARTED --> Espectador : bye ou sem fixture
+Espectador --> FINISHED : semana concluída
+FINISHED --> [*]
+@enduml

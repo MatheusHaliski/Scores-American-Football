@@ -1,0 +1,124 @@
+@startuml
+title RNF6 — Backup e recuperação do banco de dados · Diagrama de classes
+skinparam classAttributeIconSize 0
+hide empty methods
+package "account" {
+  class AuditLog {
+    actor: String
+    action: String
+    resource: String
+    resourceId: String
+    result: String
+    ip: String
+    userAgent: String
+    correlationId: String
+    timestamp: Instant
+  }
+}
+package "career" {
+  class CareerSave {
+    id: UUID
+    name: String
+    seed: long
+    employmentStatus: EmploymentStatus
+    currentWeek: int
+    difficulty: Difficulty
+    seasonMode: SeasonMode
+    scoresPoints: int
+    status: SaveStatus
+    slot: int
+    lastPlayedAt: Instant
+  }
+}
+package "season" {
+  class Fixture {
+    week: int
+    date: LocalDate
+    slot: KickoffSlot (THU_NIGHT|SUN_EARLY|SUN_LATE|SUN_NIGHT|MON_NIGHT)
+    status: FixtureStatus
+    homeScore: int
+    awayScore: int
+    quarterScores: JSON
+    overtime: boolean
+    isDivisional: boolean
+    isConference: boolean
+    neutralSite: boolean
+    weather: Weather
+    attendance: int
+    revenue: long
+    importance: FixtureImportance
+    seed: long
+    isUserFixture: boolean
+  }
+}
+package "match" {
+  class PlayEvent {
+    «Cassandra» fixtureId: UUID
+    seq: int
+    drive: int
+    quarter: int
+    clock: String
+    down: int
+    distance: int
+    ballOnAbsYd: int
+    playType: PlayType
+    formation: Formation
+    defense: Coverage
+    yards: int
+    result: PlayResult
+    penalty: Penalty?
+    playerIds: List<UUID>
+    text: String
+    homeScore: int
+    awayScore: int
+  }
+}
+package "inbox" {
+  class InboxMessage {
+    sender: InboxSender
+    subject: String
+    body: TEXT
+    kind: InboxKind
+    options: JSON
+    chosenOption: String
+    deadlineWeek: int
+    status: MessageStatus
+    refType: String
+    refId: UUID
+  }
+}
+class DailyBackupJob <<Job>> {
+  run() «cron 03:00 UTC»
+  verify(dump): boolean
+  applyRetention(7, 4, 6)
+}
+class BackupRecord <<record>> {
+  id: UUID
+  startedAt: Instant
+  sizeBytes: long
+  sha256: String
+  storageKey: String
+  status: OK|FAILED|VERIFYING
+  restoreTestOk: boolean
+}
+interface DatabaseDumpPort <<Port>> {
+  dump(): Path
+  restore(path, stopAt)
+  shipBinlog(): Path
+}
+class RestoreBackupUseCase <<UseCase>> {
+  execute(backupId, pointInTime, adminId, confirm): RestoreStatus
+}
+class RebuildProjectionsUseCase <<UseCase>> {
+  execute(scope, saveId): RebuildStatus «idempotente, replay pela seed»
+}
+Fixture "1" -- "*" PlayEvent : play-by-play
+CareerSave "1" -- "*" InboxMessage
+DailyBackupJob ..> DatabaseDumpPort : dump
+DailyBackupJob ..> BackupRecord : cria
+DailyBackupJob ..> AuditLog : BACKUP_COMPLETED
+RestoreBackupUseCase ..> DatabaseDumpPort : restore + binlog
+RestoreBackupUseCase ..> RebuildProjectionsUseCase : após restore
+RebuildProjectionsUseCase ..> Fixture : seed
+RebuildProjectionsUseCase ..> PlayEvent : replay
+@enduml

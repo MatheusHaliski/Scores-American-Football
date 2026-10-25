@@ -1,0 +1,70 @@
+@startuml
+title RF66 — Playoffs com chave · Diagrama de componentes
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 36
+actor "Head coach / manager (usuário autenticado)" as c1
+actor "Agendador/Job assíncrono" as c2
+actor "Franquia adversária (IA)" as c3
+actor "Imprensa (IA)" as c4
+package "Frontend (Next.js)" as pkg_fe {
+  component "PlayoffsPage" as c5
+  frame "componentes de PlayoffsPage" as pkg_fe_sub {
+    component "SeedTable" as c6
+    component "BracketView" as c7
+    component "MatchupCard" as c8
+  }
+}
+package "scores-af-web (REST)" as pkg_web {
+  component "PlayoffController" as c9
+}
+package "scores-af-application (casos de uso)" as pkg_app {
+  component "PlayoffUseCases" as c10
+  component "CloseRegularSeasonJob" as c11
+  component "CareerAccess" as c12
+}
+package "scores-af-domain/engine" as pkg_eng {
+  component "SeasonEngine" as c13
+  component "PlayoffSeedingPolicy" as c14
+  component "TiebreakerPolicy" as c15
+  component "BracketPolicy" as c16
+  component "MatchSimulator" as c17
+}
+package "portas (port.out)" as pkg_ports {
+  interface "SeasonRepository" as c18
+  interface "StandingRepository" as c19
+  interface "PlayoffRepository" as c20
+  interface "FixtureRepository" as c21
+  interface "CachePort" as c22
+  interface "TimelinePort" as c23
+}
+package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
+  component "persistence-mysql" as c24
+  component "cache-redis" as c25
+  component "persistence-cassandra" as c26
+}
+database "MySQL 8" as s1
+database "Redis 7" as s2
+database "Cassandra 4.1" as s3
+c1 --> c5 : usa
+c2 --> c10 : dispara
+c5 --> c9 : GET /careers/{id}/playoffs/seeds (alvo)\nGET /careers/{id}/playoffs/bracket (alvo)\nGET /careers/{id}/playoffs/matchups/{mid} (alvo)
+c9 --> c10
+c10 ..> pkg_app : orquestra
+c10 --> c13 : usa
+c10 --> c14 : usa
+c10 --> c15 : usa
+c10 --> c16 : usa
+c10 --> c17 : usa
+pkg_app --> pkg_ports : depende (DIP)
+c24 .up.|> c18
+c24 .up.|> c19
+c24 .up.|> c20
+c24 .up.|> c21
+c25 .up.|> c22
+c26 .up.|> c23
+c24 --> s1
+c25 --> s2
+c26 --> s3
+@enduml

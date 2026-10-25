@@ -1,0 +1,52 @@
+@startuml
+title RF43 — Mini campo 3D no intervalo · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Frontend|
+start
+:Fim do quarto: GET /matches/{mid} · status BREAK · monta TacticalFieldSnapshot;
+if (em intervalo?) then (sim)
+else (não)
+  stop
+endif
+if (snapshot íntegro?) then (sim)
+else (não)
+  :Aviso de dados inconsistentes · confirmar desabilitado;
+  stop
+endif
+:GET /clubs/{cid}/playbook · posiciona ataque pela formação e defesa pelo pacote na linha de scrimmage atual;
+if (formação legal?) then (sim)
+else (não)
+  :Selo Ilustrativo no diagrama;
+endif
+if (WebGL disponível e rápido?) then (sim)
+  :MiniField3D: campo com linhas a cada 5, números a cada 10, end zones com o nome do time, traves em Y, linha azul de scrimmage e amarela de 1ª descida · 22 AthleteFigure com capacete e uniforme;
+else (não)
+  :MiniField2D equivalente (SVG) ou qualidade baixa;
+endif
+if (movimento reduzido?) then (sim)
+  :Cena estática com rotas desenhadas;
+else (não)
+  :Rotas, bloqueios e zonas animados;
+endif
+|Manager|
+:Seleciona atleta → card compacto (fadiga, snaps, stats) · adversário só inspeção;
+:Troca no depth chart, ajusta plano de jogo, escolhe jogadas de ênfase → prévia no campo;
+|Frontend|
+:Pendências na sessão (sobrevivem ao reload no mesmo intervalo);
+|Manager|
+:Confirmar e iniciar o próximo quarto;
+|Frontend|
+:POST /matches/{mid}/decisions (lote) → POST /advance;
+|Backend|
+if (decisão válida?) then (sim)
+  :Aplica tudo ou nada · version + 1 · LIVE;
+else (não)
+  :Recusa com código · estado íntegro;
+|Frontend|
+  :Mostra o motivo e reexibe o estado autoritativo;
+endif
+end
+@enduml

@@ -1,0 +1,63 @@
+@startuml
+title RNF12 — Diretrizes de Scores Points e loja · Diagrama de componentes
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 36
+actor "Head coach / manager (usuário autenticado)" as c1
+actor "Administrador" as c2
+actor "Agendador/Job assíncrono" as c3
+package "Frontend (Next.js)" as pkg_fe {
+  component "StorePage" as c4
+  frame "componentes de StorePage" as pkg_fe_sub {
+    component "StoreItemCard" as c5
+    component "WalletBadge" as c6
+    component "PurchaseConfirmDialog" as c7
+  }
+}
+package "scores-af-web (REST)" as pkg_web {
+  component "StoreController" as c8
+  component "WalletController" as c9
+  component "AdminStoreController" as c10
+}
+package "scores-af-application (casos de uso)" as pkg_app {
+  component "PurchaseUseCase" as c11
+  component "StoreCatalogUseCase" as c12
+  component "WalletUseCases" as c13
+  component "RefundPurchaseUseCase" as c14
+  component "StorePolicy" as c15
+  component "WalletReconciliationJob" as c16
+  component "AuditService" as c17
+}
+package "portas (port.out)" as pkg_ports {
+  interface "StoreItemRepository" as c18
+  interface "PurchaseRepository" as c19
+  interface "WalletRepository" as c20
+  interface "IdempotencyPort" as c21
+  interface "CounterPort" as c22
+}
+package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
+  component "persistence-mysql" as c23
+  component "cache-redis" as c24
+}
+database "MySQL 8" as s1
+database "Redis 7" as s2
+c1 --> c4 : usa
+c2 --> c4 : usa
+c3 --> c11 : dispara
+c4 --> c8 : GET /store/catalog (alvo)\nPOST /store/purchases (alvo)\nGET /me/wallet (alvo)\n…
+c4 --> c9
+c4 --> c10
+c8 --> c11
+c9 --> c11
+c10 --> c11
+c11 ..> pkg_app : orquestra
+pkg_app --> pkg_ports : depende (DIP)
+c23 .up.|> c18
+c23 .up.|> c19
+c23 .up.|> c20
+c24 .up.|> c21
+c24 .up.|> c22
+c23 --> s1
+c24 --> s2
+@enduml

@@ -1,0 +1,119 @@
+@startuml
+title RF54 — Catálogo de eventos de partida · Diagrama de classes
+skinparam classAttributeIconSize 0
+hide empty methods
+package "season" {
+  class Fixture {
+    week: int
+    date: LocalDate
+    slot: KickoffSlot (THU_NIGHT|SUN_EARLY|SUN_LATE|SUN_NIGHT|MON_NIGHT)
+    status: FixtureStatus
+    homeScore: int
+    awayScore: int
+    quarterScores: JSON
+    overtime: boolean
+    isDivisional: boolean
+    isConference: boolean
+    neutralSite: boolean
+    weather: Weather
+    attendance: int
+    revenue: long
+    importance: FixtureImportance
+    seed: long
+    isUserFixture: boolean
+  }
+}
+package "match" {
+  class MatchSession {
+    status: LiveStatus
+    quarter: int
+    clockSeconds: int
+    playClockSeconds: int
+    possession: Club
+    down: int (1–4)
+    distance: int
+    ballOnAbsYd: int (0–100)
+    homeScore: int
+    awayScore: int
+    timeoutsHome: int
+    timeoutsAway: int
+    seed: long
+    rngCursor: long
+    snapshotJson: TEXT
+    decisionsLog: JSON
+    version: long
+  }
+  class Drive {
+    seq: int
+    club: Club
+    quarter: int
+    startAbsYd: int
+    plays: int
+    yards: int
+    timeOfPossessionSec: int
+    result: DriveResult (TD|FG|PUNT|TURNOVER|DOWNS|SAFETY|END_HALF)
+  }
+  class PlayEvent {
+    «Cassandra» fixtureId: UUID
+    seq: int
+    drive: int
+    quarter: int
+    clock: String
+    down: int
+    distance: int
+    ballOnAbsYd: int
+    playType: PlayType
+    formation: Formation
+    defense: Coverage
+    yards: int
+    result: PlayResult
+    penalty: Penalty?
+    playerIds: List<UUID>
+    text: String
+    homeScore: int
+    awayScore: int
+  }
+  class Penalty {
+    code: PenaltyCode (FALSE_START|OFFSIDE|ENCROACHMENT|HOLDING_O|HOLDING_D|DPI|OPI|ROUGHING_PASSER|UNNECESSARY_ROUGHNESS|DELAY_OF_GAME|ILLEGAL_FORMATION|FACEMASK|INTENTIONAL_GROUNDING)
+    yards: int
+    automaticFirstDown: boolean
+    lossOfDown: boolean
+    accepted: boolean
+    against: Club
+  }
+  class TeamMatchStats {
+    firstDowns: int
+    thirdDown: String
+    fourthDown: String
+    redZone: String
+    totalYards: int
+    passYards: int
+    rushYards: int
+    timeOfPossession: String
+    turnovers: int
+    penalties: int
+    penaltyYards: int
+    sacks: int
+  }
+}
+class PlayResolver <<Engine>> {
+  resolve(state, offenseCall, defenseCall, rng): PlayEvent
+}
+class PenaltyEnforcer <<Policy>> {
+  enforce(state, Penalty, accepted): DownState
+  bestOption(state, play, Penalty): boolean
+}
+class PlayEventCatalog <<record>> {
+  playTypes: List<PlayType>
+  results: List<PlayResult>
+  penalties: List<PenaltyRule>
+}
+Fixture "1" -- "0..1" MatchSession : estado vivo
+Fixture "1" -- "*" Drive : drives
+Fixture "1" -- "*" PlayEvent : play-by-play
+PlayEvent "1" -- "0..1" Penalty
+Fixture "1" -- "2" TeamMatchStats
+PlayResolver ..> PlayEvent : gera
+PenaltyEnforcer ..> Penalty : aplica
+PlayResolver ..> PenaltyEnforcer : usa
+@enduml

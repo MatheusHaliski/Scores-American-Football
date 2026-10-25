@@ -1,0 +1,80 @@
+@startuml
+title RF29 — Playbook no intervalo · Diagrama de componentes
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 36
+actor "Head coach / manager (usuário autenticado)" as c1
+actor "Franquia adversária (IA)" as c2
+package "Frontend (Next.js)" as pkg_fe {
+  component "HalftimePlaybookPanel" as c3
+  frame "componentes de HalftimePlaybookPanel" as pkg_fe_sub {
+    component "MiniFieldBoard" as c4
+    component "GamePlanSliders" as c5
+    component "FormationWeights" as c6
+    component "CoverageWeights" as c7
+    component "BlitzFrequencyPicker" as c8
+    component "DepthSwapList" as c9
+    component "OpponentTendencies" as c10
+    component "AnalystHints" as c11
+    component "ContinueButton" as c12
+  }
+}
+package "scores-af-web (REST)" as pkg_web {
+  component "MatchController" as c13
+  component "GamePlanController" as c14
+}
+package "scores-af-application (casos de uso)" as pkg_app {
+  component "GetMatchStateUseCase" as c15
+  component "GetMatchPlaybookUseCase" as c16
+  component "SubmitPlaybookAdjustmentsUseCase" as c17
+  component "AdvanceMatchUseCase" as c18
+  component "GetGamePlanUseCase" as c19
+  component "CareerAccess" as c20
+  component "AdjustmentValidator" as c21
+}
+package "scores-af-domain/engine" as pkg_eng {
+  component "MatchSimulator" as c22
+  component "PlayCaller" as c23
+  component "DepthChartRules" as c24
+  component "OpponentAdjustmentAi" as c25
+}
+package "portas (port.out)" as pkg_ports {
+  interface "CareerSaveRepository" as c26
+  interface "MatchSessionRepository" as c27
+  interface "PlaybookRepository" as c28
+  interface "GamePlanRepository" as c29
+  interface "DepthChartRepository" as c30
+  interface "LiveMatchStatePort" as c31
+  interface "PlayByPlayPort" as c32
+}
+package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
+  component "persistence-mysql" as c33
+  component "cache-redis" as c34
+  component "persistence-cassandra" as c35
+}
+database "Redis 7" as s1
+database "MySQL 8" as s2
+database "Cassandra 4.1" as s3
+c1 --> c3 : usa
+c3 --> c13 : GET /matches/{mid} (alvo)\nGET /matches/{mid}/playbook (alvo)\nPOST /matches/{mid}/adjustments (alvo)\n…
+c3 --> c14
+c13 --> c15
+c14 --> c15
+c15 ..> pkg_app : orquestra
+c15 --> c22 : usa
+c15 --> c23 : usa
+c15 --> c24 : usa
+c15 --> c25 : usa
+pkg_app --> pkg_ports : depende (DIP)
+c33 .up.|> c26
+c33 .up.|> c27
+c33 .up.|> c28
+c33 .up.|> c29
+c33 .up.|> c30
+c34 .up.|> c31
+c35 .up.|> c32
+c33 --> s2
+c34 --> s1
+c35 --> s3
+@enduml

@@ -1,0 +1,64 @@
+@startuml
+title RF65 — Free agency e waivers · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+control "AuditService" as AuditService
+control "MarketEngine" as MarketEngine
+control "CapEngine" as CapEngine
+queue "EventBus" as EventBus
+database "MySQL 8" as MySQL
+database "Cassandra 4.1" as Cassandra
+database "OpenSearch 2" as OpenSearch
+participant "Agendador/Job assíncrono" as Scheduler
+actor "Franquia adversária (IA)" as ClubeIA
+actor "Jogador (IA)" as JogadorIA
+Manager -> Frontend: busca free agents
+Frontend -> API: GET /careers/{id}/free-agents?position=WR
+API -> UseCase: SearchFreeAgentsUseCase
+UseCase -> OpenSearch: busca por facetas
+OpenSearch --> UseCase: jogadores
+API --> Frontend: 200
+Manager -> Frontend: faz oferta
+Frontend -> API: POST /free-agents/{pid}/offers
+API -> UseCase: MakeFreeAgentOfferUseCase
+UseCase -> CapEngine: capHit do 1º ano × space
+CapEngine --> UseCase: cabe / não cabe
+alt não é dono / fase fechada / abaixo do mínimo / sem cap / elenco cheio
+  UseCase -> AuditService: record(ACCESS_DENIED) quando 403
+  API --> Frontend: 403 / 422
+else senão
+  UseCase -> MySQL: INSERT free_agent_offer PENDING
+  API --> Frontend: 201
+end
+Scheduler -> MarketEngine: ResolveFreeAgentDecisions(dia)
+MarketEngine -> ClubeIA: ofertas da IA
+MarketEngine -> JogadorIA: escolhe entre ofertas
+JogadorIA --> MarketEngine: oferta vencedora
+MarketEngine -> MySQL: TX: ACCEPTED, demais REJECTED, contrato, cap ledger
+Manager -> Frontend: pede jogador em waivers
+Frontend -> API: POST /waivers/{pid}/claims
+API -> UseCase: SubmitWaiverClaimUseCase
+alt sem cap ou fora do prazo
+  API --> Frontend: 422
+else senão
+  UseCase -> MySQL: INSERT waiver_claim PENDING (priority)
+  API --> Frontend: 201
+end
+Scheduler -> MarketEngine: ProcessWaivers(prazo)
+MarketEngine -> MySQL: claims por jogador ordenados por priority
+loop cada jogador em waivers
+  alt há claims
+    MarketEngine -> MySQL: menor priority AWARDED, demais LOST, contrato transferido
+  else senão
+    MarketEngine -> MySQL: rosterStatus FREE_AGENT
+  end
+end
+MarketEngine -> EventBus: WaiversProcessed
+EventBus -> OpenSearch: reindexa jogadores
+EventBus -> Cassandra: inbox e notícias
+@enduml

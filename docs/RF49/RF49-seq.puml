@@ -1,0 +1,57 @@
+@startuml
+title RF49 — Teto salarial rígido e contratos · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+control "AuditService" as AuditService
+control "CapEngine" as CapEngine
+queue "EventBus" as EventBus
+database "MySQL 8" as MySQL
+database "Cassandra 4.1" as Cassandra
+participant "Agendador/Job assíncrono" as Scheduler
+actor "Jogador (IA)" as JogadorIA
+Manager -> Frontend: abre Contratos e teto
+Frontend -> API: GET /careers/{id}/cap
+API -> UseCase: GetCapSheetUseCase
+UseCase -> MySQL: owner · SalaryCapLedger (4 temporadas) · contratos
+API --> Frontend: 200 CapSheetDto
+Manager -> Frontend: propõe extensão ao QB (4 anos, bônus)
+Frontend -> API: POST /players/{pid}/contract/negotiate
+API -> UseCase: NegotiateContractUseCase «@Transactional»
+UseCase -> CapEngine: validate(contrato, ledger, regras): janela, forma, teto
+alt janela fechada / contrato inválido / acima do teto
+  CapEngine --> UseCase: violação
+  API --> Frontend: 422 com código e quanto falta
+else senão
+  UseCase -> JogadorIA: ContractValuation.evaluate(proposta, mercado da posição, moral, idade)
+  JogadorIA --> UseCase: ACCEPT | COUNTER | REJECT
+  alt ACCEPT
+    UseCase -> CapEngine: capHitByYear(novo contrato) · ledger recalculado
+    UseCase -> MySQL: UPDATE player.contract · ledger (version + 1)
+    UseCase -> AuditService: CONTRACT_EXTENDED
+    API --> Frontend: 200 contrato + ledger
+  else senão
+    UseCase -> MySQL: moral −3 se REJECT
+    API --> Frontend: 200 COUNTER | REJECT
+  end
+end
+Manager -> Frontend: simula corte do WR
+Frontend -> API: GET /players/{pid}/release/preview
+API -> CapEngine: deadMoney(contrato, hoje, pós-1º de junho)
+API --> Frontend: preview (dead money, economia, hash)
+Frontend -> API: POST /players/{pid}/release {previewHash, postJune1, expectedLedgerVersion}
+alt versão divergente
+  API --> Frontend: 409 CAP_LEDGER_CONFLICT
+else senão
+  UseCase -> MySQL: TX: Player WAIVED · ledger.deadMoney · WaiverClaim aberto
+  UseCase -> EventBus: PlayerReleased
+  EventBus -> Cassandra: notícia + inbox
+  API --> Frontend: 200
+end
+Scheduler -> CapEngine: seasonRollover(club): piso, rollover, vencidos
+CapEngine -> MySQL: SalaryCapLedger n+1
+@enduml

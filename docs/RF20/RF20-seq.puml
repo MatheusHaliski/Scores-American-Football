@@ -1,0 +1,49 @@
+@startuml
+title RF20 — Aba Buscar: ligas, franquias, jogadores e head coaches · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+control "AuditService" as AuditService
+queue "EventBus" as EventBus
+database "MySQL 8" as MySQL
+database "Redis 7" as Redis
+database "OpenSearch 2" as OpenSearch
+participant "Agendador/Job assíncrono" as Scheduler
+Manager -> Frontend: busca CB da conferência
+Frontend -> API: GET /careers/{id}/search?type=PLAYER&position=CB&conference=
+API -> UseCase: SearchUseCase.execute(SearchQuery)
+UseCase -> MySQL: save + owner check (worldId)
+alt não é dono
+  UseCase -> AuditService: record(ACCESS_DENIED)
+  API --> Frontend: 403
+else senão
+  alt consulta inválida
+    API --> Frontend: 422 VALIDATION_ERROR
+  else senão
+    UseCase -> OpenSearch: search(players, worldId, filtros, facetas, page)
+    alt OpenSearch indisponível
+      OpenSearch --> UseCase: erro / timeout
+      UseCase -> MySQL: fallback por nome e filtros no mundo do save
+    else senão
+      OpenSearch --> UseCase: hits + agregações
+    end
+    UseCase -> MySQL: enriquece (overall na posição, franquia, rosterStatus)
+    UseCase --> API: SearchResult (page, facets, fromFallback)
+    API --> Frontend: 200
+    Frontend -> Manager: esquemas compactos
+  end
+end
+Manager -> Frontend: abre esquema da franquia
+Frontend -> API: GET /careers/{id}/clubs/{cid}
+API -> UseCase: GetClubSheetUseCase.execute
+UseCase -> MySQL: club, elenco por unidade, depth chart titular, standing, head coach, stadium
+UseCase -> Redis: GET standings:{seasonId}
+UseCase --> API: ClubSheetResult
+API --> Frontend: 200
+Scheduler -> EventBus: RosterChanged / TradeCompleted / MatchFinished
+EventBus -> OpenSearch: reindex idempotente
+@enduml

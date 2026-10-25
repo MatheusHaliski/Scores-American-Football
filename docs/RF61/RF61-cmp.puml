@@ -1,0 +1,65 @@
+@startuml
+title RF61 — Playbook e plano de jogo · Diagrama de componentes
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 36
+actor "Head coach / manager (usuário autenticado)" as c1
+actor "Franquia adversária (IA)" as c2
+package "Frontend (Next.js)" as pkg_fe {
+  component "GamePlanPage" as c3
+  frame "componentes de GamePlanPage" as pkg_fe_sub {
+    component "RunPassSlider" as c4
+    component "FourthDownSelector" as c5
+    component "SituationTendencies" as c6
+    component "PlaybookPage" as c7
+    component "PlayCardGrid" as c8
+    component "PlayDiagramThumb" as c9
+  }
+}
+package "scores-af-web (REST)" as pkg_web {
+  component "GamePlanController" as c10
+  component "PlaybookController" as c11
+}
+package "scores-af-application (casos de uso)" as pkg_app {
+  component "GamePlanUseCases" as c12
+  component "PlaybookUseCases" as c13
+  component "CareerAccess" as c14
+}
+package "scores-af-domain/engine" as pkg_eng {
+  component "ClubAnalyst" as c15
+  component "PlaybookPolicy" as c16
+  component "GamePlanPolicy" as c17
+}
+package "portas (port.out)" as pkg_ports {
+  interface "PlaybookRepository" as c18
+  interface "GamePlanRepository" as c19
+  interface "DepthChartRepository" as c20
+  interface "MatchStatePort" as c21
+  interface "EventPublisher" as c22
+}
+package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
+  component "persistence-mysql" as c23
+  component "cache-redis" as c24
+  component "messaging-eventbus" as c25
+}
+database "MySQL 8" as s1
+database "Redis 7" as s2
+c1 --> c3 : usa
+c3 --> c10 : GET /careers/{id}/playbooks (alvo)\nGET /playbooks/{pbId}/plays (alvo)\nPOST /careers/{id}/playbooks (alvo)\n…
+c3 --> c11
+c10 --> c12
+c11 --> c12
+c12 ..> pkg_app : orquestra
+c12 --> c15 : usa
+c12 --> c16 : usa
+c12 --> c17 : usa
+pkg_app --> pkg_ports : depende (DIP)
+c23 .up.|> c18
+c23 .up.|> c19
+c23 .up.|> c20
+c24 .up.|> c21
+c25 .up.|> c22
+c23 --> s1
+c24 --> s2
+@enduml

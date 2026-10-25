@@ -1,0 +1,25 @@
+@startuml
+title RF54 — Catálogo de eventos de partida · Máquina de estados: PlayEvent (jogada)
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "ALINHADA" as ALINHADA
+ALINHADA : formação e cobertura
+ALINHADA : relógio de jogada
+state "EM_JOGO" as EM_JOGO
+EM_JOGO : snap
+EM_JOGO : confrontos
+state "BOLA_MORTA" as BOLA_MORTA
+BOLA_MORTA : jardas e resultado
+state "FALTA_SINALIZADA" as FALTA_SINALIZADA
+FALTA_SINALIZADA : lenço amarelo
+state "REGISTRADA" as REGISTRADA
+REGISTRADA : timeline e estatísticas
+[*] --> ALINHADA
+ALINHADA --> EM_JOGO : snap
+ALINHADA --> FALTA_SINALIZADA : falta pré-snap
+EM_JOGO --> BOLA_MORTA : tackle / incompleto / fora / pontuação
+EM_JOGO --> FALTA_SINALIZADA : falta na jogada
+FALTA_SINALIZADA --> REGISTRADA : aceita ou recusada
+BOLA_MORTA --> REGISTRADA : sem falta
+REGISTRADA --> [*]
+@enduml

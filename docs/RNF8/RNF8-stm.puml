@@ -1,0 +1,26 @@
+@startuml
+title RNF8 — Privacidade e conformidade com a LGPD · Máquina de estados: UserAccount.status × pedidos LGPD
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "ACTIVE" as ACTIVE
+ACTIVE : consentimentos vigentes
+ACTIVE : dados cifrados
+state "Exportação pendente" as ExportPendente
+ExportPendente : DataExportJob agendado
+state "Exportação pronta" as ExportPronta
+ExportPronta : JSON + CSV no S3
+ExportPronta : link de 24 h
+state "PENDING_DELETION" as PENDING_DELETION
+PENDING_DELETION : 7 dias de arrependimento
+PENDING_DELETION : sessões revogadas
+state "DELETED (anonimizada)" as DELETED
+DELETED : trilhas preservadas
+[*] --> ACTIVE
+ACTIVE --> ExportPendente : POST /me/export
+ExportPendente --> ExportPronta : job concluído
+ExportPronta --> ACTIVE : link expira
+ACTIVE --> PENDING_DELETION : DELETE /me + senha
+PENDING_DELETION --> ACTIVE : cancela no prazo
+PENDING_DELETION --> DELETED : carência vencida
+DELETED --> [*]
+@enduml

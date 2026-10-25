@@ -1,0 +1,28 @@
+@startuml
+title RF35 — Fim de temporada: playoffs, renovações, free agency e draft · Máquina de estados: Season.phase (fim de temporada e entressafra)
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "REGULAR" as REGULAR
+REGULAR : 17 jogos + bye
+state "PLAYOFFS" as PLAYOFFS
+PLAYOFFS : 7 por conferência
+PLAYOFFS : final neutra
+state "OFFSEASON" as OFFSEASON
+OFFSEASON : resumo e prêmios
+OFFSEASON : renovações e franchise tag
+state "FREE_AGENCY" as FREE_AGENCY
+FREE_AGENCY : agentes livres e trocas
+FREE_AGENCY : teto rígido
+state "DRAFT" as DRAFT
+DRAFT : 7 rodadas (RF51)
+state "PRESEASON (n+1)" as PRESEASON
+PRESEASON : evolução, cortes para 53
+PRESEASON : calendário gerado
+[*] --> REGULAR
+REGULAR --> PLAYOFFS : última semana
+PLAYOFFS --> OFFSEASON : final decidida · SeasonClose
+OFFSEASON --> FREE_AGENCY : advance · teto n+1 ok
+FREE_AGENCY --> DRAFT : advance
+DRAFT --> PRESEASON : draft concluído · sem pendências
+PRESEASON --> REGULAR : semana 1
+@enduml

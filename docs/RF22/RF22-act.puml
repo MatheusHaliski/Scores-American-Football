@@ -1,0 +1,72 @@
+@startuml
+title RF22 — Esquema ampliado do jogador · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Manager|
+start
+:Clica no jogador no elenco, no depth chart ou na busca;
+|Frontend|
+:GET /careers/{id}/players/{pid};
+|Backend|
+if (dono do save?) then (sim)
+else (não)
+  :403 + auditoria ACCESS_DENIED;
+  stop
+endif
+if (jogador do mundo do save?) then (sim)
+else (não)
+  :404 PLAYER_NOT_FOUND;
+  stop
+endif
+:Monta o modal: macros da família de posição (QB, corredores e recebedores, OL, defesa, chutadores), subatributos, overall por posição;
+:Contrato com cap hit e dead money (CapEngine), moral e fatores, InjuryReport, estatísticas da posição, slot no depth chart;
+if (fora de posição?) then (sim)
+  :Selo Fora de posição e overall da posição do slot;
+endif
+if (jogador do meu elenco?) then (sim)
+  :Habilita ações: depth chart, status, extensão, tag, bloco de trocas, dispensa, consumível, mensagem;
+else (não)
+  :Modo leitura: Propor troca ou Oferta de FA (RF19);
+endif
+|Frontend|
+:Card frente e verso com flip acessível, macros, estatísticas por posição e barra de ações;
+|Manager|
+if (executa uma ação de gestão?) then (sim)
+|Frontend|
+  :POST ou PATCH na ação escolhida;
+|Backend|
+  if (é mudança de status: permitida?) then (sim)
+  else (não)
+    :422 ROSTER_RULE_VIOLATION;
+    stop
+  endif
+  if (é extensão: cabe no teto?) then (sim)
+  else (não)
+    :422 CAP_SPACE_EXCEEDED;
+    stop
+  endif
+|JogadorIA|
+  if (jogador aceita a extensão?) then (sim)
+|Backend|
+    :Novo PlayerContract · SalaryCapLedger recalculado · moral +;
+  else (não)
+    :422 EXTENSION_REJECTED com contraproposta · moral −2;
+  endif
+  if (é dispensa: confirmou o dead money?) then (sim)
+  else (não)
+|Frontend|
+    :Mostra prévia do dead money;
+    stop
+  endif
+|Backend|
+  :Commit · evento RosterChanged / InboxMessageCreated · AuditLog ROSTER_MOVE;
+|Frontend|
+  :Atualiza o modal sem recarregar;
+else (não)
+|Manager|
+  :Abre a animação 3D (RF23) ou volta;
+endif
+end
+@enduml

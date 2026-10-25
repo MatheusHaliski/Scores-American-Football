@@ -1,0 +1,75 @@
+@startuml
+title RF41 — Moral do head coach (franquia e liga) e do jogador · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Scheduler|
+start
+:Consome WeekCompleted(saveId, week);
+if (semana concluída e não processada?) then (sim)
+else (não)
+  :Ignora (idempotente);
+  stop
+endif
+while (há franquia a processar?) is (sim)
+  :Resultado da semana (bye conta só tendência) e contexto (vitórias × esperadas, metas, finanças, moral do elenco);
+  if (head coach empregado?) then (sim)
+    if (campanha acima da expectativa?) then (sim)
+      :Contribuições positivas;
+    else (não)
+      :Contribuições negativas × rigor;
+    endif
+    if (delta dentro dos limites?) then (sim)
+    else (não)
+      :Clamp;
+    endif
+|Diretoria|
+    if (zona crítica com histerese?) then (sim)
+      if (demitir?) then (sim)
+|Scheduler|
+        :ManagerDismissed → RF37;
+      else (não)
+|Diretoria|
+        :Aviso: restam N semanas;
+      endif
+    else (não)
+|Scheduler|
+      :Confortável ou Atenção;
+    endif
+  else (não)
+    :Head coach IA: só reputação · humano desempregado: RF37;
+  endif
+  while (há jogador a processar?) is (sim)
+    if (snaps abaixo do esperado para o papel?) then (sim)
+      :Fator snaps negativo (PlayerMatchStats.snaps × DepthChartSlot);
+    endif
+    :Fatores contrato, vitórias, lesão, idade, estilo do head coach · clamp · performanceModifier;
+|JogadorIA|
+    if (jogador pede troca?) then (sim)
+      :Inbox PLAYER: pedido de troca ou de extensão;
+|ClubeIA|
+      if (outra franquia propõe troca pelo jogador?) then (sim)
+|Scheduler|
+        :TradeProposal recebida (RF50) · prazo 2 semanas;
+      endif
+    endif
+  endwhile (não)
+  :Persiste ManagerMorale e Player.morale (transação por franquia);
+endwhile (não)
+|Imprensa|
+:Notícias com tom pela moral com a liga;
+|Manager|
+:Responde inbox (promete snaps, negocia, tranquiliza);
+|Backend|
+if (decisão do inbox suportada?) then (sim)
+else (não)
+  :422 OPTION_NOT_SUPPORTED;
+  stop
+endif
+:InboxDecisionPolicy.resolve → deltas, caixa, follow-up;
+if (moral entra no RF42?) then (sim)
+  :Próximo MatchSetup recebe ContextFactors e performanceModifier;
+endif
+end
+@enduml

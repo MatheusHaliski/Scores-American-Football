@@ -1,0 +1,19 @@
+@startuml
+title RF43 — Mini campo 3D no intervalo · Máquina de estados: Decisão do intervalo (lote)
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "Rascunho" as Rascunho
+state "Enviada" as Enviada
+state "Aplicada" as Aplicada
+Aplicada : version + 1
+state "Recusada" as Recusada
+state "Deixou de valer" as Invalidada
+[*] --> Rascunho
+Rascunho --> Enviada : confirmar
+Enviada --> Aplicada : motor aceita
+Enviada --> Recusada : motor recusa
+Recusada --> Rascunho : ajustar
+Rascunho --> Invalidada : estado mudou
+Invalidada --> Rascunho : nova decisão
+Aplicada --> [*]
+@enduml

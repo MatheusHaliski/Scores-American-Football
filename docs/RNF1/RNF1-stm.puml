@@ -1,0 +1,29 @@
+@startuml
+title RNF1 — Transações ACID em dados de usuários, carreiras e database do jogo · Máquina de estados: Dados de uma carreira (mundo SAVE)
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "Copiando" as Copiando
+Copiando : BEGIN
+Copiando : clone do database do jogo (TEMPLATE)
+state "Descartada" as Descartada
+Descartada : ROLLBACK
+Descartada : nenhum mundo nem salvamento
+state "Salva" as Salva
+Salva : COMMIT
+Salva : último salvamento = estado atual
+state "Gravando" as Gravando
+Gravando : ação da carreira em transação
+Gravando : @Version
+state "Projetando" as Projetando
+Projetando : afterCommit
+Projetando : Cassandra, Redis, OpenSearch (idempotente)
+[*] --> Copiando
+Copiando --> Salva : commit
+Copiando --> Descartada : falha em qualquer passo
+Salva --> Gravando : jogar / editar
+Gravando --> Salva : rollback ou 409 (estado anterior intacto)
+Gravando --> Projetando : commit
+Projetando --> Salva : efeitos aplicados
+Salva --> Salva : retomar (último commit)
+Descartada --> [*]
+@enduml

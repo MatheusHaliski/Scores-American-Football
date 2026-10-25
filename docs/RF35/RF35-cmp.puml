@@ -1,0 +1,117 @@
+@startuml
+title RF35 — Fim de temporada: playoffs, renovações, free agency e draft · Diagrama de componentes
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 36
+actor "Head coach / manager (usuário autenticado)" as c1
+actor "Agendador/Job assíncrono" as c2
+actor "Diretoria da franquia (IA)" as c3
+actor "Franquia adversária (IA)" as c4
+actor "Jogador (IA)" as c5
+actor "Imprensa (IA)" as c6
+actor "Claude (LLM, narrativa)" as c7
+package "Frontend (Next.js)" as pkg_fe {
+  component "SeasonEndModal" as c8
+  frame "componentes de SeasonEndModal" as pkg_fe_sub {
+    component "ChampionBanner" as c9
+    component "Trophy3DViewer" as c10
+    component "PlayoffBracketView" as c11
+    component "FinalStandingsTable" as c12
+    component "AwardsPanel" as c13
+    component "OffseasonTimeline" as c14
+    component "ExpiringContractsPanel" as c15
+    component "AdvancePhaseButton" as c16
+  }
+}
+package "scores-af-web (REST)" as pkg_web {
+  component "SeasonController" as c17
+  component "AwardsController" as c18
+  component "ContractController" as c19
+  component "ManagerController" as c20
+}
+package "scores-af-application (casos de uso)" as pkg_app {
+  component "GetSeasonSummaryUseCase" as c21
+  component "GetPlayoffBracketUseCase" as c22
+  component "GetSeasonAwardsUseCase" as c23
+  component "ListExpiringContractsUseCase" as c24
+  component "ListJobOffersUseCase" as c25
+  component "RespondJobOfferUseCase" as c26
+  component "AdvanceOffseasonPhaseUseCase" as c27
+  component "SeasonCloseJob" as c28
+  component "CareerAccess" as c29
+}
+package "scores-af-domain/engine" as pkg_eng {
+  component "SeasonEngine" as c30
+  component "AwardsCalculator" as c31
+  component "DraftOrderPolicy" as c32
+  component "MoraleEngine" as c33
+  component "MarketEngine" as c34
+  component "CapEngine" as c35
+  component "PlayerProgressionModel" as c36
+}
+package "portas (port.out)" as pkg_ports {
+  interface "CareerSaveRepository" as c37
+  interface "SeasonRepository" as c38
+  interface "PlayoffMatchupRepository" as c39
+  interface "SeasonAwardRepository" as c40
+  interface "ChampionHistoryRepository" as c41
+  interface "JobOfferRepository" as c42
+  interface "PlayerRepository" as c43
+  interface "SalaryCapLedgerRepository" as c44
+  interface "DraftPickRepository" as c45
+  interface "TimelinePort" as c46
+  interface "SearchPort" as c47
+  interface "MediaStoragePort" as c48
+  interface "AiNarrativePort" as c49
+}
+package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
+  component "persistence-mysql" as c50
+  component "persistence-cassandra" as c51
+  component "search-opensearch" as c52
+  component "storage-s3" as c53
+  component "ai-providers" as c54
+}
+database "MySQL 8" as s1
+database "Redis 7" as s2
+database "Cassandra 4.1" as s3
+database "S3/MinIO" as s4
+database "Anthropic Claude" as s5
+c1 --> c8 : usa
+c2 --> c21 : dispara
+c8 --> c17 : GET /careers/{id}/season/summary (alvo)\nGET /careers/{id}/playoffs (alvo)\nGET /careers/{id}/awards (alvo)\n…
+c8 --> c18
+c8 --> c19
+c8 --> c20
+c17 --> c21
+c18 --> c21
+c19 --> c21
+c20 --> c21
+c21 ..> pkg_app : orquestra
+c21 --> c30 : usa
+c21 --> c31 : usa
+c21 --> c32 : usa
+c21 --> c33 : usa
+c21 --> c34 : usa
+c21 --> c35 : usa
+c21 --> c36 : usa
+pkg_app --> pkg_ports : depende (DIP)
+c50 .up.|> c37
+c50 .up.|> c38
+c50 .up.|> c39
+c50 .up.|> c40
+c50 .up.|> c41
+c50 .up.|> c42
+c50 .up.|> c43
+c50 .up.|> c44
+c50 .up.|> c45
+c51 .up.|> c46
+c52 .up.|> c47
+c53 .up.|> c48
+c54 .up.|> c49
+c50 --> s1
+c51 --> s3
+c52 --> c57
+c53 --> s4
+c54 --> s5
+@enduml

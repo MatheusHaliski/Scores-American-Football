@@ -1,0 +1,159 @@
+@startuml
+title RF21 — Calendário de semanas com IA · Diagrama de classes
+skinparam classAttributeIconSize 0
+hide empty methods
+package "career" {
+  class CareerSave {
+    id: UUID
+    name: String
+    seed: long
+    employmentStatus: EmploymentStatus
+    currentWeek: int
+    difficulty: Difficulty
+    seasonMode: SeasonMode
+    scoresPoints: int
+    status: SaveStatus
+    slot: int
+    lastPlayedAt: Instant
+  }
+}
+package "season" {
+  class Season {
+    number: int
+    year: int
+    phase: SeasonPhase (PRESEASON|REGULAR|PLAYOFFS|DRAFT|FREE_AGENCY|OFFSEASON)
+    currentWeek: int
+    tradeDeadlineWeek: int
+    championClub: Club?
+    mvpPlayer: Player?
+  }
+  class Week {
+    number: int
+    kind: WeekKind (PRESEASON|REGULAR|WILD_CARD|DIVISIONAL|CONFERENCE|FINAL)
+    startsOn: LocalDate
+    status: WeekStatus
+    byeClubs: List<Club>
+  }
+  class Fixture {
+    week: int
+    date: LocalDate
+    slot: KickoffSlot (THU_NIGHT|SUN_EARLY|SUN_LATE|SUN_NIGHT|MON_NIGHT)
+    status: FixtureStatus
+    homeScore: int
+    awayScore: int
+    quarterScores: JSON
+    overtime: boolean
+    isDivisional: boolean
+    isConference: boolean
+    neutralSite: boolean
+    weather: Weather
+    attendance: int
+    revenue: long
+    importance: FixtureImportance
+    seed: long
+    isUserFixture: boolean
+  }
+  class CalendarInsight {
+    kind: FixtureImportance
+    headline: String
+    body: String
+    imageKey: String
+  }
+  class Standing {
+    wins: int
+    losses: int
+    ties: int
+    winPct: double
+    divisionRecord: String
+    conferenceRecord: String
+    pointsFor: int
+    pointsAgainst: int
+    streak: int
+    last5: JSON
+    divisionRank: int
+    conferenceSeed: Integer
+    tiebreakerNote: String
+  }
+  class PlayoffSeed {
+    conference: Conference
+    seed: int (1–7)
+    club: Club
+    divisionWinner: boolean
+    hasBye: boolean (seed 1)
+  }
+}
+package "catalog" {
+  class Club {
+    id: UUID
+    name: String
+    shortName: String
+    city: String
+    conference: Conference
+    division: Division
+    logoKey: String
+    primaryColor: String
+    secondaryColor: String
+    accentColor: String
+    prestige: int
+    reputationBoard: int
+    reputationFans: int
+    cash: long
+    capSpace: long
+    isUserControlled: boolean
+    expectedWins: int
+    scoutingLevel: int
+    scoutingBudget: long
+  }
+  class Division {
+    name: String
+    conference: Conference
+    teamCount: int = 4
+  }
+}
+class GetCalendarUseCase <<UseCase>> {
+  execute(careerId, season, userId): CalendarResult
+}
+class CalendarResult <<record>> {
+  season: int
+  weeks: List<CalendarWeekDto>
+  byeWeek: int
+  highlights: List<HighlightDto>
+  nextUserFixture: FixtureDto?
+}
+class CalendarWeekDto <<record>> {
+  number: int
+  kind: WeekKind
+  fixtures: List<FixtureCompactDto>
+  bye: boolean
+  importance: FixtureImportance
+  weather: Weather?
+  insight: InsightDto?
+}
+class FixtureImportanceClassifier <<Engine>> {
+  classify(fixture, standings, projectedSeeds, lastMeeting, slot): FixtureImportance
+}
+class CalendarInsightJob <<Job>> {
+  onWeekCompleted(saveId, week)
+  onSeasonStarted(saveId)
+}
+interface AiNarrativePort <<Port>> {
+  narrate(InsightContext): Optional<String>
+}
+Division "1" -- "*" Club : franquias
+Club "*" -- "*" Club : rivais da divisão
+CareerSave "*" -- "0..1" Club : franquia atual
+CareerSave "1" -- "*" Season
+Season "1" -- "18..22" Week : semanas
+Week "1" -- "*" Fixture
+Season "1" -- "*" Standing
+Season "1" -- "14" PlayoffSeed : 7 por conferência
+Fixture "1" -- "0..1" CalendarInsight
+Fixture "*" -- "1" Club : mandante
+GetCalendarUseCase ..> CalendarResult : produz
+CalendarResult ..> CalendarWeekDto : *
+GetCalendarUseCase ..> Week : lê
+CalendarInsightJob ..> FixtureImportanceClassifier : classify
+CalendarInsightJob ..> AiNarrativePort : narrate (opcional)
+CalendarInsightJob ..> CalendarInsight : upsert
+FixtureImportanceClassifier ..> PlayoffSeed : projeção
+@enduml

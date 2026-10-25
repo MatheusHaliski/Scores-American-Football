@@ -1,0 +1,59 @@
+@startuml
+title RF63 — Times especiais · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Manager|
+start
+:Abre Times especiais;
+|Frontend|
+:GET /special-teams;
+|Backend|
+if (dono do save?) then (sim)
+else (não)
+  :403;
+  stop
+endif
+|Manager|
+:Escolhe K, P, LS, holder, KR, PR e as 11 vagas de cada unidade;
+|Frontend|
+:PUT /special-teams/{kind};
+|Backend|
+if (unidade completa?) then (sim)
+else (não)
+  :422 UNIT_INCOMPLETE;
+  stop
+endif
+if (jogador disponível?) then (sim)
+else (não)
+  :422 PLAYER_UNAVAILABLE;
+  stop
+endif
+|Manager|
+:Ajusta estratégia: fair catch, touchback, tabela de 2 pontos, onside;
+|Frontend|
+:PUT /special-teams/strategy;
+partition "Na partida" {
+|Backend|
+  :Kickoff da linha de 35;
+  if (onside permitido?) then (sim)
+    :Onside: recuperação pela semente;
+  else (não)
+    :Touchback ou retorno;
+  endif
+  if (FG ao alcance?) then (sim)
+    :Tentativa de FG: distância, chutador, clima, bloqueio;
+  else (não)
+    :Punt: distância, retorno ou fair catch;
+  endif
+  if (tenta 2 pontos?) then (sim)
+    :Jogada de conversão;
+  else (não)
+    :PAT;
+  endif
+}
+|Manager|
+:Vê estatísticas de chute e retorno;
+end
+@enduml

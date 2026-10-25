@@ -1,0 +1,69 @@
+@startuml
+title RF18 — Head coaches do mundo: ranking e histórico · Diagrama de componentes
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 36
+actor "Head coach / manager (usuário autenticado)" as c1
+package "Frontend (Next.js)" as pkg_fe {
+  component "WorldManagersPage" as c2
+  frame "componentes de WorldManagersPage" as pkg_fe_sub {
+    component "ManagerRankingPodium" as c3
+    component "MetricSelector" as c4
+    component "ManagerCompactCard" as c5
+    component "ManagerSearchBox" as c6
+    component "ManagerExpandedSheet" as c7
+    component "OverallHistoryChart" as c8
+    component "EmploymentTimeline" as c9
+  }
+}
+package "scores-af-web (REST)" as pkg_web {
+  component "ManagerController" as c10
+  component "SearchController" as c11
+}
+package "scores-af-application (casos de uso)" as pkg_app {
+  component "ListWorldManagersUseCase" as c12
+  component "GetManagerHistoryUseCase" as c13
+  component "SearchUseCase" as c14
+  component "ManagerRankingProjector" as c15
+  component "CareerAccess" as c16
+}
+package "scores-af-domain/engine" as pkg_eng {
+  component "MoraleEngine" as c17
+}
+package "portas (port.out)" as pkg_ports {
+  interface "CareerSaveRepository" as c18
+  interface "ManagerProfileRepository" as c19
+  interface "ManagerCareerRecordRepository" as c20
+  interface "ManagerMoraleRepository" as c21
+  interface "SeasonAwardRepository" as c22
+  interface "RankingPort" as c23
+  interface "SearchPort" as c24
+}
+package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
+  component "persistence-mysql" as c25
+  component "cache-redis" as c26
+  component "search-opensearch" as c27
+}
+database "MySQL 8" as s1
+database "Redis 7" as s2
+database "OpenSearch 2" as s3
+c1 --> c2 : usa
+c2 --> c10 : GET /careers/{id}/managers/world (alvo)\nGET /careers/{id}/managers/world/{mid} (alvo)\nGET /careers/{id}/search (alvo)
+c2 --> c11
+c10 --> c12
+c11 --> c12
+c12 ..> pkg_app : orquestra
+c12 --> c17 : usa
+pkg_app --> pkg_ports : depende (DIP)
+c25 .up.|> c18
+c25 .up.|> c19
+c25 .up.|> c20
+c25 .up.|> c21
+c25 .up.|> c22
+c26 .up.|> c23
+c27 .up.|> c24
+c25 --> s1
+c26 --> s2
+c27 --> s3
+@enduml

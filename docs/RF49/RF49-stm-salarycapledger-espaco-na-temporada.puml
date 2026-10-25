@@ -1,0 +1,24 @@
+@startuml
+title RF49 — Teto salarial rígido e contratos · Máquina de estados: SalaryCapLedger (espaço na temporada)
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "Com espaço" as COM_ESPACO
+COM_ESPACO : space > 0
+state "No limite" as NO_LIMITE
+NO_LIMITE : space = 0
+state "Operação recusada" as BLOQUEADO
+BLOQUEADO : 422 CAP_EXCEEDED
+BLOQUEADO : nunca fica negativo
+state "Fechado" as FECHADO
+FECHADO : piso conferido
+FECHADO : rollover para n+1
+[*] --> COM_ESPACO
+COM_ESPACO --> NO_LIMITE : contrato consome o espaço
+NO_LIMITE --> COM_ESPACO : corte / reestruturação
+COM_ESPACO --> BLOQUEADO : operação passaria do teto
+NO_LIMITE --> BLOQUEADO : operação passaria do teto
+BLOQUEADO --> COM_ESPACO : operação desfeita
+COM_ESPACO --> FECHADO : fim da temporada
+NO_LIMITE --> FECHADO : fim da temporada
+FECHADO --> [*]
+@enduml

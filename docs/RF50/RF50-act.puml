@@ -1,0 +1,84 @@
+@startuml
+title RF50 — Trocas com jogadores e picks de draft · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Manager|
+start
+:Abre Mercado → Trocas e escolhe a franquia parceira;
+|Backend|
+if (dono do save?) then (sim)
+else (não)
+  :403;
+  stop
+endif
+if (head coach empregado?) then (sim)
+else (não)
+  :409 NOT_EMPLOYED;
+  stop
+endif
+if (trocas abertas?) then (sim)
+else (não)
+  :422 TRADE_WINDOW_CLOSED;
+  stop
+endif
+|Manager|
+:Monta a troca: jogadores e picks dos dois lados;
+|Frontend|
+:POST /trades/evaluate (prévia a cada mudança);
+|Backend|
+if (ativos pertencem a cada lado?) then (sim)
+else (não)
+  :422 TRADE_ASSET_INVALID;
+  stop
+endif
+if (teto das duas franquias depois?) then (sim)
+else (não)
+|Frontend|
+  :Mostra o lado que estoura e quanto;
+  stop
+endif
+|Backend|
+if (elenco dentro do limite?) then (sim)
+else (não)
+  :422 ROSTER_LIMIT;
+  stop
+endif
+|Frontend|
+:Barra de valor dos dois lados, impacto no teto e chance de aceite;
+|Manager|
+:Envia a proposta;
+|Backend|
+if (não é spam?) then (sim)
+else (não)
+  :429 TRADE_RATE_LIMITED;
+  stop
+endif
+:TradeProposal PENDING · TRADE_PROPOSED;
+|ClubeIA|
+if (IA aceita?) then (sim)
+|Backend|
+  if (proposta ainda válida?) then (sim)
+  else (não)
+    :INVALIDATED · 409 TRADE_STALE;
+    stop
+  endif
+  if (execução atômica?) then (sim)
+    :EXECUTED · jogadores, contratos, picks, ledgers e depth charts · notícia · TRADE_EXECUTED;
+  else (não)
+    :Rollback · 409;
+  endif
+else (não)
+|ClubeIA|
+  :REJECT ou COUNTER (inbox com a contraproposta);
+endif
+|Scheduler|
+:Semanalmente: franquias IA propõem trocas ao usuário (necessidade da posição, pedidos de troca do RF41) · expira propostas vencidas;
+|Manager|
+if (responde proposta recebida?) then (sim)
+|Frontend|
+  :POST /trades/{tid}/respond · mesmas validações de teto, elenco e versão;
+endif
+end
+@enduml

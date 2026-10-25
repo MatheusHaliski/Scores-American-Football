@@ -1,0 +1,177 @@
+@startuml
+title RF8 — Contrato do head coach e relação com a diretoria · Diagrama de classes
+skinparam classAttributeIconSize 0
+hide empty methods
+package "career" {
+  class CareerSave {
+    id: UUID
+    name: String
+    seed: long
+    employmentStatus: EmploymentStatus
+    currentWeek: int
+    difficulty: Difficulty
+    seasonMode: SeasonMode
+    scoresPoints: int
+    status: SaveStatus
+    slot: int
+    lastPlayedAt: Instant
+  }
+  class ManagerContract {
+    salaryPerSeason: long
+    startSeason: int
+    endSeason: int
+    objectives: JSON (vitórias, playoffs, título)
+    releaseClause: long
+    status: ContractStatus
+  }
+  class ManagerMorale {
+    moraleClub: int
+    moraleLeague: int
+    factorsClub: JSON
+    factorsLeague: JSON
+    weeksUnderCritical: int
+    trend: Trend
+    updatedWeek: int
+  }
+  class ManagerCareerRecord {
+    seasonFrom: int
+    seasonTo: int
+    games: int
+    wins: int
+    losses: int
+    ties: int
+    playoffAppearances: int
+    titles: int
+    endReason: EndReason
+  }
+}
+package "catalog" {
+  class ManagerProfile {
+    name: String
+    nationality: String
+    isHuman: boolean
+    overall: int
+    coachStyle: CoachStyleCode
+    reputationLeague: int
+    careerTitles: int
+    careerGames: int
+    careerWins: int
+    careerPlayoffWins: int
+  }
+  class Club {
+    id: UUID
+    name: String
+    shortName: String
+    city: String
+    conference: Conference
+    division: Division
+    logoKey: String
+    primaryColor: String
+    secondaryColor: String
+    accentColor: String
+    prestige: int
+    reputationBoard: int
+    reputationFans: int
+    cash: long
+    capSpace: long
+    isUserControlled: boolean
+    expectedWins: int
+    scoutingLevel: int
+    scoutingBudget: long
+  }
+}
+package "season" {
+  class Standing {
+    wins: int
+    losses: int
+    ties: int
+    winPct: double
+    divisionRecord: String
+    conferenceRecord: String
+    pointsFor: int
+    pointsAgainst: int
+    streak: int
+    last5: JSON
+    divisionRank: int
+    conferenceSeed: Integer
+    tiebreakerNote: String
+  }
+}
+package "finance" {
+  class BudgetRequest {
+    amount: long
+    reason: String
+    status: RequestStatus
+    boardResponse: String
+  }
+  class FinanceLedgerEntry {
+    week: int
+    kind: LedgerKind
+    amount: long
+    balanceAfter: long
+    description: String
+  }
+}
+package "inbox" {
+  class InboxMessage {
+    sender: InboxSender
+    subject: String
+    body: TEXT
+    kind: InboxKind
+    options: JSON
+    chosenOption: String
+    deadlineWeek: int
+    status: MessageStatus
+    refType: String
+    refId: UUID
+  }
+}
+class RequestSalaryRaiseUseCase <<UseCase>> {
+  execute(RaiseRequestCommand): RaiseResult
+}
+class RaiseRequestCommand <<record>> {
+  careerId: UUID
+  amount: long
+  reason: String
+  userId: UUID
+}
+class RaiseResult <<record>> {
+  decision: ACCEPT|COUNTER|REJECT
+  newSalary: long
+  boardMessage: String
+  moraleDelta: int
+}
+class ContractObjectives <<record>> {
+  minWins: int
+  makePlayoffs: boolean
+  winDivision: boolean
+  reachConferenceFinal: boolean
+  winTitle: boolean
+}
+class ResignUseCase <<UseCase>> {
+  execute(careerId, userId) «@Transactional»
+}
+interface MoraleEngine <<Engine>> {
+  boardDecision(ctx, seed): BoardDecision
+  objectiveProgress(contract, standing): ObjectiveProgress
+}
+Club "*" -- "*" Club : rivais da divisão
+Club "0..1" -- "1" ManagerProfile : head coach
+ManagerProfile "1" -- "*" ManagerCareerRecord : histórico
+CareerSave "1" -- "1" ManagerProfile : manager humano
+CareerSave "*" -- "0..1" Club : franquia atual
+CareerSave "1" -- "*" ManagerContract
+CareerSave "1" -- "1" ManagerMorale
+Club "1" -- "*" FinanceLedgerEntry : ledger
+CareerSave "1" -- "*" BudgetRequest
+CareerSave "1" -- "*" InboxMessage
+RequestSalaryRaiseUseCase ..> RaiseRequestCommand : recebe
+RequestSalaryRaiseUseCase ..> RaiseResult : produz
+RequestSalaryRaiseUseCase ..> MoraleEngine : usa
+RequestSalaryRaiseUseCase ..> ManagerContract : atualiza
+ManagerContract ..> ContractObjectives : objectives JSON
+MoraleEngine ..> Standing : vitórias e seed
+ResignUseCase ..> ManagerContract : RESIGNED
+ResignUseCase ..> CareerSave : UNEMPLOYED
+ResignUseCase ..> ManagerCareerRecord : fecha
+@enduml

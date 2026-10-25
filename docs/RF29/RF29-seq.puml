@@ -1,0 +1,71 @@
+@startuml
+title RF29 — Playbook no intervalo · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+control "AuditService" as AuditService
+control "MatchSimulator" as MatchSimulator
+control "PlayCaller" as PlayCaller
+database "MySQL 8" as MySQL
+database "Redis 7" as Redis
+database "Cassandra 4.1" as Cassandra
+actor "Franquia adversária (IA)" as ClubeIA
+Frontend -> API: GET /matches/{mid}/playbook (status HALFTIME)
+API -> UseCase: GetMatchPlaybookUseCase.execute
+UseCase -> Redis: GET match:{fid}:snapshot
+Redis --> UseCase: snapshot (HALFTIME, version)
+UseCase -> MySQL: requireOwner · playbook · game_plan · depth_chart
+alt não é dono
+  UseCase -> AuditService: record(ACCESS_DENIED)
+  API --> Frontend: 403
+else senão
+  UseCase -> Cassandra: jogadas do 1º tempo do adversário
+  Cassandra --> UseCase: PlayEvent[]
+  UseCase -> PlayCaller: opponentTendencies(plays) e suggestions(gamePlan)
+  PlayCaller --> UseCase: tendências + sugestões do analista
+  UseCase --> API: MatchPlaybookDto
+  API --> Frontend: 200
+  Frontend -> Manager: playbook do intervalo no mini campo
+end
+loop cada ajuste
+  Manager -> Frontend: mais Cover 3, menos blitz, mais corrida por fora
+  Frontend -> API: POST /matches/{mid}/adjustments {version, adjustments}
+  API -> UseCase: SubmitPlaybookAdjustmentsUseCase.execute
+  UseCase -> Redis: GET snapshot
+  alt status fora de BREAK/HALFTIME
+    API --> Frontend: 422 ADJUSTMENT_NOT_ALLOWED
+  else senão
+    alt version diferente
+      API --> Frontend: 409 STALE_SNAPSHOT
+    else senão
+      UseCase -> MatchSimulator: validateAdjustments(snapshot, adjustments, playbook, rules)
+      alt jogada fora do playbook / pesos / depth chart inválidos
+        MatchSimulator --> UseCase: AdjustmentError(code)
+        API --> Frontend: 422
+      else senão
+        MatchSimulator --> UseCase: snapshot ajustado (gamePlan, pesos, depthChart, decisionsLog)
+        UseCase -> Redis: SET snapshot (version+1, CAS)
+        API --> Frontend: 200 MatchPlaybookDto
+      end
+    end
+  end
+end
+Manager -> Frontend: Continuar
+Frontend -> API: POST /matches/{mid}/advance {mode: QUARTER}
+API -> UseCase: AdvanceMatchUseCase.execute
+UseCase -> MatchSimulator: advance(snapshot, QUARTER)
+MatchSimulator -> ClubeIA: ajuste de plano da IA adversária
+ClubeIA --> MatchSimulator: novos pesos da IA
+MatchSimulator -> PlayCaller: chamadas com os pesos ajustados
+PlayCaller --> MatchSimulator: jogadas por descida
+note over MatchSimulator: kickoff do 2º tempo com o plano novo · ajustes aparecem no feed
+MatchSimulator --> UseCase: snapshot + jogadas
+UseCase -> Cassandra: appendPlays
+UseCase -> Redis: SET snapshot
+UseCase -> MySQL: UPDATE match_session (quarter, scores, decisionsLog, version)
+API --> Frontend: 200 MatchStateDto
+@enduml

@@ -1,0 +1,60 @@
+@startuml
+title RF62 — Chamada de jogada em momentos decisivos · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Backend|
+start
+:MatchSimulator chega à próxima jogada do clube do usuário;
+if (momento decisivo?) then (sim)
+else (não)
+  :PlayCaller escolhe pelo plano de jogo;
+  :Executa a jogada;
+  end
+endif
+:Abre PlayCallDecision OPEN com 3 a 5 opções do playbook e prazo;
+:Pausa a simulação e envia DecisionOpened por SSE;
+|Frontend|
+:Mostra situação (4th & 2 at OPP 38), opções e contagem regressiva;
+|Manager|
+if (escolhe antes do prazo?) then (sim)
+|Frontend|
+  :POST /decisions/{did};
+|Backend|
+  if (dono do save?) then (sim)
+  else (não)
+    :403 + auditoria;
+    stop
+  endif
+  if (decisão aberta?) then (sim)
+  else (não)
+    :409 DECISION_CLOSED: já automática;
+    stop
+  endif
+  if (opção válida?) then (sim)
+  else (não)
+    :422 PLAY_NOT_OFFERED;
+    stop
+  endif
+  if (versão da sessão?) then (sim)
+  else (não)
+    :409;
+    stop
+  endif
+  :CHOSEN;
+else (não)
+|Scheduler|
+  if (prazo esgotado?) then (sim)
+|Backend|
+    :AUTO: PlayCaller escolhe pelo plano e pela semente;
+  endif
+endif
+|ClubeIA|
+:Defesa adversária escolhe pacote e cobertura;
+|Backend|
+:Resolve a jogada, grava PlayEvent e decisionsLog;
+|Frontend|
+:Mostra o resultado e retoma a simulação;
+end
+@enduml

@@ -1,0 +1,105 @@
+@startuml
+title RF3 — Gerenciar a conta (dados, sessões, segurança, LGPD, notificações) · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Manager|
+start
+:Abre Configurações;
+|Frontend|
+:GET /me, /me/sessions, /me/consents;
+|Backend|
+if (autenticado e conta ativa?) then (sim)
+else (não)
+  :401 UNAUTHENTICATED;
+  stop
+endif
+:Decifra e-mail e nome (AES-GCM) só para o titular;
+|Manager|
+if (troca senha ou e-mail?) then (sim)
+|Frontend|
+  :PUT /me/password ou PUT /me/email com a senha atual;
+|Backend|
+  if (senha atual confere (step-up)?) then (sim)
+  else (não)
+    :401 AUTH_FAILED · 6º chute 429;
+    stop
+  endif
+  if (novo e-mail disponível e não reservado?) then (sim)
+  else (não)
+    :409;
+    stop
+  endif
+  :Senha: hash fora da TX, revoga as OUTRAS famílias · E-mail: pendingEmail + token;
+endif
+|Manager|
+if (edita o perfil?) then (sim)
+|Backend|
+  if (nome não é reservado?) then (sim)
+  else (não)
+    :422 NAME_RESERVED;
+    stop
+  endif
+  :Atualiza campos cifrados · SENSITIVE_DATA_CHANGED;
+endif
+|Manager|
+if (encerra uma sessão?) then (sim)
+|Frontend|
+  :DELETE /me/sessions/{id};
+|Backend|
+  if (sessão pertence ao usuário?) then (sim)
+  else (não)
+    :404 + ACCESS_DENIED;
+    stop
+  endif
+  :Revoga a família · tokens dela recusados na hora · SESSION_REVOKED;
+endif
+|Manager|
+if (altera consentimentos?) then (sim)
+|Backend|
+  if (finalidade válida?) then (sim)
+  else (não)
+    :422;
+    stop
+  endif
+  :ConsentRecord append-only · biometria revogada apaga a mídia do Meu jogador;
+endif
+|Manager|
+if (exporta seus dados?) then (sim)
+|Backend|
+  if (exportação dentro do limite?) then (sim)
+  else (não)
+    :429 com o job vigente;
+    stop
+  endif
+  :DataExportJob REQUESTED;
+|Scheduler|
+  :Gera JSON + CSV no S3 privado · READY por 24 h;
+|Frontend|
+  :GET /me/export/{jobId}/download;
+endif
+|Manager|
+if (exclui a conta?) then (sim)
+|Backend|
+  if (exclusão confirmada?) then (sim)
+  else (não)
+    :401 / 422 / 429;
+    stop
+  endif
+  :PENDING_DELETION · todas as famílias revogadas · ACCOUNT_DELETION_REQUESTED;
+|Scheduler|
+  if (trilhas preservadas?) then (sim)
+    :Após 7 dias: anonimiza, saves ARCHIVED, status DELETED · ACCOUNT_DELETED;
+  else (não)
+    :Banco recusa o DELETE físico · alerta;
+  endif
+  stop
+endif
+|Manager|
+if (ajusta notificações?) then (sim)
+|Backend|
+  :PUT /me/notification-preferences → NotificationPreference por tipo;
+endif
+end
+@enduml

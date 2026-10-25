@@ -1,0 +1,75 @@
+@startuml
+title RF48 — Subatributos ampliados, macros e overall por posição · Diagrama de componentes
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 36
+actor "Head coach / manager (usuário autenticado)" as c1
+actor "Administrador" as c2
+package "Frontend (Next.js)" as pkg_fe {
+  component "PlayerModal" as c3
+  frame "componentes de PlayerModal" as pkg_fe_sub {
+    component "AttributesTab" as c4
+    component "AttributeGroup (8 grupos)" as c5
+    component "MacroHexagon (6 macros)" as c6
+    component "OverallByPositionTable" as c7
+    component "CardTierBadge" as c8
+    component "AttributeHistoryChart" as c9
+    component "OverallWeightsAdminPage" as c10
+  }
+}
+package "scores-af-web (REST)" as pkg_web {
+  component "PlayerAttributesController" as c11
+  component "CatalogController" as c12
+  component "OverallWeightsAdminController" as c13
+}
+package "scores-af-application (casos de uso)" as pkg_app {
+  component "GetPlayerAttributesUseCase" as c14
+  component "GetAttributeHistoryUseCase" as c15
+  component "AttributeCatalogUseCase" as c16
+  component "OverallWeightsQueryUseCase" as c17
+  component "OverallWeightsAdminUseCase" as c18
+  component "RecomputeOverallsJob" as c19
+}
+package "scores-af-domain/engine" as pkg_eng {
+  component "MacroCalculator" as c20
+  component "OverallCalculator" as c21
+  component "CardTierPolicy" as c22
+  component "EffectStacker" as c23
+}
+package "portas (port.out)" as pkg_ports {
+  interface "PlayerRepository" as c24
+  interface "OverallWeightsRepository" as c25
+  interface "SearchPort" as c26
+  interface "CachePort" as c27
+}
+package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
+  component "persistence-mysql" as c28
+  component "cache-redis" as c29
+  component "search-opensearch" as c30
+}
+database "MySQL 8" as s1
+database "Redis 7" as s2
+database "OpenSearch 2" as s3
+c1 --> c3 : usa
+c2 --> c3 : usa
+c3 --> c11 : GET /careers/{id}/players/{pid}/attributes (alvo)\nGET /careers/{id}/players/{pid}/attributes/history (alvo)\nGET /catalog/attributes (alvo)\n…
+c3 --> c12
+c3 --> c13
+c11 --> c14
+c12 --> c14
+c13 --> c14
+c14 ..> pkg_app : orquestra
+c14 --> c20 : usa
+c14 --> c21 : usa
+c14 --> c22 : usa
+c14 --> c23 : usa
+pkg_app --> pkg_ports : depende (DIP)
+c28 .up.|> c24
+c28 .up.|> c25
+c30 .up.|> c26
+c29 .up.|> c27
+c28 --> s1
+c29 --> s2
+c30 --> s3
+@enduml

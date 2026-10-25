@@ -1,0 +1,53 @@
+@startuml
+title RF18 — Head coaches do mundo: ranking e histórico · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Manager|
+start
+:Abre Head coaches do mundo;
+|Frontend|
+:GET /careers/{id}/managers/world?sort=wins&page=0;
+|Backend|
+if (dono do save?) then (sim)
+else (não)
+  :403 + auditoria ACCESS_DENIED;
+  stop
+endif
+if (ranking em cache?) then (sim)
+  :ZREVRANGE managers:rank:{worldId}:{metric};
+else (não)
+  :Calcula do MySQL (vitórias, playoffs, títulos, overall, moral) e repovoa o ZSET;
+endif
+:Monta esquemas compactos com franquia, conferência, estilo de head coach e status de emprego;
+|Frontend|
+:Pódio + lista com campanha V-D-E e títulos;
+|Manager|
+if (muda métrica ou busca por nome?) then (sim)
+|Frontend|
+  :GET /managers/world?sort= · GET /search?type=MANAGER&q=;
+|Backend|
+  :Reordena pelo ZSET da métrica e filtra pela busca (OpenSearch);
+endif
+|Manager|
+if (clica em um head coach?) then (sim)
+|Frontend|
+  :GET /managers/world/{mid};
+|Backend|
+  if (head coach do mundo do save?) then (sim)
+  else (não)
+    :404 MANAGER_NOT_FOUND;
+    stop
+  endif
+  :Carrega ManagerCareerRecord (franquias, campanhas, playoffs, títulos, endReason), série de overall e prêmios;
+  if (moral disponível?) then (sim)
+    :Inclui moral com a liga e a franquia e a tendência;
+  else (não)
+    :Só campanha, títulos e overall;
+  endif
+|Frontend|
+  :Esquema ampliado: gráfico de overall, linha do tempo de empregos, campanhas por temporada;
+endif
+end
+@enduml

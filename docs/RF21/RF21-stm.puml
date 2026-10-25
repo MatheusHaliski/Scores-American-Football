@@ -1,0 +1,27 @@
+@startuml
+title RF21 — Calendário de semanas com IA · Máquina de estados: CalendarInsight de uma Fixture (geração e exibição)
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "Sem insight" as SemInsight
+SemInsight : fixture fora da janela de 3 semanas
+state "Classificada" as Classificada
+Classificada : importance determinística
+state "Insight por template" as Template
+Template : texto pela seed
+Template : arte por imageKey
+state "Insight narrado (Claude)" as Narrado
+Narrado : AuditLog AI_CALL
+state "Exibido no calendário" as Exibido
+Exibido : cache Redis por temporada
+state "Fixture jogada" as Jogada
+Jogada : vira retrospectiva com placar
+[*] --> SemInsight
+SemInsight --> Classificada : entra na janela (WeekCompleted)
+Classificada --> Template : render(seed)
+Template --> Narrado : Claude disponível
+Template --> Exibido : GET /calendar
+Narrado --> Exibido : GET /calendar
+Exibido --> Jogada : MatchFinished
+Classificada --> Classificada : reclassifica se a corrida por seeds mudou
+Jogada --> [*]
+@enduml

@@ -1,0 +1,51 @@
+@startuml
+title RF53 — Regulamentos profissional e college · Diagrama de componentes
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 36
+actor "Head coach / manager (usuário autenticado)" as c1
+actor "Administrador" as c2
+package "Frontend (Next.js)" as pkg_fe {
+  component "LeagueRulesPage" as c3
+  frame "componentes de LeagueRulesPage" as pkg_fe_sub {
+    component "RulesetPresetPicker" as c4
+    component "RulesDiffView" as c5
+  }
+}
+package "scores-af-web (REST)" as pkg_web {
+  component "LeagueRulesController" as c6
+}
+package "scores-af-application (casos de uso)" as pkg_app {
+  component "LeagueRulesUseCases" as c7
+  component "WorldAccess" as c8
+}
+package "scores-af-domain/engine" as pkg_eng {
+  component "LeagueRulesPolicy" as c9
+  component "RulesetPresets" as c10
+}
+package "portas (port.out)" as pkg_ports {
+  interface "LeagueRepository" as c11
+  interface "CareerSaveRepository" as c12
+  interface "CachePort" as c13
+}
+package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
+  component "persistence-mysql" as c14
+  component "cache-redis" as c15
+}
+database "MySQL 8" as s1
+database "Redis 7" as s2
+c1 --> c3 : usa
+c2 --> c3 : usa
+c3 --> c6 : GET /rulesets (alvo)\nGET /leagues/{id}/rules (alvo)\nPOST /leagues/{id}/rules/preview (alvo)\n…
+c6 --> c7
+c7 ..> pkg_app : orquestra
+c7 --> c9 : usa
+c7 --> c10 : usa
+pkg_app --> pkg_ports : depende (DIP)
+c14 .up.|> c11
+c14 .up.|> c12
+c15 .up.|> c13
+c14 --> s1
+c15 --> s2
+@enduml

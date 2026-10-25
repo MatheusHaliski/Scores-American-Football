@@ -1,0 +1,83 @@
+@startuml
+title RF28 — Editar logo, cores, capacete e uniformes · Diagrama de componentes
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 36
+actor "Head coach / manager (usuário autenticado)" as c1
+package "Frontend (Next.js)" as pkg_fe {
+  component "ClubEditModal" as c2
+  frame "componentes de ClubEditModal" as pkg_fe_sub {
+    component "LogoUploader" as c3
+    component "ColorPickerSet" as c4
+    component "HelmetDesigner" as c5
+    component "UniformDesigner" as c6
+    component "Helmet3DPreview" as c7
+    component "ContrastChecker" as c8
+    component "StoreSkinPicker" as c9
+  }
+}
+package "scores-af-web (REST)" as pkg_web {
+  component "ClubIdentityController" as c10
+  component "MediaController" as c11
+  component "StoreController" as c12
+  component "InventoryController" as c13
+}
+package "scores-af-application (casos de uso)" as pkg_app {
+  component "ClubIdentityUseCases" as c14
+  component "WorldAccess" as c15
+  component "UploadMediaUseCase" as c16
+  component "ApplyInventoryItemUseCase" as c17
+}
+package "scores-af-domain/engine" as pkg_eng {
+  component "ClubIdentityPolicy" as c18
+  component "KitClashPolicy" as c19
+  component "ColorMath" as c20
+}
+package "portas (port.out)" as pkg_ports {
+  interface "CareerSaveRepository" as c21
+  interface "ClubRepository" as c22
+  interface "HelmetDesignRepository" as c23
+  interface "UniformRepository" as c24
+  interface "PurchaseRepository" as c25
+  interface "MediaStoragePort" as c26
+  interface "SearchPort" as c27
+  interface "CounterPort" as c28
+}
+package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
+  component "persistence-mysql" as c29
+  component "storage-s3" as c30
+  component "search-opensearch" as c31
+  component "cache-redis" as c32
+}
+database "MySQL 8" as s1
+database "S3/MinIO" as s2
+database "OpenSearch 2" as s3
+database "Redis 7" as s4
+c1 --> c2 : usa
+c2 --> c10 : GET /clubs/{id}/identity (alvo)\nPUT /clubs/{id}/identity (alvo)\nPOST /clubs/{id}/identity/preview (alvo)\n…
+c2 --> c11
+c2 --> c12
+c2 --> c13
+c10 --> c14
+c11 --> c14
+c12 --> c14
+c13 --> c14
+c14 ..> pkg_app : orquestra
+c14 --> c18 : usa
+c14 --> c19 : usa
+c14 --> c20 : usa
+pkg_app --> pkg_ports : depende (DIP)
+c29 .up.|> c21
+c29 .up.|> c22
+c29 .up.|> c23
+c29 .up.|> c24
+c29 .up.|> c25
+c30 .up.|> c26
+c31 .up.|> c27
+c32 .up.|> c28
+c29 --> s1
+c30 --> s2
+c31 --> s3
+c32 --> s4
+@enduml

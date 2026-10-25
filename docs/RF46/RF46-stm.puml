@@ -1,0 +1,17 @@
+@startuml
+title RF46 — Configurações com padrão LGPD e tradução completa · Máquina de estados: UserAccount.status
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "ACTIVE" as ACTIVE
+state "BLOCKED" as BLOCKED
+state "PENDING_DELETION" as PENDING_DELETION
+PENDING_DELETION : 7 dias de arrependimento
+state "DELETED" as DELETED
+[*] --> ACTIVE
+ACTIVE --> BLOCKED : tentativas de login
+BLOCKED --> ACTIVE : bloqueio expira
+ACTIVE --> PENDING_DELETION : senha + palavra
+PENDING_DELETION --> ACTIVE : cancelar no prazo
+PENDING_DELETION --> DELETED : prazo vencido · anonimização
+DELETED --> [*]
+@enduml

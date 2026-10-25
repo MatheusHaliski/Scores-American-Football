@@ -1,0 +1,86 @@
+@startuml
+title RF21 — Calendário de semanas com IA · Diagrama de componentes
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 36
+actor "Head coach / manager (usuário autenticado)" as c1
+actor "Agendador/Job assíncrono" as c2
+actor "Claude (LLM, narrativa)" as c3
+actor "Imprensa (IA)" as c4
+package "Frontend (Next.js)" as pkg_fe {
+  component "CalendarPage" as c5
+  frame "componentes de CalendarPage" as pkg_fe_sub {
+    component "WeekStrip" as c6
+    component "WeekCard" as c7
+    component "KickoffSlotBadge" as c8
+    component "ByeWeekCard" as c9
+    component "WeatherChip" as c10
+    component "DynamicArt" as c11
+    component "InsightPopover" as c12
+    component "WeekDetailDrawer" as c13
+  }
+}
+package "scores-af-web (REST)" as pkg_web {
+  component "CalendarController" as c14
+  component "WeekController" as c15
+}
+package "scores-af-application (casos de uso)" as pkg_app {
+  component "GetCalendarUseCase" as c16
+  component "GetWeekBoardUseCase" as c17
+  component "GetNextMatchPreparationUseCase" as c18
+  component "CalendarInsightJob" as c19
+  component "CareerAccess" as c20
+  component "AuditService" as c21
+}
+package "scores-af-domain/engine" as pkg_eng {
+  component "SeasonEngine" as c22
+  component "FixtureImportanceClassifier" as c23
+  component "InsightTemplateNarrator" as c24
+}
+package "portas (port.out)" as pkg_ports {
+  interface "CareerSaveRepository" as c25
+  interface "WeekRepository" as c26
+  interface "FixtureRepository" as c27
+  interface "CalendarInsightRepository" as c28
+  interface "StandingRepository" as c29
+  interface "AuditLogRepository" as c30
+  interface "AiNarrativePort" as c31
+  interface "MediaStoragePort" as c32
+  interface "CounterPort" as c33
+}
+package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
+  component "persistence-mysql" as c34
+  component "ai-providers" as c35
+  component "storage-s3" as c36
+  component "cache-redis" as c37
+}
+database "MySQL 8" as s1
+database "Redis 7" as s2
+database "S3/MinIO" as s3
+database "Anthropic Claude" as s4
+c1 --> c5 : usa
+c2 --> c16 : dispara
+c5 --> c14 : GET /careers/{id}/calendar (alvo)\nGET /careers/{id}/weeks/{n} (alvo)\nGET /careers/{id}/next-match/preparation (alvo)
+c5 --> c15
+c14 --> c16
+c15 --> c16
+c16 ..> pkg_app : orquestra
+c16 --> c22 : usa
+c16 --> c23 : usa
+c16 --> c24 : usa
+pkg_app --> pkg_ports : depende (DIP)
+c34 .up.|> c25
+c34 .up.|> c26
+c34 .up.|> c27
+c34 .up.|> c28
+c34 .up.|> c29
+c34 .up.|> c30
+c35 .up.|> c31
+c36 .up.|> c32
+c37 .up.|> c33
+c34 --> s1
+c35 --> s4
+c36 --> s3
+c37 --> s2
+@enduml

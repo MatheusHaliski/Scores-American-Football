@@ -1,0 +1,54 @@
+@startuml
+title RF38 — Animações 3D por atributo, posição e estilo (IA do sistema) · Diagrama de componentes
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 36
+actor "Administrador" as c1
+actor "Head coach / manager (usuário autenticado)" as c2
+actor "Claude (LLM, narrativa)" as c3
+package "Frontend (Next.js)" as pkg_fe {
+  component "AnimationAdminPage" as c4
+  frame "componentes de AnimationAdminPage" as pkg_fe_sub {
+    component "AthleteViewer (rig com capacete e ombreiras)" as c5
+    component "AttributePanel" as c6
+    component "animations.ts (fallback local)" as c7
+  }
+}
+package "scores-af-web (REST)" as pkg_web {
+  component "AnimationAdminController" as c8
+  component "AnimationCatalogController" as c9
+}
+package "scores-af-application (casos de uso)" as pkg_app {
+  component "AnimationAdminUseCases" as c10
+  component "AnimationCatalogUseCase" as c11
+  component "AnimationParamsValidator" as c12
+}
+package "portas (port.out)" as pkg_ports {
+  interface "AnimationClipRepository" as c13
+  interface "AiAnimationPort" as c14
+  interface "CachePort" as c15
+}
+package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
+  component "persistence-mysql" as c16
+  component "ai-providers" as c17
+  component "cache-redis" as c18
+}
+database "MySQL 8" as s1
+database "Redis 7" as s2
+database "Anthropic Claude" as s3
+c1 --> c4 : usa
+c2 --> c4 : usa
+c4 --> c8 : GET /admin/animations/coverage (alvo)\nPOST /admin/animations/generate (alvo)\nPUT /admin/animations/{id} (alvo)\n…
+c4 --> c9
+c8 --> c10
+c9 --> c10
+c10 ..> pkg_app : orquestra
+pkg_app --> pkg_ports : depende (DIP)
+c16 .up.|> c13
+c17 .up.|> c14
+c18 .up.|> c15
+c16 --> s1
+c17 --> s3
+c18 --> s2
+@enduml

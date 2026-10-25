@@ -1,0 +1,76 @@
+@startuml
+title RF39 — Scouting universitário · Diagrama de componentes
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 36
+actor "Head coach / manager (usuário autenticado)" as c1
+actor "Agendador/Job assíncrono" as c2
+actor "Diretoria da franquia (IA)" as c3
+package "Frontend (Next.js)" as pkg_fe {
+  component "ScoutingPage" as c4
+  frame "componentes de ScoutingPage" as pkg_fe_sub {
+    component "ProspectTable" as c5
+    component "ProspectSheet" as c6
+    component "ScoutingReportCard" as c7
+    component "BigBoard (arrastar)" as c8
+    component "DepartmentCard" as c9
+  }
+}
+package "scores-af-web (REST)" as pkg_web {
+  component "ScoutingController" as c10
+}
+package "scores-af-application (casos de uso)" as pkg_app {
+  component "ListProspectsUseCase" as c11
+  component "GetProspectUseCase" as c12
+  component "ScoutProspectUseCase" as c13
+  component "GetBigBoardUseCase" as c14
+  component "UpdateBigBoardUseCase" as c15
+  component "InvestScoutingUseCase" as c16
+  component "DraftClassJob" as c17
+}
+package "scores-af-domain/engine" as pkg_eng {
+  component "DraftEngine" as c18
+  component "ScoutingAccuracyModel" as c19
+}
+package "portas (port.out)" as pkg_ports {
+  interface "DraftClassRepository" as c20
+  interface "DraftProspectRepository" as c21
+  interface "ScoutingReportRepository" as c22
+  interface "ClubRepository" as c23
+  interface "FinanceLedgerRepository" as c24
+  interface "SearchPort" as c25
+  interface "CounterPort" as c26
+  interface "TimelinePort" as c27
+}
+package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
+  component "persistence-mysql" as c28
+  component "search-opensearch" as c29
+  component "cache-redis" as c30
+  component "persistence-cassandra" as c31
+}
+database "MySQL 8" as s1
+database "Redis 7" as s2
+database "OpenSearch 2" as s3
+database "Cassandra 4.1" as s4
+c1 --> c4 : usa
+c2 --> c11 : dispara
+c4 --> c10 : GET /careers/{id}/scouting/prospects (alvo)\nGET /careers/{id}/scouting/prospects/{pid} (alvo)\nPOST /careers/{id}/scouting/prospects/{pid}/reports (alvo)\n…
+c10 --> c11
+c11 ..> pkg_app : orquestra
+c11 --> c18 : usa
+c11 --> c19 : usa
+pkg_app --> pkg_ports : depende (DIP)
+c28 .up.|> c20
+c28 .up.|> c21
+c28 .up.|> c22
+c28 .up.|> c23
+c28 .up.|> c24
+c29 .up.|> c25
+c30 .up.|> c26
+c31 .up.|> c27
+c28 --> s1
+c29 --> s3
+c30 --> s2
+c31 --> s4
+@enduml

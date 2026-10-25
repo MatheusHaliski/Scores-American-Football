@@ -1,0 +1,54 @@
+@startuml
+title RF48 — Subatributos ampliados, macros e overall por posição · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Manager|
+start
+:Abre o modal do jogador → aba Atributos;
+|Frontend|
+:GET /players/{pid}/attributes · GET /catalog/attributes (ETag);
+|Backend|
+if (dono do save?) then (sim)
+else (não)
+  :403;
+  stop
+endif
+if (atributos completos?) then (sim)
+else (não)
+  :500 + alerta;
+  stop
+endif
+if (efeitos temporários?) then (sim)
+  :Soma estilos e consumíveis com teto 99 e origem;
+endif
+:Macros da família e overall nas 20 posições com os pesos vigentes;
+if (fora de posição?) then (sim)
+  :Selo Fora de posição;
+endif
+|Frontend|
+:8 grupos com barras, 6 macros no card, tabela de overall por posição, nível do card com ícone;
+|Manager|
+:Abre o histórico por temporada;
+partition "Administração de pesos" {
+|Admin|
+  :Propõe nova versão de pesos;
+|Backend|
+  if (é administrador?) then (sim)
+  else (não)
+    :403;
+    stop
+  endif
+  if (versão de pesos vigente e íntegra?) then (sim)
+  else (não)
+    :422 WEIGHTS_INVALID;
+    stop
+  endif
+|Admin|
+  :Ativa a versão;
+|Backend|
+  :Recalcula overalls (job) · reindexa OpenSearch · OVERALL_WEIGHTS_ACTIVATED;
+}
+end
+@enduml

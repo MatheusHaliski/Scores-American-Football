@@ -1,0 +1,30 @@
+@startuml
+title RF47 — Estatísticas em velocímetros por posição · Máquina de estados: Aba de velocímetros (interação)
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "Idle" as Idle
+state "Carregando" as Carregando
+Carregando : GET gauges
+state "Carregado" as Carregado
+Carregado : velocímetros da família
+state "Amostra pequena" as AmostraPequena
+AmostraPequena : selo cinza
+state "Trocando escopo" as TrocandoEscopo
+TrocandoEscopo : temporada, últimos 5, carreira
+state "Comparando" as Comparando
+Comparando : mesma família
+state "Erro" as Erro
+Erro : 403 / 422 / rede
+[*] --> Idle
+Idle --> Carregando : abre a aba
+Carregando --> Carregado : 200
+Carregando --> AmostraPequena : 200 com amostra abaixo do mínimo
+Carregando --> Erro : falha
+Carregado --> TrocandoEscopo : muda escopo
+AmostraPequena --> TrocandoEscopo : muda escopo
+TrocandoEscopo --> Carregado : 200
+Carregado --> Comparando : comparar
+Comparando --> Carregado : fechar
+Comparando --> Erro : 422 família diferente
+Erro --> Carregando : tentar de novo
+@enduml

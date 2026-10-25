@@ -1,0 +1,69 @@
+@startuml
+title RF24 — Responder mensagens do inbox · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+control "AuditService" as AuditService
+control "MoraleEngine" as MoraleEngine
+control "MarketEngine" as MarketEngine
+queue "EventBus" as EventBus
+database "MySQL 8" as MySQL
+database "Redis 7" as Redis
+database "Cassandra 4.1" as Cassandra
+actor "Diretoria da franquia (IA)" as Diretoria
+actor "Franquia adversária (IA)" as ClubeIA
+actor "Jogador (IA)" as JogadorIA
+Manager -> Frontend: abre inbox
+Frontend -> API: GET /careers/{id}/inbox?page=0&size=20
+API -> UseCase: GetInboxUseCase.execute(id, userId, page)
+UseCase -> MySQL: requireOwner + status e opções
+alt não é dono
+  UseCase -> AuditService: record(ACCESS_DENIED)
+  API --> Frontend: 403
+else senão
+  UseCase -> Cassandra: SELECT inbox WHERE save_id = ? ORDER BY created_at DESC
+  Cassandra --> UseCase: mensagens
+  UseCase -> MySQL: UPDATE status UNREAD → READ
+  UseCase --> API: PageResponse<InboxMessageDto>
+  API --> Frontend: 200
+end
+Manager -> Frontend: responde holdout do WR
+Frontend -> API: POST /careers/{id}/inbox/{mid}/respond {option}
+API -> UseCase: RespondInboxMessageUseCase.execute
+UseCase -> MySQL: message, save, morale (FOR UPDATE)
+alt já respondida ou opção inválida
+  API --> Frontend: 409 / 422
+else senão
+  alt prazo expirado
+    UseCase -> MySQL: status EXPIRED
+    UseCase -> MoraleEngine: applyFactor(IGNORED_MESSAGE, −3)
+    API --> Frontend: 410 MESSAGE_EXPIRED
+  else senão
+    alt sender == BOARD
+      UseCase -> Diretoria: evaluate(option, contexto)
+      Diretoria --> UseCase: BoardReaction
+    else sender == PLAYER
+      UseCase -> JogadorIA: react(option)
+      JogadorIA --> UseCase: PlayerReaction (moral, holdout, pedido de troca)
+    end
+    UseCase -> MoraleEngine: apply(reaction)
+    MoraleEngine --> UseCase: moral atualizada
+    alt COUNTER em TradeProposal
+      UseCase -> MarketEngine: counter(proposal)
+      MarketEngine -> ClubeIA: avalia
+      ClubeIA --> MarketEngine: ACCEPT | COUNTER | REJECT
+    else senão
+    end
+    UseCase -> MySQL: TX: ANSWERED + chosenOption · morale · ledger se verba
+    UseCase -> EventBus: InboxMessageCreated (réplica) · PointsEarned?
+    EventBus -> Cassandra: timeline + Notification
+    EventBus -> Redis: DECR inbox:unread:{saveId}
+    API --> Frontend: 200 InboxDecisionResultDto
+    Frontend -> Manager: consequência exibida
+  end
+end
+@enduml

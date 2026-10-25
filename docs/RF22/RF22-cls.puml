@@ -1,0 +1,209 @@
+@startuml
+title RF22 — Esquema ampliado do jogador · Diagrama de classes
+skinparam classAttributeIconSize 0
+hide empty methods
+package "career" {
+  class CareerSave {
+    id: UUID
+    name: String
+    seed: long
+    employmentStatus: EmploymentStatus
+    currentWeek: int
+    difficulty: Difficulty
+    seasonMode: SeasonMode
+    scoresPoints: int
+    status: SaveStatus
+    slot: int
+    lastPlayedAt: Instant
+  }
+}
+package "catalog" {
+  class Club {
+    id: UUID
+    name: String
+    shortName: String
+    city: String
+    conference: Conference
+    division: Division
+    logoKey: String
+    primaryColor: String
+    secondaryColor: String
+    accentColor: String
+    prestige: int
+    reputationBoard: int
+    reputationFans: int
+    cash: long
+    capSpace: long
+    isUserControlled: boolean
+    expectedWins: int
+    scoutingLevel: int
+    scoutingBudget: long
+  }
+  class Player {
+    id: UUID
+    name: String
+    nationality: String
+    college: String
+    birthDate: LocalDate
+    age: int
+    heightCm: int
+    weightKg: int
+    position: Position (QB|RB|FB|WR|TE|LT|LG|C|RG|RT|DE|DT|OLB|MLB|CB|FS|SS|K|P|LS)
+    unit: Unit (OFFENSE|DEFENSE|SPECIAL)
+    attributes: PlayerAttributes
+    overall: int «por posição, OVR v1»
+    potential: int
+    experienceYears: int
+    rosterStatus: RosterStatus (ACTIVE|INACTIVE|PRACTICE_SQUAD|IR|PUP|FREE_AGENT|WAIVED)
+    condition: int
+    morale: int
+    moraleFactors: JSON
+    injury: Injury?
+    suspensionWeeks: int
+    contract: PlayerContract
+    jerseyNumber: int
+    isLegendary: boolean
+    model3dUrl: String
+  }
+  class PlayerAttributes {
+    «embedded» físicos: 7 (VEL, ACE, AGI, FOR, IMPULSAO, RES, DUR)
+    passe: 8 (precisão curta/média/longa, braço, em movimento, play-action, leitura, calma)
+    corrida e posse: 7 (visão, quebra de tackle, juke, spin, stiff arm, proteção, carregar)
+    recepção: 7 (mãos, tráfego, espetacular, rota curta/média/funda, soltura)
+    bloqueio: 5 (passe, corrida, técnica, finesse, potência)
+    defesa: 9 (tackle, impacto, perseguição, leitura, cobertura individual/zona, press, rush finesse/potência)
+    chute: 3 (potência, precisão, retorno)
+    mental: 2 (consciência, liderança)
+  }
+  class PlayerPlayStyle {
+    source: NATURAL|CONSUMABLE|STORE
+    weeksRemaining: Integer
+    appliedAt: Instant
+  }
+  class PlayStyle {
+    code: PlayStyleCode
+    name: String
+    positions: List<Position>
+    tier: Tier
+    effects: JSON
+    animationId: String
+    priceScoresPoints: int
+  }
+  class ConsumableApplication {
+    appliedWeek: int
+    expiresWeek: int
+    active: boolean
+  }
+}
+package "market" {
+  class PlayerContract {
+    «embedded» years: int
+    baseSalaryByYear: JSON
+    signingBonus: long «rateado»
+    guaranteed: long
+    capHitByYear: JSON
+    deadMoneyIfCut: long
+    franchiseTag: boolean
+    type: ContractType (ROOKIE|VETERAN|MINIMUM|TAG|PRACTICE)
+    endSeason: int
+  }
+  class PracticeSquadMember {
+    player: Player
+    club: Club
+    since: Instant
+    elevationsUsed: int
+    protected: boolean
+    status: PSStatus (ACTIVE|ELEVATED|SIGNED_AWAY|RELEASED)
+  }
+}
+package "match" {
+  class PlayerMatchStats {
+    snaps: int
+    passing: cmp/att, yds, td, int, rating, sacked
+    rushing: att, yds, avg, td, fum
+    receiving: tgt, rec, yds, yac, td, drops
+    defense: tkl solo/ast, tfl, sacks, qbHits, int, pd, ff, fr
+    kicking: fg por distância, pat, punts, avg, in20
+    returns: kr/pr, yds, td
+    rating: double
+  }
+  class DepthChartSlot {
+    unit: Unit
+    position: Position | Role (KR|PR|3RD_DOWN_BACK|SNAPPER|HOLDER)
+    depth: int (1, 2, 3…)
+    player: Player
+    outOfPosition: boolean
+  }
+  class InjuryReport {
+    week: int
+    player: Player
+    status: InjuryStatus (QUESTIONABLE|DOUBTFUL|OUT|IR)
+    practice: PracticeStatus (FULL|LIMITED|DNP)
+    returnEstimateWeek: Integer
+    publishedAt: Instant
+  }
+}
+package "finance" {
+  class SalaryCapLedger {
+    season: int
+    cap: long
+    committed: long
+    deadMoney: long
+    space: long
+    rolloverFromPrevious: long
+  }
+}
+class GetPlayerExpandedUseCase <<UseCase>> {
+  execute(careerId, playerId, userId): PlayerExpandedDto
+}
+class ExtendPlayerContractUseCase <<UseCase>> {
+  execute(ExtendContractCommand): PlayerExpandedDto «@Transactional»
+}
+class ChangeRosterStatusUseCase <<UseCase>> {
+  execute(careerId, playerId, status, userId): PlayerExpandedDto
+}
+class PlayerExpandedDto <<record>> {
+  positionFamily: PositionFamily
+  macros: Map<String,int> (6)
+  subAttributes: Map<String,Map<String,int>>
+  overallByPosition: Map<Position,int>
+  outOfPosition: boolean
+  contract: ContractCapDto
+  moraleFactors: List<FactorDto>
+  injury: InjuryDto?
+  seasonStats: PositionStatsDto
+  depthSlot: DepthSlotDto?
+  card: CardDto
+  actions: List<String>
+}
+enum PositionFamily {
+  QB (PRE BRA LEI MOB CAL LID)
+  SKILL (VEL AGI MAO ROT QBT FOR)
+  OL (BLP BLC FOR TEC AGI CON)
+  DEF (TAC IMP COB PRS VEL LEI)
+  KICKER (POT PRE CON)
+}
+class OverallCalculator <<Engine>> {
+  overall(attributes, position, version): int «OVR v1, pesos versionados»
+}
+Club "1" -- "0..53" Player : elenco ativo
+Club "1" -- "0..16" PracticeSquadMember : practice squad
+PracticeSquadMember "*" -- "1" Player
+Club "*" -- "*" Club : rivais da divisão
+DepthChartSlot "*" -- "1" Player
+Player "1" -- "1" PlayerAttributes : «embedded»
+Player "1" -- "1" PlayerContract : «embedded»
+Player "1" -- "0..3" PlayerPlayStyle : estilos
+PlayerPlayStyle "*" -- "1" PlayStyle
+Player "1" -- "*" ConsumableApplication
+CareerSave "*" -- "0..1" Club : franquia atual
+Club "1" -- "*" InjuryReport : semanal
+InjuryReport "*" -- "1" Player
+Club "1" -- "*" SalaryCapLedger : por temporada
+GetPlayerExpandedUseCase ..> PlayerExpandedDto : produz
+PlayerExpandedDto ..> PositionFamily : macros
+GetPlayerExpandedUseCase ..> OverallCalculator : overall por posição
+ExtendPlayerContractUseCase ..> PlayerContract : cria
+ExtendPlayerContractUseCase ..> SalaryCapLedger : recalcula
+ChangeRosterStatusUseCase ..> Player : rosterStatus
+@enduml

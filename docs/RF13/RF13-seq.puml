@@ -1,0 +1,66 @@
+@startuml
+title RF13 — Notificações e mensagens (diretoria, jogadores, franquias) · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+control "AuditService" as AuditService
+control "MoraleEngine" as MoraleEngine
+queue "EventBus" as EventBus
+database "MySQL 8" as MySQL
+database "Redis 7" as Redis
+database "Cassandra 4.1" as Cassandra
+participant "Claude (LLM, narrativa)" as Claude
+participant "Agendador/Job assíncrono" as Scheduler
+actor "Diretoria da franquia (IA)" as Diretoria
+actor "Franquia adversária (IA)" as ClubeIA
+actor "Jogador (IA)" as JogadorIA
+Scheduler -> MoraleEngine: WeekCompleted → generateMessages(save, moral, eventos da semana, seed)
+MoraleEngine -> Diretoria: aviso / meta
+MoraleEngine -> JogadorIA: reclamação de snaps / pedido de contrato
+MoraleEngine -> ClubeIA: proposta de troca com picks
+MoraleEngine --> Scheduler: List<InboxDraft>
+Scheduler -> MySQL: INSERT inbox_message (UNREAD, options, deadlineWeek)
+Scheduler -> EventBus: InboxMessageCreated(saveId, messageId)
+EventBus -> Cassandra: appendInbox(saveId) + appendNotification(userId)
+EventBus -> Redis: INCR save:{id}:inbox:unread
+Manager -> Frontend: abre Inbox
+Frontend -> API: GET /careers/{id}/inbox?before=
+API -> UseCase: ListInboxUseCase.execute(id, cursor, userId)
+UseCase -> MySQL: save + owner check
+alt não é dono
+  UseCase -> AuditService: record(ACCESS_DENIED)
+  API --> Frontend: 403
+else senão
+  UseCase -> Cassandra: inbox(saveId, before, 20)
+  UseCase -> MySQL: status e opções das mensagens abertas
+  API --> Frontend: 200 PageResponse<InboxMessageDto>
+end
+Manager -> Frontend: responde: prometo mais snaps
+Frontend -> API: POST /careers/{id}/inbox/{mid}/respond {option}
+API -> UseCase: RespondInboxMessageUseCase.execute(cmd) «@Transactional»
+UseCase -> MySQL: message (status, options, deadlineWeek)
+alt fechada / opção inválida / prazo vencido
+  API --> Frontend: 409 | 422
+else senão
+  alt kind muda outro agregado
+    UseCase -> UseCase: InboxEffectDispatcher → caso de uso do RF (RF9/RF14/RF49/RF50/RF64/RF65)
+  else senão
+  end
+  UseCase -> MoraleEngine: react(message, option, moral, seed)
+  MoraleEngine --> UseCase: deltaMoral + texto
+  UseCase -> Claude: narrate(resposta do remetente) (opcional)
+  Claude --> UseCase: texto ou vazio → template
+  UseCase -> MySQL: UPDATE message ANSWERED · morale · INSERT resposta
+  UseCase -> EventBus: InboxMessageCreated(resposta)
+  EventBus -> Cassandra: appendInbox + appendNotification
+  API --> Frontend: 200 RespondResult
+end
+Frontend -> API: POST /me/notifications/read {ids}
+API -> UseCase: MarkNotificationsReadUseCase.execute(userId, ids)
+UseCase -> Cassandra: markNotificationsRead(userId, ids)
+API --> Frontend: 204
+@enduml

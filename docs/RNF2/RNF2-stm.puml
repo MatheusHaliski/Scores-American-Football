@@ -1,0 +1,36 @@
+@startuml
+title RNF2 — Partida completa dentro do tempo configurado · Máquina de estados: Reprodução da partida (orçamento de tempo)
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "Planejada" as Planejada
+Planejada : timeBudget = 4 × simQuarterMinutes
+Planejada : ~150 jogadas estimadas
+state "Simulando quarto" as Simulando
+Simulando : advance(QUARTER) ≤ 500 ms
+state "Reproduzindo" as Reproduzindo
+Reproduzindo : msPorJogada calculado
+Reproduzindo : relógio do orçamento corre
+state "Decidindo jogada" as Decidindo
+Decidindo : momento decisivo
+Decidindo : orçamento pausado · tempo limite
+state "Acelerando" as Acelerando
+Acelerando : atraso vs orçamento
+Acelerando : resume jogadas sem lance relevante
+state "Instantânea" as Instantanea
+Instantanea : simQuarterMinutes = 0
+Instantanea : FULL < 5 s
+state "Concluída" as Concluida
+Concluida : duração real registrada vs orçamento
+[*] --> Planejada
+Planejada --> Instantanea : instantâneo
+Instantanea --> Concluida : finish()
+Planejada --> Simulando : advance QUARTER
+Simulando --> Reproduzindo : jogadas recebidas
+Reproduzindo --> Decidindo : 4ª descida / 2 minutos / prorrogação
+Decidindo --> Simulando : jogada escolhida ou automática
+Reproduzindo --> Acelerando : atraso > 10 % do orçamento
+Acelerando --> Reproduzindo : dentro do orçamento
+Reproduzindo --> Simulando : fim do quarto
+Reproduzindo --> Concluida : fim do 4º quarto ou da prorrogação
+Concluida --> [*]
+@enduml

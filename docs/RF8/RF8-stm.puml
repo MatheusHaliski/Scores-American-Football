@@ -1,0 +1,35 @@
+@startuml
+title RF8 — Contrato do head coach e relação com a diretoria · Máquina de estados: ManagerContract.status
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "PROPOSED" as PROPOSED
+PROPOSED : oferta da diretoria (nova carreira ou JobOffer)
+PROPOSED : metas em vitórias, playoffs, título
+state "ACTIVE" as ACTIVE
+ACTIVE : salário e metas vigentes
+ACTIVE : diretoria avalia por semana (RF41)
+state "RENEGOTIATING" as RENEGOTIATING
+RENEGOTIATING : pedido de aumento pendente
+state "RESIGNED" as RESIGNED
+RESIGNED : pedido de demissão
+state "DISMISSED" as DISMISSED
+DISMISSED : moral crítica por N semanas (RF41/RF37)
+DISMISSED : ou temporada muito abaixo da meta
+state "EXPIRED" as EXPIRED
+EXPIRED : endSeason alcançado sem renovação
+state "TRANSFERRED" as TRANSFERRED
+TRANSFERRED : aceitou proposta de outra franquia (RF9)
+[*] --> PROPOSED
+PROPOSED --> ACTIVE : head coach aceita
+PROPOSED --> EXPIRED : prazo vence
+ACTIVE --> RENEGOTIATING : POST raise-request
+RENEGOTIATING --> ACTIVE : aceito / contraproposta / recusado
+ACTIVE --> RESIGNED : POST resign confirmado
+ACTIVE --> DISMISSED : moralClub crítica ou fim de temporada ruim
+ACTIVE --> EXPIRED : fim da última temporada
+ACTIVE --> TRANSFERRED : JobOffer ACCEPTED
+EXPIRED --> PROPOSED : renovação na offseason (RF35)
+RESIGNED --> [*]
+DISMISSED --> [*]
+TRANSFERRED --> [*]
+@enduml

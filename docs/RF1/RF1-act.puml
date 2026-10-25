@@ -1,0 +1,76 @@
+@startuml
+title RF1 — Cadastro de usuário · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Visitante|
+start
+:Abre a tela de cadastro e preenche e-mail, senha, nome, idioma e consentimentos;
+|Frontend|
+:Valida campos localmente e mostra força da senha;
+:POST /auth/register;
+|Backend|
+:CorrelationIdFilter: X-Correlation-Id seguro do cliente ou UUID novo;
+if (dentro do limite da rota?) then (sim)
+else (não)
+  :429 RATE_LIMITED + Retry-After;
+  stop
+endif
+if (payload válido?) then (sim)
+else (não)
+  :422 VALIDATION_ERROR com details;
+  stop
+endif
+if (nome não é reservado?) then (sim)
+else (não)
+  :422 NAME_RESERVED;
+  stop
+endif
+if (consentimento LGPD marcado?) then (sim)
+else (não)
+  :422 CONSENT_REQUIRED;
+  stop
+endif
+if (teto de hashes livre?) then (sim)
+else (não)
+  :503 AUTH_BUSY + Retry-After;
+  stop
+endif
+:Argon2id FORA da transação;
+:Escrita curta: UserAccount, UserSettings padrão AF, ConsentRecord DATA_PROCESSING;
+if (e-mail disponível?) then (sim)
+else (não)
+  :409 EMAIL_ALREADY_REGISTERED;
+  stop
+endif
+:AuditService REQUIRES_NEW: REGISTER + CONSENT_GRANTED;
+if (e-mail de verificação enviado?) then (sim)
+  :Registra envio com e-mail mascarado no log;
+else (não)
+  :Marca reenvio pendente;
+endif
+:201 Created {userId};
+|Frontend|
+:Mostra: confira seu e-mail para verificar a conta;
+|Visitante|
+:Clica no link de verificação;
+|Frontend|
+:POST /auth/email/verify {token};
+|Backend|
+if (token de verificação válido?) then (sim)
+  :E-mail verificado · AuditLog EMAIL_VERIFIED;
+else (não)
+  :422 TOKEN_INVALID + reenvio;
+  stop
+endif
+|Frontend|
+:Redireciona ao login (RF2);
+|Scheduler|
+if (admin inicial só pelo cofre?) then (sim)
+  :Na subida: AdminBootstrap cria ou promove o admin · AuditLog ADMIN_BOOTSTRAPPED;
+else (não)
+  :Sem admin automático;
+endif
+end
+@enduml

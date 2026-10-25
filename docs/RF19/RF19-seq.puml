@@ -1,0 +1,77 @@
+@startuml
+title RF19 — Reforçar o elenco: free agency, trocas e waivers · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+control "AuditService" as AuditService
+control "MarketEngine" as MarketEngine
+control "CapEngine" as CapEngine
+queue "EventBus" as EventBus
+database "MySQL 8" as MySQL
+database "Cassandra 4.1" as Cassandra
+database "OpenSearch 2" as OpenSearch
+participant "Agendador/Job assíncrono" as Scheduler
+actor "Franquia adversária (IA)" as ClubeIA
+actor "Jogador (IA)" as JogadorIA
+Manager -> Frontend: oferta a um free agent
+Frontend -> API: POST /careers/{id}/market/free-agents/{pid}/offers {years, total, guaranteed, bonus}
+API -> UseCase: OfferFreeAgentContractUseCase.execute(cmd) «@Transactional»
+UseCase -> MySQL: save + owner check · season.phase · player (FREE_AGENT) · elenco · salary_cap_ledger
+alt não é dono
+  UseCase -> AuditService: record(ACCESS_DENIED)
+  API --> Frontend: 403
+else senão
+  UseCase -> CapEngine: capHit(contrato, ano) e espaço após a assinatura
+  CapEngine --> UseCase: CapCheck(ok, space)
+  alt fase fechada / sem espaço / elenco cheio
+    UseCase --> API: BusinessRuleException MARKET_CLOSED | CAP_SPACE_EXCEEDED | ROSTER_FULL
+    API --> Frontend: 409 | 422
+  else senão
+    UseCase -> MySQL: INSERT free_agent_offer PENDING
+    UseCase -> MarketEngine: decide(player, ofertas concorrentes, seed)
+    MarketEngine -> JogadorIA: valor, garantia, tempo de jogo previsto, chance de título
+    JogadorIA --> MarketEngine: aceita | prefere outra oferta
+    MarketEngine --> UseCase: SigningOutcome
+    alt jogador aceitou
+      UseCase -> MySQL: TX: contrato · rosterStatus ACTIVE · ledger do teto · ofertas concorrentes EXPIRED
+      UseCase -> AuditService: record(ROSTER_MOVE, FA_SIGNED)
+      UseCase -> EventBus: RosterChanged(saveId, playerId)
+      EventBus -> OpenSearch: reindexa jogador
+      EventBus -> Cassandra: inbox e notícia da assinatura
+      API --> Frontend: 201 FreeAgentOfferDto ACCEPTED
+    else senão
+      UseCase -> MySQL: offer REJECTED
+      API --> Frontend: 201 REJECTED (motivo)
+    end
+  end
+end
+Manager -> Frontend: propõe troca (jogador + pick de 2ª rodada)
+Frontend -> API: POST /careers/{id}/market/trades
+API -> UseCase: ProposeTradeUseCase.execute(cmd) «@Transactional»
+UseCase -> MySQL: prazo de trocas · contratos · picks (ownerClub) · ledgers dos dois clubes
+UseCase -> CapEngine: capImpact(entram, saem) dos dois lados
+UseCase -> MarketEngine: tradeValue(jogadores, picks, necessidades)
+MarketEngine -> ClubeIA: avalia ganho e necessidade de posição
+ClubeIA --> MarketEngine: ACCEPT | COUNTER | REJECT
+alt ACCEPT
+  UseCase -> MySQL: TX: contratos trocam de franquia · DraftPick.ownerClub · ledgers · status ACCEPTED (WHERE version = ?)
+  UseCase -> AuditService: record(ROSTER_MOVE, TRADE)
+  UseCase -> EventBus: TradeCompleted
+  API --> Frontend: 201 TradeProposalDto ACCEPTED
+else COUNTER ou REJECT
+  UseCase -> MySQL: status COUNTERED | REJECTED
+  UseCase -> EventBus: InboxMessageCreated(CLUB)
+  API --> Frontend: 201 COUNTERED | REJECTED
+end
+Manager -> Frontend: reivindica jogador nos waivers
+Frontend -> API: POST /careers/{id}/market/waivers/{pid}/claim
+API -> UseCase: ClaimWaiverUseCase.execute
+UseCase -> MySQL: INSERT waiver_claim PENDING (priority pela classificação)
+API --> Frontend: 202 WaiverClaimDto PENDING
+Scheduler -> MarketEngine: fim do período: processWaivers(jogador)
+MarketEngine -> MySQL: menor priority AWARDED · demais LOST · contrato herdado · fila reordenada
+@enduml

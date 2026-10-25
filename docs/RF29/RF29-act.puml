@@ -1,0 +1,79 @@
+@startuml
+title RF29 — Playbook no intervalo · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Backend|
+start
+:Fim do quarto ou do 1º tempo: MatchSession → BREAK ou HALFTIME, snapshot no Redis, jogadas no Cassandra;
+|Frontend|
+:GET /matches/{mid} e GET /matches/{mid}/playbook;
+|Backend|
+if (dono do save?) then (sim)
+else (não)
+  :403 + auditoria ACCESS_DENIED;
+  stop
+endif
+|Frontend|
+:Mini campo (RF43) com formações, rotas e coberturas · estatísticas do time · tendências do adversário;
+|Backend|
+if (lesão de titular no jogo?) then (sim)
+|Frontend|
+  :Destaca a posição e o substituto que entrou;
+endif
+|Manager|
+while (faz ajustes?) is (sim)
+  :Muda corrida/passe, ritmo, 4ª descida, pesos de formação, conceito, cobertura, blitz ou troca no depth chart;
+|Frontend|
+  :POST /matches/{mid}/adjustments {version, adjustments[]};
+|Backend|
+  if (bola parada?) then (sim)
+  else (não)
+    :422 ADJUSTMENT_NOT_ALLOWED;
+    stop
+  endif
+  if (versão do snapshot confere?) then (sim)
+  else (não)
+    :409 STALE_SNAPSHOT;
+    stop
+  endif
+  if (jogada existe no playbook?) then (sim)
+  else (não)
+    :422 PLAY_NOT_IN_PLAYBOOK;
+    stop
+  endif
+  if (pesos válidos?) then (sim)
+  else (não)
+    :422 WEIGHTS_INVALID;
+    stop
+  endif
+  if (troca no depth chart elegível?) then (sim)
+  else (não)
+    :422 DEPTH_SWAP_INVALID;
+    stop
+  endif
+  if (unidades completas?) then (sim)
+  else (não)
+    :422 DEPTH_CHART_INCOMPLETE;
+    stop
+  endif
+  :Aplica no snapshot (gamePlan, pesos, depth chart) · decisionsLog com quarto e relógio · version +1;
+|Frontend|
+  :Mini campo e painel refletem os ajustes;
+endwhile (não)
+|Manager|
+:Clica em Continuar;
+|Frontend|
+:POST /matches/{mid}/advance {mode: QUARTER};
+|ClubeIA|
+:Adversário reajusta o plano pelas tendências do jogo;
+|Backend|
+:MatchSimulator retoma: PlayCaller usa os novos pesos a partir do próximo snap (RF42);
+if (prorrogação?) then (sim)
+  :BREAK antes do OT · painel reaberto;
+endif
+|Manager|
+:Acompanha no painel da partida (RF27);
+end
+@enduml

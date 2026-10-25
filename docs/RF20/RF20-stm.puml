@@ -1,0 +1,31 @@
+@startuml
+title RF20 — Aba Buscar: ligas, franquias, jogadores e head coaches · Máquina de estados: Aba Buscar (interação)
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "Vazio" as Vazio
+Vazio : sugestões: minha franquia, minha divisão
+state "Buscando" as Buscando
+Buscando : debounce 300 ms
+state "Resultados" as Resultados
+Resultados : esquemas + facetas
+state "Resultados (fallback)" as Fallback
+Fallback : OpenSearch indisponível
+state "Sem resultados" as SemResultado
+SemResultado : sugere limpar filtros
+state "Erro" as Erro
+Erro : 403 / 422 / rede
+state "Esquema ampliado" as Ampliado
+Ampliado : jogador / franquia / liga / head coach
+[*] --> Vazio
+Vazio --> Buscando : digita ou filtra
+Buscando --> Resultados : hits > 0
+Buscando --> Fallback : índice indisponível
+Buscando --> SemResultado : hits == 0
+Buscando --> Erro : falha
+Erro --> Buscando : tentar de novo
+Resultados --> Buscando : muda filtro / página
+SemResultado --> Buscando : limpa filtros
+Fallback --> Buscando : nova consulta
+Resultados --> Ampliado : clica no esquema
+Ampliado --> Resultados : voltar
+@enduml

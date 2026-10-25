@@ -1,0 +1,58 @@
+@startuml
+title RF56 — Practice squad · Diagrama de componentes
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 36
+actor "Head coach / manager (usuário autenticado)" as c1
+actor "Franquia adversária (IA)" as c2
+actor "Agendador/Job assíncrono" as c3
+package "Frontend (Next.js)" as pkg_fe {
+  component "PracticeSquadPage" as c4
+  frame "componentes de PracticeSquadPage" as pkg_fe_sub {
+    component "PracticeSquadRow" as c5
+    component "ElevationBadge" as c6
+    component "ProtectToggle" as c7
+  }
+}
+package "scores-af-web (REST)" as pkg_web {
+  component "PracticeSquadController" as c8
+}
+package "scores-af-application (casos de uso)" as pkg_app {
+  component "PracticeSquadUseCases" as c9
+  component "PostGameReturnElevatedJob" as c10
+  component "CareerAccess" as c11
+}
+package "scores-af-domain/engine" as pkg_eng {
+  component "RosterPolicy" as c12
+  component "CapEngine" as c13
+  component "MarketEngine" as c14
+}
+package "portas (port.out)" as pkg_ports {
+  interface "PracticeSquadRepository" as c15
+  interface "PlayerRepository" as c16
+  interface "SalaryCapLedgerRepository" as c17
+  interface "InboxPort" as c18
+}
+package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
+  component "persistence-mysql" as c19
+  component "persistence-cassandra" as c20
+}
+database "MySQL 8" as s1
+database "Cassandra 4.1" as s2
+c1 --> c4 : usa
+c3 --> c9 : dispara
+c4 --> c8 : GET /careers/{id}/practice-squad (alvo)\nPOST /careers/{id}/practice-squad (alvo)\nPOST /careers/{id}/practice-squad/{psId}/elevate (alvo)\n…
+c8 --> c9
+c9 ..> pkg_app : orquestra
+c9 --> c12 : usa
+c9 --> c13 : usa
+c9 --> c14 : usa
+pkg_app --> pkg_ports : depende (DIP)
+c19 .up.|> c15
+c19 .up.|> c16
+c19 .up.|> c17
+c20 .up.|> c18
+c19 --> s1
+c20 --> s2
+@enduml

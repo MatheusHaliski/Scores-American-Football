@@ -1,0 +1,77 @@
+@startuml
+title RNF3 — Controle de acesso e autorização por perfil · Diagrama de componentes
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 36
+actor "Head coach / manager (usuário autenticado)" as c1
+actor "Administrador" as c2
+actor "Visitante (não autenticado)" as c3
+actor "Agendador/Job assíncrono" as c4
+package "Frontend (Next.js)" as pkg_fe {
+  component "ApiClient" as c5
+  frame "componentes de ApiClient" as pkg_fe_sub {
+    component "RequireAuth" as c6
+    component "AdminOnlyRoute" as c7
+  }
+}
+package "scores-af-web (REST)" as pkg_web {
+  component "SecurityConfig" as c8
+  component "CorrelationIdFilter" as c9
+  component "AuthRateLimitFilter" as c10
+  component "SessionActiveFilter" as c11
+  component "AuditContextFilter" as c12
+  component "CurrentUser" as c13
+  component "ProblemDetailWriter" as c14
+  component "ApiExceptionHandler" as c15
+}
+package "scores-af-application (casos de uso)" as pkg_app {
+  component "CareerAccess" as c16
+  component "AdminBootstrap" as c17
+  component "AuditService" as c18
+  component "GetClubDashboardUseCase" as c19
+  component "QueryAuditLogUseCase" as c20
+}
+package "portas (port.out)" as pkg_ports {
+  interface "CareerSaveRepository" as c21
+  interface "UserAccountRepository" as c22
+  interface "UserSessionRepository" as c23
+  interface "AuditLogRepository" as c24
+  interface "SessionCachePort" as c25
+}
+package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
+  component "persistence-mysql" as c26
+  component "cache-redis" as c27
+}
+database "MySQL 8" as s1
+database "Redis 7" as s2
+c1 --> c5 : usa
+c2 --> c5 : usa
+c3 --> c5 : usa
+c4 --> c16 : dispara
+c5 --> c8 : GET /careers/{id}/dashboard (alvo)\nGET /me (alvo)\nGET /admin/audit (alvo)\n…
+c5 --> c9
+c5 --> c10
+c5 --> c11
+c5 --> c12
+c5 --> c13
+c5 --> c14
+c5 --> c15
+c8 --> c16
+c9 --> c16
+c10 --> c16
+c11 --> c16
+c12 --> c16
+c13 --> c16
+c14 --> c16
+c15 --> c16
+c16 ..> pkg_app : orquestra
+pkg_app --> pkg_ports : depende (DIP)
+c26 .up.|> c21
+c26 .up.|> c22
+c26 .up.|> c23
+c26 .up.|> c24
+c27 .up.|> c25
+c26 --> s1
+c27 --> s2
+@enduml

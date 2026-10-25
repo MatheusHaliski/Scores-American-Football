@@ -1,0 +1,108 @@
+@startuml
+title RF36 — Simular a temporada pelo calendário · Diagrama de classes
+skinparam classAttributeIconSize 0
+hide empty methods
+package "season" {
+  class SimulationRun {
+    save: CareerSave
+    season: Season
+    until: SimulationTarget
+    targetFixture: Fixture
+    speed: SimulationSpeed
+    status: SimulationRunStatus
+    fromWeek: int
+    toWeek: int
+    currentWeek: int
+    pauseReason: SimulationPauseReason (DECISION|DRAFT|FREE_AGENCY|TRADE_DEADLINE|INJURY|OFFER)
+    summary: JSON
+  }
+  class Season {
+    number: int
+    year: int
+    phase: SeasonPhase (PRESEASON|REGULAR|PLAYOFFS|DRAFT|FREE_AGENCY|OFFSEASON)
+    currentWeek: int
+    tradeDeadlineWeek: int
+    championClub: Club?
+    mvpPlayer: Player?
+  }
+  class Week {
+    number: int
+    kind: WeekKind (PRESEASON|REGULAR|WILD_CARD|DIVISIONAL|CONFERENCE|FINAL)
+    startsOn: LocalDate
+    status: WeekStatus
+    byeClubs: List<Club>
+  }
+  class Fixture {
+    week: int
+    date: LocalDate
+    slot: KickoffSlot (THU_NIGHT|SUN_EARLY|SUN_LATE|SUN_NIGHT|MON_NIGHT)
+    status: FixtureStatus
+    homeScore: int
+    awayScore: int
+    quarterScores: JSON
+    overtime: boolean
+    isDivisional: boolean
+    isConference: boolean
+    neutralSite: boolean
+    weather: Weather
+    attendance: int
+    revenue: long
+    importance: FixtureImportance
+    seed: long
+    isUserFixture: boolean
+  }
+}
+package "career" {
+  class CareerSave {
+    id: UUID
+    name: String
+    seed: long
+    employmentStatus: EmploymentStatus
+    currentWeek: int
+    difficulty: Difficulty
+    seasonMode: SeasonMode
+    scoresPoints: int
+    status: SaveStatus
+    slot: int
+    lastPlayedAt: Instant
+  }
+}
+package "match" {
+  class DepthChart {
+    club: Club
+    version: long
+    updatedAt: Instant
+    validated: boolean
+  }
+  class GamePlan {
+    runPassBalance: int (0–100)
+    fourthDownAggression: Aggression
+    tempo: Tempo (HURRY_UP|NORMAL|MILK_CLOCK)
+    offensiveFocus: JSON
+    defensiveFocus: DefensiveFocus
+    blitzFrequency: Emphasis
+    baseDefense: DefensePackage (4-3|3-4)
+    keyPlayers: List<UUID>
+    situationTendencies: JSON (3ª e curta, red zone, 2 minutos)
+  }
+}
+class SimulationRunService <<UseCase>> {
+  start(save, target, speed)
+  step(run)
+  resume(run)
+  stop(run)
+}
+class MandatoryStopDetector <<Policy>> {
+  check(save, week): Optional<SimulationPauseReason>
+}
+CareerSave "1" -- "*" Season
+CareerSave "1" -- "1" GamePlan
+CareerSave "1" -- "*" SimulationRun : simulações
+SimulationRun "*" -- "1" Season
+SimulationRun "*" -- "0..1" Fixture : alvo
+Season "1" -- "18..22" Week : semanas
+Week "1" -- "*" Fixture
+SimulationRunService ..> SimulationRun : gerencia
+SimulationRunService ..> MandatoryStopDetector : consulta
+SimulationRunService ..> DepthChart : usa ou completa
+@enduml

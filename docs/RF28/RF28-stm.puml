@@ -1,0 +1,36 @@
+@startuml
+title RF28 — Editar logo, cores, capacete e uniformes · Máquina de estados: Modal Editar franquia (interação)
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "Fechado" as Fechado
+Fechado : central da franquia
+state "Carregando" as Carregando
+Carregando : GET identidade + loja
+state "Editando" as Editando
+Editando : abas Logo, Cores, Capacete, Uniformes
+Editando : prévia 3D sem gravar
+state "Enviando logo/decal" as EnviandoLogo
+EnviandoLogo : RNF11 em curso
+state "Salvando" as Salvando
+Salvando : PUT identity / helmet / uniforms
+state "Salvo" as Salvo
+Salvo : versão +1
+Salvo : CatalogChanged
+state "Erro" as Erro
+Erro : 422 inválido / kit clash / mídia
+Erro : 409 versão
+[*] --> Fechado
+Fechado --> Carregando : Editar franquia
+Carregando --> Editando : 200
+Carregando --> Fechado : 403
+Editando --> EnviandoLogo : escolhe arquivo
+EnviandoLogo --> Editando : 201
+EnviandoLogo --> Erro : 422 mídia
+Editando --> Editando : prévia
+Editando --> Salvando : Salvar
+Salvando --> Salvo : 200
+Salvando --> Erro : 422 / 409
+Erro --> Editando : corrigir
+Salvo --> Fechado : fechar
+Editando --> Fechado : cancelar
+@enduml

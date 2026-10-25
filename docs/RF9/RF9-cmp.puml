@@ -1,0 +1,75 @@
+@startuml
+title RF9 — Propostas de contrato de outras franquias · Diagrama de componentes
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 36
+actor "Head coach / manager (usuário autenticado)" as c1
+actor "Franquia adversária (IA)" as c2
+actor "Diretoria da franquia (IA)" as c3
+actor "Agendador/Job assíncrono" as c4
+package "Frontend (Next.js)" as pkg_fe {
+  component "ManagerPanelPage" as c5
+  frame "componentes de ManagerPanelPage" as pkg_fe_sub {
+    component "JobOffersPanel" as c6
+    component "JobOfferModal" as c7
+    component "ContractComparison" as c8
+    component "SquadReactionBanner" as c9
+  }
+}
+package "scores-af-web (REST)" as pkg_web {
+  component "ManagerController" as c10
+}
+package "scores-af-application (casos de uso)" as pkg_app {
+  component "ListJobOffersUseCase" as c11
+  component "RespondJobOfferUseCase" as c12
+  component "GetManagerPanelUseCase" as c13
+  component "JobOfferGenerationJob" as c14
+  component "JobOfferExpiryJob" as c15
+  component "CareerAccess" as c16
+  component "AuditService" as c17
+}
+package "scores-af-domain/engine" as pkg_eng {
+  component "MoraleEngine" as c18
+  component "JobOfferPolicy" as c19
+}
+package "portas (port.out)" as pkg_ports {
+  interface "CareerSaveRepository" as c20
+  interface "JobOfferRepository" as c21
+  interface "ManagerContractRepository" as c22
+  interface "ManagerMoraleRepository" as c23
+  interface "ManagerCareerRecordRepository" as c24
+  interface "ClubRepository" as c25
+  interface "TimelinePort" as c26
+  interface "CounterPort" as c27
+  interface "AuditLogRepository" as c28
+}
+package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
+  component "persistence-mysql" as c29
+  component "persistence-cassandra" as c30
+  component "cache-redis" as c31
+}
+database "MySQL 8" as s1
+database "Cassandra 4.1" as s2
+database "Redis 7" as s3
+c1 --> c5 : usa
+c4 --> c11 : dispara
+c5 --> c10 : GET /careers/{id}/job-offers (alvo)\nPOST /careers/{id}/job-offers/{jid}/respond (alvo)\nGET /careers/{id}/manager (alvo)
+c10 --> c11
+c11 ..> pkg_app : orquestra
+c11 --> c18 : usa
+c11 --> c19 : usa
+pkg_app --> pkg_ports : depende (DIP)
+c29 .up.|> c20
+c29 .up.|> c21
+c29 .up.|> c22
+c29 .up.|> c23
+c29 .up.|> c24
+c29 .up.|> c25
+c30 .up.|> c26
+c31 .up.|> c27
+c29 .up.|> c28
+c29 --> s1
+c30 --> s2
+c31 --> s3
+@enduml

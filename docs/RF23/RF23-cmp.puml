@@ -1,0 +1,73 @@
+@startuml
+title RF23 — Animação 3D do jogador · Diagrama de componentes
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 36
+actor "Head coach / manager (usuário autenticado)" as c1
+package "Frontend (Next.js)" as pkg_fe {
+  component "PlayerModal" as c2
+  frame "componentes de PlayerModal" as pkg_fe_sub {
+    component "Player3DViewer" as c3
+    component "HelmetRig" as c4
+    component "UniformMaterial" as c5
+    component "ClipSelector" as c6
+    component "Fallback2DPose" as c7
+    component "AssetLoader" as c8
+  }
+}
+package "scores-af-web (REST)" as pkg_web {
+  component "PlayerController" as c9
+  component "AnimationController" as c10
+  component "ClubIdentityController" as c11
+  component "AccountController" as c12
+}
+package "scores-af-application (casos de uso)" as pkg_app {
+  component "GetPlayerExpandedUseCase" as c13
+  component "ListAnimationClipsUseCase" as c14
+  component "GetClubIdentityUseCase" as c15
+  component "GetInventoryUseCase" as c16
+  component "GetUserSettingsUseCase" as c17
+  component "CareerAccess" as c18
+}
+package "portas (port.out)" as pkg_ports {
+  interface "PlayerRepository" as c19
+  interface "AnimationClipRepository" as c20
+  interface "UniformRepository" as c21
+  interface "HelmetDesignRepository" as c22
+  interface "PurchaseRepository" as c23
+  interface "UserSettingsRepository" as c24
+  interface "MediaStoragePort" as c25
+  interface "SessionCachePort" as c26
+}
+package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
+  component "persistence-mysql" as c27
+  component "storage-s3" as c28
+  component "cache-redis" as c29
+}
+database "MySQL 8" as s1
+database "S3/MinIO" as s2
+database "Redis 7" as s3
+c1 --> c2 : usa
+c2 --> c9 : GET /careers/{id}/players/{pid} (alvo)\nGET /animations (alvo)\nGET /careers/{id}/clubs/{cid}/identity (alvo)\n…
+c2 --> c10
+c2 --> c11
+c2 --> c12
+c9 --> c13
+c10 --> c13
+c11 --> c13
+c12 --> c13
+c13 ..> pkg_app : orquestra
+pkg_app --> pkg_ports : depende (DIP)
+c27 .up.|> c19
+c27 .up.|> c20
+c27 .up.|> c21
+c27 .up.|> c22
+c27 .up.|> c23
+c27 .up.|> c24
+c28 .up.|> c25
+c29 .up.|> c26
+c27 --> s1
+c28 --> s2
+c29 --> s3
+@enduml

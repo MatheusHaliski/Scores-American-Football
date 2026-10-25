@@ -1,0 +1,59 @@
+@startuml
+title RF9 — Propostas de contrato de outras franquias · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+control "AuditService" as AuditService
+control "MoraleEngine" as MoraleEngine
+queue "EventBus" as EventBus
+database "MySQL 8" as MySQL
+database "Cassandra 4.1" as Cassandra
+participant "Agendador/Job assíncrono" as Scheduler
+actor "Diretoria da franquia (IA)" as Diretoria
+actor "Franquia adversária (IA)" as ClubeIA
+Scheduler -> MoraleEngine: JobOfferPolicy.generate(save, moralLiga, fase, franquias IA, seed)
+MoraleEngine -> ClubeIA: interesse por franquia
+ClubeIA --> MoraleEngine: 0–3 propostas
+MoraleEngine --> Scheduler: List<JobOfferDraft>
+Scheduler -> MySQL: INSERT job_offer (PENDING, expiresWeek = semana + 2)
+Scheduler -> EventBus: JobOfferGenerated(saveId, offerId)
+EventBus -> Cassandra: appendInbox(JOB_OFFER) + appendNotification
+Manager -> Frontend: abre propostas
+Frontend -> API: GET /careers/{id}/job-offers
+API -> UseCase: ListJobOffersUseCase.execute(id, userId)
+UseCase -> MySQL: save + owner check · offers PENDING · contrato atual
+alt não é dono
+  UseCase -> AuditService: record(ACCESS_DENIED)
+  API --> Frontend: 403
+else senão
+  API --> Frontend: 200 List<JobOfferDto>
+end
+Manager -> Frontend: Aceitar
+Frontend -> API: POST /careers/{id}/job-offers/{jid}/respond {ACCEPT}
+API -> UseCase: RespondJobOfferUseCase.execute(cmd) «@Transactional»
+alt offer não PENDING ou expirada
+  API --> Frontend: 409 OFFER_NOT_PENDING
+else senão
+  UseCase -> MoraleEngine: boardReleases(contract, offer, moralClub)
+  MoraleEngine -> Diretoria: multa coberta?
+  Diretoria --> UseCase: libera / bloqueia
+  alt diretoria bloqueia
+    UseCase -> MySQL: offer REJECTED
+    API --> Frontend: 422 BOARD_BLOCKS_TRANSFER
+  else senão
+    UseCase -> MySQL: TX: antigo TRANSFERRED · novo ACTIVE · save.club · club.manager · head coach IA demitido · outras EXPIRED · ManagerCareerRecord
+    alt version mismatch
+      API --> Frontend: 409 CONFLICT
+    else senão
+      UseCase -> AuditService: record(JOB_OFFER_ACCEPTED)
+      UseCase -> EventBus: JobOfferAccepted + ManagerDismissed(head coach IA)
+      EventBus -> Cassandra: inbox de boas-vindas · notícia
+      API --> Frontend: 200 → central da nova franquia
+    end
+  end
+end
+@enduml

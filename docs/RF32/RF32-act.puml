@@ -1,0 +1,72 @@
+@startuml
+title RF32 — Loja de itens customizáveis (Scores Points) · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Manager|
+start
+:Abre a loja: destaques, coleções, filtros por categoria, preço, posse e raridade;
+|Frontend|
+:GET /store/catalog?category=&cursor= (thumbnails, GLB só no detalhe);
+|Backend|
+if (limite da loja?) then (sim)
+else (não)
+  :429 RATE_LIMITED;
+  stop
+endif
+|Manager|
+:Abre o produto: visual 360° (capacete, uniforme no atleta, estádio), preço, compatibilidade;
+:Comprar → diálogo de confirmação;
+|Frontend|
+:POST /store/purchases {productCode, walletScope} + Idempotency-Key;
+|Backend|
+if (idempotência: chave repetida?) then (sim)
+  :200 com a compra original;
+  stop
+endif
+if (produto publicado e disponível?) then (sim)
+else (não)
+  :409 PRODUCT_UNAVAILABLE;
+  stop
+endif
+:Resolve preço efetivo (preço do cliente ignorado e auditado);
+if (compatível?) then (sim)
+else (não)
+  :422 INCOMPATIBLE_ITEM;
+  stop
+endif
+if (já possui?) then (sim)
+  :409 ALREADY_OWNED;
+  stop
+endif
+if (afeta o motor (RNF12)?) then (sim)
+  :Carteira SAVE · save fora de rankings · lendário valida elenco e teto;
+else (não)
+  :Carteira USER;
+endif
+if (carteira e saldo?) then (sim)
+else (não)
+  :422 INSUFFICIENT_POINTS;
+  stop
+endif
+:Transação única: ledger PURCHASE (balanceAfter) · Purchase · direito · inventário · AuditLog STORE_PURCHASE;
+if (transação única?) then (sim)
+else (não)
+  :ROLLBACK · erro de domínio mapeado;
+  stop
+endif
+|Frontend|
+:Compra concluída: Equipar agora · Ver inventário · Continuar;
+|Manager|
+if (equipa agora?) then (sim)
+|Frontend|
+  :PUT /me/loadout/{slot} ou apply no clube (RF26, RF28, RF23);
+endif
+|Admin|
+if (reembolso?) then (sim)
+|Backend|
+  :REFUND compensatório · direito revogado · unequip · AuditLog STORE_REFUND;
+endif
+end
+@enduml

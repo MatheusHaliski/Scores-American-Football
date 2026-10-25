@@ -1,0 +1,45 @@
+@startuml
+title RF58 — Gêmeos digitais licenciados · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+actor "Administrador" as Admin
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+control "AuditService" as AuditService
+database "MySQL 8" as MySQL
+database "Redis 7" as Redis
+database "S3/MinIO" as S3
+participant "Agendador/Job assíncrono" as Scheduler
+Admin -> Frontend: cadastra licença
+Frontend -> API: POST /admin/licenses
+API -> UseCase: RegisterDigitalTwinLicenseUseCase
+alt recurso desligado ou não ADMIN
+  UseCase -> AuditService: record(ACCESS_DENIED)
+  API --> Frontend: 404 / 403
+else senão
+  UseCase -> MySQL: INSERT digital_twin_license ACTIVE
+  UseCase -> AuditService: record(LICENSE_REGISTERED)
+  API --> Frontend: 201
+end
+Manager -> Frontend: abre jogador
+Frontend -> API: GET /players/{pid}/twin
+API -> UseCase: GetDigitalTwinUseCase
+UseCase -> Redis: GET twin:{pid}
+alt cache vazio
+  UseCase -> MySQL: player + licença
+  UseCase -> S3: URL do modelo 3D licenciado
+end
+alt licença ACTIVE no prazo
+  UseCase --> API: TwinView licenciado no escopo
+else senão
+  UseCase --> API: TwinView fictício
+end
+API --> Frontend: 200
+Scheduler -> UseCase: ExpireLicensesJob
+UseCase -> MySQL: UPDATE status EXPIRED onde validUntil < hoje
+UseCase -> Redis: DEL twin:{pid}
+UseCase -> AuditService: record(LICENSE_EXPIRED)
+@enduml

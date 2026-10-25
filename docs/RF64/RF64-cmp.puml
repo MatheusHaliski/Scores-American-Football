@@ -1,0 +1,62 @@
+@startuml
+title RF64 — Relatório de lesões semanal · Diagrama de componentes
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 36
+actor "Head coach / manager (usuário autenticado)" as c1
+actor "Agendador/Job assíncrono" as c2
+actor "Franquia adversária (IA)" as c3
+actor "Imprensa (IA)" as c4
+package "Frontend (Next.js)" as pkg_fe {
+  component "InjuryReportPage" as c5
+  frame "componentes de InjuryReportPage" as pkg_fe_sub {
+    component "InjuryStatusChip" as c6
+    component "PracticeStatusRow" as c7
+    component "OpponentInjuryPanel" as c8
+  }
+}
+package "scores-af-web (REST)" as pkg_web {
+  component "InjuryReportController" as c9
+}
+package "scores-af-application (casos de uso)" as pkg_app {
+  component "InjuryReportUseCases" as c10
+  component "PublishWeeklyInjuryReportJob" as c11
+  component "CareerAccess" as c12
+}
+package "scores-af-domain/engine" as pkg_eng {
+  component "ClubAnalyst" as c13
+  component "InjuryStatusPolicy" as c14
+  component "RosterPolicy" as c15
+}
+package "portas (port.out)" as pkg_ports {
+  interface "InjuryReportRepository" as c16
+  interface "PlayerRepository" as c17
+  interface "DepthChartRepository" as c18
+  interface "TimelinePort" as c19
+  interface "EventPublisher" as c20
+}
+package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
+  component "persistence-mysql" as c21
+  component "persistence-cassandra" as c22
+  component "messaging-eventbus" as c23
+}
+database "MySQL 8" as s1
+database "Cassandra 4.1" as s2
+c1 --> c5 : usa
+c2 --> c10 : dispara
+c5 --> c9 : GET /careers/{id}/injury-report (alvo)\nGET /careers/{id}/injury-report/league (alvo)\nPOST /careers/{id}/injury-report/{rid}/ir (alvo)\n…
+c9 --> c10
+c10 ..> pkg_app : orquestra
+c10 --> c13 : usa
+c10 --> c14 : usa
+c10 --> c15 : usa
+pkg_app --> pkg_ports : depende (DIP)
+c21 .up.|> c16
+c21 .up.|> c17
+c21 .up.|> c18
+c22 .up.|> c19
+c23 .up.|> c20
+c21 --> s1
+c22 --> s2
+@enduml

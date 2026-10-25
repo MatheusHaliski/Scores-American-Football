@@ -1,0 +1,69 @@
+@startuml
+title RF39 — Scouting universitário · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Scheduler|
+start
+if (classe do draft gerada?) then (sim)
+  :DraftClass SCOUTING · prospectos com nota oculta;
+else (não)
+  :Gera na pré-temporada pela seed;
+endif
+:Toda semana: renova os pontos de scouting (4 × nível) · ledger SCOUTING do departamento;
+|Manager|
+:Abre Draft → Scouting;
+|Backend|
+if (dono do save?) then (sim)
+else (não)
+  :403;
+  stop
+endif
+if (head coach empregado?) then (sim)
+else (não)
+  :409 NOT_EMPLOYED;
+  stop
+endif
+|Frontend|
+:Lista prospectos (potencial ?? até o primeiro relatório) com filtros por posição e faculdade;
+|Manager|
+if (pede relatório?) then (sim)
+|Backend|
+  if (prospecto da classe atual?) then (sim)
+  else (não)
+    :404;
+    stop
+  endif
+  if (pontos de scouting na semana?) then (sim)
+  else (não)
+    :422 SCOUTING_POINTS_EXHAUSTED;
+    stop
+  endif
+  :ScoutingReport: nota, notas do olheiro, faixa de potencial pela precisão;
+  if (prospecto de destaque?) then (sim)
+    :Inbox do olheiro;
+  endif
+endif
+|Manager|
+:Reordena o big board;
+|Backend|
+if (quadro na versão atual?) then (sim)
+else (não)
+  :409;
+endif
+|Manager|
+if (investe no departamento?) then (sim)
+|Backend|
+  if (investimento permitido?) then (sim)
+    :scoutingLevel++ · ledger · SCOUTING_INVESTED;
+  else (não)
+    :422;
+  endif
+endif
+|Diretoria|
+:Reage ao estilo DEVELOPER (RF15);
+|Scheduler|
+:Fim da temporada regular: combine (RF51) revela medidas e reduz a faixa de todos;
+end
+@enduml

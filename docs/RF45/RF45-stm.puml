@@ -1,0 +1,26 @@
+@startuml
+title RF45 — Multiplayer online: salas por turnos e Ultimate Team · Máquina de estados: DivisionRun.status
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "ENTERED" as ENTERED
+ENTERED : cota consumida
+ENTERED : na fila
+state "ACTIVE" as ACTIVE
+ACTIVE : 1ª partida iniciada
+state "COMPLETED" as COMPLETED
+state "WITHDRAWN" as WITHDRAWN
+state "CLOSED_BY_WINDOW" as CLOSED_BY_WINDOW
+state "VOID" as VOID
+[*] --> ENTERED
+ENTERED --> ACTIVE : partida aceita
+ACTIVE --> COMPLETED : partidas da corrida jogadas
+ENTERED --> WITHDRAWN : desistência
+ACTIVE --> WITHDRAWN : desistência · sanção
+ENTERED --> CLOSED_BY_WINDOW : janela fecha
+ACTIVE --> CLOSED_BY_WINDOW : janela fecha
+ENTERED --> VOID : anulada pela moderação
+COMPLETED --> [*]
+WITHDRAWN --> [*]
+CLOSED_BY_WINDOW --> [*]
+VOID --> [*]
+@enduml

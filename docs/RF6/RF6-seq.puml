@@ -1,0 +1,64 @@
+@startuml
+title RF6 — Depth chart e plano de jogo na preparação · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+control "AuditService" as AuditService
+control "ClubAnalyst" as ClubAnalyst
+database "MySQL 8" as MySQL
+database "Redis 7" as Redis
+Manager -> Frontend: Preparar time
+Frontend -> API: GET /careers/{id}/next-game/preparation
+API -> UseCase: GetGamePreparationUseCase.execute(id, userId)
+UseCase -> MySQL: save + owner check · fixture da semana · ativos · injury reports · depth chart · game plan
+alt não é dono
+  UseCase -> AuditService: record(ACCESS_DENIED)
+  API --> Frontend: 403
+else senão
+  alt semana de folga
+    UseCase -> MySQL: fixture da próxima semana
+  else senão
+  end
+  UseCase -> ClubAnalyst: gamePlanFit(plan, depthChart, opponent)
+  ClubAnalyst --> UseCase: fit 0–100 + alertas
+  UseCase --> API: PreparationResult
+  API --> Frontend: 200
+end
+Manager -> Frontend: Preencher automático
+Frontend -> API: POST /careers/{id}/depth-chart/auto
+API -> UseCase: AutoFillDepthChartUseCase.execute
+UseCase -> Redis: GET analysis:{saveId}:{week}
+alt cache miss
+  UseCase -> ClubAnalyst: suggestDepthChart(roster, rules, opponent)
+  ClubAnalyst --> UseCase: slots sugeridos
+  UseCase -> Redis: SET (TTL até o fim da semana)
+else senão
+end
+API --> Frontend: 200 sugestão
+Manager -> Frontend: salva depth chart
+Frontend -> API: PUT /careers/{id}/depth-chart {slots, version}
+API -> UseCase: SaveDepthChartUseCase.execute(cmd)
+UseCase -> UseCase: DepthChartValidator.validate(slots, roster, injuries, rules)
+alt incompleto / indisponível / fora dos 46
+  API --> Frontend: 422 {slotErrors}
+else senão
+  UseCase -> MySQL: REPLACE depth_chart_slot · UPDATE depth_chart SET validated, version WHERE version = ?
+  alt version mismatch
+    API --> Frontend: 409 CONFLICT
+  else senão
+    API --> Frontend: 200 (avisos de fora de posição)
+  end
+end
+Manager -> Frontend: salva plano de jogo
+Frontend -> API: PUT /careers/{id}/game-plan
+API -> UseCase: SaveGamePlanUseCase.execute(cmd)
+UseCase -> ClubAnalyst: gamePlanFit + coerência (ritmo × profundidade)
+ClubAnalyst --> UseCase: fit + avisos
+UseCase -> MySQL: UPDATE game_plan
+API --> Frontend: 200 GamePlanResult(fit, warnings)
+Frontend -> Manager: Jogar partida habilitado
+@enduml

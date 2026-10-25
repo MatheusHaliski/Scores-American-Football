@@ -1,0 +1,64 @@
+@startuml
+title RF64 — Relatório de lesões semanal · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Scheduler|
+start
+:Quarta e quinta: status de treino (FULL, LIMITED, DNP) pela lesão e recuperação;
+:Sexta: publica status final do jogo;
+|Backend|
+if (status pela lesão?) then (sim)
+  :Grava InjuryReport da semana;
+else (não)
+  :Jogador saudável sai do relatório;
+endif
+if (titular fora?) then (sim)
+  :Marca depth chart inválido e notifica;
+endif
+|ClubeIA|
+:Franquias IA publicam os relatórios delas;
+|Manager|
+:Abre o relatório;
+|Frontend|
+:GET /injury-report · GET /injury-report/league;
+|Backend|
+if (dono do save?) then (sim)
+else (não)
+  :403;
+  stop
+endif
+|Manager|
+if (coloca na IR?) then (sim)
+|Frontend|
+  :POST /injury-report/{rid}/ir;
+|Backend|
+  if (pode ir à IR?) then (sim)
+  else (não)
+    :422 IR_MIN_WEEKS;
+    stop
+  endif
+  :rosterStatus IR, abre vaga no 53;
+endif
+|Manager|
+if (ativa da IR?) then (sim)
+|Frontend|
+  :POST /injury-report/{rid}/activate;
+|Backend|
+  if (retorno disponível?) then (sim)
+  else (não)
+    :422 IR_RETURN_LIMIT;
+    stop
+  endif
+  if (vaga no 53?) then (sim)
+  else (não)
+    :422 ROSTER_FULL;
+    stop
+  endif
+  :rosterStatus ACTIVE;
+endif
+|Imprensa|
+:Notícia sobre lesões importantes;
+end
+@enduml

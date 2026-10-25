@@ -1,0 +1,37 @@
+@startuml
+title RF22 — Esquema ampliado do jogador · Máquina de estados: Player.rosterStatus (ações do modal)
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "ACTIVE" as ACTIVE
+ACTIVE : entre os 53
+ACTIVE : pode estar no depth chart
+state "INACTIVE" as INACTIVE
+INACTIVE : fora dos 46 do dia de jogo
+state "PRACTICE_SQUAD" as PRACTICE_SQUAD
+PRACTICE_SQUAD : até 16
+PRACTICE_SQUAD : pode ser elevado ao ativo
+state "IR" as IR
+IR : lesão de 4+ semanas
+IR : libera vaga de ativo
+state "WAIVED" as WAIVED
+WAIVED : nos waivers
+WAIVED : dead money no teto
+state "FREE_AGENT" as FREE_AGENT
+FREE_AGENT : sem claim
+FREE_AGENT : club = null
+state "Trocado" as TRADED
+TRADED : foi para outra franquia (RF19)
+[*] --> ACTIVE
+ACTIVE --> INACTIVE : fora dos 46 da semana
+INACTIVE --> ACTIVE : relacionado
+ACTIVE --> PRACTICE_SQUAD : PATCH (elegível)
+PRACTICE_SQUAD --> ACTIVE : elevação / contrato ativo
+ACTIVE --> IR : PATCH com lesão de 4+ semanas
+IR --> ACTIVE : volta da lesão (vaga livre)
+ACTIVE --> WAIVED : POST /release confirmado
+PRACTICE_SQUAD --> WAIVED : dispensa
+WAIVED --> FREE_AGENT : sem claim no período
+ACTIVE --> TRADED : troca aceita
+FREE_AGENT --> [*]
+TRADED --> [*]
+@enduml

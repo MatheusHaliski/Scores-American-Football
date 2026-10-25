@@ -1,0 +1,78 @@
+@startuml
+title RF35 — Fim de temporada: playoffs, renovações, free agency e draft · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+control "AuditService" as AuditService
+control "MoraleEngine" as MoraleEngine
+control "SeasonEngine" as SeasonEngine
+control "MarketEngine" as MarketEngine
+control "CapEngine" as CapEngine
+queue "EventBus" as EventBus
+database "MySQL 8" as MySQL
+database "Cassandra 4.1" as Cassandra
+database "OpenSearch 2" as OpenSearch
+database "S3/MinIO" as S3
+participant "Claude (LLM, narrativa)" as Claude
+participant "Agendador/Job assíncrono" as Scheduler
+actor "Diretoria da franquia (IA)" as Diretoria
+actor "Franquia adversária (IA)" as ClubeIA
+actor "Jogador (IA)" as JogadorIA
+EventBus -> Scheduler: SeasonEnded(leagueId)
+Scheduler -> SeasonEngine: closeSeason(worldId, seed)
+SeasonEngine -> MySQL: standings, chave, stats da temporada
+SeasonEngine -> SeasonEngine: campeão, prêmios, ordem do draft, prestígio
+SeasonEngine -> MySQL: INSERT ChampionHistory, SeasonAward[] · DraftPick.overall
+SeasonEngine -> MoraleEngine: seasonReview(save, metas, campanha)
+MoraleEngine -> Diretoria: metas cumpridas? contrato venceu?
+Diretoria --> MoraleEngine: moralClub ± · renovação ou EXPIRED
+MoraleEngine -> MarketEngine: jobOffers(moralLeague, seed)
+MarketEngine -> ClubeIA: franquias com vaga de head coach
+ClubeIA --> MarketEngine: JobOffer[0..3]
+alt narrativa Claude
+  SeasonEngine -> Claude: seasonRecap(campeão, prêmios)
+  Claude --> SeasonEngine: texto PT-BR
+else senão
+  SeasonEngine -> SeasonEngine: template determinístico
+end
+SeasonEngine -> MySQL: SeasonSummary · phase OFFSEASON
+Scheduler -> EventBus: PointsEarned(TITLE) · notificação
+EventBus -> Cassandra: notificação + notícias
+Manager -> Frontend: abre fim de temporada
+Frontend -> API: GET /careers/{id}/season/summary
+API -> UseCase: GetSeasonSummaryUseCase.execute
+UseCase -> MySQL: requireOwner + SeasonSummary + contratos vencendo
+alt não é dono
+  UseCase -> AuditService: ACCESS_DENIED
+  API --> Frontend: 403
+else senão
+  API --> Frontend: 200 SeasonSummaryDto
+  Frontend -> S3: GET troféu GLB
+end
+loop contratos vencendo
+  Frontend -> API: POST /players/{pid}/contract/negotiate | /franchise-tag (RF49)
+  API -> CapEngine: valida teto e prazo
+  CapEngine -> JogadorIA: aceita?
+  JogadorIA --> CapEngine: ACCEPT | COUNTER | REJECT
+end
+Frontend -> API: POST /careers/{id}/season/advance
+API -> UseCase: AdvanceOffseasonPhaseUseCase.execute
+UseCase -> CapEngine: ledger n+1: space ≥ 0?
+alt acima do teto
+  API --> Frontend: 422 CAP_OVER_LIMIT
+else senão
+  alt pendências
+    API --> Frontend: 422 PENDING_DECISIONS
+  else senão
+    UseCase -> SeasonEngine: advancePhase(save): FREE_AGENCY | DRAFT | PRESEASON
+    SeasonEngine -> MySQL: TX: fase, agentes livres, classe do draft, evolução, calendário
+    UseCase -> EventBus: OffseasonPhaseChanged · CatalogChanged
+    EventBus -> OpenSearch: reindexa jogadores
+    API --> Frontend: 200 SeasonDto
+  end
+end
+@enduml

@@ -1,0 +1,25 @@
+@startuml
+title RF58 — Gêmeos digitais licenciados · Máquina de estados: DigitalTwinLicense.status
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "DRAFT" as DRAFT
+DRAFT : cadastro incompleto
+state "ACTIVE" as ACTIVE
+ACTIVE : no prazo
+ACTIVE : escopo aplicado
+state "SUSPENDED" as SUSPENDED
+SUSPENDED : disputa com licenciante
+state "EXPIRED" as EXPIRED
+EXPIRED : validUntil passou
+state "REVOKED" as REVOKED
+REVOKED : revogada pelo ADMIN
+[*] --> DRAFT
+DRAFT --> ACTIVE : valida e ativa
+ACTIVE --> SUSPENDED : suspende
+SUSPENDED --> ACTIVE : reativa
+ACTIVE --> EXPIRED : job diário
+ACTIVE --> REVOKED : revoga
+SUSPENDED --> REVOKED : revoga
+EXPIRED --> ACTIVE : renovação com nova validade
+REVOKED --> [*]
+@enduml

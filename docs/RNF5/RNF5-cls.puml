@@ -1,0 +1,63 @@
+@startuml
+title RNF5 — Criptografia de dados sensíveis · Diagrama de classes
+skinparam classAttributeIconSize 0
+hide empty methods
+package "account" {
+  class UserAccount {
+    id: UUID
+    email: String «AES-GCM»
+    emailHash: String «unique»
+    passwordHash: String «Argon2id»
+    displayName: String
+    locale: Locale
+    role: Role
+    status: AccountStatus
+    failedLoginAttempts: int
+    lockedUntil: Instant
+    marketingConsent: boolean
+    deletionRequestedAt: Instant
+    profileVisibility: ProfileVisibility
+    birthDate: LocalDate
+    pendingEmail: String
+  }
+  class AuditLog {
+    actor: String
+    action: String
+    resource: String
+    resourceId: String
+    result: String
+    ip: String
+    userAgent: String
+    correlationId: String
+    timestamp: Instant
+  }
+}
+class AesGcmConverter <<AttributeConverter>> {
+  convertToDatabaseColumn(plain): String «nonce 96 bits + AES-256-GCM»
+  convertToEntityAttribute(db): String
+}
+class EncryptionKeyHolder <<Holder>> {
+  key(kid): SecretKey «lida do Cofre»
+}
+class Hashing <<Util>> {
+  hmacSha256(key, normalizedEmail): String
+}
+class PasswordHasher <<Service>> {
+  permits: Semaphore
+  hash(raw): String «Argon2id»
+  verify(raw, hash): boolean
+}
+class LogSafe <<Util>> {
+  maskEmail(email): String
+  redact(text): String
+}
+class RotateEncryptionKeyUseCase <<UseCase>> {
+  execute(adminId): RotationStatus «kid nova, recifragem em lotes»
+}
+AesGcmConverter ..> EncryptionKeyHolder : chave
+UserAccount ..> AesGcmConverter : email, displayName, pendingEmail
+UserAccount ..> PasswordHasher : passwordHash
+UserAccount ..> Hashing : emailHash
+LogSafe ..> AuditLog : mascara
+RotateEncryptionKeyUseCase ..> UserAccount : recifra
+@enduml

@@ -1,0 +1,27 @@
+@startuml
+title RF63 — Times especiais · Máquina de estados: Jogada de chute (PlayEvent de times especiais)
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "ALINHADA" as ALINHADA
+ALINHADA : unidade em campo
+state "SNAP" as SNAP
+SNAP : long snapper e holder
+state "BLOQUEADO" as BLOQUEADO
+BLOQUEADO : bola viva
+state "NO_AR" as NO_AR
+NO_AR : distância e direção
+state "RETORNO" as RETORNO
+RETORNO : KR ou PR
+state "BOLA_MORTA" as BOLA_MORTA
+BOLA_MORTA : touchback, fair catch, tackle, FG certo ou errado
+[*] --> ALINHADA
+ALINHADA --> SNAP : snap
+ALINHADA --> NO_AR : kickoff
+SNAP --> BLOQUEADO : rush passa
+SNAP --> NO_AR : chute
+NO_AR --> RETORNO : retornador pega
+NO_AR --> BOLA_MORTA : touchback / fair catch / FG
+RETORNO --> BOLA_MORTA : tackle ou TD
+BLOQUEADO --> BOLA_MORTA : recuperação
+BOLA_MORTA --> [*]
+@enduml

@@ -1,0 +1,36 @@
+@startuml
+title RF32 — Loja de itens customizáveis (Scores Points) · Máquina de estados: Compra → direito → inventário → equipado
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "Selecionado" as Selecionado
+Selecionado : detalhe + prévia 360°
+state "Validando" as Validando
+Validando : idempotência · disponibilidade · preço no backend
+Validando : compatibilidade · posse · RNF12
+state "Debitando" as Debitando
+Debitando : SELECT FOR UPDATE + @Version
+state "COMPLETED" as Comprado
+Comprado : Purchase imutável
+Comprado : AuditLog STORE_PURCHASE
+state "Equipado" as Equipado
+Equipado : slot confirmado
+Equipado : aplicado ao clube, estádio ou jogador
+state "Rejeitado" as Rejeitado
+Rejeitado : erro de domínio mapeado
+state "Reembolsado" as Reembolsado
+Reembolsado : REFUND compensatório
+Reembolsado : unequip + fallback
+[*] --> Selecionado
+Selecionado --> Validando : POST /store/purchases
+Validando --> Rejeitado : regra violada
+Validando --> Comprado : chave repetida
+Validando --> Debitando : ok
+Debitando --> Rejeitado : saldo insuficiente
+Debitando --> Comprado : COMMIT
+Comprado --> Equipado : equipar / aplicar
+Equipado --> Comprado : desequipar
+Comprado --> Reembolsado : refund (admin)
+Equipado --> Reembolsado : refund → unequip
+Rejeitado --> [*]
+Reembolsado --> [*]
+@enduml

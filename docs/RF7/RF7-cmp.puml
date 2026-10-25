@@ -1,0 +1,104 @@
+@startuml
+title RF7 — Preparar time (LED 3D, relatório do adversário) e jogar partida · Diagrama de componentes
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 36
+actor "Head coach / manager (usuário autenticado)" as c1
+actor "Agendador/Job assíncrono" as c2
+package "Frontend (Next.js)" as pkg_fe {
+  component "PrepareTeamModal" as c3
+  frame "componentes de PrepareTeamModal" as pkg_fe_sub {
+    component "LedField3D" as c4
+    component "PlayerToken3D" as c5
+    component "OpponentReportPanel" as c6
+    component "KeyMatchupCards (WR×CB, OL×DL)" as c7
+    component "WeatherBadge" as c8
+    component "PlayButton" as c9
+    component "WeekBoardPage" as c10
+    component "LiveScoreboard" as c11
+  }
+}
+package "scores-af-web (REST)" as pkg_web {
+  component "PreparationController" as c12
+  component "WeekController" as c13
+  component "MatchController" as c14
+  component "AccountController" as c15
+}
+package "scores-af-application (casos de uso)" as pkg_app {
+  component "GetGamePreparationUseCase" as c16
+  component "GetOpponentReportUseCase" as c17
+  component "SaveDepthChartUseCase" as c18
+  component "SaveGamePlanUseCase" as c19
+  component "PlayWeekUseCase" as c20
+  component "GetMatchStateUseCase" as c21
+  component "GetWeekBoardUseCase" as c22
+  component "GetSettingsUseCase" as c23
+  component "MatchSetupAssembler" as c24
+  component "WeekSimulationJob" as c25
+  component "CareerAccess" as c26
+  component "AuditService" as c27
+}
+package "scores-af-domain/engine" as pkg_eng {
+  component "MatchSimulator" as c28
+  component "ClubAnalyst" as c29
+  component "DepthChartValidator" as c30
+  component "SeedPolicy" as c31
+}
+package "portas (port.out)" as pkg_ports {
+  interface "CareerSaveRepository" as c32
+  interface "FixtureRepository" as c33
+  interface "PlayerRepository" as c34
+  interface "DepthChartRepository" as c35
+  interface "GamePlanRepository" as c36
+  interface "MatchSessionRepository" as c37
+  interface "UserSettingsRepository" as c38
+  interface "StadiumRepository" as c39
+  interface "LiveMatchStatePort" as c40
+  interface "TimelinePort" as c41
+  interface "MediaStoragePort" as c42
+  interface "AuditLogRepository" as c43
+}
+package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
+  component "persistence-mysql" as c44
+  component "cache-redis" as c45
+  component "persistence-cassandra" as c46
+  component "storage-s3" as c47
+}
+database "MySQL 8" as s1
+database "Redis 7" as s2
+database "Cassandra 4.1" as s3
+database "S3/MinIO" as s4
+c1 --> c3 : usa
+c2 --> c16 : dispara
+c3 --> c12 : GET /careers/{id}/next-game/preparation (alvo)\nGET /careers/{id}/next-game/opponent-report (alvo)\nPUT /careers/{id}/depth-chart (alvo)\n…
+c3 --> c13
+c3 --> c14
+c3 --> c15
+c12 --> c16
+c13 --> c16
+c14 --> c16
+c15 --> c16
+c16 ..> pkg_app : orquestra
+c16 --> c28 : usa
+c16 --> c29 : usa
+c16 --> c30 : usa
+c16 --> c31 : usa
+pkg_app --> pkg_ports : depende (DIP)
+c44 .up.|> c32
+c44 .up.|> c33
+c44 .up.|> c34
+c44 .up.|> c35
+c44 .up.|> c36
+c44 .up.|> c37
+c44 .up.|> c38
+c44 .up.|> c39
+c45 .up.|> c40
+c46 .up.|> c41
+c47 .up.|> c42
+c44 .up.|> c43
+c44 --> s1
+c45 --> s2
+c46 --> s3
+c47 --> s4
+@enduml

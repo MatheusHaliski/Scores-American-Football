@@ -1,0 +1,24 @@
+@startuml
+title RNF10 — Notificações via Chrome (Web Push) · Máquina de estados: PushSubscription.status
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "Pedindo permissão" as Pedindo
+Pedindo : gesto do usuário
+state "Negada" as Negada
+Negada : só in-app
+state "ACTIVE" as ACTIVE
+ACTIVE : endpoint registrado
+state "FAILING" as FAILING
+FAILING : 5xx/429 · retry com backoff
+state "REVOKED" as REVOKED
+REVOKED : 404/410 ou revogada pelo usuário
+[*] --> Pedindo
+Pedindo --> ACTIVE : granted + POST ok
+Pedindo --> Negada : denied
+ACTIVE --> FAILING : falha transitória
+FAILING --> ACTIVE : entrega ok
+FAILING --> REVOKED : 3 falhas
+ACTIVE --> REVOKED : 404/410 ou DELETE
+REVOKED --> [*]
+Negada --> [*]
+@enduml

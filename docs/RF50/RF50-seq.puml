@@ -1,0 +1,65 @@
+@startuml
+title RF50 — Trocas com jogadores e picks de draft · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+control "AuditService" as AuditService
+control "MarketEngine" as MarketEngine
+control "CapEngine" as CapEngine
+queue "EventBus" as EventBus
+database "MySQL 8" as MySQL
+database "Redis 7" as Redis
+database "Cassandra 4.1" as Cassandra
+database "OpenSearch 2" as OpenSearch
+participant "Agendador/Job assíncrono" as Scheduler
+actor "Franquia adversária (IA)" as ClubeIA
+Manager -> Frontend: monta troca: WR + pick de 2ª rodada (ano+1) por CB
+Frontend -> API: POST /careers/{id}/trades/evaluate
+API -> UseCase: EvaluateTradeUseCase
+UseCase -> MySQL: owner · fase e semana · ativos · ledgers · elencos
+alt janela fechada / ativo inválido
+  API --> Frontend: 422 TRADE_WINDOW_CLOSED | TRADE_ASSET_INVALID
+else senão
+  UseCase -> CapEngine: simulate(ledgerA, ledgerB, troca) com aceleração de dead money
+  CapEngine --> UseCase: space depois dos dois lados
+  UseCase -> MarketEngine: TradeValuation.value(lados, necessidades, dificuldade)
+  MarketEngine --> UseCase: valores e chance de aceite
+  API --> Frontend: 200 TradePreviewDto
+end
+Manager -> Frontend: Enviar
+Frontend -> API: POST /careers/{id}/trades
+API -> UseCase: ProposeTradeUseCase
+UseCase -> Redis: INCR trade:rate:{saveId}:{clubId}:{week}
+alt spam
+  API --> Frontend: 429 TRADE_RATE_LIMITED
+else senão
+  UseCase -> MySQL: INSERT TradeProposal PENDING (version dos ativos)
+  UseCase -> ClubeIA: avaliar proposta
+  ClubeIA -> MarketEngine: TradeValuation.accept?(proposta, seed)
+  MarketEngine --> ClubeIA: ACCEPT | REJECT | COUNTER
+  alt ACCEPT
+    UseCase -> MySQL: ativos mudaram desde o envio?
+    alt mudaram
+      UseCase -> MySQL: INVALIDATED
+      API --> Frontend: 409 TRADE_STALE
+    else senão
+      UseCase -> MySQL: TX: Player.club, contratos, DraftPick.ownerClub, SalaryCapLedger ×2, DepthChart ×2, TradeProposal EXECUTED
+      UseCase -> AuditService: TRADE_EXECUTED
+      UseCase -> EventBus: TradeExecuted
+      EventBus -> Cassandra: notícia + inbox
+      EventBus -> OpenSearch: reindexa jogadores
+      API --> Frontend: 200 EXECUTED
+    end
+  else senão
+    UseCase -> MySQL: REJECTED | COUNTERED
+    EventBus -> Cassandra: inbox com a resposta
+    API --> Frontend: 200 REJECTED | COUNTERED
+  end
+end
+Scheduler -> MarketEngine: WeekCompleted: propostas da IA ao usuário · expira vencidas
+MarketEngine -> MySQL: INSERT TradeProposal recebida (PENDING)
+@enduml

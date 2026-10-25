@@ -1,0 +1,25 @@
+@startuml
+title RF41 — Moral do head coach (franquia e liga) e do jogador · Máquina de estados: ManagerMorale.moraleClub — zonas com histerese
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "Confortável (≥ 45)" as CONFORTAVEL
+state "Atenção (30–44)" as ATENCAO
+ATENCAO : aviso da diretoria
+state "Crítica (< 30)" as CRITICA
+CRITICA : weeksUnderCritical++
+state "Recuperando (30–34)" as RECUPERANDO
+RECUPERANDO : contador mantido
+state "Demitido" as DEMITIDO
+DEMITIDO : ManagerDismissed → RF37
+[*] --> CONFORTAVEL
+CONFORTAVEL --> ATENCAO : < 45
+ATENCAO --> CONFORTAVEL : ≥ 45
+ATENCAO --> CRITICA : < 30
+CRITICA --> CRITICA : semana < 30
+CRITICA --> RECUPERANDO : 30–34
+RECUPERANDO --> CRITICA : < 30
+RECUPERANDO --> ATENCAO : ≥ 35 (zera)
+CRITICA --> ATENCAO : ≥ 35 (zera)
+CRITICA --> DEMITIDO : weeksUnderCritical ≥ paciência
+DEMITIDO --> [*]
+@enduml

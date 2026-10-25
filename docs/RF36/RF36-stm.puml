@@ -1,0 +1,22 @@
+@startuml
+title RF36 — Simular a temporada pelo calendário · Máquina de estados: SimulationRun.status
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "QUEUED" as QUEUED
+state "RUNNING" as RUNNING
+RUNNING : semana a semana
+state "PAUSED" as PAUSED
+PAUSED : decisão, draft, free agency
+PAUSED : prazo de trocas, lesão, proposta
+state "DONE" as DONE
+state "CANCELLED" as CANCELLED
+[*] --> QUEUED
+QUEUED --> RUNNING : worker assume
+RUNNING --> PAUSED : parada obrigatória
+PAUSED --> RUNNING : resume
+RUNNING --> DONE : alvo atingido
+RUNNING --> CANCELLED : stop após a semana
+PAUSED --> CANCELLED : stop
+DONE --> [*]
+CANCELLED --> [*]
+@enduml

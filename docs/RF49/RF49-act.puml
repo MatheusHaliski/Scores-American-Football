@@ -1,0 +1,96 @@
+@startuml
+title RF49 — Teto salarial rígido e contratos · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Manager|
+start
+:Abre Contratos e teto;
+|Frontend|
+:GET /cap · GET /contracts;
+|Backend|
+if (dono do save?) then (sim)
+else (não)
+  :403;
+  stop
+endif
+if (head coach empregado?) then (sim)
+else (não)
+  :409 NOT_EMPLOYED;
+  stop
+endif
+|Frontend|
+:Ledger por temporada (teto, comprometido, dead money, espaço) e contratos com cap hit por ano;
+|Manager|
+if (renova ou estende?) then (sim)
+|Backend|
+  if (janela permitida?) then (sim)
+  else (não)
+    :422 CONTRACT_WINDOW_CLOSED;
+    stop
+  endif
+  if (contrato bem formado?) then (sim)
+  else (não)
+    :422 CONTRACT_INVALID;
+    stop
+  endif
+  if (cabe no teto?) then (sim)
+  else (não)
+    :422 CAP_EXCEEDED;
+    stop
+  endif
+|JogadorIA|
+  if (jogador aceita?) then (sim)
+|Backend|
+    :PlayerContract novo · capHitByYear recalculado · CONTRACT_EXTENDED;
+  else (não)
+|JogadorIA|
+    :COUNTER ou REJECT · moral −3;
+  endif
+endif
+|Manager|
+if (reestrutura?) then (sim)
+|Backend|
+  :Converte base em bônus rateado · cap hit atual cai, futuros sobem · CONTRACT_RESTRUCTURED;
+endif
+|Manager|
+if (corta o jogador?) then (sim)
+|Frontend|
+  :GET /release/preview · mostra dead money e economia, normal e pós-1º de junho;
+|Backend|
+  if (corte com dead money confirmado?) then (sim)
+  else (não)
+    :422 RELEASE_PREVIEW_REQUIRED;
+    stop
+  endif
+  if (ledger na versão esperada?) then (sim)
+  else (não)
+    :409 CAP_LEDGER_CONFLICT;
+    stop
+  endif
+  :Player WAIVED · ledger.deadMoney += valor · waivers abertos (RF65) · PLAYER_RELEASED;
+endif
+|Manager|
+if (aplica franchise tag?) then (sim)
+|Backend|
+  if (tag permitida?) then (sim)
+  else (não)
+    :422 FRANCHISE_TAG_NOT_ALLOWED;
+    stop
+  endif
+  :Contrato TAG de 1 ano pelo valor da posição · FRANCHISE_TAG_APPLIED;
+endif
+|Scheduler|
+:Fim da temporada: contratos vencidos viram agentes livres (sem tag);
+if (piso salarial cumprido?) then (sim)
+else (não)
+|Diretoria|
+  :Paga a diferença aos jogadores · inbox;
+endif
+|Scheduler|
+if (espaço não usado vira rollover?) then (sim)
+  :Ledger n+1 com rollover;
+endif
+end
+@enduml

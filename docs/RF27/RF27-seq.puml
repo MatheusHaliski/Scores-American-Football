@@ -1,0 +1,74 @@
+@startuml
+title RF27 — Painel da semana e partida ao vivo · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+control "AuditService" as AuditService
+control "MatchSimulator" as MatchSimulator
+control "PlayCaller" as PlayCaller
+queue "EventBus" as EventBus
+database "MySQL 8" as MySQL
+database "Redis 7" as Redis
+database "Cassandra 4.1" as Cassandra
+participant "Agendador/Job assíncrono" as Scheduler
+Manager -> Frontend: abre painel da semana
+Frontend -> API: GET /careers/{id}/weeks/{n}
+API -> UseCase: GetWeekBoardUseCase.execute(id, n, userId)
+UseCase -> MySQL: requireOwner + fixtures da semana por slot + byeClubs
+alt não é dono
+  UseCase -> AuditService: record(ACCESS_DENIED)
+  API --> Frontend: 403
+else senão
+  UseCase -> Redis: MGET match:{fid}:snapshot (placares parciais)
+  Redis --> UseCase: snapshots / null
+  UseCase --> API: WeekBoardDto (slots, byes, minha partida)
+  API --> Frontend: 200
+end
+Manager -> Frontend: clica no meu placar
+Frontend -> API: GET /matches/{mid}
+API -> UseCase: GetMatchStateUseCase.execute
+UseCase -> Redis: GET snapshot
+alt snapshot ausente (TTL)
+  UseCase -> MySQL: MatchSession.snapshotJson
+  MySQL --> UseCase: snapshot
+  UseCase -> Redis: SET snapshot
+else senão
+  Redis --> UseCase: snapshot
+end
+UseCase --> API: MatchStateDto (quarto, relógio, posse, down, distance, ballOnAbsYd, drive)
+API --> Frontend: 200
+loop enquanto status != FINISHED
+  Frontend -> API: POST /matches/{mid}/advance {mode: PLAY|DRIVE|QUARTER|FULL}
+  API -> UseCase: AdvanceMatchUseCase.execute
+  alt decisão pendente ou modo não permitido
+    API --> Frontend: 409 DECISION_PENDING | 422 ADVANCE_MODE_NOT_ALLOWED
+  else senão
+    UseCase -> MatchSimulator: advance(snapshot, mode)
+    MatchSimulator -> PlayCaller: chamada da IA por situação (descida, distância, campo, relógio)
+    PlayCaller --> MatchSimulator: jogada ofensiva + defensiva
+    MatchSimulator --> UseCase: snapshot + PlayEvent[] + Drive
+    UseCase -> Cassandra: appendPlays
+    UseCase -> Redis: SET snapshot (TTL 24 h)
+    API --> Frontend: 200 MatchStateDto
+  end
+  Frontend -> API: GET /matches/{mid}/plays?after={seq}
+  API -> UseCase: GetPlayByPlayUseCase.execute
+  UseCase -> Cassandra: SELECT WHERE fixture_id = ? AND seq > ?
+  Cassandra --> UseCase: jogadas
+  API --> Frontend: 200 / 204
+  Frontend -> Manager: feed, placar LED, descida e distância
+  par jogos da IA em paralelo
+    Scheduler -> MatchSimulator: advance FULL (partidas da IA)
+    Scheduler -> Redis: SET placares parciais
+    Frontend -> API: GET /careers/{id}/weeks/{n} (poll)
+    API --> Frontend: cards atualizados
+  end
+end
+UseCase -> EventBus: MatchFinished(fixtureId)
+EventBus -> MySQL: Fixture FINISHED · TeamMatchStats · standings (RF16)
+Frontend -> Manager: placar final → pós-jogo
+@enduml

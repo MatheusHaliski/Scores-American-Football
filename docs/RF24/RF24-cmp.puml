@@ -1,0 +1,76 @@
+@startuml
+title RF24 — Responder mensagens do inbox · Diagrama de componentes
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 36
+actor "Head coach / manager (usuário autenticado)" as c1
+actor "Diretoria da franquia (IA)" as c2
+actor "Jogador (IA)" as c3
+actor "Franquia adversária (IA)" as c4
+actor "Imprensa (IA)" as c5
+package "Frontend (Next.js)" as pkg_fe {
+  component "InboxPage" as c6
+  frame "componentes de InboxPage" as pkg_fe_sub {
+    component "MessageList" as c7
+    component "MessageDetail" as c8
+    component "ResponseOptions" as c9
+    component "DecisionResultToast" as c10
+    component "UnreadBadge" as c11
+  }
+}
+package "scores-af-web (REST)" as pkg_web {
+  component "InboxController" as c12
+  component "NotificationController" as c13
+}
+package "scores-af-application (casos de uso)" as pkg_app {
+  component "GetInboxUseCase" as c14
+  component "RespondInboxMessageUseCase" as c15
+  component "GetNotificationsUseCase" as c16
+  component "MarkNotificationsReadUseCase" as c17
+  component "CareerAccess" as c18
+  component "InboxConsequenceResolver" as c19
+}
+package "scores-af-domain/engine" as pkg_eng {
+  component "MoraleEngine" as c20
+  component "MarketEngine" as c21
+}
+package "portas (port.out)" as pkg_ports {
+  interface "CareerSaveRepository" as c22
+  interface "InboxMessageRepository" as c23
+  interface "ManagerMoraleRepository" as c24
+  interface "TradeProposalRepository" as c25
+  interface "FreeAgentOfferRepository" as c26
+  interface "FinanceLedgerRepository" as c27
+  interface "TimelinePort" as c28
+  interface "CounterPort" as c29
+}
+package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
+  component "persistence-mysql" as c30
+  component "persistence-cassandra" as c31
+  component "cache-redis" as c32
+}
+database "MySQL 8" as s1
+database "Cassandra 4.1" as s2
+database "Redis 7" as s3
+c1 --> c6 : usa
+c6 --> c12 : GET /careers/{id}/inbox (alvo)\nPOST /careers/{id}/inbox/{mid}/respond (alvo)\nGET /me/notifications (alvo)\n…
+c6 --> c13
+c12 --> c14
+c13 --> c14
+c14 ..> pkg_app : orquestra
+c14 --> c20 : usa
+c14 --> c21 : usa
+pkg_app --> pkg_ports : depende (DIP)
+c30 .up.|> c22
+c30 .up.|> c23
+c30 .up.|> c24
+c30 .up.|> c25
+c30 .up.|> c26
+c30 .up.|> c27
+c31 .up.|> c28
+c32 .up.|> c29
+c30 --> s1
+c31 --> s2
+c32 --> s3
+@enduml

@@ -1,0 +1,81 @@
+@startuml
+title RF42 — Motor de partida por descida (determinístico por semente) · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+control "AuditService" as AuditService
+control "MoraleEngine" as MoraleEngine
+control "MatchSimulator" as MatchSimulator
+control "PlayCaller" as PlayCaller
+queue "EventBus" as EventBus
+database "MySQL 8" as MySQL
+database "Redis 7" as Redis
+database "Cassandra 4.1" as Cassandra
+database "OpenSearch 2" as OpenSearch
+participant "Agendador/Job assíncrono" as Scheduler
+Manager -> Frontend: Jogar partida
+Frontend -> API: POST /careers/{id}/weeks/current/play
+API -> UseCase: PlayWeekUseCase.execute
+UseCase -> MySQL: save, fixture, elencos, depth charts, atributos, GamePlan, Playbook, times especiais, moral, estádio, LeagueRules
+alt depth chart inválido
+  UseCase --> API: DEPTH_CHART_INVALID
+  API --> Frontend: 422
+else senão
+  UseCase -> MatchSimulator: start(MatchSetup{seed})
+  MatchSimulator --> UseCase: snapshot NOT_STARTED (kickoff pela seed)
+  UseCase -> Redis: SET match:{fid}:state (down, distance, ballOnAbsYd, rngCursor, version) TTL 24 h
+  UseCase -> MySQL: INSERT MatchSession
+  UseCase -> AuditService: MATCH_SIMULATED(seed, fixture)
+  UseCase -> Scheduler: jogos da IA (FULL)
+  API --> Frontend: 201 {matchId}
+end
+loop até FINISHED (por avanço do front)
+  Frontend -> API: POST /matches/{mid}/advance {mode: TO_DECISION}
+  API -> UseCase: AdvanceMatchUseCase.execute
+  UseCase -> Redis: GET state
+  UseCase -> MatchSimulator: advance(snapshot, TO_DECISION, decisionsLog)
+  loop jogada a jogada
+    MatchSimulator -> PlayCaller: callOffense(situação, GamePlan) · callDefense(situação, GamePlan)
+    PlayCaller --> MatchSimulator: PlayCall ataque × defesa
+    note over MatchSimulator: pré-snap: falta? → snap: OL×DL, rota×cobertura, corredor×tackle (+ fadiga, moral, clima) → turnover? → falta na jogada (aceita/recusa) → spot, down/distance → pontos → relógio → lesão → PlayEvent
+  end
+  alt momento decisivo do humano
+    MatchSimulator --> UseCase: snapshot AWAITING_PLAY_CALL + PlayCallDecision OPEN (opções, deadlineAt)
+    UseCase -> MySQL: INSERT PlayCallDecision
+  else fim de quarto ou de jogo
+    MatchSimulator --> UseCase: snapshot BREAK | FINISHED
+  end
+  UseCase -> Cassandra: append PlayEvent[] (fixtureId, seq)
+  UseCase -> Redis: SET state (version + 1)
+  API --> Frontend: 200 MatchStateDto (placar, '4th & 2 at OPP 38', drive, decisão aberta)
+  alt decisão aberta
+    Manager -> Frontend: escolhe a jogada
+    Frontend -> API: POST /matches/{mid}/play-calls/{did} {playCode, expectedVersion}
+    API -> UseCase: SubmitPlayCallUseCase
+    alt prazo vencido
+      UseCase -> PlayCaller: autoCall(situação)
+      PlayCaller --> UseCase: jogada automática (auto = true)
+    else senão
+      alt jogada inválida ou versão antiga
+        API --> Frontend: 422 PLAY_CALL_INVALID | 409 STALE_VERSION
+      else senão
+        UseCase -> MySQL: PlayCallDecision CHOSEN · decisionsLog
+      end
+    end
+    API --> Frontend: 200
+  else senão
+  end
+end
+UseCase -> MatchSimulator: finish(snapshot)
+MatchSimulator --> UseCase: MatchResult (box score, equipe, drives, fatores, líderes)
+UseCase -> MySQL: TX: Fixture FINISHED, PlayerMatchStats, TeamMatchStats, Drive, MatchReport, Standing, ledger
+UseCase -> EventBus: MatchFinished(fixtureId)
+EventBus -> MoraleEngine: moral (RF41)
+EventBus -> OpenSearch: reindexa stats
+Frontend -> API: GET /matches/{mid}/report
+API --> Frontend: MatchReportDto
+@enduml

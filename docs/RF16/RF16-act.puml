@@ -1,0 +1,63 @@
+@startuml
+title RF16 — Classificação (divisões, conferências) e placares das semanas · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Manager|
+start
+:Abre Classificação & semanas;
+|Frontend|
+:GET /careers/{id}/standings?view=DIVISION e /weeks/{currentWeek};
+|Backend|
+if (dono do save?) then (sim)
+else (não)
+  :403 + ACCESS_DENIED;
+  stop
+endif
+:Lê Standing da temporada (cache Redis, fallback MySQL);
+if (empate na classificação?) then (sim)
+  :TiebreakerPolicy resolve e grava tiebreakerNote (ex.: vence no confronto direto);
+endif
+if (seed de playoff definido?) then (sim)
+  :Marca campeão de divisão, wild card e seed 1 com folga;
+else (não)
+  :Marca em disputa · linha de corte do 7º seed;
+endif
+|Frontend|
+:Tabela mobile-first por divisão (4 times), meu clube destacado, nota de desempate no toque;
+|Manager|
+if (troca a visão (conferência ou liga)?) then (sim)
+|Frontend|
+  :GET /standings?view=CONFERENCE;
+|Backend|
+  if (liga pertence ao mundo do save?) then (sim)
+  else (não)
+    :404 LEAGUE_NOT_FOUND;
+    stop
+  endif
+endif
+|Manager|
+if (navega para outra semana?) then (sim)
+|Frontend|
+  :GET /careers/{id}/weeks/{n};
+|Backend|
+  if (semana válida?) then (sim)
+  else (não)
+    :404 WEEK_NOT_FOUND;
+    stop
+  endif
+  if (semana já jogada?) then (sim)
+    :Placares por quarto · líderes em passe, corrida, recepção e defesa · jogador da semana (PlayerMatchStats);
+  else (não)
+    :Semana atual: parciais ao vivo com descida e distância · futura: horários e times de folga;
+  endif
+endif
+|Manager|
+if (fase de playoffs?) then (sim)
+|Frontend|
+  :GET /playoffs → chave por conferência e final neutra;
+endif
+:Cards de placar · destaques · setas semana anterior e próxima;
+end
+@enduml

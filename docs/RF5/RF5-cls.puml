@@ -1,0 +1,217 @@
+@startuml
+title RF5 — Editor de ligas (conferências e divisões), franquias e jogadores · Diagrama de classes
+skinparam classAttributeIconSize 0
+hide empty methods
+package "catalog" {
+  class World {
+    id: UUID
+    ownerUser: UserAccount?
+    name: String
+    kind: WorldKind
+    sourceWorld: World?
+  }
+  class League {
+    id: UUID
+    name: String
+    country: String
+    ruleset: Ruleset (PRO|COLLEGE)
+    rules: LeagueRules
+    teamCount: int (8–32)
+    conferenceCount: int
+    divisionsPerConference: int
+    regularSeasonWeeks: int = 18
+    gamesPerTeam: int = 17
+    playoffSeedsPerConference: int = 7
+    neutralSiteFinal: boolean
+    salaryCap: long
+    salaryFloor: long
+    prestige: int
+    tvRightsPerSeason: long
+  }
+  class LeagueRules {
+    «embedded» version: int
+    quarterMinutes: int = 15
+    playClockSeconds: int = 40
+    playClockAfterStoppageSeconds: int = 25
+    twoMinuteWarning: boolean
+    timeoutsPerHalf: int = 3
+    overtimeMinutes: int = 10
+    overtimeBothPossess: boolean
+    regularSeasonTiesAllowed: boolean
+    kickoffYardLine: int = 35
+    touchbackYardLine: int
+    patYardLine: int = 15
+    clockStopsOnFirstDown: boolean (COLLEGE)
+    oneFootInbounds: boolean (COLLEGE)
+    hashFromSidelineFeet: double
+    rosterMax: int = 53
+    gameDayActives: int = 46
+    practiceSquadMax: int = 16
+    offseasonRosterMax: int «Q-7»
+    irReturnsPerSeason: int «Q-7»
+    irMinWeeks: int «Q-7»
+  }
+  class Conference {
+    name: String
+    shortName: String
+    logoKey: String
+  }
+  class Division {
+    name: String
+    conference: Conference
+    teamCount: int = 4
+  }
+  class Club {
+    id: UUID
+    name: String
+    shortName: String
+    city: String
+    conference: Conference
+    division: Division
+    logoKey: String
+    primaryColor: String
+    secondaryColor: String
+    accentColor: String
+    prestige: int
+    reputationBoard: int
+    reputationFans: int
+    cash: long
+    capSpace: long
+    isUserControlled: boolean
+    expectedWins: int
+    scoutingLevel: int
+    scoutingBudget: long
+  }
+  class Uniform {
+    slot: UniformSlot (HOME|AWAY|ALTERNATE)
+    jerseyColor: String
+    pantsColor: String
+    numberColor: String
+    numberOutline: String
+    pattern: String
+    textureKey: String
+    isActive: boolean
+  }
+  class HelmetDesign {
+    shellColor: String
+    stripe: StripeStyle
+    stripeColor: String
+    facemaskColor: String
+    decalKey: String
+    finish: Finish (MATTE|GLOSS|CHROME)
+  }
+  class Stadium {
+    name: String
+    capacity: int (60–80 mil)
+    roof: RoofType (OPEN|DOME|RETRACTABLE)
+    surface: Surface (GRASS|TURF)
+    climateZone: ClimateZone
+    level: int
+    atmosphere: int
+    maintenanceCostPerWeek: long
+    model3dUrl: String
+    endZoneArtKey: String
+    ticketPolicy: TicketPolicy (preço por setor, carnê de temporada)
+  }
+  class Player {
+    id: UUID
+    name: String
+    nationality: String
+    college: String
+    birthDate: LocalDate
+    age: int
+    heightCm: int
+    weightKg: int
+    position: Position (QB|RB|FB|WR|TE|LT|LG|C|RG|RT|DE|DT|OLB|MLB|CB|FS|SS|K|P|LS)
+    unit: Unit (OFFENSE|DEFENSE|SPECIAL)
+    attributes: PlayerAttributes
+    overall: int «por posição, OVR v1»
+    potential: int
+    experienceYears: int
+    rosterStatus: RosterStatus (ACTIVE|INACTIVE|PRACTICE_SQUAD|IR|PUP|FREE_AGENT|WAIVED)
+    condition: int
+    morale: int
+    moraleFactors: JSON
+    injury: Injury?
+    suspensionWeeks: int
+    contract: PlayerContract
+    jerseyNumber: int
+    isLegendary: boolean
+    model3dUrl: String
+  }
+  class PlayerAttributes {
+    «embedded» físicos: 7 (VEL, ACE, AGI, FOR, IMPULSAO, RES, DUR)
+    passe: 8 (precisão curta/média/longa, braço, em movimento, play-action, leitura, calma)
+    corrida e posse: 7 (visão, quebra de tackle, juke, spin, stiff arm, proteção, carregar)
+    recepção: 7 (mãos, tráfego, espetacular, rota curta/média/funda, soltura)
+    bloqueio: 5 (passe, corrida, técnica, finesse, potência)
+    defesa: 9 (tackle, impacto, perseguição, leitura, cobertura individual/zona, press, rush finesse/potência)
+    chute: 3 (potência, precisão, retorno)
+    mental: 2 (consciência, liderança)
+  }
+}
+package "market" {
+  class PlayerContract {
+    «embedded» years: int
+    baseSalaryByYear: JSON
+    signingBonus: long «rateado»
+    guaranteed: long
+    capHitByYear: JSON
+    deadMoneyIfCut: long
+    franchiseTag: boolean
+    type: ContractType (ROOKIE|VETERAN|MINIMUM|TAG|PRACTICE)
+    endSeason: int
+  }
+}
+class SaveLeagueUseCase <<UseCase>> {
+  execute(SaveLeagueCommand): LeagueDto «LeagueRules.version + 1»
+}
+class SaveLeagueStructureUseCase <<UseCase>> {
+  execute(LeagueStructureCommand): LeagueStructureDto
+}
+class LeagueStructureCommand <<record>> {
+  leagueId: UUID
+  conferences: List<ConferenceDto> (1–2)
+  divisions: Map<conference, List<DivisionDto>>
+  clubDivision: Map<UUID, UUID>
+  playoffSeedsPerConference: int
+  version: long
+}
+class SavePlayerUseCase <<UseCase>> {
+  execute(SavePlayerCommand): PlayerDto
+}
+class LeagueStructureValidator <<Engine>> {
+  validate(teamCount, conferences, divisions, assignments): List<String>
+}
+class LeagueRulesValidator <<Engine>> {
+  validate(LeagueRules, ruleset): List<String> «D-4: regras só em LeagueRules»
+}
+class OverallByPosition <<Engine>> {
+  overall(PlayerAttributes, Position): int «vetor de ouro Java ↔ TS»
+}
+class WorldAccess <<Policy>> {
+  requireEditable(worldId, userId, role)
+}
+World "1" -- "*" League
+World "1" -- "*" Club
+World "1" -- "*" Player
+League "1" -- "1" LeagueRules : «embedded»
+League "1" -- "1..2" Conference : conferências
+Conference "1" -- "*" Division : divisões
+Division "1" -- "*" Club : franquias
+Club "1" -- "*" Uniform
+Club "1" -- "1" HelmetDesign : capacete
+Club "1" -- "1" Stadium
+Club "1" -- "0..53" Player : elenco ativo
+Club "*" -- "*" Club : rivais da divisão
+Player "1" -- "1" PlayerAttributes : «embedded»
+Player "1" -- "1" PlayerContract : «embedded»
+SaveLeagueUseCase ..> LeagueRulesValidator : usa
+SaveLeagueUseCase ..> LeagueRules : versiona
+SaveLeagueStructureUseCase ..> LeagueStructureCommand : recebe
+SaveLeagueStructureUseCase ..> LeagueStructureValidator : usa
+SaveLeagueStructureUseCase ..> Division : grava
+SavePlayerUseCase ..> OverallByPosition : usa
+SavePlayerUseCase ..> Player : grava
+SavePlayerUseCase ..> WorldAccess : usa
+@enduml

@@ -1,0 +1,43 @@
+@startuml
+title RNF9 — Desempenho e usabilidade da interface (3D com 22 atletas) · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+database "MySQL 8" as MySQL
+database "Redis 7" as Redis
+database "Cassandra 4.1" as Cassandra
+database "S3/MinIO" as S3
+Manager -> Frontend: abre a partida ao vivo
+Frontend -> API: GET /me/settings (If-None-Match)
+API -> UseCase: GetUserSettingsUseCase
+UseCase -> Redis: GET settings:{userId}
+alt cache hit
+  API --> Frontend: 304
+else senão
+  UseCase -> MySQL: UserSettings
+  UseCase -> Redis: SET TTL 10 min
+  API --> Frontend: 200 + ETag
+end
+alt WebGL suficiente
+  Frontend -> S3: GET chunk 3D + campo + GLB atleta + texturas KTX2 (CDN, lazy)
+  S3 --> Frontend: assets
+  Frontend -> Frontend: 2 InstancedMesh × 11 atletas · LOD · ≤ 150 draw calls
+else senão
+  Frontend -> Frontend: campo 2D em SVG
+end
+loop partida ao vivo
+  Frontend -> API: GET /matches/{mid}/events?after=seq
+  API -> UseCase: GetMatchEventsUseCase
+  UseCase -> Cassandra: SELECT seq > ?
+  API --> Frontend: 200 / 204
+  Frontend -> API: GET /matches/{mid}/formation
+  API -> UseCase: GetPlayFormationUseCase
+  UseCase -> Redis: posições do snap (22 × x, y)
+  API --> Frontend: 200 compacto
+  Frontend -> Manager: alinhamento, snap e jogada animados (ou 2D)
+end
+@enduml

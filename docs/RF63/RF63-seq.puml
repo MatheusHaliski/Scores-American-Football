@@ -1,0 +1,32 @@
+@startuml
+title RF63 — Times especiais · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+control "MatchSimulator" as MatchSimulator
+database "MySQL 8" as MySQL
+database "Redis 7" as Redis
+Manager -> Frontend: abre times especiais
+Frontend -> API: GET /careers/{id}/special-teams
+API -> UseCase: GetSpecialTeamsUseCase
+UseCase -> MySQL: unidades, depth chart, elenco
+UseCase --> API: SpecialTeamsView
+API --> Frontend: 200
+Manager -> Frontend: salva unidade
+Frontend -> API: PUT /special-teams/{kind}
+API -> UseCase: UpdateSpecialTeamsUnitUseCase
+alt incompleta ou indisponível
+  API --> Frontend: 422
+else senão
+  UseCase -> MySQL: UPDATE special_teams_unit
+  API --> Frontend: 200
+end
+note over UseCase: na partida MatchSimulator usa a unidade e a estratégia do snapshot
+MatchSimulator -> Redis: estado: chute
+MatchSimulator -> MatchSimulator: KickResolver: distância, retorno, bloqueio, onside
+MatchSimulator -> Redis: posse, campo, placar
+@enduml

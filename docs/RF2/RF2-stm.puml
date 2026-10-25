@@ -1,0 +1,23 @@
+@startuml
+title RF2 — Autenticação e recuperação de senha · Máquina de estados: UserSession (família de sessão sid)
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "ACTIVE" as ACTIVE
+ACTIVE : refresh no cookie __Host-
+ACTIVE : access com claim sid em memória
+state "ROTATED" as ROTATED
+ROTATED : replacedBy aponta a nova sessão
+ROTATED : reuso do antigo = ataque
+state "REVOKED (família)" as REVOKED
+REVOKED : logout em qualquer aba · troca de senha · reuso
+REVOKED : access ainda assinado é recusado
+state "EXPIRED" as EXPIRED
+EXPIRED : 7 dias sem refresh
+[*] --> ACTIVE
+ACTIVE --> ROTATED : POST /auth/refresh ok
+ROTATED --> REVOKED : reuso do refresh antigo
+ACTIVE --> REVOKED : logout / reset / troca de senha
+ACTIVE --> EXPIRED : 7 dias
+REVOKED --> [*]
+EXPIRED --> [*]
+@enduml

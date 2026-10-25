@@ -1,0 +1,82 @@
+@startuml
+title RF49 — Teto salarial rígido e contratos · Diagrama de componentes
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 36
+actor "Head coach / manager (usuário autenticado)" as c1
+actor "Jogador (IA)" as c2
+actor "Diretoria da franquia (IA)" as c3
+actor "Agendador/Job assíncrono" as c4
+package "Frontend (Next.js)" as pkg_fe {
+  component "CapSheetPage" as c5
+  frame "componentes de CapSheetPage" as pkg_fe_sub {
+    component "LedgerTimeline (4 temporadas)" as c6
+    component "ContractsTable (cap hit por ano)" as c7
+    component "NegotiationDialog" as c8
+    component "RestructureDialog" as c9
+    component "ReleaseSimulator (dead money)" as c10
+    component "FranchiseTagCard" as c11
+  }
+}
+package "scores-af-web (REST)" as pkg_web {
+  component "ContractController" as c12
+  component "CapController" as c13
+}
+package "scores-af-application (casos de uso)" as pkg_app {
+  component "GetCapSheetUseCase" as c14
+  component "ListContractsUseCase" as c15
+  component "NegotiateContractUseCase" as c16
+  component "RestructureContractUseCase" as c17
+  component "PreviewReleaseUseCase" as c18
+  component "ReleasePlayerUseCase" as c19
+  component "ApplyFranchiseTagUseCase" as c20
+  component "RemoveFranchiseTagUseCase" as c21
+  component "CapSeasonRolloverJob" as c22
+}
+package "scores-af-domain/engine" as pkg_eng {
+  component "CapEngine" as c23
+  component "ContractValuation" as c24
+  component "DeadMoneyCalculator" as c25
+  component "FranchiseTagPolicy" as c26
+  component "RookieScale" as c27
+}
+package "portas (port.out)" as pkg_ports {
+  interface "SalaryCapLedgerRepository" as c28
+  interface "PlayerRepository" as c29
+  interface "WaiverClaimRepository" as c30
+  interface "FinanceLedgerRepository" as c31
+  interface "TimelinePort" as c32
+  interface "CachePort" as c33
+}
+package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
+  component "persistence-mysql" as c34
+  component "persistence-cassandra" as c35
+  component "cache-redis" as c36
+}
+database "MySQL 8" as s1
+database "Redis 7" as s2
+database "Cassandra 4.1" as s3
+c1 --> c5 : usa
+c4 --> c14 : dispara
+c5 --> c12 : GET /careers/{id}/cap (alvo)\nGET /careers/{id}/contracts (alvo)\nPOST /careers/{id}/players/{pid}/contract/negotiate (alvo)\n…
+c5 --> c13
+c12 --> c14
+c13 --> c14
+c14 ..> pkg_app : orquestra
+c14 --> c23 : usa
+c14 --> c24 : usa
+c14 --> c25 : usa
+c14 --> c26 : usa
+c14 --> c27 : usa
+pkg_app --> pkg_ports : depende (DIP)
+c34 .up.|> c28
+c34 .up.|> c29
+c34 .up.|> c30
+c34 .up.|> c31
+c35 .up.|> c32
+c36 .up.|> c33
+c34 --> s1
+c35 --> s3
+c36 --> s2
+@enduml

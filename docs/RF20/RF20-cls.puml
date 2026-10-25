@@ -1,0 +1,183 @@
+@startuml
+title RF20 — Aba Buscar: ligas, franquias, jogadores e head coaches · Diagrama de classes
+skinparam classAttributeIconSize 0
+hide empty methods
+package "career" {
+  class CareerSave {
+    id: UUID
+    name: String
+    seed: long
+    employmentStatus: EmploymentStatus
+    currentWeek: int
+    difficulty: Difficulty
+    seasonMode: SeasonMode
+    scoresPoints: int
+    status: SaveStatus
+    slot: int
+    lastPlayedAt: Instant
+  }
+}
+package "catalog" {
+  class World {
+    id: UUID
+    ownerUser: UserAccount?
+    name: String
+    kind: WorldKind
+    sourceWorld: World?
+  }
+  class League {
+    id: UUID
+    name: String
+    country: String
+    ruleset: Ruleset (PRO|COLLEGE)
+    rules: LeagueRules
+    teamCount: int (8–32)
+    conferenceCount: int
+    divisionsPerConference: int
+    regularSeasonWeeks: int = 18
+    gamesPerTeam: int = 17
+    playoffSeedsPerConference: int = 7
+    neutralSiteFinal: boolean
+    salaryCap: long
+    salaryFloor: long
+    prestige: int
+    tvRightsPerSeason: long
+  }
+  class Conference {
+    name: String
+    shortName: String
+    logoKey: String
+  }
+  class Division {
+    name: String
+    conference: Conference
+    teamCount: int = 4
+  }
+  class Club {
+    id: UUID
+    name: String
+    shortName: String
+    city: String
+    conference: Conference
+    division: Division
+    logoKey: String
+    primaryColor: String
+    secondaryColor: String
+    accentColor: String
+    prestige: int
+    reputationBoard: int
+    reputationFans: int
+    cash: long
+    capSpace: long
+    isUserControlled: boolean
+    expectedWins: int
+    scoutingLevel: int
+    scoutingBudget: long
+  }
+  class Player {
+    id: UUID
+    name: String
+    nationality: String
+    college: String
+    birthDate: LocalDate
+    age: int
+    heightCm: int
+    weightKg: int
+    position: Position (QB|RB|FB|WR|TE|LT|LG|C|RG|RT|DE|DT|OLB|MLB|CB|FS|SS|K|P|LS)
+    unit: Unit (OFFENSE|DEFENSE|SPECIAL)
+    attributes: PlayerAttributes
+    overall: int «por posição, OVR v1»
+    potential: int
+    experienceYears: int
+    rosterStatus: RosterStatus (ACTIVE|INACTIVE|PRACTICE_SQUAD|IR|PUP|FREE_AGENT|WAIVED)
+    condition: int
+    morale: int
+    moraleFactors: JSON
+    injury: Injury?
+    suspensionWeeks: int
+    contract: PlayerContract
+    jerseyNumber: int
+    isLegendary: boolean
+    model3dUrl: String
+  }
+  class ManagerProfile {
+    name: String
+    nationality: String
+    isHuman: boolean
+    overall: int
+    coachStyle: CoachStyleCode
+    reputationLeague: int
+    careerTitles: int
+    careerGames: int
+    careerWins: int
+    careerPlayoffWins: int
+  }
+}
+package "season" {
+  class Standing {
+    wins: int
+    losses: int
+    ties: int
+    winPct: double
+    divisionRecord: String
+    conferenceRecord: String
+    pointsFor: int
+    pointsAgainst: int
+    streak: int
+    last5: JSON
+    divisionRank: int
+    conferenceSeed: Integer
+    tiebreakerNote: String
+  }
+}
+class SearchUseCase <<UseCase>> {
+  execute(SearchQuery): SearchResult
+}
+class SearchQuery <<record>> {
+  careerId: UUID
+  q: String
+  type: PLAYER|CLUB|LEAGUE|MANAGER
+  position: Position?
+  unit: Unit?
+  conference: UUID?
+  division: UUID?
+  rosterStatus: RosterStatus?
+  minOverall: Integer?
+  page: int
+  size: int
+}
+class SearchResult <<record>> {
+  items: List<CompactSchemeDto>
+  facets: Map<String, List<FacetDto>>
+  page: int
+  totalElements: long
+  fromFallback: boolean
+}
+interface SearchPort <<Port>> {
+  search(SearchQuery): SearchHits
+  index(doc)
+  delete(id)
+}
+class SearchIndexProjector <<Listener>> {
+  onRosterChanged(e)
+  onTradeCompleted(e)
+  onMatchFinished(e)
+}
+World "1" -- "*" League
+World "1" -- "*" Club
+World "1" -- "*" Player
+League "1" -- "1..2" Conference : conferências
+Conference "1" -- "*" Division : divisões
+Division "1" -- "*" Club : franquias
+Club "1" -- "0..53" Player : elenco ativo
+Club "*" -- "*" Club : rivais da divisão
+Club "0..1" -- "1" ManagerProfile : head coach
+CareerSave "1" -- "1" World : mundo do save
+CareerSave "1" -- "1" ManagerProfile : manager humano
+CareerSave "*" -- "0..1" Club : franquia atual
+SearchUseCase ..> SearchQuery : recebe
+SearchUseCase ..> SearchResult : produz
+SearchUseCase ..> SearchPort : usa
+SearchUseCase ..> Player : enriquece
+SearchIndexProjector ..> SearchPort : index
+@enduml

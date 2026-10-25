@@ -1,0 +1,30 @@
+@startuml
+title RF13 — Notificações e mensagens (diretoria, jogadores, franquias) · Máquina de estados: InboxMessage.status
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "UNREAD" as UNREAD
+UNREAD : gerada por IA/Scheduler
+UNREAD : notificação + contador
+state "READ" as READ
+READ : aberta
+READ : opções visíveis
+state "ANSWERED" as ANSWERED
+ANSWERED : chosenOption gravada
+ANSWERED : efeito aplicado
+state "EXPIRED" as EXPIRED
+EXPIRED : deadlineWeek vencido
+EXPIRED : opção padrão aplicada
+state "ARCHIVED" as ARCHIVED
+ARCHIVED : fora da lista principal
+ARCHIVED : permanece na timeline
+[*] --> UNREAD
+UNREAD --> READ : abre
+READ --> ANSWERED : respond válido
+UNREAD --> ANSWERED : responde pela notificação
+UNREAD --> EXPIRED : prazo vencido
+READ --> EXPIRED : prazo vencido
+ANSWERED --> ARCHIVED : arquivar
+EXPIRED --> ARCHIVED : arquivar
+READ --> ARCHIVED : sem opções (INFO)
+ARCHIVED --> [*]
+@enduml

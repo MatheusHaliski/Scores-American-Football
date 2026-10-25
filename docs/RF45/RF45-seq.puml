@@ -1,0 +1,78 @@
+@startuml
+title RF45 — Multiplayer online: salas por turnos e Ultimate Team · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+control "AuditService" as AuditService
+control "MatchSimulator" as MatchSimulator
+control "PlayCaller" as PlayCaller
+control "OnlinePolicies" as OnlinePolicies
+control "Matchmaker" as Matchmaker
+database "MySQL 8" as MySQL
+database "Redis 7" as Redis
+database "Cassandra 4.1" as Cassandra
+participant "Agendador/Job assíncrono" as Scheduler
+actor "Manager adversário (online)" as Adversario
+Manager -> Frontend: Criar sala (temporada completa, 4 humanos)
+Frontend -> API: POST /online/rooms {format, rules}
+API -> MySQL: INSERT multiplayer_room (LOBBY, código)
+API --> Frontend: 201 {code}
+Frontend -> API: POST /online/rooms/{id}/start (host)
+API -> MySQL: clona o mundo uma vez + CareerSave por participante
+Frontend -> API: POST /online/rooms/{id}/turns/{n}/confirm
+alt último a confirmar ou prazo vencido
+  API -> MatchSimulator: simula a semana (seed da sala)
+  API -> MySQL: resultados + turno SIMULATED + Scores Points
+  API --> Frontend: SSE: semana simulada
+else senão
+  API --> Frontend: 202 aguardando
+end
+Manager -> Frontend: salva depth chart de cartas
+Frontend -> API: PUT /ultimate/squad/depth-chart
+API -> UseCase: UltimateSquadUseCases.depthChart
+UseCase -> OnlinePolicies: ChemistryPolicy (divisão, conferência, unidade)
+UseCase -> MySQL: PlayerCard.slot · UltimateSquad.chemistry
+Manager -> Frontend: Entrar nas Divisões
+Frontend -> API: POST /ultimate/divisions/enter {windowId, latencyMs}
+API -> UseCase: OnlineCompetitionUseCases.enterDivisions
+UseCase -> MySQL: squad, cartas, janela, membership, sanções, tentativas
+UseCase -> OnlinePolicies: OnlineEntryPolicy.evaluate(contexto)
+OnlinePolicies --> UseCase: Decision
+alt recusada
+  UseCase -> MySQL: EntryAttempt REJECTED
+  UseCase -> AuditService: ONLINE_ENTRY_REJECTED
+  API --> Frontend: 422 {code}
+else aceita
+  UseCase -> MySQL: DivisionRun ENTERED · runsUsed + 1
+  UseCase -> Redis: MatchmakingTicket QUEUED
+  API --> Frontend: 201
+end
+Matchmaker -> Redis: pareia por rating
+Matchmaker -> MySQL: OnlineMatch ACCEPT_PENDING
+Frontend -> API: POST /matches/{id}/accept
+Adversario -> API: POST /matches/{id}/accept
+API -> MatchSimulator: start(seed) → LIVE
+loop até o fim
+  Frontend -> API: POST /matches/{id}/heartbeat {placar, quarto, descida}
+  alt momento decisivo
+    MatchSimulator -> PlayCaller: abre decisões para os dois lados
+    Frontend -> API: POST /matches/{id}/play-calls/{did}
+    Adversario -> API: POST /matches/{id}/play-calls/{did}
+    PlayCaller --> MatchSimulator: chamadas (IA para quem passou do prazo)
+  else senão
+  end
+end
+Scheduler -> UseCase: OnlineMatchUseCases.sweep(now)
+UseCase -> OnlinePolicies: WalkoverPolicy.evaluate
+alt silêncio > 90 s + 60 s
+  UseCase -> MySQL: WALKOVER (placar atual ou 2×0) · OnlineSanction
+  UseCase -> AuditService: ONLINE_MATCH_WALKOVER
+else jogo normal
+  UseCase -> MySQL: FINISHED · Elo · pontos
+end
+UseCase -> Cassandra: timeline de resultados e play-by-play
+@enduml

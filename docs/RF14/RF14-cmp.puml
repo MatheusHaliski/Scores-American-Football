@@ -1,0 +1,80 @@
+@startuml
+title RF14 — Orçamento da franquia, teto salarial e empréstimo · Diagrama de componentes
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 36
+actor "Head coach / manager (usuário autenticado)" as c1
+actor "Diretoria da franquia (IA)" as c2
+actor "Agendador/Job assíncrono" as c3
+package "Frontend (Next.js)" as pkg_fe {
+  component "FinancePage" as c4
+  frame "componentes de FinancePage" as pkg_fe_sub {
+    component "CashSummaryCard" as c5
+    component "SalaryCapCard (só leitura)" as c6
+    component "HomeGameRevenueChart" as c7
+    component "LoanSimulator" as c8
+    component "LoansList" as c9
+    component "BudgetRequestDialog" as c10
+    component "LedgerTable" as c11
+  }
+}
+package "scores-af-web (REST)" as pkg_web {
+  component "FinanceController" as c12
+}
+package "scores-af-application (casos de uso)" as pkg_app {
+  component "GetFinanceOverviewUseCase" as c13
+  component "GetSalaryCapUseCase" as c14
+  component "ContractBankLoanUseCase" as c15
+  component "SettleBankLoanUseCase" as c16
+  component "RequestBudgetUseCase" as c17
+  component "LoanInstallmentJob" as c18
+  component "CareerAccess" as c19
+  component "AuditService" as c20
+}
+package "scores-af-domain/engine" as pkg_eng {
+  component "FinanceEngine" as c21
+  component "CapEngine" as c22
+}
+package "portas (port.out)" as pkg_ports {
+  interface "CareerSaveRepository" as c23
+  interface "ClubRepository" as c24
+  interface "SalaryCapLedgerRepository" as c25
+  interface "BankLoanRepository" as c26
+  interface "BudgetRequestRepository" as c27
+  interface "FinanceLedgerRepository" as c28
+  interface "ManagerMoraleRepository" as c29
+  interface "AuditLogRepository" as c30
+  interface "TimelinePort" as c31
+  interface "CounterPort" as c32
+}
+package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
+  component "persistence-mysql" as c33
+  component "persistence-cassandra" as c34
+  component "cache-redis" as c35
+}
+database "MySQL 8" as s1
+database "Cassandra 4.1" as s2
+database "Redis 7" as s3
+c1 --> c4 : usa
+c3 --> c13 : dispara
+c4 --> c12 : GET /careers/{id}/finance (alvo)\nGET /careers/{id}/finance/cap (alvo)\nPOST /careers/{id}/finance/loans (alvo)\n…
+c12 --> c13
+c13 ..> pkg_app : orquestra
+c13 --> c21 : usa
+c13 --> c22 : usa
+pkg_app --> pkg_ports : depende (DIP)
+c33 .up.|> c23
+c33 .up.|> c24
+c33 .up.|> c25
+c33 .up.|> c26
+c33 .up.|> c27
+c33 .up.|> c28
+c33 .up.|> c29
+c33 .up.|> c30
+c34 .up.|> c31
+c35 .up.|> c32
+c33 --> s1
+c34 --> s2
+c35 --> s3
+@enduml

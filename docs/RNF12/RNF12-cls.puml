@@ -1,0 +1,78 @@
+@startuml
+title RNF12 — Diretrizes de Scores Points e loja · Diagrama de classes
+skinparam classAttributeIconSize 0
+hide empty methods
+package "career" {
+  class CareerSave {
+    id: UUID
+    name: String
+    seed: long
+    employmentStatus: EmploymentStatus
+    currentWeek: int
+    difficulty: Difficulty
+    seasonMode: SeasonMode
+    scoresPoints: int
+    status: SaveStatus
+    slot: int
+    lastPlayedAt: Instant
+  }
+  class ScoresPointsWallet {
+    balance: int
+    lifetimeEarned: int
+  }
+  class PointsTransaction {
+    amount: int
+    reason: PointsReason
+    refId: UUID
+    createdAt: Instant
+  }
+}
+package "store" {
+  class StoreItem {
+    code: String
+    kind: StoreItemKind
+    name: String
+    priceScoresPoints: int
+    assetUrl: String
+    payload: JSON
+    rarity: Rarity
+  }
+  class Purchase {
+    purchasedAt: Instant
+    pricePaid: int
+  }
+}
+package "catalog" {
+  class Consumable {
+    code: String
+    name: String
+    category: ConsumableCategory
+    effect: JSON «atributos AF»
+    durationWeeks: int
+    priceCash: long
+    priceScoresPoints: int
+    rarity: Rarity
+  }
+}
+class StorePolicy <<Policy>> {
+  effectOf(item): COSMETIC_ONLY|GAME_EFFECT
+  walletScopeFor(item): USER|SAVE
+  dailyLimit(user): int
+  effectCap(player, team): boolean
+  noLootBox(item): boolean
+}
+class PurchaseUseCase <<UseCase>> {
+  execute(cmd, userId, idempotencyKey) «preço só no backend, transação única»
+}
+class WalletReconciliationJob <<Job>> {
+  run() «saldo == soma(ledger)»
+}
+CareerSave "1" -- "1" ScoresPointsWallet
+ScoresPointsWallet "1" -- "*" PointsTransaction
+Purchase "*" -- "1" StoreItem
+PurchaseUseCase ..> StorePolicy : aplica
+PurchaseUseCase ..> ScoresPointsWallet : FOR UPDATE
+PurchaseUseCase ..> Purchase : cria
+PurchaseUseCase ..> PointsTransaction : balanceAfter
+StorePolicy ..> StoreItem : efeito e escopo
+@enduml

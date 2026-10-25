@@ -1,0 +1,26 @@
+@startuml
+title RF52 — Sala de imprensa · Máquina de estados: PressConference (ciclo)
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "AGENDADA" as AGENDADA
+AGENDADA : contexto do jogo
+state "ABERTA" as ABERTA
+ABERTA : perguntas geradas
+ABERTA : aviso na inbox
+state "RESPONDENDO" as RESPONDENDO
+RESPONDENDO : respostas parciais
+state "ENCERRADA" as ENCERRADA
+ENCERRADA : impactos aplicados
+ENCERRADA : manchete publicada
+state "FALTOU" as FALTOU
+FALTOU : skip ou prazo vencido
+[*] --> AGENDADA
+AGENDADA --> ABERTA : perguntas prontas
+ABERTA --> RESPONDENDO : 1ª resposta
+RESPONDENDO --> RESPONDENDO : outra resposta
+RESPONDENDO --> ENCERRADA : última resposta
+ABERTA --> FALTOU : skip / prazo
+RESPONDENDO --> ENCERRADA : prazo: não respondidas viram evasivas
+ENCERRADA --> [*]
+FALTOU --> [*]
+@enduml

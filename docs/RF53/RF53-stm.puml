@@ -1,0 +1,20 @@
+@startuml
+title RF53 — Regulamentos profissional e college · Máquina de estados: LeagueRules (versão)
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "VIGENTE" as VIGENTE
+VIGENTE : usada nas partidas
+state "EM_EDICAO" as EM_EDICAO
+EM_EDICAO : prévia sem gravar
+state "INVALIDA" as INVALIDA
+INVALIDA : 422 com campos
+state "AGENDADA" as AGENDADA
+AGENDADA : vale na próxima temporada
+[*] --> VIGENTE
+VIGENTE --> EM_EDICAO : abre editor
+EM_EDICAO --> INVALIDA : fora dos limites
+INVALIDA --> EM_EDICAO : corrige
+EM_EDICAO --> VIGENTE : grava sem temporada em curso
+EM_EDICAO --> AGENDADA : grava com temporada em curso
+AGENDADA --> VIGENTE : nova temporada começa
+@enduml

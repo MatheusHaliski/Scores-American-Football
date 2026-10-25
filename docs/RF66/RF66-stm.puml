@@ -1,0 +1,28 @@
+@startuml
+title RF66 — Playoffs com chave · Máquina de estados: Chave de playoffs (rodada)
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "PROJECAO" as PROJECAO
+PROJECAO : seeds se a temporada acabasse hoje
+state "WILD_CARD" as WILD_CARD
+WILD_CARD : 2×7, 3×6, 4×5
+WILD_CARD : seed 1 folga
+state "DIVISIONAL" as DIVISIONAL
+DIVISIONAL : reseed
+DIVISIONAL : seed 1 contra o menor
+state "CONFERENCE" as CONFERENCE
+CONFERENCE : final de conferência
+state "FINAL" as FINAL
+FINAL : campo neutro
+state "CAMPEAO" as CAMPEAO
+CAMPEAO : ChampionHistory
+CAMPEAO : phase DRAFT
+[*] --> PROJECAO
+PROJECAO --> PROJECAO : semana jogada
+PROJECAO --> WILD_CARD : fim da semana 18
+WILD_CARD --> DIVISIONAL : 6 vencedores
+DIVISIONAL --> CONFERENCE : 4 vencedores
+CONFERENCE --> FINAL : 2 campeões de conferência
+FINAL --> CAMPEAO : vencedor
+CAMPEAO --> [*]
+@enduml

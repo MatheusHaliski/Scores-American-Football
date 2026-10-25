@@ -1,0 +1,72 @@
+@startuml
+title RF26 — Estádio 3D e loja de estádio modular · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+control "AuditService" as AuditService
+control "FinanceEngine" as FinanceEngine
+queue "EventBus" as EventBus
+database "MySQL 8" as MySQL
+database "Redis 7" as Redis
+database "S3/MinIO" as S3
+actor "Diretoria da franquia (IA)" as Diretoria
+Manager -> Frontend: abre Estádio 3D
+Frontend -> API: GET /careers/{id}/stadium
+API -> UseCase: GetStadiumUseCase.execute(id, userId)
+UseCase -> MySQL: requireOwner
+alt não é dono
+  UseCase -> AuditService: record(ACCESS_DENIED)
+  API --> Frontend: 403
+else senão
+  UseCase -> MySQL: stadium + sectors + últimas rendas
+  MySQL --> UseCase: StadiumDto
+  API --> Frontend: 200
+  Frontend -> S3: GET model3dUrl (GLB modular) + arte da end zone
+  S3 --> Frontend: assets
+  Frontend -> Manager: cena 3D do estádio
+end
+Manager -> Frontend: Obra: cobertura retrátil
+Frontend -> API: POST /careers/{id}/stadium/renovation {roof: RETRACTABLE}
+API -> UseCase: StartStadiumRenovationUseCase.execute «@Transactional»
+UseCase -> Redis: EXISTS match:live:{clubId}
+alt partida ao vivo ou fora da offseason
+  API --> Frontend: 409 STADIUM_LOCKED_DURING_MATCH | OFFSEASON_ONLY
+else senão
+  UseCase -> FinanceEngine: canAfford(club, custo)
+  alt caixa insuficiente
+    FinanceEngine --> UseCase: false
+    API --> Frontend: 422 INSUFFICIENT_CASH
+  else senão
+    UseCase -> Diretoria: approveInvestment(custo, reputationBoard)
+    alt veto
+      Diretoria --> UseCase: VETO
+      UseCase -> EventBus: InboxMessageCreated(BOARD, veto)
+      API --> Frontend: 422 BOARD_VETO
+    else senão
+      UseCase -> FinanceEngine: debit(club, custo, STADIUM)
+      UseCase -> MySQL: TX: stadium.roof (obra até a pré-temporada) · ledger
+      UseCase -> EventBus: CatalogChanged(stadium)
+      EventBus -> Redis: invalida cache de bilheteria
+      API --> Frontend: 200 StadiumDto
+    end
+  end
+end
+Manager -> Frontend: Comprar estádio modular
+Frontend -> API: POST /store/purchases {STADIUM_3D}
+API -> UseCase: PurchaseService.purchase
+alt já possuído, saldo insuficiente ou incompatível
+  API --> Frontend: 409 / 422
+else senão
+  UseCase -> MySQL: Purchase + PointsTransaction PURCHASE (wallet @Version)
+  UseCase -> AuditService: record(STORE_PURCHASE)
+  API --> Frontend: 201
+end
+Frontend -> API: POST /me/inventory/{iid}/apply {clubId}
+API -> UseCase: ApplyInventoryItemUseCase.execute
+UseCase -> MySQL: stadium.model3dUrl = assetUrl
+API --> Frontend: 200
+@enduml

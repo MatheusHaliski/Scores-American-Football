@@ -1,0 +1,49 @@
+@startuml
+title RNF7 — Auditoria e registro de atividades (logging) · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Manager|
+start
+:Executa uma operação sensível (login, compra, partida, chamada de jogada);
+|Backend|
+:CorrelationIdFilter e AuditContextFilter: MDC com userId, IP confiável, userAgent, rota;
+if (correlationId presente e seguro?) then (sim)
+else (não)
+  :Gera UUID;
+endif
+if (IP confiável?) then (sim)
+else (não)
+  :Usa o IP do socket;
+endif
+:Caso de uso executa a regra (transação curta);
+if (evento obrigatório?) then (sim)
+else (não)
+  :Só log JSON estruturado;
+  end
+endif
+:Monta AuditLog {actor, action, resource, resourceId, result, ip, userAgent, correlationId};
+if (payload contém dado proibido?) then (sim)
+  :LogSafe.redact;
+endif
+:AuditService grava em REQUIRES_NEW;
+if (auditoria sobrevive ao rollback sem prender o pool?) then (sim)
+else (não)
+  :Teste de concorrência vermelho no CI;
+endif
+|Manager|
+:Vê as próprias atividades (GET /me/activity);
+|Admin|
+if (consulta por ADMIN?) then (sim)
+|Backend|
+  :Busca paginada por filtros e correlationId;
+else (não)
+  :403 + ACCESS_DENIED;
+endif
+|Scheduler|
+if (retenção vencida?) then (sim)
+  :Arquiva e expurga;
+endif
+end
+@enduml

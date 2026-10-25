@@ -1,0 +1,63 @@
+@startuml
+title RF30 — Classificação, seeds e notícias com IA · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Backend|
+start
+:MatchFinished do último jogo da semana → WeekCompleted;
+|Scheduler|
+:Recalcula Standing por divisão e conferência com desempates e projeta PlayoffSeed 1–7;
+if (notícias da semana geradas?) then (sim)
+else (não)
+|Imprensa|
+  :Pautas: zebra, briga por wild card, clássico de divisão, jogador da semana, crise do head coach (RF41);
+|Backend|
+  if (narrativa via Claude?) then (sim)
+|Claude|
+    :Manchetes e comentários dos jornalistas simulados;
+|Backend|
+    :AuditLog AI_CALL;
+  else (não)
+    :Template determinístico (seed da semana);
+  endif
+  :Grava NewsItem (MySQL) + timeline (Cassandra);
+endif
+|Manager|
+:No pós-jogo clica em Classificação e semanas;
+|Frontend|
+:GET /standings?view=DIVISION · GET /weeks/{n} · GET /weeks/{n}/news;
+|Backend|
+if (dono do save?) then (sim)
+else (não)
+  :403 + auditoria ACCESS_DENIED;
+  stop
+endif
+if (semana existe?) then (sim)
+else (não)
+  :404 WEEK_NOT_FOUND;
+  stop
+endif
+if (semana concluída?) then (sim)
+  :Tabela consolidada;
+else (não)
+  :Tabela provisória com placares parciais (Redis);
+endif
+if (empate na tabela?) then (sim)
+  :TiebreakPolicy aplica a cadeia de critérios e grava tiebreakerNote;
+endif
+if (fase de playoffs?) then (sim)
+  :Inclui a chave (PlayoffMatchup);
+else (não)
+  :Marca campeões de divisão, wild cards e fora;
+endif
+|Frontend|
+:Tabela por divisão ou conferência com seeds, placares da semana, manchetes e comentários;
+|Manager|
+while (navega entre semanas?) is (sim)
+|Frontend|
+  :GET /weeks/{n±1} (notícias se passada · prévia se futura);
+endwhile (não)
+end
+@enduml

@@ -1,0 +1,69 @@
+@startuml
+title RF22 — Esquema ampliado do jogador · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+control "AuditService" as AuditService
+control "MoraleEngine" as MoraleEngine
+control "MarketEngine" as MarketEngine
+control "CapEngine" as CapEngine
+queue "EventBus" as EventBus
+database "MySQL 8" as MySQL
+database "Redis 7" as Redis
+database "Cassandra 4.1" as Cassandra
+actor "Jogador (IA)" as JogadorIA
+Manager -> Frontend: abre o modal do jogador
+Frontend -> API: GET /careers/{id}/players/{pid}
+API -> UseCase: GetPlayerExpandedUseCase.execute(id, pid, userId)
+UseCase -> MySQL: save + owner check
+alt não é dono
+  UseCase -> AuditService: record(ACCESS_DENIED)
+  API --> Frontend: 403
+else senão
+  UseCase -> MySQL: player + attributes + contract + depth_chart_slot + injury_report + play styles + consumables + season stats
+  MySQL --> UseCase: entidades
+  UseCase -> CapEngine: capHit e deadMoneyIfCut por temporada
+  CapEngine --> UseCase: linhas do contrato
+  UseCase -> MoraleEngine: explainPlayerMorale(player)
+  MoraleEngine --> UseCase: fatores (snaps, contrato, vitórias)
+  UseCase --> API: PlayerExpandedDto (macros, overallByPosition, card)
+  API --> Frontend: 200
+  Frontend -> Manager: modal com macros, contrato e ações
+end
+Manager -> Frontend: Estender contrato {anos, salário, bônus, garantia}
+Frontend -> API: POST /careers/{id}/players/{pid}/extend
+API -> UseCase: ExtendPlayerContractUseCase.execute «@Transactional»
+UseCase -> CapEngine: projectCap(club, novo contrato, temporadas)
+alt não cabe no teto
+  CapEngine --> UseCase: excede na temporada N
+  API --> Frontend: 422 CAP_SPACE_EXCEEDED
+else senão
+  UseCase -> MarketEngine: evaluateExtension(player, proposta, moral)
+  MarketEngine -> JogadorIA: decide pela seed
+  JogadorIA --> MarketEngine: ACCEPT | COUNTER
+  alt COUNTER
+    UseCase -> MySQL: player.morale −2
+    API --> Frontend: 422 EXTENSION_REJECTED + contraproposta
+  else senão
+    UseCase -> MySQL: TX: PlayerContract novo · salary_cap_ledger · player.morale +4
+    UseCase -> AuditService: record(ROSTER_MOVE, EXTENSION)
+    UseCase -> EventBus: InboxMessageCreated (jogador agradece)
+    EventBus -> Cassandra: append inbox
+    API --> Frontend: 200 PlayerExpandedDto
+  end
+end
+Manager -> Frontend: Mover para IR
+Frontend -> API: PATCH /careers/{id}/players/{pid}/roster-status {IR}
+API -> UseCase: ChangeRosterStatusUseCase.execute
+alt regra de elenco violada
+  API --> Frontend: 422 ROSTER_RULE_VIOLATION
+else senão
+  UseCase -> MySQL: rosterStatus IR · vaga de ativo liberada · slot do depth chart vago
+  UseCase -> Redis: invalida depthchart:{clubId}
+  API --> Frontend: 200
+end
+@enduml

@@ -1,0 +1,83 @@
+@startuml
+title RF6 — Depth chart e plano de jogo na preparação · Diagrama de componentes
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 36
+actor "Head coach / manager (usuário autenticado)" as c1
+package "Frontend (Next.js)" as pkg_fe {
+  component "PreparePage" as c2
+  frame "componentes de PreparePage" as pkg_fe_sub {
+    component "DepthChartBoard" as c3
+    component "UnitSwitcher (ataque/defesa/especiais)" as c4
+    component "DepthColumn" as c5
+    component "RoleSlots (KR/PR/3rd-down)" as c6
+    component "OutOfPositionBadge" as c7
+    component "GamePlanForm" as c8
+    component "TendencySliders" as c9
+    component "FitIndicator" as c10
+    component "AutoFillButton" as c11
+  }
+}
+package "scores-af-web (REST)" as pkg_web {
+  component "DepthChartController" as c12
+  component "GamePlanController" as c13
+  component "AnalysisController" as c14
+}
+package "scores-af-application (casos de uso)" as pkg_app {
+  component "GetGamePreparationUseCase" as c15
+  component "GetDepthChartUseCase" as c16
+  component "SaveDepthChartUseCase" as c17
+  component "AutoFillDepthChartUseCase" as c18
+  component "GetGamePlanUseCase" as c19
+  component "SaveGamePlanUseCase" as c20
+  component "GetAnalysisUseCase" as c21
+  component "CareerAccess" as c22
+  component "PreparationAssembler" as c23
+}
+package "scores-af-domain/engine" as pkg_eng {
+  component "ClubAnalyst" as c24
+  component "DepthChartValidator" as c25
+  component "OverallByPosition" as c26
+  component "GamePlanFitCalculator" as c27
+}
+package "portas (port.out)" as pkg_ports {
+  interface "CareerSaveRepository" as c28
+  interface "FixtureRepository" as c29
+  interface "PlayerRepository" as c30
+  interface "DepthChartRepository" as c31
+  interface "GamePlanRepository" as c32
+  interface "InjuryReportRepository" as c33
+  interface "AiAnalysisReportRepository" as c34
+  interface "CounterPort" as c35
+}
+package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
+  component "persistence-mysql" as c36
+  component "cache-redis" as c37
+}
+database "MySQL 8" as s1
+database "Redis 7" as s2
+c1 --> c2 : usa
+c2 --> c12 : GET /careers/{id}/next-game/preparation (alvo)\nGET /careers/{id}/depth-chart (alvo)\nPUT /careers/{id}/depth-chart (alvo)\n…
+c2 --> c13
+c2 --> c14
+c12 --> c15
+c13 --> c15
+c14 --> c15
+c15 ..> pkg_app : orquestra
+c15 --> c24 : usa
+c15 --> c25 : usa
+c15 --> c26 : usa
+c15 --> c27 : usa
+pkg_app --> pkg_ports : depende (DIP)
+c36 .up.|> c28
+c36 .up.|> c29
+c36 .up.|> c30
+c36 .up.|> c31
+c36 .up.|> c32
+c36 .up.|> c33
+c36 .up.|> c34
+c37 .up.|> c35
+c36 --> s1
+c37 --> s2
+@enduml

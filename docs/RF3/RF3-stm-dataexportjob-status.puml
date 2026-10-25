@@ -1,0 +1,17 @@
+@startuml
+title RF3 — Gerenciar a conta (dados, sessões, segurança, LGPD, notificações) · Máquina de estados: DataExportJob.status
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "REQUESTED" as REQUESTED
+state "READY" as READY
+READY : JSON + CSV no S3 privado
+READY : 24 h
+state "EXPIRED" as EXPIRED
+state "FAILED" as FAILED
+[*] --> REQUESTED
+REQUESTED --> READY : processado pelo Scheduler
+REQUESTED --> FAILED : erro
+READY --> EXPIRED : 24 h
+EXPIRED --> [*]
+FAILED --> [*]
+@enduml

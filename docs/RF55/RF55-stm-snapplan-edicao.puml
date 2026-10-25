@@ -1,0 +1,16 @@
+@startuml
+title RF55 — Snaps-alvo, rodízio da linha e química · Máquina de estados: SnapPlan (edição)
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "VIGENTE" as VIGENTE
+state "EDITANDO" as EDITANDO
+state "INVALIDO" as INVALIDO
+state "PENDENTE_INTERVALO" as PENDENTE_INTERVALO
+[*] --> VIGENTE
+VIGENTE --> EDITANDO : ajusta
+EDITANDO --> INVALIDO : 422
+INVALIDO --> EDITANDO : corrige
+EDITANDO --> VIGENTE : grava fora do jogo
+EDITANDO --> PENDENTE_INTERVALO : grava com partida LIVE
+PENDENTE_INTERVALO --> VIGENTE : intervalo aplica
+@enduml

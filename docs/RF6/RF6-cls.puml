@@ -1,0 +1,222 @@
+@startuml
+title RF6 — Depth chart e plano de jogo na preparação · Diagrama de classes
+skinparam classAttributeIconSize 0
+hide empty methods
+package "career" {
+  class CareerSave {
+    id: UUID
+    name: String
+    seed: long
+    employmentStatus: EmploymentStatus
+    currentWeek: int
+    difficulty: Difficulty
+    seasonMode: SeasonMode
+    scoresPoints: int
+    status: SaveStatus
+    slot: int
+    lastPlayedAt: Instant
+  }
+}
+package "season" {
+  class Fixture {
+    week: int
+    date: LocalDate
+    slot: KickoffSlot (THU_NIGHT|SUN_EARLY|SUN_LATE|SUN_NIGHT|MON_NIGHT)
+    status: FixtureStatus
+    homeScore: int
+    awayScore: int
+    quarterScores: JSON
+    overtime: boolean
+    isDivisional: boolean
+    isConference: boolean
+    neutralSite: boolean
+    weather: Weather
+    attendance: int
+    revenue: long
+    importance: FixtureImportance
+    seed: long
+    isUserFixture: boolean
+  }
+}
+package "catalog" {
+  class Club {
+    id: UUID
+    name: String
+    shortName: String
+    city: String
+    conference: Conference
+    division: Division
+    logoKey: String
+    primaryColor: String
+    secondaryColor: String
+    accentColor: String
+    prestige: int
+    reputationBoard: int
+    reputationFans: int
+    cash: long
+    capSpace: long
+    isUserControlled: boolean
+    expectedWins: int
+    scoutingLevel: int
+    scoutingBudget: long
+  }
+  class Player {
+    id: UUID
+    name: String
+    nationality: String
+    college: String
+    birthDate: LocalDate
+    age: int
+    heightCm: int
+    weightKg: int
+    position: Position (QB|RB|FB|WR|TE|LT|LG|C|RG|RT|DE|DT|OLB|MLB|CB|FS|SS|K|P|LS)
+    unit: Unit (OFFENSE|DEFENSE|SPECIAL)
+    attributes: PlayerAttributes
+    overall: int «por posição, OVR v1»
+    potential: int
+    experienceYears: int
+    rosterStatus: RosterStatus (ACTIVE|INACTIVE|PRACTICE_SQUAD|IR|PUP|FREE_AGENT|WAIVED)
+    condition: int
+    morale: int
+    moraleFactors: JSON
+    injury: Injury?
+    suspensionWeeks: int
+    contract: PlayerContract
+    jerseyNumber: int
+    isLegendary: boolean
+    model3dUrl: String
+  }
+  class LeagueRules {
+    «embedded» version: int
+    quarterMinutes: int = 15
+    playClockSeconds: int = 40
+    playClockAfterStoppageSeconds: int = 25
+    twoMinuteWarning: boolean
+    timeoutsPerHalf: int = 3
+    overtimeMinutes: int = 10
+    overtimeBothPossess: boolean
+    regularSeasonTiesAllowed: boolean
+    kickoffYardLine: int = 35
+    touchbackYardLine: int
+    patYardLine: int = 15
+    clockStopsOnFirstDown: boolean (COLLEGE)
+    oneFootInbounds: boolean (COLLEGE)
+    hashFromSidelineFeet: double
+    rosterMax: int = 53
+    gameDayActives: int = 46
+    practiceSquadMax: int = 16
+    offseasonRosterMax: int «Q-7»
+    irReturnsPerSeason: int «Q-7»
+    irMinWeeks: int «Q-7»
+  }
+}
+package "match" {
+  class DepthChart {
+    club: Club
+    version: long
+    updatedAt: Instant
+    validated: boolean
+  }
+  class DepthChartSlot {
+    unit: Unit
+    position: Position | Role (KR|PR|3RD_DOWN_BACK|SNAPPER|HOLDER)
+    depth: int (1, 2, 3…)
+    player: Player
+    outOfPosition: boolean
+  }
+  class GamePlan {
+    runPassBalance: int (0–100)
+    fourthDownAggression: Aggression
+    tempo: Tempo (HURRY_UP|NORMAL|MILK_CLOCK)
+    offensiveFocus: JSON
+    defensiveFocus: DefensiveFocus
+    blitzFrequency: Emphasis
+    baseDefense: DefensePackage (4-3|3-4)
+    keyPlayers: List<UUID>
+    situationTendencies: JSON (3ª e curta, red zone, 2 minutos)
+  }
+  class Playbook {
+    name: String
+    offensiveScheme: OffensiveScheme (WEST_COAST|AIR_RAID|SPREAD|POWER_RUN)
+    defensiveScheme: DefensiveScheme
+    plays: List<PlayDefinition>
+    custom: boolean
+  }
+  class InjuryReport {
+    week: int
+    player: Player
+    status: InjuryStatus (QUESTIONABLE|DOUBTFUL|OUT|IR)
+    practice: PracticeStatus (FULL|LIMITED|DNP)
+    returnEstimateWeek: Integer
+    publishedAt: Instant
+  }
+}
+package "analysis" {
+  class AiAnalysisReport {
+    week: int
+    summary: TEXT
+    strengthsByUnit: JSON
+    weaknessesByUnit: JSON
+    depthChartSuggestion: JSON
+    gamePlanFit: int
+    keyMatchups: JSON
+    riskAlerts: JSON
+    winProbabilityNext: double
+    narrative: TEXT
+  }
+}
+class GetGamePreparationUseCase <<UseCase>> {
+  execute(careerId, userId): PreparationResult
+}
+class PreparationResult <<record>> {
+  fixture: FixtureDto
+  opponent: ClubCompactDto
+  actives: List<PlayerCardDto>
+  depthChart: DepthChartDto
+  gamePlan: GamePlanDto
+  injuries: List<InjuryReportDto>
+  fit: int
+  byeWeek: boolean
+  alerts: List<AlertDto>
+}
+class SaveDepthChartUseCase <<UseCase>> {
+  execute(SaveDepthChartCommand): DepthChartResult
+}
+class SaveDepthChartCommand <<record>> {
+  careerId: UUID
+  slots: List<SlotDto> (unit, position ou role, depth, playerId)
+  version: long
+  userId: UUID
+}
+class SaveGamePlanUseCase <<UseCase>> {
+  execute(SaveGamePlanCommand): GamePlanResult
+}
+class DepthChartValidator <<Engine>> {
+  validate(slots, roster, injuries, rules): List<SlotError> «completo, disponível, 46 ativos»
+}
+interface ClubAnalyst <<Engine>> {
+  suggestDepthChart(roster, rules, opponent): DepthChartDto
+  gamePlanFit(plan, depthChart, opponent): int
+}
+Club "1" -- "0..53" Player : elenco ativo
+Club "*" -- "*" Club : rivais da divisão
+Club "1" -- "1" DepthChart
+DepthChart "1" -- "*" DepthChartSlot : slots
+DepthChartSlot "*" -- "1" Player
+Club "1" -- "*" Playbook
+CareerSave "*" -- "0..1" Club : franquia atual
+CareerSave "1" -- "1" GamePlan
+Fixture "*" -- "1" Club : mandante
+Club "1" -- "*" InjuryReport : semanal
+InjuryReport "*" -- "1" Player
+CareerSave "1" -- "*" AiAnalysisReport
+GetGamePreparationUseCase ..> PreparationResult : produz
+GetGamePreparationUseCase ..> ClubAnalyst : usa
+SaveDepthChartUseCase ..> SaveDepthChartCommand : recebe
+SaveDepthChartUseCase ..> DepthChartValidator : usa
+SaveDepthChartUseCase ..> DepthChart : grava
+SaveGamePlanUseCase ..> GamePlan : grava
+SaveGamePlanUseCase ..> ClubAnalyst : fit
+DepthChartValidator ..> InjuryReport : lê
+DepthChartValidator ..> LeagueRules : gameDayActives
+@enduml

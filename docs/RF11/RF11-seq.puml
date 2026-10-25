@@ -1,0 +1,56 @@
+@startuml
+title RF11 — Central de carreiras salvas · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+control "AuditService" as AuditService
+queue "EventBus" as EventBus
+database "MySQL 8" as MySQL
+database "Redis 7" as Redis
+database "Cassandra 4.1" as Cassandra
+database "OpenSearch 2" as OpenSearch
+Manager -> Frontend: abre Carreiras salvas
+Frontend -> API: GET /careers
+API -> UseCase: ListCareersUseCase.execute(userId)
+UseCase -> MySQL: saves(user) + club + league + season + standing
+UseCase --> API: List<CareerSlotDto>
+API --> Frontend: 200
+Manager -> Frontend: renomear e arquivar
+Frontend -> API: PATCH /careers/{id} {name, status: ARCHIVED, version}
+API -> UseCase: UpdateCareerUseCase.execute(cmd)
+UseCase -> MySQL: findById + owner check
+alt não é dono
+  UseCase -> AuditService: record(ACCESS_DENIED)
+  API --> Frontend: 403
+else senão
+  UseCase -> MySQL: nome único? MatchSession ao vivo?
+  alt nome duplicado / partida ao vivo
+    API --> Frontend: 409 NAME_TAKEN | MATCH_IN_PROGRESS
+  else senão
+    UseCase -> MySQL: UPDATE career_save SET name, status WHERE version = ?
+    alt version mismatch
+      API --> Frontend: 409 CONFLICT
+    else senão
+      API --> Frontend: 200 CareerSlotDto
+    end
+  end
+end
+Manager -> Frontend: excluir save (digita o nome)
+Frontend -> API: DELETE /careers/{id} {confirm}
+API -> UseCase: DeleteCareerUseCase.execute(id, confirm, userId) «@Transactional»
+alt confirmação inválida
+  API --> Frontend: 422 CONFIRMATION_REQUIRED
+else senão
+  UseCase -> MySQL: DELETE save, world(SAVE), seasons, weeks, fixtures, depth charts, ofertas, ledger (cascata)
+  UseCase -> AuditService: record(CAREER_DELETED) REQUIRES_NEW
+  UseCase -> EventBus: CareerDeleted(saveId, worldId) AFTER_COMMIT
+  EventBus -> Cassandra: purga play-by-play, inbox e notícias do save
+  EventBus -> Redis: DEL save:{id}:* e match:*
+  EventBus -> OpenSearch: deleteByWorld(worldId)
+  API --> Frontend: 204
+end
+@enduml

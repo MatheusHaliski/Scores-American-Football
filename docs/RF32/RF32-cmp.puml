@@ -1,0 +1,85 @@
+@startuml
+title RF32 — Loja de itens customizáveis (Scores Points) · Diagrama de componentes
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 36
+actor "Head coach / manager (usuário autenticado)" as c1
+actor "Administrador" as c2
+package "Frontend (Next.js)" as pkg_fe {
+  component "StorePage" as c3
+  frame "componentes de StorePage" as pkg_fe_sub {
+    component "StoreNavigation" as c4
+    component "StoreGrid" as c5
+    component "StoreProductCard" as c6
+    component "StoreProductDetail" as c7
+    component "Store3DPreview" as c8
+    component "PurchaseDialog" as c9
+    component "OwnedBadge" as c10
+    component "EquipAction" as c11
+  }
+}
+package "scores-af-web (REST)" as pkg_web {
+  component "StoreController" as c12
+  component "InventoryController" as c13
+  component "LoadoutController" as c14
+  component "WalletController" as c15
+  component "StoreAdminController" as c16
+}
+package "scores-af-application (casos de uso)" as pkg_app {
+  component "StoreCatalogService" as c17
+  component "PricingService" as c18
+  component "PurchaseService" as c19
+  component "WalletService" as c20
+  component "InventoryService" as c21
+  component "EquipmentService" as c22
+  component "StoreAdminService" as c23
+  component "PointsService" as c24
+  component "AuditService" as c25
+}
+package "scores-af-domain/engine" as pkg_eng {
+  component "CapEngine" as c26
+}
+package "portas (port.out)" as pkg_ports {
+  interface "StoreItemRepository" as c27
+  interface "PurchaseRepository" as c28
+  interface "ScoresPointsWalletRepository" as c29
+  interface "PointsTransactionRepository" as c30
+  interface "AuditLogRepository" as c31
+  interface "RateLimiterPort" as c32
+  interface "MediaStoragePort" as c33
+}
+package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
+  component "persistence-mysql" as c34
+  component "cache-redis" as c35
+  component "storage-s3" as c36
+}
+database "MySQL 8" as s1
+database "Redis 7" as s2
+database "S3/MinIO" as s3
+c1 --> c3 : usa
+c2 --> c3 : usa
+c3 --> c12 : GET /store/catalog (alvo)\nGET /store/products/{code} (alvo)\nPOST /store/purchases (alvo)\n…
+c3 --> c13
+c3 --> c14
+c3 --> c15
+c3 --> c16
+c12 --> c17
+c13 --> c17
+c14 --> c17
+c15 --> c17
+c16 --> c17
+c17 ..> pkg_app : orquestra
+c17 --> c26 : usa
+pkg_app --> pkg_ports : depende (DIP)
+c34 .up.|> c27
+c34 .up.|> c28
+c34 .up.|> c29
+c34 .up.|> c30
+c34 .up.|> c31
+c35 .up.|> c32
+c36 .up.|> c33
+c34 --> s1
+c35 --> s2
+c36 --> s3
+@enduml

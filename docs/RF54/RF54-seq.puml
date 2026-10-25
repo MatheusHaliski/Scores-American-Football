@@ -1,0 +1,48 @@
+@startuml
+title RF54 — Catálogo de eventos de partida · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+control "MatchSimulator" as MatchSimulator
+control "PlayCaller" as PlayCaller
+queue "EventBus" as EventBus
+database "Redis 7" as Redis
+database "Cassandra 4.1" as Cassandra
+MatchSimulator -> Redis: GET match:{mid} estado vivo
+Redis --> MatchSimulator: snapshot
+MatchSimulator -> PlayCaller: chamadas do ataque e da defesa
+PlayCaller --> MatchSimulator: PlayDefinition × Coverage
+MatchSimulator -> MatchSimulator: resolve confrontos e gera PlayEvent
+alt falta sinalizada
+  MatchSimulator -> MatchSimulator: Penalty: jardas, automaticFirstDown, lossOfDown
+  alt nível ALL_PLAYS
+    MatchSimulator -> Manager: aceita ou recusa?
+    Manager -> Frontend: decide
+    Frontend -> API: POST /matches/{mid}/penalties/{seq}/decision
+    API -> UseCase: DecidePenaltyUseCase
+    UseCase -> MatchSimulator: decisão
+  else senão
+    MatchSimulator -> MatchSimulator: melhor opção para o ofendido
+  end
+end
+MatchSimulator -> Redis: SET estado (descida, distância, placar, version+1)
+MatchSimulator -> Cassandra: INSERT play_event (fixtureId, seq)
+MatchSimulator -> EventBus: PlayResolved
+EventBus -> Frontend: SSE play
+Manager -> Frontend: filtra play-by-play
+Frontend -> API: GET /matches/{mid}/events?type=PENALTY
+API -> UseCase: ListMatchEventsUseCase
+alt não é dono
+  API --> Frontend: 403
+else senão
+  UseCase -> Cassandra: SELECT por fixtureId, filtros
+  Cassandra --> UseCase: eventos
+  UseCase --> API: página
+  API --> Frontend: 200
+end
+note over MatchSimulator: ao fim da partida as estatísticas vão para MySQL (TeamMatchStats, PlayerMatchStats)
+@enduml

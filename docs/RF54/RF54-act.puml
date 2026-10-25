@@ -1,0 +1,44 @@
+@startuml
+title RF54 — Catálogo de eventos de partida · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Backend|
+start
+:MatchSimulator lê o estado vivo da partida;
+:Ataque e defesa escolhem formação, conceito, pacote e cobertura;
+:Snap: resolve confrontos (bloqueio × rush, rota × cobertura, corredor × tackle) pela semente;
+:Gera PlayEvent: tipo, jardas, resultado, jogadores, relógio;
+if (evento coerente?) then (sim)
+else (não)
+  :Falha o teste de invariante;
+  stop
+endif
+if (houve falta?) then (sim)
+  :Penalty: código, jardas, 1ª descida automática, perda de descida;
+|Manager|
+  if (aceitar a falta?) then (sim)
+|Backend|
+    if (meia distância?) then (sim)
+      :Metade da distância até o gol;
+    else (não)
+      :Jardas cheias;
+    endif
+    :Repete a descida ou dá 1ª descida;
+  else (não)
+    :Vale o resultado da jogada;
+  endif
+endif
+if (muda a posse?) then (sim)
+  :Fecha o Drive com o resultado;
+else (não)
+  :Atualiza descida e distância;
+endif
+:Grava evento na timeline e atualiza estatísticas;
+|Frontend|
+:Recebe evento por SSE e mostra no play-by-play;
+|Manager|
+:Filtra por quarto, drive ou faltas;
+end
+@enduml

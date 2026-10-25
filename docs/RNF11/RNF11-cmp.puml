@@ -1,0 +1,65 @@
+@startuml
+title RNF11 — Tratamento de uploads de formulários · Diagrama de componentes
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 36
+actor "Head coach / manager (usuário autenticado)" as c1
+actor "Administrador" as c2
+actor "Agendador/Job assíncrono" as c3
+package "Frontend (Next.js)" as pkg_fe {
+  component "MediaUploader" as c4
+  frame "componentes de MediaUploader" as pkg_fe_sub {
+    component "HelmetEditor" as c5
+    component "EndZoneEditor" as c6
+    component "AvatarCapture" as c7
+  }
+}
+package "scores-af-web (REST)" as pkg_web {
+  component "MediaController" as c8
+  component "ClubIdentityController" as c9
+  component "MultipartLimits" as c10
+}
+package "scores-af-application (casos de uso)" as pkg_app {
+  component "UploadMediaUseCase" as c11
+  component "ResolveMediaUseCase" as c12
+  component "DeleteMediaUseCase" as c13
+  component "MediaPolicy" as c14
+  component "ImageProcessor" as c15
+  component "OrphanMediaJob" as c16
+  component "AuditService" as c17
+}
+package "portas (port.out)" as pkg_ports {
+  interface "MediaStoragePort" as c18
+  interface "MediaAssetRepository" as c19
+  interface "AntivirusPort" as c20
+  interface "RateLimiterPort" as c21
+}
+package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
+  component "storage-s3" as c22
+  component "persistence-mysql" as c23
+  component "antivirus-clamav" as c24
+  component "cache-redis" as c25
+}
+database "S3/MinIO" as s1
+database "MySQL 8" as s2
+database "Redis 7" as s3
+c1 --> c4 : usa
+c2 --> c4 : usa
+c3 --> c11 : dispara
+c4 --> c8 : POST /media/upload (alvo)\nGET /media/{key} (alvo)\nDELETE /media/{key} (alvo)\n…
+c4 --> c9
+c4 --> c10
+c8 --> c11
+c9 --> c11
+c10 --> c11
+c11 ..> pkg_app : orquestra
+pkg_app --> pkg_ports : depende (DIP)
+c22 .up.|> c18
+c23 .up.|> c19
+c24 .up.|> c20
+c25 .up.|> c21
+c22 --> s1
+c23 --> s2
+c25 --> s3
+@enduml

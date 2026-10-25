@@ -1,0 +1,164 @@
+@startuml
+title RF23 — Animação 3D do jogador · Diagrama de classes
+skinparam classAttributeIconSize 0
+hide empty methods
+package "catalog" {
+  class Player {
+    id: UUID
+    name: String
+    nationality: String
+    college: String
+    birthDate: LocalDate
+    age: int
+    heightCm: int
+    weightKg: int
+    position: Position (QB|RB|FB|WR|TE|LT|LG|C|RG|RT|DE|DT|OLB|MLB|CB|FS|SS|K|P|LS)
+    unit: Unit (OFFENSE|DEFENSE|SPECIAL)
+    attributes: PlayerAttributes
+    overall: int «por posição, OVR v1»
+    potential: int
+    experienceYears: int
+    rosterStatus: RosterStatus (ACTIVE|INACTIVE|PRACTICE_SQUAD|IR|PUP|FREE_AGENT|WAIVED)
+    condition: int
+    morale: int
+    moraleFactors: JSON
+    injury: Injury?
+    suspensionWeeks: int
+    contract: PlayerContract
+    jerseyNumber: int
+    isLegendary: boolean
+    model3dUrl: String
+  }
+  class PlayerPlayStyle {
+    source: NATURAL|CONSUMABLE|STORE
+    weeksRemaining: Integer
+    appliedAt: Instant
+  }
+  class PlayStyle {
+    code: PlayStyleCode
+    name: String
+    positions: List<Position>
+    tier: Tier
+    effects: JSON
+    animationId: String
+    priceScoresPoints: int
+  }
+  class AnimationClip {
+    code: String «unique»
+    target: AnimationTarget (ATTRIBUTE|POSITION|PLAY_STYLE|LOCOMOTION)
+    targetCode: String
+    version: int
+    status: AnimationClipStatus
+    params: JSON
+    createdByKind: AnimationAuthor
+    publishedAt: Instant
+    previousVersionId: UUID
+  }
+  class Club {
+    id: UUID
+    name: String
+    shortName: String
+    city: String
+    conference: Conference
+    division: Division
+    logoKey: String
+    primaryColor: String
+    secondaryColor: String
+    accentColor: String
+    prestige: int
+    reputationBoard: int
+    reputationFans: int
+    cash: long
+    capSpace: long
+    isUserControlled: boolean
+    expectedWins: int
+    scoutingLevel: int
+    scoutingBudget: long
+  }
+  class Uniform {
+    slot: UniformSlot (HOME|AWAY|ALTERNATE)
+    jerseyColor: String
+    pantsColor: String
+    numberColor: String
+    numberOutline: String
+    pattern: String
+    textureKey: String
+    isActive: boolean
+  }
+  class HelmetDesign {
+    shellColor: String
+    stripe: StripeStyle
+    stripeColor: String
+    facemaskColor: String
+    decalKey: String
+    finish: Finish (MATTE|GLOSS|CHROME)
+  }
+}
+package "store" {
+  class StoreItem {
+    code: String
+    kind: StoreItemKind
+    name: String
+    priceScoresPoints: int
+    assetUrl: String
+    payload: JSON
+    rarity: Rarity
+  }
+  class Purchase {
+    purchasedAt: Instant
+    pricePaid: int
+  }
+}
+package "account" {
+  class UserSettings {
+    simQuarterMinutes: int
+    playCallingLevel: PlayCallingLevel (KEY_MOMENTS|ALL_PLAYS|NONE)
+    decisionTimeoutSeconds: int
+    difficulty: Difficulty
+    theme: ThemeMode
+    highContrast: boolean
+    fontScale: FontScale
+    reducedMotion: boolean
+    regionalFormat: String
+    units: YardsOrMeters
+    notificationsEnabled: boolean
+  }
+}
+class ListAnimationClipsUseCase <<UseCase>> {
+  execute(target, code): List<AnimationClipDto>
+}
+class Player3DViewer <<React>> {
+  modelUrl: string
+  position: Position
+  helmet: HelmetDto
+  uniform: UniformDto
+  clipId: string
+  reducedMotion: boolean
+  play()
+  pause()
+  crossFade(clip)
+}
+enum FacemaskStyle {
+  TWO_BAR (QB, WR, DB)
+  HYBRID (RB, LB, TE)
+  CAGE (OL, DL)
+  ONE_BAR (K, P)
+}
+interface MediaStoragePort <<Port>> {
+  presignedGetUrl(key, ttl): URL
+}
+Club "1" -- "*" Uniform
+Club "1" -- "1" HelmetDesign : capacete
+Club "1" -- "0..53" Player : elenco ativo
+Club "*" -- "*" Club : rivais da divisão
+Player "1" -- "0..3" PlayerPlayStyle : estilos
+PlayerPlayStyle "*" -- "1" PlayStyle
+PlayStyle "1" -- "*" AnimationClip : animações
+AnimationClip "0..1" -- "0..1" AnimationClip : versão anterior
+Purchase "*" -- "1" StoreItem
+Player3DViewer ..> AnimationClip : clipId
+Player3DViewer ..> HelmetDesign : veste
+Player3DViewer ..> Uniform : veste
+Player3DViewer ..> FacemaskStyle : pela posição
+ListAnimationClipsUseCase ..> AnimationClip : lê
+@enduml

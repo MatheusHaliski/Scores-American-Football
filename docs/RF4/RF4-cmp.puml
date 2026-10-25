@@ -1,0 +1,93 @@
+@startuml
+title RF4 — Gerenciar o elenco de 53 (unidades, practice squad, IR) · Diagrama de componentes
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 36
+actor "Head coach / manager (usuário autenticado)" as c1
+actor "Jogador (IA)" as c2
+actor "Agendador/Job assíncrono" as c3
+package "Frontend (Next.js)" as pkg_fe {
+  component "RosterPage" as c4
+  frame "componentes de RosterPage" as pkg_fe_sub {
+    component "UnitTabs" as c5
+    component "PositionFilter" as c6
+    component "PlayerCardCompact" as c7
+    component "RosterCounters (53/46/16)" as c8
+    component "PracticeSquadPanel" as c9
+    component "InjuredReservePanel" as c10
+    component "ReleaseDialog (dead money)" as c11
+    component "ConsumableDialog" as c12
+    component "PlayerMessageDialog" as c13
+  }
+}
+package "scores-af-web (REST)" as pkg_web {
+  component "RosterController" as c14
+}
+package "scores-af-application (casos de uso)" as pkg_app {
+  component "GetRosterUseCase" as c15
+  component "ChangeRosterStatusUseCase" as c16
+  component "PlaceOnInjuredReserveUseCase" as c17
+  component "ElevatePracticeSquadPlayerUseCase" as c18
+  component "ReleasePlayerUseCase" as c19
+  component "ApplyConsumableUseCase" as c20
+  component "MessagePlayerUseCase" as c21
+  component "CareerAccess" as c22
+  component "RosterAssembler" as c23
+  component "WeeklyRosterJob" as c24
+}
+package "scores-af-domain/engine" as pkg_eng {
+  component "RosterRules" as c25
+  component "OverallByPosition" as c26
+  component "CapEngine" as c27
+  component "MoraleEngine" as c28
+}
+package "portas (port.out)" as pkg_ports {
+  interface "CareerSaveRepository" as c29
+  interface "PlayerRepository" as c30
+  interface "PracticeSquadRepository" as c31
+  interface "DepthChartRepository" as c32
+  interface "SalaryCapLedgerRepository" as c33
+  interface "WaiverClaimRepository" as c34
+  interface "ConsumableRepository" as c35
+  interface "InboxMessageRepository" as c36
+  interface "TimelinePort" as c37
+  interface "SearchPort" as c38
+  interface "CounterPort" as c39
+}
+package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
+  component "persistence-mysql" as c40
+  component "persistence-cassandra" as c41
+  component "search-opensearch" as c42
+  component "cache-redis" as c43
+}
+database "MySQL 8" as s1
+database "Redis 7" as s2
+database "Cassandra 4.1" as s3
+database "OpenSearch 2" as s4
+c1 --> c4 : usa
+c3 --> c15 : dispara
+c4 --> c14 : GET /careers/{id}/roster (alvo)\nPATCH /careers/{id}/players/{pid}/roster-status (alvo)\nPOST /careers/{id}/players/{pid}/injured-reserve (alvo)\n…
+c14 --> c15
+c15 ..> pkg_app : orquestra
+c15 --> c25 : usa
+c15 --> c26 : usa
+c15 --> c27 : usa
+c15 --> c28 : usa
+pkg_app --> pkg_ports : depende (DIP)
+c40 .up.|> c29
+c40 .up.|> c30
+c40 .up.|> c31
+c40 .up.|> c32
+c40 .up.|> c33
+c40 .up.|> c34
+c40 .up.|> c35
+c40 .up.|> c36
+c41 .up.|> c37
+c42 .up.|> c38
+c43 .up.|> c39
+c40 --> s1
+c41 --> s3
+c42 --> s4
+c43 --> s2
+@enduml

@@ -1,0 +1,22 @@
+@startuml
+title RF1 — Cadastro de usuário · Máquina de estados: UserAccount.status (+ verificação de e-mail)
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "ACTIVE" as ACTIVE
+ACTIVE : e-mail verificado ou pendente
+state "ACTIVE + bloqueio por e-mail" as LOCKED
+LOCKED : 5 falhas em 15 min
+LOCKED : mesmo 401 AUTH_FAILED (sem oráculo)
+state "PENDING_DELETION" as PENDING_DELETION
+PENDING_DELETION : 7 dias de arrependimento (RF3/RF46)
+state "DELETED" as DELETED
+DELETED : anonimizada
+DELETED : trilhas preservadas (FKs RESTRICT)
+[*] --> ACTIVE
+ACTIVE --> LOCKED : 5ª falha de login em 15 min
+LOCKED --> ACTIVE : janela expira / redefinição de senha
+ACTIVE --> PENDING_DELETION : DELETE /me (senha + palavra)
+PENDING_DELETION --> ACTIVE : cancela no prazo
+PENDING_DELETION --> DELETED : job após 7 dias
+DELETED --> [*]
+@enduml

@@ -1,0 +1,18 @@
+@startuml
+title RF65 — Free agency e waivers · Máquina de estados: WaiverClaim.status
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "PENDING" as PENDING
+PENDING : prazo de waivers correndo
+PENDING : priority do clube
+state "AWARDED" as AWARDED
+AWARDED : menor priority
+AWARDED : contrato herdado
+state "LOST" as LOST
+LOST : outro clube com prioridade
+[*] --> PENDING
+PENDING --> AWARDED : prazo vence: melhor prioridade
+PENDING --> LOST : prazo vence: outro venceu ou sem cap
+AWARDED --> [*]
+LOST --> [*]
+@enduml

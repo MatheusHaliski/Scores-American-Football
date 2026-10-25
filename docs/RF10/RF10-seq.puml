@@ -1,0 +1,41 @@
+@startuml
+title RF10 — Configurações de jogo e interface · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+database "MySQL 8" as MySQL
+database "Redis 7" as Redis
+database "S3/MinIO" as S3
+Manager -> Frontend: abre Configurações
+Frontend -> API: GET /me/settings
+API -> UseCase: GetSettingsUseCase.execute(userId)
+UseCase -> Redis: GET user:{id}:settings
+alt cache miss
+  UseCase -> MySQL: findByUser(userId)
+  UseCase -> Redis: SET (TTL 1 h)
+else senão
+end
+API --> Frontend: 200 SettingsDto
+Frontend -> API: GET /me/inventory?kind=THEME|CARD_ART|SOUNDTRACK
+API -> UseCase: ListInventoryUseCase.execute(userId)
+UseCase -> MySQL: purchases + store items
+UseCase -> S3: publicUrl(themes/…)
+API --> Frontend: 200 galerias
+Manager -> Frontend: quarto de 4 min, todas as jogadas, 20 s
+Frontend -> API: PUT /me/settings
+API -> UseCase: UpdateSettingsUseCase.execute(cmd)
+UseCase -> UseCase: SettingsValidator (faixas e enums)
+alt valor inválido ou item não possuído
+  API --> Frontend: 422
+else senão
+  UseCase -> MySQL: UPDATE user_settings
+  UseCase -> Redis: DEL user:{id}:settings · GET live:{userId} (partida ao vivo?)
+  UseCase --> API: SettingsDto + appliesFromNextGame
+  API --> Frontend: 200
+  Frontend -> Manager: configurações aplicadas
+end
+@enduml

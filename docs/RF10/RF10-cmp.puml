@@ -1,0 +1,63 @@
+@startuml
+title RF10 — Configurações de jogo e interface · Diagrama de componentes
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 36
+actor "Head coach / manager (usuário autenticado)" as c1
+package "Frontend (Next.js)" as pkg_fe {
+  component "SettingsPage" as c2
+  frame "componentes de SettingsPage" as pkg_fe_sub {
+    component "QuarterDurationSlider" as c3
+    component "PlayCallingLevelSelector" as c4
+    component "DecisionTimeoutSlider" as c5
+    component "DifficultySelector" as c6
+    component "UnitsToggle (jardas/metros)" as c7
+    component "ThemePicker" as c8
+    component "AccessibilityToggles" as c9
+    component "ThemeProvider" as c10
+  }
+}
+package "scores-af-web (REST)" as pkg_web {
+  component "AccountController" as c11
+  component "InventoryController" as c12
+}
+package "scores-af-application (casos de uso)" as pkg_app {
+  component "GetSettingsUseCase" as c13
+  component "UpdateSettingsUseCase" as c14
+  component "ListInventoryUseCase" as c15
+  component "SettingsValidator" as c16
+}
+package "portas (port.out)" as pkg_ports {
+  interface "UserSettingsRepository" as c17
+  interface "PurchaseRepository" as c18
+  interface "StoreItemRepository" as c19
+  interface "CounterPort" as c20
+  interface "LiveMatchStatePort" as c21
+  interface "MediaStoragePort" as c22
+}
+package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
+  component "persistence-mysql" as c23
+  component "cache-redis" as c24
+  component "storage-s3" as c25
+}
+database "MySQL 8" as s1
+database "Redis 7" as s2
+database "S3/MinIO" as s3
+c1 --> c2 : usa
+c2 --> c11 : GET /me/settings (alvo)\nPUT /me/settings (alvo)\nGET /me/inventory (alvo)
+c2 --> c12
+c11 --> c13
+c12 --> c13
+c13 ..> pkg_app : orquestra
+pkg_app --> pkg_ports : depende (DIP)
+c23 .up.|> c17
+c23 .up.|> c18
+c23 .up.|> c19
+c24 .up.|> c20
+c24 .up.|> c21
+c25 .up.|> c22
+c23 --> s1
+c24 --> s2
+c25 --> s3
+@enduml

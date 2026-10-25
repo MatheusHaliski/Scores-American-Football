@@ -1,0 +1,79 @@
+@startuml
+title RF20 — Aba Buscar: ligas, franquias, jogadores e head coaches · Diagrama de componentes
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 36
+actor "Head coach / manager (usuário autenticado)" as c1
+actor "Agendador/Job assíncrono" as c2
+package "Frontend (Next.js)" as pkg_fe {
+  component "SearchPage" as c3
+  frame "componentes de SearchPage" as pkg_fe_sub {
+    component "SearchBox" as c4
+    component "TypeTabs" as c5
+    component "FacetFilters" as c6
+    component "PositionUnitFilter" as c7
+    component "CompactSchemeList" as c8
+    component "PlayerCompactCard" as c9
+    component "ClubCompactCard" as c10
+    component "ExpandedSchemeSheet" as c11
+  }
+}
+package "scores-af-web (REST)" as pkg_web {
+  component "SearchController" as c12
+  component "PlayerController" as c13
+  component "ClubController" as c14
+  component "StandingsController" as c15
+}
+package "scores-af-application (casos de uso)" as pkg_app {
+  component "SearchUseCase" as c16
+  component "GetPlayerExpandedUseCase" as c17
+  component "GetClubSheetUseCase" as c18
+  component "GetStandingsUseCase" as c19
+  component "SearchIndexProjector" as c20
+  component "CareerAccess" as c21
+}
+package "portas (port.out)" as pkg_ports {
+  interface "CareerSaveRepository" as c22
+  interface "PlayerRepository" as c23
+  interface "ClubRepository" as c24
+  interface "LeagueRepository" as c25
+  interface "ManagerProfileRepository" as c26
+  interface "StandingRepository" as c27
+  interface "PlayerMatchStatsRepository" as c28
+  interface "SearchPort" as c29
+  interface "CounterPort" as c30
+}
+package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
+  component "persistence-mysql" as c31
+  component "search-opensearch" as c32
+  component "cache-redis" as c33
+}
+database "MySQL 8" as s1
+database "OpenSearch 2" as s2
+database "Redis 7" as s3
+c1 --> c3 : usa
+c2 --> c16 : dispara
+c3 --> c12 : GET /careers/{id}/search (alvo)\nGET /careers/{id}/players/{pid} (alvo)\nGET /careers/{id}/clubs/{cid} (alvo)\n…
+c3 --> c13
+c3 --> c14
+c3 --> c15
+c12 --> c16
+c13 --> c16
+c14 --> c16
+c15 --> c16
+c16 ..> pkg_app : orquestra
+pkg_app --> pkg_ports : depende (DIP)
+c31 .up.|> c22
+c31 .up.|> c23
+c31 .up.|> c24
+c31 .up.|> c25
+c31 .up.|> c26
+c31 .up.|> c27
+c31 .up.|> c28
+c32 .up.|> c29
+c33 .up.|> c30
+c31 --> s1
+c32 --> s2
+c33 --> s3
+@enduml

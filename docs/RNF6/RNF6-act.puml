@@ -1,0 +1,63 @@
+@startuml
+title RNF6 — Backup e recuperação do banco de dados · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Scheduler|
+start
+:Cron diário 03:00 UTC;
+if (janela de backup?) then (sim)
+else (não)
+  :Reagenda em 30 min;
+  stop
+endif
+:mysqldump --single-transaction → dump.sql.gz;
+if (dump consistente?) then (sim)
+else (não)
+  :Alerta · retry 1×;
+  stop
+endif
+:SHA-256 · gzip -t · restore efêmero · COUNT das tabelas críticas;
+if (integridade verificada?) then (sim)
+else (não)
+  :FAILED · mantém o anterior;
+  stop
+endif
+:Upload ao S3 com credenciais do Cofre · retenção 7/4/6;
+if (enviado ao armazenamento durável?) then (sim)
+else (não)
+  :Retry com backoff · alerta;
+  stop
+endif
+:Registra OK · health backup.lastSuccessAt · AuditLog BACKUP_COMPLETED;
+if (RPO atendido?) then (sim)
+else (não)
+  :Alerta crítico;
+endif
+|Admin|
+if (incidente exige restore?) then (sim)
+  :Confirma restore duas vezes;
+|Backend|
+  if (restore autorizado?) then (sim)
+  else (não)
+    :Negado + AuditLog;
+    stop
+  endif
+  :App em somente leitura (503 MAINTENANCE nas escritas);
+|Scheduler|
+  :Baixa dump, confere SHA-256, restaura e aplica binlog até o ponto;
+  if (restore dentro do RTO?) then (sim)
+  else (não)
+    :Plano B: promove réplica;
+  endif
+  :Reconstrói play-by-play pela seed, inbox, notícias, índice e contadores;
+  if (projeções reconstruídas?) then (sim)
+  else (não)
+    :Fallback em memória até concluir;
+  endif
+|Backend|
+  :Sai do somente leitura · AuditLog RESTORE_COMPLETED;
+endif
+end
+@enduml

@@ -1,0 +1,103 @@
+@startuml
+title RF52 — Sala de imprensa · Diagrama de classes
+skinparam classAttributeIconSize 0
+hide empty methods
+package "career" {
+  class CareerSave {
+    id: UUID
+    name: String
+    seed: long
+    employmentStatus: EmploymentStatus
+    currentWeek: int
+    difficulty: Difficulty
+    seasonMode: SeasonMode
+    scoresPoints: int
+    status: SaveStatus
+    slot: int
+    lastPlayedAt: Instant
+  }
+  class ManagerMorale {
+    moraleClub: int
+    moraleLeague: int
+    factorsClub: JSON
+    factorsLeague: JSON
+    weeksUnderCritical: int
+    trend: Trend
+    updatedWeek: int
+  }
+}
+package "inbox" {
+  class PressConference {
+    week: int
+    context: PressContext
+    questions: JSON
+    answers: JSON
+    moraleImpact: JSON
+    boardImpact: int
+    status: PressStatus (SCHEDULED|DONE|SKIPPED)
+  }
+  class InboxMessage {
+    sender: InboxSender
+    subject: String
+    body: TEXT
+    kind: InboxKind
+    options: JSON
+    chosenOption: String
+    deadlineWeek: int
+    status: MessageStatus
+    refType: String
+    refId: UUID
+  }
+  class NewsItem {
+    week: int
+    headline: String
+    body: TEXT
+    journalist: String
+    tone: Tone
+  }
+}
+package "catalog" {
+  class Player {
+    id: UUID
+    name: String
+    nationality: String
+    college: String
+    birthDate: LocalDate
+    age: int
+    heightCm: int
+    weightKg: int
+    position: Position (QB|RB|FB|WR|TE|LT|LG|C|RG|RT|DE|DT|OLB|MLB|CB|FS|SS|K|P|LS)
+    unit: Unit (OFFENSE|DEFENSE|SPECIAL)
+    attributes: PlayerAttributes
+    overall: int «por posição, OVR v1»
+    potential: int
+    experienceYears: int
+    rosterStatus: RosterStatus (ACTIVE|INACTIVE|PRACTICE_SQUAD|IR|PUP|FREE_AGENT|WAIVED)
+    condition: int
+    morale: int
+    moraleFactors: JSON
+    injury: Injury?
+    suspensionWeeks: int
+    contract: PlayerContract
+    jerseyNumber: int
+    isLegendary: boolean
+    model3dUrl: String
+  }
+}
+class AnswerPressQuestionUseCase <<UseCase>> {
+  execute(saveId, pcId, questionId, tone): AnswerResult
+}
+class PressImpactPolicy <<Policy>> {
+  impact(context, tone, citedPlayers): PressImpact
+}
+interface NarrativePort <<Port>> {
+  questions(context): List<String>
+  headline(conference): String
+}
+CareerSave "1" -- "1" ManagerMorale
+CareerSave "1" -- "*" InboxMessage
+CareerSave "1" -- "*" PressConference
+AnswerPressQuestionUseCase ..> PressImpactPolicy : usa
+AnswerPressQuestionUseCase ..> PressConference : atualiza
+PressImpactPolicy ..> ManagerMorale : altera
+@enduml

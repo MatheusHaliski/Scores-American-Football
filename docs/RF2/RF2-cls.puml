@@ -1,0 +1,84 @@
+@startuml
+title RF2 — Autenticação e recuperação de senha · Diagrama de classes
+skinparam classAttributeIconSize 0
+hide empty methods
+package "account" {
+  class UserAccount {
+    id: UUID
+    email: String «AES-GCM»
+    emailHash: String «unique»
+    passwordHash: String «Argon2id»
+    displayName: String
+    locale: Locale
+    role: Role
+    status: AccountStatus
+    failedLoginAttempts: int
+    lockedUntil: Instant
+    marketingConsent: boolean
+    deletionRequestedAt: Instant
+    profileVisibility: ProfileVisibility
+    birthDate: LocalDate
+    pendingEmail: String
+  }
+  class UserSession {
+    id: UUID
+    refreshTokenHash: String «cookie __Host-»
+    ip: String
+    userAgent: String
+    expiresAt: Instant
+    revokedAt: Instant
+    replacedBy: UUID
+  }
+  class AuditLog {
+    actor: String
+    action: String
+    resource: String
+    resourceId: String
+    result: String
+    ip: String
+    userAgent: String
+    correlationId: String
+    timestamp: Instant
+  }
+}
+class LoginUseCase <<UseCase>> {
+  execute(LoginCommand, ip, userAgent): LoginResult  «reserva → leitura curta → hash fora da TX → escrita curta»
+}
+class PasswordAttemptGuard <<Service>> {
+  maxFailedAttempts = 5
+  window = 15 min
+  tryLogin(emailHash): boolean
+  clearLogin(emailHash)
+}
+class TokenService <<Service>> {
+  access(userId, roles, sid): IssuedToken «RS256 15 min»
+  refresh(): String «opaco 256 bits»
+}
+class RefreshCookieWriter <<Helper>> {
+  write(res, token) «__Host-refresh, HttpOnly, Secure, SameSite=Strict, Path=/»
+  clear(res)
+}
+class OriginCheck <<Filter>> {
+  require(req) «Origin == app; senão 401»
+}
+class LoginResult <<record>> {
+  accessToken: String «só em memória no front»
+  expiresInSeconds: int = 900
+  refreshCookie: String «nunca no corpo»
+}
+interface UserSessionRepository <<Port>> {
+  findByRefreshTokenHash(hash)
+  revokeFamily(familyId)
+  revokeAllOfUser(userId)
+  save(UserSession)
+}
+UserAccount "1" -- "*" UserSession : sessões
+LoginUseCase ..> PasswordAttemptGuard : reserva antes do hash
+LoginUseCase ..> TokenService : emite
+LoginUseCase ..> UserSession : cria (familyId)
+LoginUseCase ..> AuditLog : LOGIN_OK/FAILED/LOCKED
+LoginUseCase ..> LoginResult : produz
+LoginUseCase ..> RefreshCookieWriter : Set-Cookie
+RefreshTokenUseCase ..> OriginCheck : usa
+RefreshTokenUseCase ..> UserSessionRepository : rotaciona / revoga família
+@enduml

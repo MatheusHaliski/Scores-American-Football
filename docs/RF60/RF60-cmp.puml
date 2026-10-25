@@ -1,0 +1,62 @@
+@startuml
+title RF60 — Depth chart · Diagrama de componentes
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 36
+actor "Head coach / manager (usuário autenticado)" as c1
+actor "Jogador (IA)" as c2
+package "Frontend (Next.js)" as pkg_fe {
+  component "DepthChartPage" as c3
+  frame "componentes de DepthChartPage" as pkg_fe_sub {
+    component "UnitTabs" as c4
+    component "PositionColumn" as c5
+    component "PlayerChip" as c6
+    component "RoleSlot" as c7
+    component "OutOfPositionBadge" as c8
+  }
+}
+package "scores-af-web (REST)" as pkg_web {
+  component "DepthChartController" as c9
+}
+package "scores-af-application (casos de uso)" as pkg_app {
+  component "DepthChartUseCases" as c10
+  component "CareerAccess" as c11
+}
+package "scores-af-domain/engine" as pkg_eng {
+  component "ClubAnalyst" as c12
+  component "DepthChartPolicy" as c13
+  component "PositionOverallCalculator" as c14
+  component "MoraleEngine" as c15
+}
+package "portas (port.out)" as pkg_ports {
+  interface "DepthChartRepository" as c16
+  interface "PlayerRepository" as c17
+  interface "InjuryReportRepository" as c18
+  interface "MatchStatePort" as c19
+  interface "EventPublisher" as c20
+}
+package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
+  component "persistence-mysql" as c21
+  component "cache-redis" as c22
+  component "messaging-eventbus" as c23
+}
+database "MySQL 8" as s1
+database "Redis 7" as s2
+c1 --> c3 : usa
+c3 --> c9 : GET /careers/{id}/depth-chart (alvo)\nPUT /careers/{id}/depth-chart (alvo)\nPOST /careers/{id}/depth-chart/auto (alvo)\n…
+c9 --> c10
+c10 ..> pkg_app : orquestra
+c10 --> c12 : usa
+c10 --> c13 : usa
+c10 --> c14 : usa
+c10 --> c15 : usa
+pkg_app --> pkg_ports : depende (DIP)
+c21 .up.|> c16
+c21 .up.|> c17
+c21 .up.|> c18
+c22 .up.|> c19
+c23 .up.|> c20
+c21 --> s1
+c22 --> s2
+@enduml

@@ -1,0 +1,22 @@
+@startuml
+title RF25 — Comprar e aplicar consumíveis · Máquina de estados: ConsumableApplication
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "Comprado" as Comprado
+Comprado : débito registrado (ledger ou PointsTransaction)
+state "Ativo" as Ativo
+Ativo : appliedWeek ≤ semana < expiresWeek
+Ativo : efeito no motor por descida
+state "Expirado" as Expirado
+Expirado : active = false
+Expirado : estilo removido
+state "Estornado" as Estornado
+Estornado : lançamento compensatório
+[*] --> Comprado
+Comprado --> Ativo : aplicar ao jogador
+Ativo --> Expirado : expiresWeek (Scheduler)
+Comprado --> Estornado : reembolso
+Ativo --> Estornado : reembolso (efeito removido)
+Expirado --> [*]
+Estornado --> [*]
+@enduml

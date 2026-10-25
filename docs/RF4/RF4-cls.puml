@@ -1,0 +1,208 @@
+@startuml
+title RF4 — Gerenciar o elenco de 53 (unidades, practice squad, IR) · Diagrama de classes
+skinparam classAttributeIconSize 0
+hide empty methods
+package "career" {
+  class CareerSave {
+    id: UUID
+    name: String
+    seed: long
+    employmentStatus: EmploymentStatus
+    currentWeek: int
+    difficulty: Difficulty
+    seasonMode: SeasonMode
+    scoresPoints: int
+    status: SaveStatus
+    slot: int
+    lastPlayedAt: Instant
+  }
+}
+package "catalog" {
+  class Club {
+    id: UUID
+    name: String
+    shortName: String
+    city: String
+    conference: Conference
+    division: Division
+    logoKey: String
+    primaryColor: String
+    secondaryColor: String
+    accentColor: String
+    prestige: int
+    reputationBoard: int
+    reputationFans: int
+    cash: long
+    capSpace: long
+    isUserControlled: boolean
+    expectedWins: int
+    scoutingLevel: int
+    scoutingBudget: long
+  }
+  class Player {
+    id: UUID
+    name: String
+    nationality: String
+    college: String
+    birthDate: LocalDate
+    age: int
+    heightCm: int
+    weightKg: int
+    position: Position (QB|RB|FB|WR|TE|LT|LG|C|RG|RT|DE|DT|OLB|MLB|CB|FS|SS|K|P|LS)
+    unit: Unit (OFFENSE|DEFENSE|SPECIAL)
+    attributes: PlayerAttributes
+    overall: int «por posição, OVR v1»
+    potential: int
+    experienceYears: int
+    rosterStatus: RosterStatus (ACTIVE|INACTIVE|PRACTICE_SQUAD|IR|PUP|FREE_AGENT|WAIVED)
+    condition: int
+    morale: int
+    moraleFactors: JSON
+    injury: Injury?
+    suspensionWeeks: int
+    contract: PlayerContract
+    jerseyNumber: int
+    isLegendary: boolean
+    model3dUrl: String
+  }
+  class LeagueRules {
+    «embedded» version: int
+    quarterMinutes: int = 15
+    playClockSeconds: int = 40
+    playClockAfterStoppageSeconds: int = 25
+    twoMinuteWarning: boolean
+    timeoutsPerHalf: int = 3
+    overtimeMinutes: int = 10
+    overtimeBothPossess: boolean
+    regularSeasonTiesAllowed: boolean
+    kickoffYardLine: int = 35
+    touchbackYardLine: int
+    patYardLine: int = 15
+    clockStopsOnFirstDown: boolean (COLLEGE)
+    oneFootInbounds: boolean (COLLEGE)
+    hashFromSidelineFeet: double
+    rosterMax: int = 53
+    gameDayActives: int = 46
+    practiceSquadMax: int = 16
+    offseasonRosterMax: int «Q-7»
+    irReturnsPerSeason: int «Q-7»
+    irMinWeeks: int «Q-7»
+  }
+  class ConsumableApplication {
+    appliedWeek: int
+    expiresWeek: int
+    active: boolean
+  }
+  class Consumable {
+    code: String
+    name: String
+    category: ConsumableCategory
+    effect: JSON «atributos AF»
+    durationWeeks: int
+    priceCash: long
+    priceScoresPoints: int
+    rarity: Rarity
+  }
+}
+package "market" {
+  class PlayerContract {
+    «embedded» years: int
+    baseSalaryByYear: JSON
+    signingBonus: long «rateado»
+    guaranteed: long
+    capHitByYear: JSON
+    deadMoneyIfCut: long
+    franchiseTag: boolean
+    type: ContractType (ROOKIE|VETERAN|MINIMUM|TAG|PRACTICE)
+    endSeason: int
+  }
+  class PracticeSquadMember {
+    player: Player
+    club: Club
+    since: Instant
+    elevationsUsed: int
+    protected: boolean
+    status: PSStatus (ACTIVE|ELEVATED|SIGNED_AWAY|RELEASED)
+  }
+  class WaiverClaim {
+    player: Player
+    claimingClub: Club
+    priority: int «ordem inversa da classificação»
+    status: ClaimStatus (PENDING|AWARDED|LOST)
+    processedAt: Instant
+  }
+}
+package "match" {
+  class Injury {
+    «embedded» kind: InjuryKind
+    bodyPart: String
+    severity: Severity
+    weeksOut: int
+    occurredWeek: int
+  }
+}
+package "finance" {
+  class SalaryCapLedger {
+    season: int
+    cap: long
+    committed: long
+    deadMoney: long
+    space: long
+    rolloverFromPrevious: long
+  }
+}
+class GetRosterUseCase <<UseCase>> {
+  execute(careerId, unit, userId): RosterView
+}
+class RosterView <<record>> {
+  unit: Unit
+  players: List<PlayerCardDto>
+  activeCount: int (≤ 53)
+  gameDayActives: int (≤ 46)
+  practiceSquad: int (≤ 16)
+  injuredReserve: int
+  capSpace: long
+}
+class ChangeRosterStatusUseCase <<UseCase>> {
+  execute(careerId, playerId, RosterStatus, userId)
+}
+class PlaceOnInjuredReserveUseCase <<UseCase>> {
+  execute(careerId, playerId, userId) «mínimo 4 semanas»
+  activate(careerId, playerId, userId)
+}
+class ReleasePlayerUseCase <<UseCase>> {
+  execute(careerId, playerId, userId) «@Transactional; waivers + dead money»
+}
+class RosterRules <<Engine>> {
+  validate(roster, rules): List<RosterError> «53 / 46 / 16, mínimos por posição»
+}
+class OverallByPosition <<Engine>> {
+  overall(PlayerAttributes, Position): int «pesos OVR v1»
+  outOfPosition(player, position): boolean
+}
+interface CapEngine <<Engine>> {
+  deadMoney(contract, phase): DeadMoneySplit
+  capSpace(ledger): long
+}
+Club "1" -- "0..53" Player : elenco ativo
+Club "1" -- "0..16" PracticeSquadMember : practice squad
+PracticeSquadMember "*" -- "1" Player
+Club "*" -- "*" Club : rivais da divisão
+Player "1" -- "1" PlayerContract : «embedded»
+Player "1" -- "0..1" Injury : «embedded»
+Player "1" -- "*" ConsumableApplication
+ConsumableApplication "*" -- "1" Consumable
+CareerSave "*" -- "0..1" Club : franquia atual
+Club "1" -- "*" WaiverClaim
+WaiverClaim "*" -- "1" Player
+Club "1" -- "*" SalaryCapLedger : por temporada
+GetRosterUseCase ..> RosterView : produz
+GetRosterUseCase ..> OverallByPosition : usa
+ChangeRosterStatusUseCase ..> RosterRules : usa
+ChangeRosterStatusUseCase ..> Player : rosterStatus
+PlaceOnInjuredReserveUseCase ..> Injury : lê weeksOut
+ReleasePlayerUseCase ..> CapEngine : dead money
+ReleasePlayerUseCase ..> SalaryCapLedger : deadMoney
+ReleasePlayerUseCase ..> WaiverClaim : abre waivers
+RosterRules ..> LeagueRules : rosterMax, gameDayActives, practiceSquadMax
+@enduml

@@ -1,0 +1,42 @@
+@startuml
+title RF60 — Depth chart · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+control "AuditService" as AuditService
+control "MoraleEngine" as MoraleEngine
+control "ClubAnalyst" as ClubAnalyst
+queue "EventBus" as EventBus
+database "MySQL 8" as MySQL
+database "Redis 7" as Redis
+Manager -> Frontend: abre depth chart
+Frontend -> API: GET /careers/{id}/depth-chart
+API -> UseCase: GetDepthChartUseCase
+UseCase -> MySQL: depth chart, elenco, relatório de lesões
+alt não é dono
+  UseCase -> AuditService: record(ACCESS_DENIED)
+  API --> Frontend: 403
+else senão
+  UseCase --> API: DepthChartView
+  API --> Frontend: 200
+end
+Manager -> Frontend: reordena e salva
+Frontend -> API: PUT /careers/{id}/depth-chart
+API -> UseCase: UpdateDepthChartUseCase
+UseCase -> Redis: partida LIVE?
+UseCase -> ClubAnalyst: valida slots, disponibilidade, fora de posição
+ClubAnalyst --> UseCase: violações e avisos
+alt partida LIVE / versão velha / incompleto / indisponível
+  API --> Frontend: 422 / 409 + violações
+else senão
+  UseCase -> MySQL: TX: slots, version+1, special_teams_unit
+  UseCase -> MoraleEngine: titulares rebaixados
+  UseCase -> EventBus: DepthChartChanged
+  EventBus -> Redis: DEL dashboard
+  API --> Frontend: 200
+end
+@enduml

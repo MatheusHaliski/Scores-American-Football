@@ -1,0 +1,69 @@
+@startuml
+title RF44 — Meu jogador: atleta 3D a partir da foto · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Manager|
+start
+:Abre /me/player · nome, posição, número, altura e peso;
+|Backend|
+if (posição de futebol americano?) then (sim)
+else (não)
+  :422 POSITION_INVALID;
+  stop
+endif
+if (altura e peso na faixa da posição?) then (sim)
+else (não)
+  :422 BODY_OUT_OF_RANGE;
+  stop
+endif
+if (número permitido?) then (sim)
+else (não)
+  :422 JERSEY_NUMBER_INVALID;
+  stop
+endif
+|Manager|
+:Distribui atributos por grupo (macros da família aparecem ao vivo);
+|Backend|
+if (orçamento de atributos?) then (sim)
+else (não)
+  :422 CUSTOM_PLAYER_INVALID;
+  stop
+endif
+|Manager|
+if (quer usar foto?) then (sim)
+|Frontend|
+  if (consentimento biométrico ativo?) then (sim)
+  else (não)
+    :Pede o consentimento destacado · sem ele só o caminho manual;
+    stop
+  endif
+  :Lê a foto no aparelho e marca os 9 pontos;
+  if (foto válida e boa?) then (sim)
+  else (não)
+    :Orientação de nova captura · nada é enviado;
+    stop
+  endif
+|Backend|
+  :Guarda a referência, mede o rosto e grava a revisão N+1;
+else (não)
+|Manager|
+  :Ajusta o rosto à mão;
+endif
+|Frontend|
+:Prévia 3D com capacete aberto, uniforme e corpo pela posição (mesmo AthleteFigure das telas);
+|Manager|
+if (aprova a revisão atual?) then (sim)
+|Backend|
+  :observed → confirmed · aparece nas telas e nas novas carreiras;
+else (não)
+|Frontend|
+  :Ajustar, trocar foto ou revogar;
+endif
+|Scheduler|
+if (retenção vencida?) then (sim)
+  :Apaga a foto e rebaixa traços;
+endif
+end
+@enduml

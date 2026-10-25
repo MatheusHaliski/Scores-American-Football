@@ -1,0 +1,38 @@
+@startuml
+title RF59 — Mini campo com a jogada real · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Manager|
+start
+:Escolhe um drive e uma jogada;
+|Frontend|
+:GET /fixtures/{fid}/drives · GET /matches/{mid}/plays/{seq}/diagram;
+|Backend|
+if (dono do save?) then (sim)
+else (não)
+  :403;
+  stop
+endif
+if (jogada existe?) then (sim)
+else (não)
+  :404;
+  stop
+endif
+if (tem diagrama?) then (sim)
+  :Monta rotas, bloqueios, cobertura e trajetória real;
+else (não)
+  :Formação genérica com o resultado;
+endif
+|Frontend|
+:Desenha o campo: linhas a cada 5 jardas, hash marks, linha de scrimmage azul e 1ª descida amarela;
+if (movimento reduzido?) then (sim)
+  :Quadros estáticos;
+else (não)
+  :Anima snap, rotas, passe ou corrida e tackle;
+endif
+|Manager|
+:Pausa, volta, avança para a próxima jogada;
+end
+@enduml

@@ -1,0 +1,49 @@
+@startuml
+title RF28 — Editar logo, cores, capacete e uniformes · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+control "AuditService" as AuditService
+queue "EventBus" as EventBus
+database "MySQL 8" as MySQL
+database "Redis 7" as Redis
+database "OpenSearch 2" as OpenSearch
+database "S3/MinIO" as S3
+Manager -> Frontend: Editar franquia
+Frontend -> API: GET /clubs/{id}/identity
+API -> UseCase: ClubIdentityUseCases.get(clubId, userId)
+UseCase -> MySQL: club + helmet_design + uniforms + world
+alt mundo de outro usuário
+  API --> Frontend: 403
+else senão
+  MySQL --> UseCase: identidade
+  UseCase --> API: ClubIdentityDto
+  API --> Frontend: 200
+  Frontend -> Manager: modal com prévia 3D
+end
+Manager -> Frontend: muda faixa e grade do capacete
+Frontend -> API: POST /clubs/{id}/identity/preview
+API -> UseCase: ClubIdentityUseCases.preview
+UseCase --> API: {identity, violations, valid}
+API --> Frontend: 200
+Manager -> Frontend: Salvar
+Frontend -> API: PUT /clubs/{id}/helmet {expectedVersion}
+API -> UseCase: ClubIdentityUseCases.updateHelmet
+UseCase -> MySQL: dono do modelo ou franquia do save
+alt não pode editar / versão velha / inválido / kit clash
+  UseCase -> AuditService: record(ACCESS_DENIED) quando 403
+  API --> Frontend: 403 / 409 / 422 + violações
+else senão
+  UseCase -> MySQL: TX: UPDATE helmet_design (version+1)
+  UseCase -> EventBus: CatalogChanged(clubId)
+  EventBus -> OpenSearch: reindexa franquia
+  EventBus -> Redis: DEL dashboard:{saveId}
+  API --> Frontend: 200 ClubIdentityDto
+  Frontend -> S3: GET decal e texturas
+  Frontend -> Manager: capacete e uniformes atualizados
+end
+@enduml

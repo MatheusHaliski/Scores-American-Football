@@ -1,0 +1,82 @@
+@startuml
+title RNF13 — Traduções de idiomas escolhidas na aba de configurações · Diagrama de classes
+skinparam classAttributeIconSize 0
+hide empty methods
+package "account" {
+  class UserAccount {
+    id: UUID
+    email: String «AES-GCM»
+    emailHash: String «unique»
+    passwordHash: String «Argon2id»
+    displayName: String
+    locale: Locale
+    role: Role
+    status: AccountStatus
+    failedLoginAttempts: int
+    lockedUntil: Instant
+    marketingConsent: boolean
+    deletionRequestedAt: Instant
+    profileVisibility: ProfileVisibility
+    birthDate: LocalDate
+    pendingEmail: String
+  }
+  class UserSettings {
+    simQuarterMinutes: int
+    playCallingLevel: PlayCallingLevel (KEY_MOMENTS|ALL_PLAYS|NONE)
+    decisionTimeoutSeconds: int
+    difficulty: Difficulty
+    theme: ThemeMode
+    highContrast: boolean
+    fontScale: FontScale
+    reducedMotion: boolean
+    regionalFormat: String
+    units: YardsOrMeters
+    notificationsEnabled: boolean
+  }
+}
+package "match" {
+  class PlayEvent {
+    «Cassandra» fixtureId: UUID
+    seq: int
+    drive: int
+    quarter: int
+    clock: String
+    down: int
+    distance: int
+    ballOnAbsYd: int
+    playType: PlayType
+    formation: Formation
+    defense: Coverage
+    yards: int
+    result: PlayResult
+    penalty: Penalty?
+    playerIds: List<UUID>
+    text: String
+    homeScore: int
+    awayScore: int
+  }
+}
+enum SupportedLocale {
+  pt-BR  «padrão»
+  en-US
+  es-ES
+}
+class MessageRef <<Value>> {
+  key: String  «ns:chave»
+  params: Map
+}
+class SportGlossary <<Resource>> {
+  keepEnglish: touchdown, snap, sack, field goal, kickoff, punt, safety, blitz, red zone
+  translated: descida, jardas, primeira descida, tempo técnico
+  check(catalog): List<Violation>
+}
+class SettingsUseCases <<UseCase>> {
+  get(userId): SettingsDto
+  update(userId, cmd): SettingsDto
+}
+UserAccount "1" -- "1" UserSettings : configurações
+UserAccount ..> SupportedLocale : locale
+SettingsUseCases ..> UserAccount : atualiza
+PlayEvent ..> MessageRef : texto como chave
+SportGlossary ..> MessageRef : valida termos
+@enduml

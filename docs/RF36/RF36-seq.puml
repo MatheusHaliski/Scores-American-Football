@@ -1,0 +1,41 @@
+@startuml
+title RF36 — Simular a temporada pelo calendário · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+control "AuditService" as AuditService
+control "MatchSimulator" as MatchSimulator
+control "PlayCaller" as PlayCaller
+control "SeasonEngine" as SeasonEngine
+control "SimulationRunner" as SimulationRunner
+database "MySQL 8" as MySQL
+database "Cassandra 4.1" as Cassandra
+participant "Agendador/Job assíncrono" as Scheduler
+Manager -> Frontend: Simular até o fim da semana 9
+Frontend -> API: POST /careers/{id}/simulate {until: WEEK, targetWeek: 9, speed: FAST}
+API -> UseCase: StartSimulationUseCase.execute
+UseCase -> MySQL: SimulationRun ativa?
+alt já existe
+  API --> Frontend: 409 SIMULATION_ACTIVE
+else livre
+  UseCase -> MySQL: SimulationRun QUEUED
+  UseCase -> AuditService: SEASON_SIMULATION_STARTED
+  API --> Frontend: 202 {runId}
+end
+Scheduler -> SimulationRunner: step(run)
+loop semana a semana até o alvo
+  SimulationRunner -> MatchSimulator: joga a semana (seed = mix(seed, fixtureId), chamadas automáticas)
+  MatchSimulator -> PlayCaller: chamada nos momentos decisivos (IA)
+  SimulationRunner -> SeasonEngine: classificação, moral, lesões, finanças
+  SimulationRunner -> Cassandra: timeline e play-by-play da semana
+  alt parada obrigatória
+    SimulationRunner -> MySQL: PAUSED (pauseReason)
+  end
+end
+Frontend -> API: GET /simulate/{runId} (poll)
+API --> Frontend: progresso X/Y · resumo
+@enduml

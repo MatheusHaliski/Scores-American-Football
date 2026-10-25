@@ -1,0 +1,291 @@
+@startuml
+title RF42 — Motor de partida por descida (determinístico por semente) · Diagrama de classes
+skinparam classAttributeIconSize 0
+hide empty methods
+package "season" {
+  class Fixture {
+    week: int
+    date: LocalDate
+    slot: KickoffSlot (THU_NIGHT|SUN_EARLY|SUN_LATE|SUN_NIGHT|MON_NIGHT)
+    status: FixtureStatus
+    homeScore: int
+    awayScore: int
+    quarterScores: JSON
+    overtime: boolean
+    isDivisional: boolean
+    isConference: boolean
+    neutralSite: boolean
+    weather: Weather
+    attendance: int
+    revenue: long
+    importance: FixtureImportance
+    seed: long
+    isUserFixture: boolean
+  }
+}
+package "catalog" {
+  class LeagueRules {
+    «embedded» version: int
+    quarterMinutes: int = 15
+    playClockSeconds: int = 40
+    playClockAfterStoppageSeconds: int = 25
+    twoMinuteWarning: boolean
+    timeoutsPerHalf: int = 3
+    overtimeMinutes: int = 10
+    overtimeBothPossess: boolean
+    regularSeasonTiesAllowed: boolean
+    kickoffYardLine: int = 35
+    touchbackYardLine: int
+    patYardLine: int = 15
+    clockStopsOnFirstDown: boolean (COLLEGE)
+    oneFootInbounds: boolean (COLLEGE)
+    hashFromSidelineFeet: double
+    rosterMax: int = 53
+    gameDayActives: int = 46
+    practiceSquadMax: int = 16
+    offseasonRosterMax: int «Q-7»
+    irReturnsPerSeason: int «Q-7»
+    irMinWeeks: int «Q-7»
+  }
+}
+package "match" {
+  class DepthChart {
+    club: Club
+    version: long
+    updatedAt: Instant
+    validated: boolean
+  }
+  class GamePlan {
+    runPassBalance: int (0–100)
+    fourthDownAggression: Aggression
+    tempo: Tempo (HURRY_UP|NORMAL|MILK_CLOCK)
+    offensiveFocus: JSON
+    defensiveFocus: DefensiveFocus
+    blitzFrequency: Emphasis
+    baseDefense: DefensePackage (4-3|3-4)
+    keyPlayers: List<UUID>
+    situationTendencies: JSON (3ª e curta, red zone, 2 minutos)
+  }
+  class PlayDefinition {
+    code: String
+    side: Side (OFFENSE|DEFENSE|SPECIAL)
+    formation: Formation (I|SINGLEBACK|SHOTGUN|PISTOL|EMPTY|GOAL_LINE)
+    personnel: String (11, 12, 21…)
+    concept: PlayConcept (INSIDE_RUN|OUTSIDE_RUN|SHORT|MEDIUM|DEEP|SCREEN|PLAY_ACTION|SNEAK|PUNT|FG)
+    coverage: Coverage (COVER_0..COVER_6, MAN|ZONE)
+    blitz: boolean
+    diagram: JSON (rotas, bloqueios)
+  }
+  class SpecialTeamsUnit {
+    kind: STUnit (KICKOFF|KICK_RETURN|PUNT|PUNT_RETURN|FG_PAT|ONSIDE)
+    kicker: Player
+    holder: Player
+    longSnapper: Player
+    returners: List<Player>
+    onsideAllowed: boolean
+  }
+  class MatchSession {
+    status: LiveStatus
+    quarter: int
+    clockSeconds: int
+    playClockSeconds: int
+    possession: Club
+    down: int (1–4)
+    distance: int
+    ballOnAbsYd: int (0–100)
+    homeScore: int
+    awayScore: int
+    timeoutsHome: int
+    timeoutsAway: int
+    seed: long
+    rngCursor: long
+    snapshotJson: TEXT
+    decisionsLog: JSON
+    version: long
+  }
+  class PlayCallDecision {
+    session: MatchSession
+    situation: Situation (FOURTH_DOWN|TWO_MINUTE|OVERTIME|ALL_PLAYS)
+    down: int
+    distance: int
+    ballOnAbsYd: int
+    options: List<PlayDefinition>
+    chosen: PlayDefinition?
+    deadlineAt: Instant
+    auto: boolean
+    status: DecisionStatus
+  }
+  class Drive {
+    seq: int
+    club: Club
+    quarter: int
+    startAbsYd: int
+    plays: int
+    yards: int
+    timeOfPossessionSec: int
+    result: DriveResult (TD|FG|PUNT|TURNOVER|DOWNS|SAFETY|END_HALF)
+  }
+  class PlayEvent {
+    «Cassandra» fixtureId: UUID
+    seq: int
+    drive: int
+    quarter: int
+    clock: String
+    down: int
+    distance: int
+    ballOnAbsYd: int
+    playType: PlayType
+    formation: Formation
+    defense: Coverage
+    yards: int
+    result: PlayResult
+    penalty: Penalty?
+    playerIds: List<UUID>
+    text: String
+    homeScore: int
+    awayScore: int
+  }
+  class Penalty {
+    code: PenaltyCode (FALSE_START|OFFSIDE|ENCROACHMENT|HOLDING_O|HOLDING_D|DPI|OPI|ROUGHING_PASSER|UNNECESSARY_ROUGHNESS|DELAY_OF_GAME|ILLEGAL_FORMATION|FACEMASK|INTENTIONAL_GROUNDING)
+    yards: int
+    automaticFirstDown: boolean
+    lossOfDown: boolean
+    accepted: boolean
+    against: Club
+  }
+  class PlayerMatchStats {
+    snaps: int
+    passing: cmp/att, yds, td, int, rating, sacked
+    rushing: att, yds, avg, td, fum
+    receiving: tgt, rec, yds, yac, td, drops
+    defense: tkl solo/ast, tfl, sacks, qbHits, int, pd, ff, fr
+    kicking: fg por distância, pat, punts, avg, in20
+    returns: kr/pr, yds, td
+    rating: double
+  }
+  class TeamMatchStats {
+    firstDowns: int
+    thirdDown: String
+    fourthDown: String
+    redZone: String
+    totalYards: int
+    passYards: int
+    rushYards: int
+    timeOfPossession: String
+    turnovers: int
+    penalties: int
+    penaltyYards: int
+    sacks: int
+  }
+  class MatchReport {
+    decisiveFactors: JSON
+    narrative: TEXT
+    leaders: JSON
+    keyMatchups: JSON (WR×CB, OL×DL)
+    drives: JSON
+    attendance: int
+    revenue: long
+  }
+}
+interface MatchSimulator <<Engine>> {
+  start(MatchSetup): MatchSnapshot
+  advance(MatchSnapshot, AdvanceMode, List<PlayCallInput>): MatchSnapshot
+  finish(MatchSnapshot): MatchResult
+}
+class MatchSetup <<record>> {
+  fixtureId
+  home: TeamSnapshot
+  away: TeamSnapshot
+  rules: LeagueRulesSnapshot
+  weather: Weather
+  seed: long
+  difficulty
+  playCallingLevel
+}
+class TeamSnapshot <<record>> {
+  depthChart: Map<Slot, PlayerSnapshot>
+  gamePlan
+  playbook: List<PlayDefinition>
+  specialTeams
+  moraleClub
+  moraleLeague
+  coachStyle
+  home: boolean
+}
+class GameSituation <<record>> {
+  quarter: int
+  clockSeconds: int
+  down: int
+  distance: int
+  ballOnAbsYd: int
+  scoreDiff: int
+  timeoutsOwn: int
+  timeoutsOpp: int
+  possession: UUID
+}
+class PlayCall <<record>> {
+  offense: formation, personnel, concept
+  defense: package, coverage, blitz, spy
+  tempo: Tempo
+}
+class PlayOutcome <<record>> {
+  yards: int
+  result: PlayResult
+  turnover: boolean
+  penalty: Penalty?
+  clockUsed: int
+  clockStops: boolean
+  involved: List<UUID>
+}
+class DecisiveMomentDetector <<Policy>> {
+  isDecisive(GameSituation, level, userSide): Optional<Situation>
+}
+class ClockModel <<Engine>> {
+  consume(outcome, tempo, situation, rules): int
+  stops(outcome, rules): boolean
+}
+class PenaltyModel <<Engine>> {
+  preSnap(situation, discipline, rng)
+  duringPlay(outcome, matchup, rng)
+  accept(offended, withPenalty, withoutPenalty): boolean
+}
+class DeterministicRng <<Engine>> {
+  seed: long
+  cursor: long
+  next(): double «SplittableRandom»
+  fork(scope): DeterministicRng
+}
+class PlausibilityTargets <<Constants>> {
+  POINTS = 21–24
+  YARDS = 320–360
+  DRIVES = 11–12
+  CMP = 63–66 %
+  SACKS = 2–3
+  INT = 0,7–1,0
+  FUM_LOST = 0,4–0,6
+  THIRD_DOWN = 38–42 %
+  FG = 84 %
+}
+Fixture "1" -- "0..1" MatchSession : estado vivo
+MatchSession "1" -- "*" PlayCallDecision : momentos decisivos
+PlayCallDecision "*" -- "0..1" PlayDefinition : escolhida
+Fixture "1" -- "*" Drive : drives
+Fixture "1" -- "*" PlayEvent : play-by-play
+PlayEvent "1" -- "0..1" Penalty
+Fixture "1" -- "*" PlayerMatchStats
+Fixture "1" -- "2" TeamMatchStats
+Fixture "1" -- "0..1" MatchReport
+MatchSimulator ..> MatchSetup : consome
+MatchSetup ..> TeamSnapshot : 2
+MatchSimulator ..> GameSituation : avalia
+MatchSimulator ..> PlayCall : resolve
+MatchSimulator ..> PlayOutcome : produz
+MatchSimulator ..> DecisiveMomentDetector : usa
+MatchSimulator ..> ClockModel : usa
+MatchSimulator ..> PenaltyModel : usa
+MatchSimulator ..> DeterministicRng : usa
+DecisiveMomentDetector ..> PlayCallDecision : abre
+PlayOutcome ..> PlayEvent : vira
+MatchSession ..> GameSituation : serializa
+PlausibilityTargets ..> MatchSimulator : testa
+@enduml

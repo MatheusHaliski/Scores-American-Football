@@ -1,0 +1,53 @@
+@startuml
+title RF59 — Mini campo com a jogada real · Diagrama de componentes
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 36
+actor "Head coach / manager (usuário autenticado)" as c1
+package "Frontend (Next.js)" as pkg_fe {
+  component "MiniFieldPanel" as c2
+  frame "componentes de MiniFieldPanel" as pkg_fe_sub {
+    component "FieldCanvas" as c3
+    component "RouteLayer" as c4
+    component "CoverageLayer" as c5
+    component "PlayTimeline" as c6
+  }
+}
+package "scores-af-web (REST)" as pkg_web {
+  component "MatchController" as c7
+}
+package "scores-af-application (casos de uso)" as pkg_app {
+  component "GetPlayDiagramUseCase" as c8
+  component "ListDrivesUseCase" as c9
+  component "CareerAccess" as c10
+}
+package "scores-af-domain/engine" as pkg_eng {
+  component "PlayDiagramBuilder" as c11
+}
+package "portas (port.out)" as pkg_ports {
+  interface "TimelinePort" as c12
+  interface "PlaybookRepository" as c13
+  interface "CachePort" as c14
+}
+package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
+  component "persistence-cassandra" as c15
+  component "persistence-mysql" as c16
+  component "cache-redis" as c17
+}
+database "Cassandra 4.1" as s1
+database "Redis 7" as s2
+database "MySQL 8" as s3
+c1 --> c2 : usa
+c2 --> c7 : GET /matches/{mid}/plays/{seq}/diagram (alvo)\nGET /fixtures/{fid}/drives (alvo)\nGET /matches/{mid}/events (alvo)
+c7 --> c8
+c8 ..> pkg_app : orquestra
+c8 --> c11 : usa
+pkg_app --> pkg_ports : depende (DIP)
+c15 .up.|> c12
+c16 .up.|> c13
+c17 .up.|> c14
+c15 --> s1
+c16 --> s3
+c17 --> s2
+@enduml

@@ -1,0 +1,17 @@
+@startuml
+title RF45 — Multiplayer online: salas por turnos e Ultimate Team · Máquina de estados: OnlineSanction.appealStatus
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "NONE" as NONE
+NONE : sanção ativa
+state "REQUESTED" as REQUESTED
+REQUESTED : ≤ 72 h
+state "UPHELD" as UPHELD
+state "OVERTURNED" as OVERTURNED
+[*] --> NONE
+NONE --> REQUESTED : recorre
+REQUESTED --> UPHELD : mantida
+REQUESTED --> OVERTURNED : anulada
+UPHELD --> [*]
+OVERTURNED --> [*]
+@enduml

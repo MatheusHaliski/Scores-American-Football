@@ -1,0 +1,47 @@
+@startuml
+title RF25 — Comprar e aplicar consumíveis · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+control "AuditService" as AuditService
+control "FinanceEngine" as FinanceEngine
+queue "EventBus" as EventBus
+database "MySQL 8" as MySQL
+database "Redis 7" as Redis
+participant "Agendador/Job assíncrono" as Scheduler
+Manager -> Frontend: aplicar 'Foco de rota funda' ao WR
+Frontend -> API: POST /careers/{id}/players/{pid}/consumables {consumableCode}
+API -> UseCase: ApplyConsumableUseCase.execute(saveId, pid, code, userId) «@Transactional»
+UseCase -> MySQL: requireOwner · player do save · consumable · aplicações ativas · injury
+alt não é dono
+  UseCase -> AuditService: record(ACCESS_DENIED)
+  API --> Frontend: 403
+else senão
+  alt inexistente, incompatível ou teto atingido
+    API --> Frontend: 404 / 409 / 422
+  else senão
+    alt preço em Scores Points
+      UseCase -> MySQL: PointsService.debit(save, preço, PURCHASE, refId) @Version
+      UseCase -> Redis: espelho do saldo
+    else preço em S$
+      UseCase -> FinanceEngine: debit(club, preço, CONSUMABLE)
+      FinanceEngine -> MySQL: FinanceLedgerEntry (fora do teto salarial)
+    end
+    alt saldo insuficiente
+      API --> Frontend: 422 INSUFFICIENT_FUNDS | INSUFFICIENT_POINTS
+    else senão
+      UseCase -> MySQL: INSERT consumable_application · player_play_style CONSUMABLE
+      UseCase -> MySQL: UPDATE player: atributo + overall por posição recalculado
+      UseCase -> AuditService: record(STORE_PURCHASE, consumable, preço)
+      UseCase -> EventBus: PlayerConsumableApplied
+      API --> Frontend: 200 PlayerDto com efeitos ativos
+    end
+  end
+end
+Scheduler -> UseCase: WeekCompleted → expira aplicações
+UseCase -> MySQL: UPDATE consumable_application SET active = false · remove estilo CONSUMABLE
+@enduml

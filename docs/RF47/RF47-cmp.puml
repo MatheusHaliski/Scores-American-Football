@@ -1,0 +1,64 @@
+@startuml
+title RF47 — Estatísticas em velocímetros por posição · Diagrama de componentes
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 36
+actor "Head coach / manager (usuário autenticado)" as c1
+package "Frontend (Next.js)" as pkg_fe {
+  component "PlayerModal" as c2
+  frame "componentes de PlayerModal" as pkg_fe_sub {
+    component "GaugesTab" as c3
+    component "Speedometer (arco, ponteiro, faixa da liga)" as c4
+    component "ScopeSwitcher (temporada, últimos 5, carreira)" as c5
+    component "CompareDrawer" as c6
+    component "LeadersTable" as c7
+  }
+}
+package "scores-af-web (REST)" as pkg_web {
+  component "PlayerStatsController" as c8
+  component "CatalogController" as c9
+}
+package "scores-af-application (casos de uso)" as pkg_app {
+  component "GetPlayerGaugesUseCase" as c10
+  component "ComparePlayerGaugesUseCase" as c11
+  component "GetStatLeadersUseCase" as c12
+  component "GaugeCatalogUseCase" as c13
+}
+package "scores-af-domain/engine" as pkg_eng {
+  component "GaugeCalculator" as c14
+  component "PasserRating" as c15
+  component "PositionFamilyResolver" as c16
+}
+package "portas (port.out)" as pkg_ports {
+  interface "PlayerRepository" as c17
+  interface "PlayerMatchStatsRepository" as c18
+  interface "SearchPort" as c19
+  interface "CachePort" as c20
+}
+package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
+  component "persistence-mysql" as c21
+  component "search-opensearch" as c22
+  component "cache-redis" as c23
+}
+database "MySQL 8" as s1
+database "OpenSearch 2" as s2
+database "Redis 7" as s3
+c1 --> c2 : usa
+c2 --> c8 : GET /careers/{id}/players/{pid}/gauges (alvo)\nGET /careers/{id}/players/{pid}/gauges/compare (alvo)\nGET /careers/{id}/stats/leaders (alvo)\n…
+c2 --> c9
+c8 --> c10
+c9 --> c10
+c10 ..> pkg_app : orquestra
+c10 --> c14 : usa
+c10 --> c15 : usa
+c10 --> c16 : usa
+pkg_app --> pkg_ports : depende (DIP)
+c21 .up.|> c17
+c21 .up.|> c18
+c22 .up.|> c19
+c23 .up.|> c20
+c21 --> s1
+c22 --> s2
+c23 --> s3
+@enduml

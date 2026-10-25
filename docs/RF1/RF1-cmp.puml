@@ -1,0 +1,78 @@
+@startuml
+title RF1 — Cadastro de usuário · Diagrama de componentes
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 36
+actor "Visitante (não autenticado)" as c1
+actor "Agendador/Job assíncrono" as c2
+package "Frontend (Next.js)" as pkg_fe {
+  component "AuthPage" as c3
+  frame "componentes de AuthPage" as pkg_fe_sub {
+    component "RegisterForm" as c4
+    component "PasswordStrengthMeter" as c5
+    component "ConsentCheckboxes" as c6
+    component "VerifyEmailNotice" as c7
+    component "errors.json (i18n ×3)" as c8
+  }
+}
+package "scores-af-web (REST)" as pkg_web {
+  component "AuthController" as c9
+  component "EmailVerificationController" as c10
+  component "CorrelationIdFilter" as c11
+  component "AuthRateLimitFilter" as c12
+  component "ClientIpResolver" as c13
+  component "ErrorWriter" as c14
+  component "ApiExceptionHandler" as c15
+}
+package "scores-af-application (casos de uso)" as pkg_app {
+  component "RegisterUserUseCase" as c16
+  component "EmailChangeUseCases" as c17
+  component "PasswordHasher" as c18
+  component "ReservedNames" as c19
+  component "AdminBootstrap" as c20
+  component "AuditService" as c21
+}
+package "portas (port.out)" as pkg_ports {
+  interface "UserAccountRepository" as c22
+  interface "UserSettingsRepository" as c23
+  interface "ConsentRecordRepository" as c24
+  interface "AuditLogRepository" as c25
+  interface "RateLimiterPort" as c26
+  interface "EmailPort" as c27
+}
+package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
+  component "persistence-mysql" as c28
+  component "cache-redis" as c29
+  component "notify (LoggingEmailAdapter)" as c30
+}
+database "MySQL 8" as s1
+database "Redis 7" as s2
+database "Cofre de segredos do provedor (Railway Variables / GitHub Secrets)" as s3
+c1 --> c3 : usa
+c2 --> c16 : dispara
+c3 --> c9 : POST /auth/register (alvo)\nPOST /auth/email/verify (alvo)
+c3 --> c10
+c3 --> c11
+c3 --> c12
+c3 --> c13
+c3 --> c14
+c3 --> c15
+c9 --> c16
+c10 --> c16
+c11 --> c16
+c12 --> c16
+c13 --> c16
+c14 --> c16
+c15 --> c16
+c16 ..> pkg_app : orquestra
+pkg_app --> pkg_ports : depende (DIP)
+c28 .up.|> c22
+c28 .up.|> c23
+c28 .up.|> c24
+c28 .up.|> c25
+c29 .up.|> c26
+c30 .up.|> c27
+c28 --> s1
+c29 --> s2
+@enduml

@@ -1,0 +1,62 @@
+@startuml
+title RNF2 — Partida completa dentro do tempo configurado · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+control "MatchSimulator" as MatchSimulator
+control "PlayCaller" as PlayCaller
+database "MySQL 8" as MySQL
+database "Redis 7" as Redis
+database "Cassandra 4.1" as Cassandra
+participant "Agendador/Job assíncrono" as Scheduler
+Manager -> Frontend: 3 min por quarto, chamada nos momentos decisivos, 20 s para decidir
+Frontend -> API: PUT /me/settings
+API -> UseCase: UpdateUserSettingsUseCase.execute
+UseCase -> MySQL: UPDATE user_settings
+API --> Frontend: 200
+Manager -> Frontend: Jogar partida
+Frontend -> API: POST /careers/{id}/weeks/current/play
+API -> UseCase: PlayWeekUseCase.execute
+UseCase -> MySQL: snapshot das configurações · fixture · depth charts · game plans
+UseCase -> MatchSimulator: start(seed, timeBudget = 720 s)
+MatchSimulator --> UseCase: MatchSnapshot
+UseCase -> Redis: SET match:{fid}:snapshot
+UseCase -> Scheduler: jogos da IA (FULL, assíncrono)
+API --> Frontend: 201 {matchId, timeBudget, playsEstimate = 150}
+loop por quarto ou até o próximo momento decisivo
+  Frontend -> API: POST /matches/{mid}/advance {QUARTER}
+  API -> UseCase: AdvanceMatchUseCase.execute
+  UseCase -> Redis: GET snapshot
+  UseCase -> MatchSimulator: advance(QUARTER) ≤ 500 ms p95
+  MatchSimulator -> PlayCaller: jogada por situação (GamePlan)
+  PlayCaller --> MatchSimulator: PlayDefinition
+  MatchSimulator --> UseCase: snapshot + ~38 jogadas ou PlayCallDecision
+  par persistência fora do caminho crítico
+    UseCase -> Redis: SET snapshot
+    UseCase -> Cassandra: PlayEvent em lote (AFTER_COMMIT)
+    UseCase -> MySQL: UPDATE match_session (fim do quarto)
+  end
+  API --> Frontend: 200 estado + jogadas
+  Frontend -> Frontend: msPorJogada = (orçamento restante) / jogadas restantes
+  alt momento decisivo (4ª descida, 2 minutos, prorrogação)
+    Frontend -> Manager: opções de jogada · contagem regressiva · orçamento pausado
+    alt decide dentro do tempo
+      Manager -> Frontend: escolhe a jogada
+      Frontend -> API: POST /matches/{mid}/decisions/{did}
+      API -> UseCase: SubmitPlayCallUseCase.execute
+      UseCase -> MySQL: PlayCallDecision chosen
+    else senão
+      UseCase -> PlayCaller: decisão automática (auto = true)
+    end
+  else senão
+  end
+end
+UseCase -> MatchSimulator: finish()
+MatchSimulator --> UseCase: resultado
+UseCase -> MySQL: TX: fixture FINISHED · stats · report · métrica match.total.duration
+API --> Frontend: 200 relatório
+@enduml

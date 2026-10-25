@@ -1,0 +1,46 @@
+@startuml
+title RF58 — Gêmeos digitais licenciados · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Admin|
+start
+:Abre Licenças;
+|Frontend|
+:POST /admin/licenses;
+|Backend|
+if (recurso habilitado?) then (sim)
+else (não)
+  :404 FEATURE_DISABLED;
+  stop
+endif
+if (é ADMIN?) then (sim)
+else (não)
+  :403 + auditoria;
+  stop
+endif
+:Grava licença ACTIVE e audita;
+|Manager|
+:Abre o perfil do jogador;
+|Frontend|
+:GET /players/{pid}/twin;
+|Backend|
+if (licença válida?) then (sim)
+  if (escopo cobre o uso?) then (sim)
+    :Nome, imagem e modelo 3D licenciados;
+  else (não)
+    :Mistura: só o escopo licenciado;
+  endif
+else (não)
+  :Versão fictícia;
+endif
+|Scheduler|
+if (venceu a validade?) then (sim)
+|Backend|
+  :EXPIRED, invalida cache, audita;
+endif
+|Manager|
+:Vê o jogador com ou sem selo de licenciado;
+end
+@enduml

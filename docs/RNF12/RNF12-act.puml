@@ -1,0 +1,64 @@
+@startuml
+title RNF12 — Diretrizes de Scores Points e loja · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Manager|
+start
+:Joga e conclui metas;
+|Backend|
+if (pontos só ganhos jogando?) then (sim)
+else (não)
+  :Crédito recusado;
+  stop
+endif
+if (limite diário?) then (sim)
+else (não)
+  :Crédito truncado em 500;
+endif
+|Manager|
+:Abre a loja e escolhe um item;
+|Frontend|
+:POST /store/purchases com Idempotency-Key;
+|Backend|
+if (idempotente?) then (sim)
+else (não)
+  :422 IDEMPOTENCY_CONFLICT;
+  stop
+endif
+if (sem loot box?) then (sim)
+else (não)
+  :Item indisponível;
+  stop
+endif
+if (item afeta o motor?) then (sim)
+  if (teto de efeito?) then (sim)
+  else (não)
+    :422 EFFECT_CAP;
+    stop
+  endif
+  :Carteira do save · marca o save fora de rankings;
+else (não)
+  if (cosmético nunca altera o motor?) then (sim)
+  else (não)
+    :Bloqueado até revisão;
+    stop
+  endif
+  :Carteira do usuário;
+endif
+if (saldo nunca negativo?) then (sim)
+else (não)
+  :ROLLBACK · 422 INSUFFICIENT_POINTS;
+  stop
+endif
+:Débito + Purchase + PointsTransaction(balanceAfter) · STORE_PURCHASE;
+|Admin|
+if (estorno?) then (sim)
+|Backend|
+  :Lançamento compensatório · STORE_REFUND;
+endif
+|Scheduler|
+:Reconciliação diária: saldo == soma do ledger;
+end
+@enduml

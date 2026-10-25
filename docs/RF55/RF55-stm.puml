@@ -1,0 +1,21 @@
+@startuml
+title RF55 — Snaps-alvo, rodízio da linha e química · Máquina de estados: UnitChemistry.level (OL, QB-WR)
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "NOVA" as NOVA
+NOVA : grupo recém-formado
+NOVA : sem bônus
+state "EM_FORMACAO" as EM_FORMACAO
+EM_FORMACAO : snaps juntos acumulando
+state "ENTROSADA" as ENTROSADA
+ENTROSADA : bônus em bloqueio ou timing
+state "ELITE" as ELITE
+ELITE : bônus máximo
+[*] --> NOVA
+NOVA --> EM_FORMACAO : snaps juntos
+EM_FORMACAO --> ENTROSADA : limiar de snaps
+ENTROSADA --> ELITE : temporada inteira junta
+ENTROSADA --> EM_FORMACAO : troca de titular / lesão
+ELITE --> ENTROSADA : troca de titular
+EM_FORMACAO --> NOVA : grupo desfeito
+@enduml

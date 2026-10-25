@@ -1,0 +1,78 @@
+@startuml
+title RF65 — Free agency e waivers · Diagrama de componentes
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 36
+actor "Head coach / manager (usuário autenticado)" as c1
+actor "Franquia adversária (IA)" as c2
+actor "Jogador (IA)" as c3
+actor "Agendador/Job assíncrono" as c4
+package "Frontend (Next.js)" as pkg_fe {
+  component "MarketPage" as c5
+  frame "componentes de MarketPage" as pkg_fe_sub {
+    component "FreeAgentTable" as c6
+    component "OfferBuilder" as c7
+    component "MyOffersList" as c8
+    component "WaiverWirePanel" as c9
+  }
+}
+package "scores-af-web (REST)" as pkg_web {
+  component "FreeAgencyController" as c10
+  component "WaiverController" as c11
+  component "RosterController" as c12
+}
+package "scores-af-application (casos de uso)" as pkg_app {
+  component "FreeAgencyUseCases" as c13
+  component "WaiverUseCases" as c14
+  component "ReleasePlayerUseCase" as c15
+  component "ProcessWaiversJob" as c16
+  component "CareerAccess" as c17
+}
+package "scores-af-domain/engine" as pkg_eng {
+  component "MarketEngine" as c18
+  component "CapEngine" as c19
+  component "WaiverPriorityPolicy" as c20
+  component "PlayerDecisionPolicy" as c21
+}
+package "portas (port.out)" as pkg_ports {
+  interface "FreeAgentOfferRepository" as c22
+  interface "WaiverClaimRepository" as c23
+  interface "PlayerRepository" as c24
+  interface "SalaryCapLedgerRepository" as c25
+  interface "SearchPort" as c26
+  interface "TimelinePort" as c27
+}
+package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
+  component "persistence-mysql" as c28
+  component "search-opensearch" as c29
+  component "persistence-cassandra" as c30
+}
+database "MySQL 8" as s1
+database "OpenSearch 2" as s2
+database "Cassandra 4.1" as s3
+database "Redis 7" as s4
+c1 --> c5 : usa
+c4 --> c13 : dispara
+c5 --> c10 : GET /careers/{id}/free-agents (alvo)\nPOST /careers/{id}/free-agents/{pid}/offers (alvo)\nGET /careers/{id}/free-agent-offers (alvo)\n…
+c5 --> c11
+c5 --> c12
+c10 --> c13
+c11 --> c13
+c12 --> c13
+c13 ..> pkg_app : orquestra
+c13 --> c18 : usa
+c13 --> c19 : usa
+c13 --> c20 : usa
+c13 --> c21 : usa
+pkg_app --> pkg_ports : depende (DIP)
+c28 .up.|> c22
+c28 .up.|> c23
+c28 .up.|> c24
+c28 .up.|> c25
+c29 .up.|> c26
+c30 .up.|> c27
+c28 --> s1
+c29 --> s2
+c30 --> s3
+@enduml

@@ -1,0 +1,150 @@
+@startuml
+title RNF2 — Partida completa dentro do tempo configurado · Diagrama de classes
+skinparam classAttributeIconSize 0
+hide empty methods
+package "account" {
+  class UserSettings {
+    simQuarterMinutes: int
+    playCallingLevel: PlayCallingLevel (KEY_MOMENTS|ALL_PLAYS|NONE)
+    decisionTimeoutSeconds: int
+    difficulty: Difficulty
+    theme: ThemeMode
+    highContrast: boolean
+    fontScale: FontScale
+    reducedMotion: boolean
+    regionalFormat: String
+    units: YardsOrMeters
+    notificationsEnabled: boolean
+  }
+}
+package "season" {
+  class Fixture {
+    week: int
+    date: LocalDate
+    slot: KickoffSlot (THU_NIGHT|SUN_EARLY|SUN_LATE|SUN_NIGHT|MON_NIGHT)
+    status: FixtureStatus
+    homeScore: int
+    awayScore: int
+    quarterScores: JSON
+    overtime: boolean
+    isDivisional: boolean
+    isConference: boolean
+    neutralSite: boolean
+    weather: Weather
+    attendance: int
+    revenue: long
+    importance: FixtureImportance
+    seed: long
+    isUserFixture: boolean
+  }
+}
+package "match" {
+  class MatchSession {
+    status: LiveStatus
+    quarter: int
+    clockSeconds: int
+    playClockSeconds: int
+    possession: Club
+    down: int (1–4)
+    distance: int
+    ballOnAbsYd: int (0–100)
+    homeScore: int
+    awayScore: int
+    timeoutsHome: int
+    timeoutsAway: int
+    seed: long
+    rngCursor: long
+    snapshotJson: TEXT
+    decisionsLog: JSON
+    version: long
+  }
+  class PlayCallDecision {
+    session: MatchSession
+    situation: Situation (FOURTH_DOWN|TWO_MINUTE|OVERTIME|ALL_PLAYS)
+    down: int
+    distance: int
+    ballOnAbsYd: int
+    options: List<PlayDefinition>
+    chosen: PlayDefinition?
+    deadlineAt: Instant
+    auto: boolean
+    status: DecisionStatus
+  }
+  class PlayEvent {
+    «Cassandra» fixtureId: UUID
+    seq: int
+    drive: int
+    quarter: int
+    clock: String
+    down: int
+    distance: int
+    ballOnAbsYd: int
+    playType: PlayType
+    formation: Formation
+    defense: Coverage
+    yards: int
+    result: PlayResult
+    penalty: Penalty?
+    playerIds: List<UUID>
+    text: String
+    homeScore: int
+    awayScore: int
+  }
+}
+package "catalog" {
+  class LeagueRules {
+    «embedded» version: int
+    quarterMinutes: int = 15
+    playClockSeconds: int = 40
+    playClockAfterStoppageSeconds: int = 25
+    twoMinuteWarning: boolean
+    timeoutsPerHalf: int = 3
+    overtimeMinutes: int = 10
+    overtimeBothPossess: boolean
+    regularSeasonTiesAllowed: boolean
+    kickoffYardLine: int = 35
+    touchbackYardLine: int
+    patYardLine: int = 15
+    clockStopsOnFirstDown: boolean (COLLEGE)
+    oneFootInbounds: boolean (COLLEGE)
+    hashFromSidelineFeet: double
+    rosterMax: int = 53
+    gameDayActives: int = 46
+    practiceSquadMax: int = 16
+    offseasonRosterMax: int «Q-7»
+    irReturnsPerSeason: int «Q-7»
+    irMinWeeks: int «Q-7»
+  }
+}
+class MatchTimeBudgetPolicy <<Policy>> {
+  budgetSeconds(simQuarterMinutes, overtime): int
+  msPerPlay(remainingBudget, remainingPlays): int
+  pausesBudget(decision): boolean
+}
+class PlaybackPlan <<record>> {
+  timeBudgetSeconds: int
+  playsEstimate: int = 150
+  msPerPlay: int (400–6000)
+  decisionTimeoutSeconds: int
+}
+class AdvanceMatchUseCase <<UseCase>> {
+  execute(matchId, mode, userId): MatchStateDto
+}
+interface MatchSimulator <<Engine>> {
+  advance(snapshot, mode): MatchSnapshot «≤ 500 ms p95 por quarto»
+}
+class MatchMetrics <<Service>> {
+  quarterDuration(ms)
+  totalDurationVsBudget(actual, budget)
+}
+Fixture "1" -- "0..1" MatchSession : estado vivo
+MatchSession "1" -- "*" PlayCallDecision : momentos decisivos
+Fixture "1" -- "*" PlayEvent : play-by-play
+MatchTimeBudgetPolicy ..> UserSettings : lê simQuarterMinutes
+MatchTimeBudgetPolicy ..> PlaybackPlan : produz
+AdvanceMatchUseCase ..> MatchSimulator : advance
+AdvanceMatchUseCase ..> MatchSession : snapshot
+AdvanceMatchUseCase ..> PlayEvent : append em lote
+AdvanceMatchUseCase ..> PlayCallDecision : abre no momento decisivo
+AdvanceMatchUseCase ..> MatchMetrics : registra
+@enduml

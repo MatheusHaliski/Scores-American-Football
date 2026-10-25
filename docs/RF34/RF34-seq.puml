@@ -1,0 +1,66 @@
+@startuml
+title RF34 — Nova carreira de head coach · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+control "AuditService" as AuditService
+control "SeasonEngine" as SeasonEngine
+control "CapEngine" as CapEngine
+control "DraftEngine" as DraftEngine
+queue "EventBus" as EventBus
+database "MySQL 8" as MySQL
+database "Redis 7" as Redis
+database "OpenSearch 2" as OpenSearch
+participant "Agendador/Job assíncrono" as Scheduler
+actor "Diretoria da franquia (IA)" as Diretoria
+Manager -> Frontend: Nova carreira
+Frontend -> API: GET /worlds · /worlds/{id}/leagues · /leagues/{id}/clubs · /catalog/coach-styles
+API -> UseCase: ListWorlds · ListLeagues · ListClubs · ListCoachStyles
+UseCase -> MySQL: mundos acessíveis, ligas, franquias por divisão
+MySQL --> UseCase: listas
+API --> Frontend: 200
+Manager -> Frontend: confirma o wizard
+Frontend -> API: POST /careers {worldId, leagueId, clubId, coach, coachStyle, seasonMode, teamCount, difficulty}
+API -> UseCase: CreateCareerUseCase.execute(cmd, userId)
+UseCase -> MySQL: saves ACTIVE, world, league, club
+alt slots cheios / mundo proibido / formato inválido
+  UseCase --> API: BusinessRuleException(code)
+  API --> Frontend: 403 / 422
+else válido
+  UseCase -> MySQL: INSERT CareerSave(CREATING, seed, slot)
+  UseCase -> Scheduler: CareerBootstrapJob(saveId, requestId) @Async
+  API --> Frontend: 202 {saveId}
+  Scheduler -> MySQL: clona World(kind SAVE): ligas, conferências, divisões, franquias, elencos, contratos
+  alt teamCount != league.teamCount
+    Scheduler -> SeasonEngine: trimOrGenerate(league, teamCount, userClub, seed)
+  else senão
+  end
+  Scheduler -> CapEngine: ledgerFor(club, season) · cortes da IA se committed > cap
+  CapEngine --> Scheduler: SalaryCapLedger por franquia
+  Scheduler -> DraftEngine: picks próprios 7 × 3 temporadas
+  Scheduler -> MySQL: ManagerProfile, DepthChart, Playbook, GamePlan, SalaryCapLedger, DraftPick
+  Scheduler -> Diretoria: initialContract(prestige, expectedWins)
+  Diretoria --> Scheduler: ManagerContract(metas)
+  Scheduler -> SeasonEngine: createSeason(league, seasonMode, seed): 17 jogos + bye
+  SeasonEngine -> MySQL: INSERT Season, Week[], Fixture[], Standing[]
+  alt falha no bootstrap
+    Scheduler -> MySQL: ROLLBACK · save FAILED
+    Scheduler -> AuditService: CAREER_CREATE_FAILED
+  else senão
+    Scheduler -> MySQL: COMMIT · save ACTIVE
+    Scheduler -> AuditService: CAREER_CREATED(seed)
+    Scheduler -> EventBus: CatalogChanged(worldId)
+    EventBus -> OpenSearch: indexa jogadores e franquias
+    EventBus -> Redis: SET save:{id}:points 0
+  end
+  loop poll até ACTIVE
+    Frontend -> API: GET /careers/{id}
+    API --> Frontend: status
+  end
+  Frontend -> Manager: central do clube (RF40)
+end
+@enduml

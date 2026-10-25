@@ -1,0 +1,19 @@
+@startuml
+title RF65 — Free agency e waivers · Máquina de estados: FreeAgentOffer.status
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "PENDING" as PENDING
+state "ACCEPTED" as ACCEPTED
+state "REJECTED" as REJECTED
+state "EXPIRED" as EXPIRED
+state "WITHDRAWN" as WITHDRAWN
+[*] --> PENDING
+PENDING --> ACCEPTED : jogador escolhe
+PENDING --> REJECTED : outra oferta vence
+PENDING --> EXPIRED : expiresAt
+PENDING --> WITHDRAWN : manager retira
+ACCEPTED --> [*]
+REJECTED --> [*]
+EXPIRED --> [*]
+WITHDRAWN --> [*]
+@enduml

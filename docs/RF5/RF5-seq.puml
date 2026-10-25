@@ -1,0 +1,60 @@
+@startuml
+title RF5 — Editor de ligas (conferências e divisões), franquias e jogadores · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+control "AuditService" as AuditService
+queue "EventBus" as EventBus
+database "MySQL 8" as MySQL
+database "OpenSearch 2" as OpenSearch
+database "S3/MinIO" as S3
+Manager -> Frontend: abre o editor
+Frontend -> API: GET /worlds
+API -> UseCase: ListWorldsUseCase.execute(userId)
+UseCase -> MySQL: worlds(owner null ou userId, kind TEMPLATE)
+API --> Frontend: 200 lista de mundos
+Manager -> Frontend: clona o mundo semente
+Frontend -> API: POST /worlds/{id}/clone
+API -> UseCase: CloneWorldUseCase.execute(id, userId) «@Transactional»
+UseCase -> MySQL: copia world, leagues, conferences, divisions, clubs, stadiums, players (TEMPLATE)
+UseCase -> EventBus: CatalogChanged(worldId)
+EventBus -> OpenSearch: bulkIndex(jogadores por posição e unidade, franquias, ligas)
+API --> Frontend: 201 {worldId}
+Manager -> Frontend: move franquia para outra divisão
+Frontend -> API: PUT /worlds/{id}/leagues/{lid}/structure
+API -> UseCase: SaveLeagueStructureUseCase.execute(cmd)
+UseCase -> MySQL: world + owner check · league · clubs
+alt não é dono / mundo SAVE
+  UseCase -> AuditService: record(ACCESS_DENIED)
+  API --> Frontend: 403 | 422
+else senão
+  UseCase -> UseCase: LeagueStructureValidator (8–32, divisões equilibradas, 1 divisão por franquia)
+  alt estrutura inválida
+    API --> Frontend: 422 STRUCTURE_INVALID
+  else senão
+    UseCase -> MySQL: UPSERT conference, division · UPDATE club.division (version)
+    API --> Frontend: 200 LeagueStructureDto
+  end
+end
+Manager -> Frontend: salva um QB com foto
+Frontend -> API: PUT /clubs/{id}/players/{pid} (multipart)
+API -> UseCase: SavePlayerUseCase.execute(cmd)
+alt payload ou mídia inválidos
+  API --> Frontend: 422
+else senão
+  UseCase -> S3: put(players/… ou logos/…)
+  UseCase -> UseCase: OverallByPosition.overall(attributes, QB) · macros da família QB (D-6)
+  UseCase -> MySQL: UPSERT player WHERE version = ?
+  alt version mismatch
+    API --> Frontend: 409 CONFLICT
+  else senão
+    UseCase -> EventBus: CatalogChanged(playerId)
+    EventBus -> OpenSearch: index(player)
+    API --> Frontend: 200 PlayerDto
+  end
+end
+@enduml

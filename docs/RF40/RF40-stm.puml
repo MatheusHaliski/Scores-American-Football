@@ -1,0 +1,33 @@
+@startuml
+title RF40 — Central do clube · Máquina de estados: Central do clube (interação) × CareerSave.employmentStatus
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "Carregando" as Carregando
+state "Erro" as Erro
+Erro : 403/404/rede
+state "Central (empregado)" as Gestao
+Gestao : próximo jogo
+Gestao : Preparar time
+state "Semana de folga" as Bye
+Bye : sem jogo nesta semana
+state "Partida ao vivo" as AoVivo
+AoVivo : descida e distância
+AoVivo : atalho para o painel (RF27)
+state "Central (espectador)" as Espectador
+state "Fim de temporada" as FimTemporada
+FimTemporada : RF35
+[*] --> Carregando
+Carregando --> Erro : falha
+Erro --> Carregando : tentar de novo
+Carregando --> Gestao : 200 · EMPLOYED
+Carregando --> Espectador : 200 · UNEMPLOYED
+Carregando --> AoVivo : MatchSession LIVE
+Gestao --> Bye : semana sem jogo
+Bye --> Gestao : semana avança
+Gestao --> AoVivo : jogar partida
+AoVivo --> Gestao : FINISHED
+Gestao --> FimTemporada : sem próximo jogo
+FimTemporada --> Gestao : nova temporada
+Gestao --> Espectador : demitido
+Espectador --> Gestao : aceita proposta
+@enduml

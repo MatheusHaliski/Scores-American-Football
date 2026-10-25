@@ -1,0 +1,62 @@
+@startuml
+title RF21 — Calendário de semanas com IA · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+control "AuditService" as AuditService
+control "SeasonEngine" as SeasonEngine
+queue "EventBus" as EventBus
+database "MySQL 8" as MySQL
+database "Redis 7" as Redis
+database "S3/MinIO" as S3
+participant "Claude (LLM, narrativa)" as Claude
+participant "Agendador/Job assíncrono" as Scheduler
+actor "Imprensa (IA)" as Imprensa
+Scheduler -> SeasonEngine: WeekCompleted → classifyFixtures(próximas 3 semanas)
+SeasonEngine -> MySQL: fixtures, divisões, standings, PlayoffSeed projetado, último confronto, estádios
+MySQL --> SeasonEngine: contexto
+loop por fixture das próximas semanas
+  SeasonEngine -> SeasonEngine: importance = DIVISIONAL | DECISIVE | PRIMETIME | REVENGE | TRAP | MILESTONE | REGULAR
+  alt narrativa via Claude habilitada
+    SeasonEngine -> Claude: contexto do confronto → manchete + texto
+    Claude --> SeasonEngine: texto curto
+    SeasonEngine -> AuditService: record(AI_CALL)
+  else senão
+    SeasonEngine -> SeasonEngine: template determinístico (seed)
+  end
+  SeasonEngine -> MySQL: UPSERT calendar_insight · fixture.importance
+end
+SeasonEngine -> EventBus: CalendarInsightsGenerated(saveId)
+EventBus -> Redis: DEL calendar:{saveId}:*
+EventBus -> Imprensa: manchete da semana (RF30)
+Manager -> Frontend: abre Calendário
+Frontend -> API: GET /careers/{id}/calendar
+API -> UseCase: GetCalendarUseCase.execute(id, season, userId)
+UseCase -> MySQL: save + owner check
+alt não é dono
+  UseCase -> AuditService: record(ACCESS_DENIED)
+  API --> Frontend: 403
+else senão
+  UseCase -> Redis: GET calendar:{saveId}:{season}
+  alt cache miss
+    UseCase -> MySQL: weeks + fixtures por slot + byeClubs + calendar_insight + placares
+    MySQL --> UseCase: dados
+    alt insight faltando
+      UseCase -> SeasonEngine: insight por template (síncrono)
+    else senão
+    end
+    UseCase -> Redis: SET calendar:{saveId}:{season} (TTL 1 h)
+  else senão
+    Redis --> UseCase: calendário
+  end
+  UseCase --> API: CalendarResult
+  API --> Frontend: 200
+  Frontend -> S3: artes por imageKey
+  S3 --> Frontend: SVG
+  Frontend -> Manager: semanas com destaques, bye e insights
+end
+@enduml

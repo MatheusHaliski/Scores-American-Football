@@ -1,0 +1,107 @@
+@startuml
+title RF34 — Nova carreira de head coach · Diagrama de componentes
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 36
+actor "Head coach / manager (usuário autenticado)" as c1
+actor "Agendador/Job assíncrono" as c2
+actor "Diretoria da franquia (IA)" as c3
+package "Frontend (Next.js)" as pkg_fe {
+  component "NewCareerWizard" as c4
+  frame "componentes de NewCareerWizard" as pkg_fe_sub {
+    component "WorldStep" as c5
+    component "LeagueStep (PRO ou COLLEGE)" as c6
+    component "ClubStep (conferência e divisão)" as c7
+    component "CreateClubForm" as c8
+    component "CoachStep" as c9
+    component "CoachStyleStep" as c10
+    component "SeasonOptionsStep" as c11
+    component "CreatingCareerProgress" as c12
+  }
+}
+package "scores-af-web (REST)" as pkg_web {
+  component "CareerController" as c13
+  component "WorldController" as c14
+  component "LeagueController" as c15
+  component "ClubController" as c16
+  component "CatalogController" as c17
+}
+package "scores-af-application (casos de uso)" as pkg_app {
+  component "CreateCareerUseCase" as c18
+  component "ListWorldsUseCase" as c19
+  component "ListLeaguesUseCase" as c20
+  component "ListClubsUseCase" as c21
+  component "CreateClubUseCase" as c22
+  component "ListCoachStylesUseCase" as c23
+  component "CareerBootstrapJob" as c24
+  component "SeedPolicy" as c25
+}
+package "scores-af-domain/engine" as pkg_eng {
+  component "SeasonEngine" as c26
+  component "ScheduleGenerator" as c27
+  component "DepthChartAutoBuilder" as c28
+  component "CapEngine" as c29
+  component "DraftEngine" as c30
+  component "ContractPolicy" as c31
+}
+package "portas (port.out)" as pkg_ports {
+  interface "CareerSaveRepository" as c32
+  interface "WorldRepository" as c33
+  interface "LeagueRepository" as c34
+  interface "ClubRepository" as c35
+  interface "PlayerRepository" as c36
+  interface "DepthChartRepository" as c37
+  interface "PlaybookRepository" as c38
+  interface "SalaryCapLedgerRepository" as c39
+  interface "DraftPickRepository" as c40
+  interface "SeasonRepository" as c41
+  interface "FixtureRepository" as c42
+  interface "CounterPort" as c43
+  interface "SearchPort" as c44
+}
+package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
+  component "persistence-mysql" as c45
+  component "cache-redis" as c46
+  component "search-opensearch" as c47
+}
+database "MySQL 8" as s1
+database "Redis 7" as s2
+database "OpenSearch 2" as s3
+c1 --> c4 : usa
+c2 --> c18 : dispara
+c4 --> c13 : GET /worlds (alvo)\nGET /worlds/{id}/leagues (alvo)\nGET /leagues/{id}/clubs (alvo)\n…
+c4 --> c14
+c4 --> c15
+c4 --> c16
+c4 --> c17
+c13 --> c18
+c14 --> c18
+c15 --> c18
+c16 --> c18
+c17 --> c18
+c18 ..> pkg_app : orquestra
+c18 --> c26 : usa
+c18 --> c27 : usa
+c18 --> c28 : usa
+c18 --> c29 : usa
+c18 --> c30 : usa
+c18 --> c31 : usa
+pkg_app --> pkg_ports : depende (DIP)
+c45 .up.|> c32
+c45 .up.|> c33
+c45 .up.|> c34
+c45 .up.|> c35
+c45 .up.|> c36
+c45 .up.|> c37
+c45 .up.|> c38
+c45 .up.|> c39
+c45 .up.|> c40
+c45 .up.|> c41
+c45 .up.|> c42
+c46 .up.|> c43
+c47 .up.|> c44
+c45 --> s1
+c46 --> s2
+c47 --> s3
+@enduml

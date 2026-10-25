@@ -1,0 +1,84 @@
+@startuml
+title RF3 — Gerenciar a conta (dados, sessões, segurança, LGPD, notificações) · Diagrama de componentes
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 36
+actor "Head coach / manager (usuário autenticado)" as c1
+actor "Agendador/Job assíncrono" as c2
+package "Frontend (Next.js)" as pkg_fe {
+  component "SettingsScreen" as c3
+  frame "componentes de SettingsScreen" as pkg_fe_sub {
+    component "AccountSection" as c4
+    component "PrivacySection" as c5
+    component "DataSection" as c6
+    component "NotificationPreferencesForm" as c7
+    component "SessionsList" as c8
+    component "DeleteAccountDialog" as c9
+  }
+}
+package "scores-af-web (REST)" as pkg_web {
+  component "AccountController" as c10
+  component "AuthRateLimitFilter" as c11
+  component "SessionActiveFilter" as c12
+  component "CurrentUser" as c13
+  component "ErrorWriter" as c14
+}
+package "scores-af-application (casos de uso)" as pkg_app {
+  component "AccountUseCases" as c15
+  component "EmailChangeUseCases" as c16
+  component "PrivacyUseCases" as c17
+  component "DataExportUseCases" as c18
+  component "AccountDeletionUseCases" as c19
+  component "NotificationPreferenceUseCases" as c20
+  component "PasswordAttemptGuard" as c21
+  component "PasswordHasher" as c22
+  component "ReservedNames" as c23
+  component "AuditService" as c24
+}
+package "portas (port.out)" as pkg_ports {
+  interface "UserAccountRepository" as c25
+  interface "UserSessionRepository" as c26
+  interface "NotificationPreferenceRepository" as c27
+  interface "ConsentRecordRepository" as c28
+  interface "DataExportJobRepository" as c29
+  interface "AuditLogRepository" as c30
+  interface "SessionCachePort" as c31
+  interface "RateLimiterPort" as c32
+  interface "MediaStoragePort" as c33
+}
+package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
+  component "persistence-mysql" as c34
+  component "cache-redis" as c35
+  component "storage-s3" as c36
+}
+database "MySQL 8" as s1
+database "Redis 7" as s2
+database "S3/MinIO" as s3
+c1 --> c3 : usa
+c2 --> c15 : dispara
+c3 --> c10 : GET /me (alvo)\nPUT /me (alvo)\nPUT /me/email (alvo)\n…
+c3 --> c11
+c3 --> c12
+c3 --> c13
+c3 --> c14
+c10 --> c15
+c11 --> c15
+c12 --> c15
+c13 --> c15
+c14 --> c15
+c15 ..> pkg_app : orquestra
+pkg_app --> pkg_ports : depende (DIP)
+c34 .up.|> c25
+c34 .up.|> c26
+c34 .up.|> c27
+c34 .up.|> c28
+c34 .up.|> c29
+c34 .up.|> c30
+c35 .up.|> c31
+c35 .up.|> c32
+c36 .up.|> c33
+c34 --> s1
+c35 --> s2
+c36 --> s3
+@enduml

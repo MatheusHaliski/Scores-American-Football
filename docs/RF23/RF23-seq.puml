@@ -1,0 +1,50 @@
+@startuml
+title RF23 — Animação 3D do jogador · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+control "AuditService" as AuditService
+database "MySQL 8" as MySQL
+database "S3/MinIO" as S3
+Manager -> Frontend: Animação 3D do jogador
+Frontend -> API: GET /animations?target=POSITION&code=WR
+API -> UseCase: ListAnimationClipsUseCase.execute(target, code)
+UseCase -> MySQL: animation_clip PUBLISHED (última versão)
+MySQL --> UseCase: clipes
+API --> Frontend: 200
+Frontend -> API: GET /careers/{id}/clubs/{cid}/identity
+API -> UseCase: GetClubIdentityUseCase.execute
+UseCase -> MySQL: requireOwner · uniform ativo · helmet_design
+alt não é dono
+  UseCase -> AuditService: record(ACCESS_DENIED)
+  API --> Frontend: 403
+else senão
+  API --> Frontend: 200 identidade
+end
+Frontend -> API: GET /me/settings · GET /me/inventory?kind=PLAYER_ANIMATION_3D
+API --> Frontend: reducedMotion · animações compradas
+alt WebGL indisponível
+  Frontend -> Manager: fallback 2D
+else senão
+  alt asset fora do cache
+    Frontend -> S3: GET GLB do modelo e clipes (ETag)
+    S3 --> Frontend: binário
+  else senão
+    Frontend -> Frontend: usa cache
+  end
+  Frontend -> Frontend: monta cena R3F: modelo + capacete + uniforme + clipe
+  alt reducedMotion
+    Frontend -> Manager: pose estática + Reproduzir
+  else senão
+    Frontend -> Manager: loop do clipe da posição
+  end
+  loop troca de clipe
+    Manager -> Frontend: escolhe estilo ou clipe
+    Frontend -> Frontend: crossFade(atual, novo, 0,3 s)
+  end
+end
+@enduml

@@ -1,0 +1,97 @@
+@startuml
+title RF5 — Editor de ligas (conferências e divisões), franquias e jogadores · Diagrama de componentes
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 36
+actor "Head coach / manager (usuário autenticado)" as c1
+actor "Administrador" as c2
+package "Frontend (Next.js)" as pkg_fe {
+  component "WorldEditorPage" as c3
+  frame "componentes de WorldEditorPage" as pkg_fe_sub {
+    component "WorldPicker" as c4
+    component "LeagueRulesForm (PRO/COLLEGE)" as c5
+    component "ConferenceDivisionBoard" as c6
+    component "ClubForm" as c7
+    component "HelmetEditor" as c8
+    component "UniformEditor" as c9
+    component "PlayerForm" as c10
+    component "SubAttributeEditor (≈40)" as c11
+    component "StadiumForm" as c12
+    component "LogoUploader" as c13
+  }
+}
+package "scores-af-web (REST)" as pkg_web {
+  component "WorldController" as c14
+  component "LeagueController" as c15
+  component "ClubController" as c16
+  component "PlayerController" as c17
+}
+package "scores-af-application (casos de uso)" as pkg_app {
+  component "ListWorldsUseCase" as c18
+  component "CloneWorldUseCase" as c19
+  component "SaveLeagueUseCase" as c20
+  component "SaveLeagueStructureUseCase" as c21
+  component "SaveClubUseCase" as c22
+  component "SavePlayerUseCase" as c23
+  component "SaveStadiumUseCase" as c24
+  component "DeleteCatalogItemUseCase" as c25
+  component "WorldAccess" as c26
+  component "MediaValidator" as c27
+}
+package "scores-af-domain/engine" as pkg_eng {
+  component "OverallByPosition" as c28
+  component "LeagueStructureValidator" as c29
+  component "LeagueRulesValidator" as c30
+}
+package "portas (port.out)" as pkg_ports {
+  interface "WorldRepository" as c31
+  interface "LeagueRepository" as c32
+  interface "ConferenceRepository" as c33
+  interface "DivisionRepository" as c34
+  interface "ClubRepository" as c35
+  interface "PlayerRepository" as c36
+  interface "StadiumRepository" as c37
+  interface "CareerSaveRepository" as c38
+  interface "MediaStoragePort" as c39
+  interface "SearchPort" as c40
+  interface "AuditLogRepository" as c41
+}
+package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
+  component "persistence-mysql" as c42
+  component "storage-s3" as c43
+  component "search-opensearch" as c44
+}
+database "MySQL 8" as s1
+database "S3/MinIO" as s2
+database "OpenSearch 2" as s3
+c1 --> c3 : usa
+c2 --> c3 : usa
+c3 --> c14 : GET /worlds (alvo)\nPOST /worlds/{id}/clone (alvo)\nPOST /worlds/{id}/leagues (alvo)\n…
+c3 --> c15
+c3 --> c16
+c3 --> c17
+c14 --> c18
+c15 --> c18
+c16 --> c18
+c17 --> c18
+c18 ..> pkg_app : orquestra
+c18 --> c28 : usa
+c18 --> c29 : usa
+c18 --> c30 : usa
+pkg_app --> pkg_ports : depende (DIP)
+c42 .up.|> c31
+c42 .up.|> c32
+c42 .up.|> c33
+c42 .up.|> c34
+c42 .up.|> c35
+c42 .up.|> c36
+c42 .up.|> c37
+c42 .up.|> c38
+c43 .up.|> c39
+c44 .up.|> c40
+c42 .up.|> c41
+c42 --> s1
+c43 --> s2
+c44 --> s3
+@enduml

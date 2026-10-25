@@ -1,0 +1,93 @@
+@startuml
+title RF30 — Classificação, seeds e notícias com IA · Diagrama de componentes
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 36
+actor "Head coach / manager (usuário autenticado)" as c1
+actor "Imprensa (IA)" as c2
+actor "Claude (LLM, narrativa)" as c3
+actor "Agendador/Job assíncrono" as c4
+package "Frontend (Next.js)" as pkg_fe {
+  component "StandingsPage" as c5
+  frame "componentes de StandingsPage" as pkg_fe_sub {
+    component "StandingsViewTabs" as c6
+    component "DivisionTable" as c7
+    component "ConferenceSeedsTable" as c8
+    component "TiebreakerTooltip" as c9
+    component "WeekNavigator" as c10
+    component "WeekScoresGrid" as c11
+    component "HeadlinesCarousel" as c12
+    component "JournalistCommentary" as c13
+    component "PlayoffBracket" as c14
+  }
+}
+package "scores-af-web (REST)" as pkg_web {
+  component "StandingsController" as c15
+  component "WeekController" as c16
+  component "NewsController" as c17
+}
+package "scores-af-application (casos de uso)" as pkg_app {
+  component "GetStandingsUseCase" as c18
+  component "GetWeekBoardUseCase" as c19
+  component "GetWeekNewsUseCase" as c20
+  component "GetPlayoffBracketUseCase" as c21
+  component "GetNewsFeedUseCase" as c22
+  component "GenerateWeekNewsJob" as c23
+  component "CareerAccess" as c24
+}
+package "scores-af-domain/engine" as pkg_eng {
+  component "SeasonEngine" as c25
+  component "SeedingPolicy" as c26
+  component "TiebreakPolicy" as c27
+  component "PressAgent" as c28
+}
+package "portas (port.out)" as pkg_ports {
+  interface "CareerSaveRepository" as c29
+  interface "StandingRepository" as c30
+  interface "PlayoffSeedRepository" as c31
+  interface "PlayoffMatchupRepository" as c32
+  interface "FixtureRepository" as c33
+  interface "NewsItemRepository" as c34
+  interface "TimelinePort" as c35
+  interface "LiveMatchStatePort" as c36
+  interface "AiNarrativePort" as c37
+}
+package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
+  component "persistence-mysql" as c38
+  component "persistence-cassandra" as c39
+  component "cache-redis" as c40
+  component "ai-providers" as c41
+}
+database "MySQL 8" as s1
+database "Cassandra 4.1" as s2
+database "Redis 7" as s3
+database "Anthropic Claude" as s4
+c1 --> c5 : usa
+c4 --> c18 : dispara
+c5 --> c15 : GET /careers/{id}/standings (alvo)\nGET /careers/{id}/weeks/{n} (alvo)\nGET /careers/{id}/weeks/{n}/news (alvo)\n…
+c5 --> c16
+c5 --> c17
+c15 --> c18
+c16 --> c18
+c17 --> c18
+c18 ..> pkg_app : orquestra
+c18 --> c25 : usa
+c18 --> c26 : usa
+c18 --> c27 : usa
+c18 --> c28 : usa
+pkg_app --> pkg_ports : depende (DIP)
+c38 .up.|> c29
+c38 .up.|> c30
+c38 .up.|> c31
+c38 .up.|> c32
+c38 .up.|> c33
+c38 .up.|> c34
+c39 .up.|> c35
+c40 .up.|> c36
+c41 .up.|> c37
+c38 --> s1
+c39 --> s2
+c40 --> s3
+c41 --> s4
+@enduml

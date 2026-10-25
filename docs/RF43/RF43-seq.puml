@@ -1,0 +1,41 @@
+@startuml
+title RF43 — Mini campo 3D no intervalo · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+control "MatchSimulator" as MatchSimulator
+database "MySQL 8" as MySQL
+database "Redis 7" as Redis
+Frontend -> API: GET /matches/{mid}
+API -> UseCase: MatchQueryUseCases.state(mid, userId)
+UseCase -> Redis: LiveMatchStatePort: 11 por lado, fadiga, down, ballOnAbsYd
+UseCase -> MySQL: MatchSession (fallback) · Uniform e HelmetDesign fixados
+API --> Frontend: 200 MatchStateDto
+Frontend -> API: GET /clubs/{cid}/playbook
+API --> Frontend: jogadas com diagrama
+Frontend -> Frontend: buildTacticalFieldSnapshot · layoutFormation(formação × pacote) · avatarFor
+Frontend -> Frontend: navegador: WebGL? primeiros quadros? PerformanceMonitor
+alt sem WebGL
+  Frontend -> Manager: MiniField2D equivalente
+else WebGL
+  Frontend -> Manager: MiniField3D com 22 atletas, rotas e zonas
+end
+Manager -> Frontend: troca no depth chart + ênfase de jogadas
+Frontend -> API: POST /matches/{mid}/decisions [{DEPTH_SWAP…}, {GAME_PLAN…}] (snapshotVersion)
+API -> UseCase: AdvanceMatchUseCase.decisions
+UseCase -> MatchSimulator: validateDecisions(lote) — tudo ou nada
+alt lote inválido
+  UseCase --> API: DecisionRejected{code}
+  API --> Frontend: 409 {code, message}
+else senão
+  UseCase -> Redis: estado atualizado (version + 1)
+  UseCase -> MySQL: MatchSession.snapshotJson · decisionsLog
+  API --> Frontend: 200
+  Frontend -> API: POST /matches/{mid}/advance
+  API --> Frontend: 200 (LIVE, próximo quarto)
+end
+@enduml

@@ -1,0 +1,67 @@
+@startuml
+title RF15 — Estilos de head coach por recompensa e Scores Points · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Manager|
+start
+:Abre Loja → Estilos de head coach;
+|Frontend|
+:GET /store/items?kind=COACH_STYLE;
+:Cards: OFFENSIVE (jogadas de ataque), DEFENSIVE (cobertura e pass rush), DEVELOPER (evolução de jovens e practice squad), MOTIVATOR (moral);
+|Manager|
+if (compra com Scores Points?) then (sim)
+|Frontend|
+  :POST /store/purchase {itemCode, Idempotency-Key};
+|Backend|
+  if (estilo vendável?) then (sim)
+  else (não)
+    :422 STYLE_REWARD_ONLY;
+    stop
+  endif
+  if (já possui o estilo?) then (sim)
+    :200 idempotente (mesma Purchase);
+    stop
+  endif
+  if (saldo suficiente?) then (sim)
+  else (não)
+    :422 INSUFFICIENT_POINTS;
+    stop
+  endif
+  :Transação: PointsTransaction PURCHASE · Purchase · AuditLog STORE_PURCHASE;
+else (não)
+|Scheduler|
+  :Fim de temporada: avalia metas (RF33);
+  if (meta concluída concede estilo?) then (sim)
+    :Purchase do estilo com pricePaid 0 · notificação Estilo desbloqueado;
+  else (não)
+    :Só Scores Points;
+  endif
+endif
+|Manager|
+:No painel do head coach escolhe o estilo ativo;
+|Frontend|
+:PUT /careers/{id}/manager/style {styleCode};
+|Backend|
+if (dono do save?) then (sim)
+else (não)
+  :403 + ACCESS_DENIED;
+  stop
+endif
+if (estilo possuído pelo usuário?) then (sim)
+else (não)
+  :422 STYLE_NOT_OWNED;
+  stop
+endif
+if (troca de estilo permitida?) then (sim)
+else (não)
+  :422 STYLE_CHANGE_WINDOW_CLOSED;
+  stop
+endif
+:ManagerProfile.coachStyle = code · overall recalculado (+ bônus do estilo);
+:MatchSimulator (RF42), MoraleEngine (RF41) e evolução de jogadores passam a usar os efeitos;
+|Frontend|
+:Painel mostra estilo ativo, overall e efeitos;
+end
+@enduml

@@ -1,0 +1,196 @@
+@startuml
+title RF40 — Central do clube · Diagrama de classes
+skinparam classAttributeIconSize 0
+hide empty methods
+package "career" {
+  class CareerSave {
+    id: UUID
+    name: String
+    seed: long
+    employmentStatus: EmploymentStatus
+    currentWeek: int
+    difficulty: Difficulty
+    seasonMode: SeasonMode
+    scoresPoints: int
+    status: SaveStatus
+    slot: int
+    lastPlayedAt: Instant
+  }
+  class ManagerMorale {
+    moraleClub: int
+    moraleLeague: int
+    factorsClub: JSON
+    factorsLeague: JSON
+    weeksUnderCritical: int
+    trend: Trend
+    updatedWeek: int
+  }
+}
+package "catalog" {
+  class Club {
+    id: UUID
+    name: String
+    shortName: String
+    city: String
+    conference: Conference
+    division: Division
+    logoKey: String
+    primaryColor: String
+    secondaryColor: String
+    accentColor: String
+    prestige: int
+    reputationBoard: int
+    reputationFans: int
+    cash: long
+    capSpace: long
+    isUserControlled: boolean
+    expectedWins: int
+    scoutingLevel: int
+    scoutingBudget: long
+  }
+  class Division {
+    name: String
+    conference: Conference
+    teamCount: int = 4
+  }
+}
+package "season" {
+  class Season {
+    number: int
+    year: int
+    phase: SeasonPhase (PRESEASON|REGULAR|PLAYOFFS|DRAFT|FREE_AGENCY|OFFSEASON)
+    currentWeek: int
+    tradeDeadlineWeek: int
+    championClub: Club?
+    mvpPlayer: Player?
+  }
+  class Fixture {
+    week: int
+    date: LocalDate
+    slot: KickoffSlot (THU_NIGHT|SUN_EARLY|SUN_LATE|SUN_NIGHT|MON_NIGHT)
+    status: FixtureStatus
+    homeScore: int
+    awayScore: int
+    quarterScores: JSON
+    overtime: boolean
+    isDivisional: boolean
+    isConference: boolean
+    neutralSite: boolean
+    weather: Weather
+    attendance: int
+    revenue: long
+    importance: FixtureImportance
+    seed: long
+    isUserFixture: boolean
+  }
+  class Standing {
+    wins: int
+    losses: int
+    ties: int
+    winPct: double
+    divisionRecord: String
+    conferenceRecord: String
+    pointsFor: int
+    pointsAgainst: int
+    streak: int
+    last5: JSON
+    divisionRank: int
+    conferenceSeed: Integer
+    tiebreakerNote: String
+  }
+}
+package "match" {
+  class MatchSession {
+    status: LiveStatus
+    quarter: int
+    clockSeconds: int
+    playClockSeconds: int
+    possession: Club
+    down: int (1–4)
+    distance: int
+    ballOnAbsYd: int (0–100)
+    homeScore: int
+    awayScore: int
+    timeoutsHome: int
+    timeoutsAway: int
+    seed: long
+    rngCursor: long
+    snapshotJson: TEXT
+    decisionsLog: JSON
+    version: long
+  }
+  class InjuryReport {
+    week: int
+    player: Player
+    status: InjuryStatus (QUESTIONABLE|DOUBTFUL|OUT|IR)
+    practice: PracticeStatus (FULL|LIMITED|DNP)
+    returnEstimateWeek: Integer
+    publishedAt: Instant
+  }
+}
+package "finance" {
+  class SalaryCapLedger {
+    season: int
+    cap: long
+    committed: long
+    deadMoney: long
+    space: long
+    rolloverFromPrevious: long
+  }
+}
+package "analysis" {
+  class AiAnalysisReport {
+    week: int
+    summary: TEXT
+    strengthsByUnit: JSON
+    weaknessesByUnit: JSON
+    depthChartSuggestion: JSON
+    gamePlanFit: int
+    keyMatchups: JSON
+    riskAlerts: JSON
+    winProbabilityNext: double
+    narrative: TEXT
+  }
+}
+class GetClubDashboardUseCase <<UseCase>> {
+  execute(careerId, userId): DashboardResult
+}
+class DashboardResult <<record>> {
+  club: ClubCompactDto
+  coach: CoachCardDto
+  nextGame: FixtureDto?
+  byeWeek: boolean
+  divisionOpponents: List<FixtureDto>
+  live: LiveCardDto?
+  division: List<StandingDto>
+  capSpace: long
+  injuries: List<InjuryReportDto>
+  alerts: List<AlertDto>
+  inbox: List<InboxPreviewDto>
+  points: int
+  employmentStatus: EmploymentStatus
+}
+class LiveCardDto <<record>> {
+  quarter: int
+  clock: String
+  possession: UUID
+  downAndDistance: String '3rd & 7 at OPP 34'
+  homeScore: int
+  awayScore: int
+}
+Division "1" -- "*" Club : franquias
+Club "*" -- "*" Club : rivais da divisão
+CareerSave "*" -- "0..1" Club : franquia atual
+CareerSave "1" -- "1" ManagerMorale
+CareerSave "1" -- "*" Season
+Season "1" -- "*" Standing
+Fixture "*" -- "1" Club : mandante
+Fixture "1" -- "0..1" MatchSession : estado vivo
+Club "1" -- "*" InjuryReport : semanal
+Club "1" -- "*" SalaryCapLedger : por temporada
+CareerSave "1" -- "*" AiAnalysisReport
+GetClubDashboardUseCase ..> DashboardResult : produz
+DashboardResult ..> LiveCardDto : 0..1
+LiveCardDto ..> MatchSession : derivado de
+GetClubDashboardUseCase ..> SalaryCapLedger : lê
+@enduml

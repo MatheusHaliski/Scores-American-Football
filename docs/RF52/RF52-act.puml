@@ -1,0 +1,63 @@
+@startuml
+title RF52 — Sala de imprensa · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Scheduler|
+start
+:Antes e depois de cada jogo: cria PressConference com contexto (vitória, derrota, sequência, lesão, rival);
+|Backend|
+if (Claude disponível?) then (sim)
+|Claude|
+  :Gera perguntas no tom do jornalista;
+else (não)
+|Backend|
+  :Perguntas por template;
+endif
+:InboxMessage avisando a coletiva;
+|Manager|
+:Abre a sala de imprensa;
+|Frontend|
+:GET /press/{pcId};
+|Backend|
+if (dono do save?) then (sim)
+else (não)
+  :403;
+  stop
+endif
+|Manager|
+if (vai à coletiva?) then (sim)
+  while (há perguntas?) is (sim)
+|Frontend|
+    :POST /press/{pcId}/answers;
+|Backend|
+    if (coletiva aberta?) then (sim)
+    else (não)
+      :422 PRESS_CLOSED;
+      stop
+    endif
+    if (resposta válida?) then (sim)
+    else (não)
+      :422 ANSWER_INVALID;
+    endif
+    :Calcula impacto: moral dos citados, moral do elenco, diretoria;
+  endwhile (não)
+else (não)
+|Frontend|
+  :POST /press/{pcId}/skip;
+|Backend|
+  if (falta tolerada?) then (sim)
+  else (não)
+|Diretoria|
+    :Reduz reputação;
+  endif
+endif
+|Backend|
+:Fecha a coletiva, aplica impactos e publica a manchete;
+|JogadorIA|
+:Reage na moral (citado com elogio ou crítica);
+|Imprensa|
+:Notícia na timeline;
+end
+@enduml

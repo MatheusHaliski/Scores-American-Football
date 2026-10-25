@@ -1,0 +1,18 @@
+@startuml
+title RF46 — Configurações com padrão LGPD e tradução completa · Máquina de estados: ConsentRecord (finalidade)
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "NaoConsentido" as NaoConsentido
+NaoConsentido : padrão
+state "Concedido" as Concedido
+state "Desatualizado" as Desatualizado
+Desatualizado : texto mudou
+state "Revogado" as Revogado
+[*] --> NaoConsentido
+NaoConsentido --> Concedido : liga
+Concedido --> Revogado : desliga
+Revogado --> Concedido : liga de novo
+Concedido --> Desatualizado : nova versão do texto
+Desatualizado --> Concedido : reaceita
+Desatualizado --> Revogado : desliga
+@enduml

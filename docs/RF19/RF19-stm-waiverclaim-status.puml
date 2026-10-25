@@ -1,0 +1,17 @@
+@startuml
+title RF19 — Reforçar o elenco: free agency, trocas e waivers · Máquina de estados: WaiverClaim.status
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "PENDING" as PENDING
+PENDING : priority = ordem inversa da classificação
+state "AWARDED" as AWARDED
+AWARDED : herda o contrato
+AWARDED : vai ao fim da fila
+state "LOST" as LOST
+LOST : outra franquia com prioridade melhor
+[*] --> PENDING
+PENDING --> AWARDED : menor priority no processamento
+PENDING --> LOST : prioridade pior
+AWARDED --> [*]
+LOST --> [*]
+@enduml

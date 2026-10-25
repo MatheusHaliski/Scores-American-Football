@@ -1,0 +1,21 @@
+@startuml
+title RF26 — Estádio 3D e loja de estádio modular · Máquina de estados: Obra de cobertura ou superfície (Stadium.roof / surface)
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "Solicitada" as Solicitada
+Solicitada : só na offseason
+state "Vetada" as Vetada
+Vetada : BOARD_VETO no inbox
+state "Em obra" as EmObra
+EmObra : até a pré-temporada
+EmObra : jogos de pré em campo alternativo
+state "Concluída" as Concluida
+Concluida : roof/surface novos
+Concluida : clima e lesões recalibrados
+[*] --> Solicitada
+Solicitada --> Vetada : diretoria veta
+Solicitada --> EmObra : aprovada e paga
+EmObra --> Concluida : SeasonPhase PRESEASON
+Vetada --> [*]
+Concluida --> [*]
+@enduml

@@ -1,0 +1,46 @@
+@startuml
+title RF52 — Sala de imprensa · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+control "MoraleEngine" as MoraleEngine
+queue "EventBus" as EventBus
+database "MySQL 8" as MySQL
+database "Cassandra 4.1" as Cassandra
+participant "Claude (LLM, narrativa)" as Claude
+participant "Agendador/Job assíncrono" as Scheduler
+Scheduler -> UseCase: SchedulePressConference(fixture, context)
+UseCase -> Claude: perguntas(contexto, jornalista)
+alt Claude falha ou demora
+  UseCase -> UseCase: PressTemplates.questions(context)
+else senão
+  Claude --> UseCase: perguntas
+end
+UseCase -> MySQL: INSERT press_conference OPEN + inbox_message
+Manager -> Frontend: abre a coletiva
+Frontend -> API: GET /careers/{id}/press/{pcId}
+API -> UseCase: GetPressConferenceUseCase
+UseCase --> API: PressConferenceView
+API --> Frontend: 200
+loop cada pergunta
+  Manager -> Frontend: escolhe o tom
+  Frontend -> API: POST /press/{pcId}/answers
+  API -> UseCase: AnswerPressQuestionUseCase
+  alt fechada ou resposta inválida
+    API --> Frontend: 422 PRESS_CLOSED / ANSWER_INVALID
+  else senão
+    UseCase -> MoraleEngine: impacto(tom, citados)
+    MoraleEngine --> UseCase: deltas de moral e diretoria
+    UseCase -> MySQL: answers + moraleImpact
+    API --> Frontend: 200
+  end
+end
+UseCase -> MySQL: TX: aplica moral, diretoria, fecha coletiva
+UseCase -> EventBus: PressConferenceClosed
+EventBus -> Cassandra: NewsItem com a manchete
+Frontend -> Manager: resumo do impacto
+@enduml

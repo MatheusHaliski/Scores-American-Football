@@ -1,0 +1,33 @@
+@startuml
+title RF46 — Configurações com padrão LGPD e tradução completa · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+control "AuditService" as AuditService
+database "MySQL 8" as MySQL
+database "S3/MinIO" as S3
+participant "Agendador/Job assíncrono" as Scheduler
+Manager -> Frontend: desliga Foto para o avatar 3D
+Frontend -> API: PUT /me/consents {BIOMETRIC_AVATAR: false, source: SETTINGS}
+API -> UseCase: PrivacyUseCases.update
+UseCase -> MySQL: ConsentRecord (revogado, versão, origem)
+UseCase -> S3: apaga photoKey, textureKey, modelKey
+UseCase -> AuditService: CONSENT_REVOKED · AVATAR_MEDIA_DELETED
+API --> Frontend: 200 PrivacyView
+Manager -> Frontend: troca idioma para en-US e unidade para metros
+Frontend -> API: PUT /me/settings {preferredLocale: en-US, units: METERS}
+API -> UseCase: SettingsUseCases.update
+alt idioma ou unidade inválidos
+  API --> Frontend: 422
+else senão
+  UseCase -> MySQL: UserSettings + UserAccount.locale
+  API --> Frontend: 200
+end
+Manager -> API: POST /me/export
+Scheduler -> UseCase: DataExportUseCases.process
+UseCase -> S3: JSON + CSV (link 24 h)
+@enduml

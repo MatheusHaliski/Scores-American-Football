@@ -1,0 +1,129 @@
+@startuml
+title RNF11 — Tratamento de uploads de formulários · Diagrama de classes
+skinparam classAttributeIconSize 0
+hide empty methods
+package "account" {
+  class UserAccount {
+    id: UUID
+    email: String «AES-GCM»
+    emailHash: String «unique»
+    passwordHash: String «Argon2id»
+    displayName: String
+    locale: Locale
+    role: Role
+    status: AccountStatus
+    failedLoginAttempts: int
+    lockedUntil: Instant
+    marketingConsent: boolean
+    deletionRequestedAt: Instant
+    profileVisibility: ProfileVisibility
+    birthDate: LocalDate
+    pendingEmail: String
+  }
+  class CustomPlayer {
+    user: UserAccount «unique»
+    name: String
+    position: Position
+    heightCm: int
+    weightKg: int
+    jerseyNumber: int
+    attributes: PlayerAttributes
+    appearance: JSON
+    faceMetrics: JSON
+    reconstructionSource: AvatarSource
+    modelKey: String
+    avatarRevision: int
+    confirmedAt: Instant
+  }
+}
+package "catalog" {
+  class Club {
+    id: UUID
+    name: String
+    shortName: String
+    city: String
+    conference: Conference
+    division: Division
+    logoKey: String
+    primaryColor: String
+    secondaryColor: String
+    accentColor: String
+    prestige: int
+    reputationBoard: int
+    reputationFans: int
+    cash: long
+    capSpace: long
+    isUserControlled: boolean
+    expectedWins: int
+    scoutingLevel: int
+    scoutingBudget: long
+  }
+  class Uniform {
+    slot: UniformSlot (HOME|AWAY|ALTERNATE)
+    jerseyColor: String
+    pantsColor: String
+    numberColor: String
+    numberOutline: String
+    pattern: String
+    textureKey: String
+    isActive: boolean
+  }
+  class HelmetDesign {
+    shellColor: String
+    stripe: StripeStyle
+    stripeColor: String
+    facemaskColor: String
+    decalKey: String
+    finish: Finish (MATTE|GLOSS|CHROME)
+  }
+  class Stadium {
+    name: String
+    capacity: int (60–80 mil)
+    roof: RoofType (OPEN|DOME|RETRACTABLE)
+    surface: Surface (GRASS|TURF)
+    climateZone: ClimateZone
+    level: int
+    atmosphere: int
+    maintenanceCostPerWeek: long
+    model3dUrl: String
+    endZoneArtKey: String
+    ticketPolicy: TicketPolicy (preço por setor, carnê de temporada)
+  }
+}
+class MediaAsset <<record>> {
+  key: String «unique»
+  owner: UserAccount
+  purpose: MediaPurpose
+  contentType: String
+  bytes: long
+  sha256: String
+  status: STORED|QUARANTINED|DELETED
+}
+enum MediaPurpose {
+  CLUB_LOGO
+  HELMET_DECAL
+  END_ZONE_ART
+  UNIFORM
+  AVATAR
+  MODEL_3D
+}
+class MediaPolicy <<Policy>> {
+  maxBytes(purpose): long
+  allowedTypes(purpose, role)
+  dimensions(purpose): Range
+  quota(role): long
+}
+interface AntivirusPort <<Port>> {
+  scan(path): ScanResult
+}
+UserAccount "1" -- "0..1" CustomPlayer : Meu jogador
+Club "1" -- "*" Uniform
+Club "1" -- "1" HelmetDesign : capacete
+Club "1" -- "1" Stadium
+Club "*" -- "*" Club : rivais da divisão
+MediaAsset ..> MediaPurpose : purpose
+MediaPolicy ..> MediaPurpose : regras
+HelmetDesign ..> MediaAsset : decalKey
+Club ..> MediaAsset : logoKey
+Stadium ..> MediaAsset : endZoneArtKey
+@enduml

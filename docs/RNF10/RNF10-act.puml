@@ -1,0 +1,57 @@
+@startuml
+title RNF10 — Notificações via Chrome (Web Push) · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Manager|
+start
+:Clica em Ativar notificações do navegador;
+|Frontend|
+if (navegador suporta Push?) then (sim)
+else (não)
+  :Aviso: só in-app;
+  end
+endif
+if (permissão concedida?) then (sim)
+else (não)
+  :Guarda o estado, não insiste;
+  end
+endif
+:pushManager.subscribe com a chave VAPID pública · POST /me/push-subscriptions;
+|Backend|
+if (assinatura válida?) then (sim)
+else (não)
+  :422 PUSH_SUBSCRIPTION_INVALID;
+  stop
+endif
+:Upsert por endpoint · AuditLog;
+|Scheduler|
+:Evento do jogo (proposta, diretoria, semana concluída, meta, exportação) → Notification na timeline;
+if (tipo habilitado?) then (sim)
+else (não)
+  :Só in-app;
+  end
+endif
+if (usuário ativo na aba?) then (sim)
+  :Só in-app (badge);
+  end
+endif
+if (limite de frequência?) then (sim)
+else (não)
+  :Agrupa em resumo;
+endif
+if (chave VAPID privada no Cofre?) then (sim)
+else (não)
+  :Sem push (alerta);
+  stop
+endif
+:Payload cifrado e assinado com VAPID · POST no push service;
+if (push service respondeu 404/410?) then (sim)
+  :Remove a assinatura;
+  stop
+endif
+|Frontend|
+:Service Worker mostra a notificação · clique abre inbox, propostas ou metas;
+end
+@enduml

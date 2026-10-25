@@ -1,0 +1,31 @@
+@startuml
+title RNF9 — Desempenho e usabilidade da interface (3D com 22 atletas) · Máquina de estados: Tela da partida (carregamento e degradação)
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "Skeleton" as Skeleton
+Skeleton : render imediato
+state "Carregando" as Carregando
+Carregando : GET com ETag
+Carregando : chunk 3D sob demanda
+state "Cena 3D" as Cena3D
+Cena3D : 22 atletas · ≥ 30 fps
+state "Cena 3D reduzida" as Cena3DReduzida
+Cena3DReduzida : LOD baixo, sem sombras e torcida
+state "Campo 2D" as Modo2D
+Modo2D : sem WebGL ou < 20 fps
+state "Reduced motion" as Reduzida
+Reduzida : câmera fixa, sem loops
+state "Offline" as Offline
+Offline : retry com backoff
+[*] --> Skeleton
+Skeleton --> Carregando : dados pedidos
+Carregando --> Cena3D : WebGL ok
+Carregando --> Modo2D : sem WebGL
+Cena3D --> Cena3DReduzida : fps < 30
+Cena3DReduzida --> Modo2D : fps < 20
+Cena3DReduzida --> Cena3D : fps estável
+Cena3D --> Reduzida : reducedMotion ligado
+Reduzida --> Cena3D : reducedMotion desligado
+Carregando --> Offline : sem rede
+Offline --> Carregando : rede volta
+@enduml

@@ -1,0 +1,48 @@
+@startuml
+title RF57 — All-Star · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Scheduler|
+start
+:Meio da temporada: cria AllStarEvent VOTING;
+|Manager|
+:Abre o All-Star e vota por posição;
+|Frontend|
+:POST /all-star/votes;
+|Backend|
+if (dono do save?) then (sim)
+else (não)
+  :403;
+  stop
+endif
+if (votação aberta?) then (sim)
+else (não)
+  :422 VOTING_CLOSED;
+  stop
+endif
+if (voto válido?) then (sim)
+else (não)
+  :422 VOTE_INVALID;
+  stop
+endif
+|Scheduler|
+:Fecha votação: elencos por overall, estatísticas e votos das IA;
+|Backend|
+if (convocado lesionado?) then (sim)
+  :Chama o substituto;
+endif
+fork
+  :Desafios: 40 jardas, precisão de passe, chute de distância;
+fork again
+  :Jogo das estrelas simulado: sem lesão, sem estatística oficial;
+end fork
+|JogadorIA|
+:Convocados e vencedores ganham moral;
+|Imprensa|
+:Notícia do evento;
+|Manager|
+:Vê o resultado;
+end
+@enduml

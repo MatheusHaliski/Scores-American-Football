@@ -1,0 +1,28 @@
+@startuml
+title RF24 — Responder mensagens do inbox · Máquina de estados: InboxMessage.status
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "UNREAD" as UNREAD
+UNREAD : criada por evento do jogo
+UNREAD : conta no badge
+state "READ" as READ
+READ : aberta
+READ : aguarda decisão se há opções
+state "ANSWERED" as ANSWERED
+ANSWERED : chosenOption gravada
+ANSWERED : consequência aplicada (RF41)
+state "EXPIRED" as EXPIRED
+EXPIRED : deadlineWeek ultrapassada
+EXPIRED : consequência padrão
+state "ARCHIVED" as ARCHIVED
+ARCHIVED : fora da lista principal
+[*] --> UNREAD
+UNREAD --> READ : abrir
+READ --> ANSWERED : POST /respond válido
+UNREAD --> EXPIRED : WeekCompleted > deadlineWeek
+READ --> EXPIRED : WeekCompleted > deadlineWeek
+READ --> ARCHIVED : sem opções / arquivar
+ANSWERED --> ARCHIVED : arquivar
+EXPIRED --> ARCHIVED : arquivar
+ARCHIVED --> [*]
+@enduml

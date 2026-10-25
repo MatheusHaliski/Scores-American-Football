@@ -1,0 +1,42 @@
+@startuml
+title RF29 — Playbook no intervalo · Máquina de estados: MatchSession.status com foco no playbook (BREAK / HALFTIME)
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "LIVE" as LIVE
+LIVE : quarto em andamento
+LIVE : só tempo técnico e chamada (RF62)
+state "BREAK" as BREAK
+BREAK : fim do 1º ou 3º quarto
+BREAK : ajustes rápidos
+state "HALFTIME" as HALFTIME
+HALFTIME : playbook completo
+state "Validando ajuste" as Validando
+Validando : playbook, pesos, depth chart
+Validando : CAS por version
+state "Ajuste aplicado" as Aplicado
+Aplicado : version +1
+Aplicado : decisionsLog
+state "Ajuste rejeitado" as Rejeitado
+Rejeitado : 422 / 409
+state "BREAK antes do OT" as OT_BREAK
+OT_BREAK : 4º empatado
+OT_BREAK : cara ou coroa
+state "FINISHED" as FINISHED
+FINISHED : sem mais intervalos
+[*] --> LIVE
+LIVE --> BREAK : fim do 1º/3º quarto
+LIVE --> HALFTIME : fim do 2º quarto
+BREAK --> Validando : POST /adjustments
+HALFTIME --> Validando : POST /adjustments
+Validando --> Aplicado : ok
+Validando --> Rejeitado : erro
+Aplicado --> HALFTIME : continua ajustando
+Rejeitado --> HALFTIME : recarrega
+BREAK --> LIVE : advance
+HALFTIME --> LIVE : kickoff do 2º tempo
+LIVE --> OT_BREAK : fim do 4º empatado
+OT_BREAK --> Validando : POST /adjustments
+OT_BREAK --> LIVE : kickoff do OT
+LIVE --> FINISHED : fim com vencedor ou empate permitido
+FINISHED --> [*]
+@enduml

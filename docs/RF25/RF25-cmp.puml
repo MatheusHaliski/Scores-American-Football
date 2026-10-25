@@ -1,0 +1,79 @@
+@startuml
+title RF25 — Comprar e aplicar consumíveis · Diagrama de componentes
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 36
+actor "Head coach / manager (usuário autenticado)" as c1
+actor "Agendador/Job assíncrono" as c2
+package "Frontend (Next.js)" as pkg_fe {
+  component "RosterPage" as c3
+  frame "componentes de RosterPage" as pkg_fe_sub {
+    component "PlayerModal" as c4
+    component "ConsumableDialog" as c5
+    component "EffectPreview" as c6
+    component "PlayStyleChips" as c7
+    component "StoreConsumablesTab" as c8
+  }
+}
+package "scores-af-web (REST)" as pkg_web {
+  component "RosterController" as c9
+  component "PlayerController" as c10
+  component "StoreController" as c11
+}
+package "scores-af-application (casos de uso)" as pkg_app {
+  component "ApplyConsumableUseCase" as c12
+  component "GetRosterUseCase" as c13
+  component "StoreCatalogService" as c14
+  component "PointsService" as c15
+  component "CareerAccess" as c16
+  component "AuditService" as c17
+  component "ConsumableExpiryJob" as c18
+}
+package "scores-af-domain/engine" as pkg_eng {
+  component "FinanceEngine" as c19
+  component "ConsumableApplier" as c20
+  component "OverallCalculator" as c21
+}
+package "portas (port.out)" as pkg_ports {
+  interface "ConsumableRepository" as c22
+  interface "ConsumableApplicationRepository" as c23
+  interface "PlayerRepository" as c24
+  interface "PlayerPlayStyleRepository" as c25
+  interface "ScoresPointsWalletRepository" as c26
+  interface "PointsTransactionRepository" as c27
+  interface "FinanceLedgerRepository" as c28
+  interface "AuditLogRepository" as c29
+  interface "CounterPort" as c30
+}
+package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
+  component "persistence-mysql" as c31
+  component "cache-redis" as c32
+}
+database "MySQL 8" as s1
+database "Redis 7" as s2
+c1 --> c3 : usa
+c2 --> c12 : dispara
+c3 --> c9 : GET /careers/{id}/roster (alvo)\nGET /store/catalog (alvo)\nPOST /careers/{id}/players/{pid}/consumables (alvo)
+c3 --> c10
+c3 --> c11
+c9 --> c12
+c10 --> c12
+c11 --> c12
+c12 ..> pkg_app : orquestra
+c12 --> c19 : usa
+c12 --> c20 : usa
+c12 --> c21 : usa
+pkg_app --> pkg_ports : depende (DIP)
+c31 .up.|> c22
+c31 .up.|> c23
+c31 .up.|> c24
+c31 .up.|> c25
+c31 .up.|> c26
+c31 .up.|> c27
+c31 .up.|> c28
+c31 .up.|> c29
+c32 .up.|> c30
+c31 --> s1
+c32 --> s2
+@enduml

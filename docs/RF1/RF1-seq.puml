@@ -1,0 +1,49 @@
+@startuml
+title RF1 — Cadastro de usuário · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Visitante (não autenticado)" as Visitante
+participant "Frontend" as Frontend
+boundary "Filtros" as Filtros
+boundary "API" as API
+control "UseCase" as UseCase
+control "AuditService" as AuditService
+database "MySQL 8" as MySQL
+database "Redis 7" as Redis
+participant "Email" as Email
+Visitante -> Frontend: preenche cadastro
+Frontend -> API: POST /auth/register {email, password, displayName, locale, consents}
+API -> Filtros: CorrelationIdFilter → AuthRateLimitFilter (IP + método + rota)
+Filtros -> Redis: INCR auth:register:{ip} (Lua, janela 1 h, limite 10)
+alt limite excedido
+  Filtros --> Frontend: 429 RATE_LIMITED {code, message, correlationId} + Retry-After
+else senão
+  API -> UseCase: RegisterUserUseCase.execute(cmd, ip)
+  UseCase -> UseCase: valida payload · ReservedNames · consentimento
+  UseCase -> MySQL: existsByEmailHash(HMAC) — leitura curta
+  MySQL --> UseCase: false
+  UseCase -> UseCase: PasswordHasher.hash(senha) fora da transação, com semáforo
+  alt teto de hashes esgotado
+    UseCase --> API: AuthBusyException
+    API --> Frontend: 503 AUTH_BUSY + Retry-After
+  else senão
+    UseCase -> MySQL: TX curta: INSERT user_account (AES-GCM, emailHash, Argon2id), user_settings (padrão AF), consent_record
+    alt e-mail já cadastrado (unique)
+      UseCase --> API: ConflictException
+      API --> Frontend: 409 EMAIL_ALREADY_REGISTERED
+    else senão
+      UseCase -> AuditService: ok(REGISTER) · ok(CONSENT_GRANTED) «REQUIRES_NEW»
+      UseCase -> Email: e-mail de verificação (token 24 h, log mascarado)
+      UseCase --> API: RegisterUserResult
+      API --> Frontend: 201 Created + X-Correlation-Id
+      Frontend -> Visitante: confira seu e-mail
+    end
+  end
+end
+Visitante -> Frontend: abre o link de verificação
+Frontend -> API: POST /auth/email/verify {token}
+API -> UseCase: EmailChangeUseCases.verify(token)
+UseCase -> MySQL: token de uso único → e-mail verificado
+API --> Frontend: 200 verificado
+@enduml

@@ -1,0 +1,103 @@
+@startuml
+title RF48 — Subatributos ampliados, macros e overall por posição · Diagrama de classes
+skinparam classAttributeIconSize 0
+hide empty methods
+package "catalog" {
+  class Player {
+    id: UUID
+    name: String
+    nationality: String
+    college: String
+    birthDate: LocalDate
+    age: int
+    heightCm: int
+    weightKg: int
+    position: Position (QB|RB|FB|WR|TE|LT|LG|C|RG|RT|DE|DT|OLB|MLB|CB|FS|SS|K|P|LS)
+    unit: Unit (OFFENSE|DEFENSE|SPECIAL)
+    attributes: PlayerAttributes
+    overall: int «por posição, OVR v1»
+    potential: int
+    experienceYears: int
+    rosterStatus: RosterStatus (ACTIVE|INACTIVE|PRACTICE_SQUAD|IR|PUP|FREE_AGENT|WAIVED)
+    condition: int
+    morale: int
+    moraleFactors: JSON
+    injury: Injury?
+    suspensionWeeks: int
+    contract: PlayerContract
+    jerseyNumber: int
+    isLegendary: boolean
+    model3dUrl: String
+  }
+  class PlayerAttributes {
+    «embedded» físicos: 7 (VEL, ACE, AGI, FOR, IMPULSAO, RES, DUR)
+    passe: 8 (precisão curta/média/longa, braço, em movimento, play-action, leitura, calma)
+    corrida e posse: 7 (visão, quebra de tackle, juke, spin, stiff arm, proteção, carregar)
+    recepção: 7 (mãos, tráfego, espetacular, rota curta/média/funda, soltura)
+    bloqueio: 5 (passe, corrida, técnica, finesse, potência)
+    defesa: 9 (tackle, impacto, perseguição, leitura, cobertura individual/zona, press, rush finesse/potência)
+    chute: 3 (potência, precisão, retorno)
+    mental: 2 (consciência, liderança)
+  }
+  class PlayerPlayStyle {
+    source: NATURAL|CONSUMABLE|STORE
+    weeksRemaining: Integer
+    appliedAt: Instant
+  }
+  class PlayStyle {
+    code: PlayStyleCode
+    name: String
+    positions: List<Position>
+    tier: Tier
+    effects: JSON
+    animationId: String
+    priceScoresPoints: int
+  }
+  class ConsumableApplication {
+    appliedWeek: int
+    expiresWeek: int
+    active: boolean
+  }
+}
+package "match" {
+  class DepthChartSlot {
+    unit: Unit
+    position: Position | Role (KR|PR|3RD_DOWN_BACK|SNAPPER|HOLDER)
+    depth: int (1, 2, 3…)
+    player: Player
+    outOfPosition: boolean
+  }
+}
+class OverallWeights <<alvo (fora do catálogo)>> {
+  version: int
+  status: DRAFT | ACTIVE | RETIRED
+  weights: Map<Position, Map<Attribute, Double>>
+  goldenVector: JSON
+}
+class MacroCalculator <<Engine>> {
+  macros(attributes, family): Map<Macro, Integer>
+}
+class OverallCalculator <<Engine>> {
+  overall(attributes, position, weights): int
+  byPosition(attributes, weights): Map<Position, Integer>
+  outOfPosition(player, slot): boolean
+}
+class CardTierPolicy <<Policy>> {
+  tier(overall): BRONZE | PRATA | OURO | ICONE | ELITE
+}
+class EffectStacker <<Engine>> {
+  apply(base, styles, consumables): EffectiveAttributes «teto 99»
+}
+DepthChartSlot "*" -- "1" Player
+Player "1" -- "1" PlayerAttributes : «embedded»
+Player "1" -- "0..3" PlayerPlayStyle : estilos
+PlayerPlayStyle "*" -- "1" PlayStyle
+Player "1" -- "*" ConsumableApplication
+OverallCalculator ..> OverallWeights : usa
+OverallCalculator ..> PlayerAttributes : lê
+MacroCalculator ..> PlayerAttributes : lê
+EffectStacker ..> PlayerPlayStyle : soma
+EffectStacker ..> ConsumableApplication : soma
+OverallCalculator ..> DepthChartSlot : fora de posição
+CardTierPolicy ..> Player : nível
+@enduml

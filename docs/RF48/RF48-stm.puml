@@ -1,0 +1,21 @@
+@startuml
+title RF48 — Subatributos ampliados, macros e overall por posição · Máquina de estados: Aba de atributos (interação)
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "Idle" as Idle
+state "Carregando" as Carregando
+state "Grupos e macros" as Grupos
+state "Overall por posição" as PorPosicao
+PorPosicao : selo Fora de posição
+state "Histórico" as Historico
+state "Erro" as Erro
+[*] --> Idle
+Idle --> Carregando : abre a aba
+Carregando --> Grupos : 200
+Carregando --> Erro : 403 / 500 / rede
+Grupos --> PorPosicao : ver posições
+PorPosicao --> Grupos : voltar
+Grupos --> Historico : histórico
+Historico --> Grupos : voltar
+Erro --> Carregando : tentar de novo
+@enduml

@@ -1,0 +1,38 @@
+@startuml
+title RF40 — Central do clube · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+control "AuditService" as AuditService
+control "ClubAnalyst" as ClubAnalyst
+queue "EventBus" as EventBus
+database "MySQL 8" as MySQL
+database "Redis 7" as Redis
+database "Cassandra 4.1" as Cassandra
+Manager -> Frontend: abre /c/{careerId}
+Frontend -> API: GET /careers/{id}/dashboard
+API -> UseCase: GetClubDashboardUseCase.execute(id, userId)
+UseCase -> MySQL: findSave + owner check
+alt não é dono
+  UseCase -> AuditService: ACCESS_DENIED
+  API --> Frontend: 403 problem+json
+else senão
+  UseCase -> MySQL: club, season, week, nextFixture, divisão, standings, last5, morale, contract, cap ledger, injury report, depth chart
+  MySQL --> UseCase: entidades
+  UseCase -> Redis: estado vivo da MatchSession (se houver) · pontos
+  Redis --> UseCase: down, distance, ballOnAbsYd, placar
+  UseCase -> Cassandra: inbox(saveId, 5)
+  alt AiAnalysisReport desatualizado
+    UseCase -> EventBus: AnalysisRequested(saveId, week)
+    EventBus -> ClubAnalyst: analyze (assíncrono)
+  else senão
+  end
+  UseCase --> API: DashboardResult
+  API --> Frontend: 200 JSON
+  Frontend -> Manager: central renderizada
+end
+@enduml

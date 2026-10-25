@@ -1,0 +1,109 @@
+@startuml
+title RF4 — Gerenciar o elenco de 53 (unidades, practice squad, IR) · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Manager|
+start
+:Abre o Elenco;
+|Frontend|
+:GET /careers/{id}/roster?unit=OFFENSE;
+|Backend|
+if (dono do save?) then (sim)
+else (não)
+  :403 + ACCESS_DENIED;
+  stop
+endif
+:Carrega jogadores, contratos, cap hit, lesões, practice squad e IR · overall por posição;
+|Frontend|
+:Abas por unidade, filtros por posição e contadores 53 / 46 / 16 · aviso de fora de posição;
+|Manager|
+:Escolhe um jogador e uma ação;
+|Backend|
+if (jogador do meu clube?) then (sim)
+else (não)
+  :403 NOT_YOUR_PLAYER;
+  stop
+endif
+|Manager|
+if (muda ativo ou inativo do dia de jogo?) then (sim)
+|Frontend|
+  :PATCH /players/{pid}/roster-status;
+|Backend|
+  if (ativos do dia de jogo ≤ 46?) then (sim)
+  else (não)
+    :422 GAME_DAY_ACTIVES_INVALID;
+    stop
+  endif
+  :Atualiza rosterStatus · invalida o depth chart se o jogador era titular (RF6);
+endif
+|Manager|
+if (move ao practice squad ou eleva?) then (sim)
+|Backend|
+  if (vaga no practice squad?) then (sim)
+  else (não)
+    :422 PRACTICE_SQUAD_FULL;
+    stop
+  endif
+  if (elevação permitida?) then (sim)
+  else (não)
+    :422 ELEVATION_LIMIT;
+    stop
+  endif
+  :PracticeSquadMember criado ou elevationsUsed + 1 (volta sozinho após o jogo);
+endif
+|Manager|
+if (coloca na IR ou ativa da IR?) then (sim)
+|Backend|
+  if (IR permitida?) then (sim)
+  else (não)
+    :422 IR_NOT_ALLOWED;
+    stop
+  endif
+  if (retorno da IR liberado?) then (sim)
+    if (elenco ≤ 53?) then (sim)
+    else (não)
+      :422 ROSTER_FULL (abra vaga);
+      stop
+    endif
+    :rosterStatus ACTIVE;
+  else (não)
+    :Fica na IR;
+  endif
+endif
+|Manager|
+if (dispensa o jogador?) then (sim)
+|Frontend|
+  :POST /players/{pid}/release (mostra dead money);
+|Backend|
+  if (dead money cabe no teto?) then (sim)
+  else (não)
+    :422 CAP_EXCEEDED;
+    stop
+  endif
+  :rosterStatus WAIVED · SalaryCapLedger.deadMoney += valor · waivers abertos (RF65);
+|JogadorIA|
+  :Elenco reage: moral −2 se era líder;
+endif
+|Manager|
+if (aplica consumível?) then (sim)
+|Backend|
+  if (consumível aplicável?) then (sim)
+  else (não)
+    :422 CONSUMABLE_NOT_APPLICABLE;
+    stop
+  endif
+  :ConsumableApplication ativa até expiresWeek;
+endif
+|Manager|
+if (envia mensagem ao jogador?) then (sim)
+|JogadorIA|
+  :Responde no inbox · moral ajustada (MoraleEngine);
+endif
+|Scheduler|
+:Fim da semana: elevados voltam ao practice squad · contagem de semanas na IR;
+|Frontend|
+:Atualiza cards e contadores;
+end
+@enduml

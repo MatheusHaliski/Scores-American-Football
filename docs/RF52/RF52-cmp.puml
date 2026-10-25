@@ -1,0 +1,64 @@
+@startuml
+title RF52 — Sala de imprensa · Diagrama de componentes
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 36
+actor "Head coach / manager (usuário autenticado)" as c1
+actor "Imprensa (IA)" as c2
+actor "Claude (LLM, narrativa)" as c3
+actor "Jogador (IA)" as c4
+actor "Diretoria da franquia (IA)" as c5
+actor "Agendador/Job assíncrono" as c6
+package "Frontend (Next.js)" as pkg_fe {
+  component "PressRoomPage" as c7
+  frame "componentes de PressRoomPage" as pkg_fe_sub {
+    component "QuestionCard" as c8
+    component "ToneSelector" as c9
+    component "ImpactSummary" as c10
+  }
+}
+package "scores-af-web (REST)" as pkg_web {
+  component "PressController" as c11
+}
+package "scores-af-application (casos de uso)" as pkg_app {
+  component "PressConferenceUseCases" as c12
+  component "SchedulePressConferenceJob" as c13
+  component "CareerAccess" as c14
+}
+package "scores-af-domain/engine" as pkg_eng {
+  component "MoraleEngine" as c15
+  component "PressImpactPolicy" as c16
+  component "PressTemplates" as c17
+}
+package "portas (port.out)" as pkg_ports {
+  interface "PressConferenceRepository" as c18
+  interface "InboxRepository" as c19
+  interface "NarrativePort" as c20
+  interface "TimelinePort" as c21
+}
+package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
+  component "persistence-mysql" as c22
+  component "llm-claude" as c23
+  component "persistence-cassandra" as c24
+}
+database "MySQL 8" as s1
+database "Cassandra 4.1" as s2
+database "Anthropic Claude" as s3
+c1 --> c7 : usa
+c6 --> c12 : dispara
+c7 --> c11 : GET /careers/{id}/press (alvo)\nGET /careers/{id}/press/{pcId} (alvo)\nPOST /careers/{id}/press/{pcId}/answers (alvo)\n…
+c11 --> c12
+c12 ..> pkg_app : orquestra
+c12 --> c15 : usa
+c12 --> c16 : usa
+c12 --> c17 : usa
+pkg_app --> pkg_ports : depende (DIP)
+c22 .up.|> c18
+c22 .up.|> c19
+c23 .up.|> c20
+c24 .up.|> c21
+c22 --> s1
+c23 --> s3
+c24 --> s2
+@enduml

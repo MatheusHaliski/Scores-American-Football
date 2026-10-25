@@ -1,0 +1,15 @@
+@startuml
+title RF51 — Draft, scouting universitário e combine · Máquina de estados: DraftProspect (destino)
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "DISPONIVEL" as DISPONIVEL
+state "ESCOLHIDO" as ESCOLHIDO
+state "ROOKIE_CONTRATADO" as ROOKIE_CONTRATADO
+state "FREE_AGENT" as FREE_AGENT
+[*] --> DISPONIVEL
+DISPONIVEL --> ESCOLHIDO : pick feito
+ESCOLHIDO --> ROOKIE_CONTRATADO : contrato ROOKIE gravado
+DISPONIVEL --> FREE_AGENT : draft DONE sem escolha
+ROOKIE_CONTRATADO --> [*]
+FREE_AGENT --> [*]
+@enduml

@@ -1,0 +1,20 @@
+@startuml
+title RF45 — Multiplayer online: salas por turnos e Ultimate Team · Máquina de estados: MultiplayerRoom.status
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "LOBBY" as LOBBY
+LOBBY : código
+LOBBY : 2–8 humanos
+state "RUNNING" as RUNNING
+RUNNING : turnos de até 24 h
+state "FINISHED" as FINISHED
+state "CANCELLED" as CANCELLED
+[*] --> LOBBY
+LOBBY --> RUNNING : host inicia
+LOBBY --> CANCELLED : host cancela
+RUNNING --> RUNNING : semana simulada
+RUNNING --> FINISHED : fim da temporada da sala
+RUNNING --> CANCELLED : restam < 2 humanos
+FINISHED --> [*]
+CANCELLED --> [*]
+@enduml

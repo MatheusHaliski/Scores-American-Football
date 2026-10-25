@@ -1,0 +1,38 @@
+@startuml
+title RF6 — Depth chart e plano de jogo na preparação · Máquina de estados: DepthChart na preparação (validated × edição)
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "Carregando" as LOADING
+LOADING : GET preparation
+state "Salvo" as CLEAN
+CLEAN : depth chart e plano persistidos
+CLEAN : fit exibido
+state "Editando" as DIRTY
+DIRTY : arrastos não salvos
+DIRTY : validação local
+state "Salvando" as SAVING
+SAVING : PUT depth-chart / game-plan
+state "Inválido" as INVALID
+INVALID : 422 com slots destacados
+INVALID : validated = false
+state "Desatualizado" as STALE
+STALE : titular foi para IR, OUT ou inativo (RF4/RF64)
+STALE : validated = false
+state "Pronto para jogar" as READY
+READY : validated = true
+READY : Jogar habilitado (RF7)
+[*] --> LOADING
+LOADING --> CLEAN : 200
+CLEAN --> DIRTY : arrasta / muda plano
+DIRTY --> SAVING : salvar
+DIRTY --> CLEAN : descartar
+SAVING --> INVALID : 422
+INVALID --> DIRTY : corrige
+SAVING --> DIRTY : 409 CONFLICT (recarrega)
+SAVING --> READY : 200 · completo e disponível
+READY --> DIRTY : nova alteração
+CLEAN --> READY : já válido
+READY --> STALE : lesão ou mudança no elenco
+STALE --> DIRTY : abre a preparação
+READY --> [*]
+@enduml

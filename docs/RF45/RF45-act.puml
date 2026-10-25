@@ -1,0 +1,117 @@
+@startuml
+title RF45 — Multiplayer online: salas por turnos e Ultimate Team · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Manager|
+start
+partition "Carreira conjunta — sala por turnos" {
+  :Cria sala (1x1, só playoffs ou temporada completa) ou entra pelo código;
+|Backend|
+  if (código válido e sala em LOBBY com vaga?) then (sim)
+  else (não)
+    :404 / 409;
+    stop
+  endif
+|Manager|
+  :Escolhe franquia e marca pronto;
+|Backend|
+  :Host inicia: clona o mundo uma vez (seed da sala) e cria um CareerSave por participante;
+  while (temporada da sala em andamento?) is (sim)
+|Manager|
+    :Confirma depth chart e plano de jogo da semana;
+|Backend|
+    if (turno pronto?) then (sim)
+      :Simula a semana uma vez (RF42) · humano × humano com chamadas automáticas pelos planos;
+    endif
+    :Scores Points do modo (pontualidade, vitória sobre humano, título · teto semanal);
+  endwhile (não)
+  :Abandono → AI_TAKEOVER · fim → placar da sala e FINISHED;
+}
+|Manager|
+:Abre o Ultimate Team · monta o depth chart de cartas;
+|Frontend|
+:PUT /ultimate/squad/depth-chart;
+|Backend|
+if (química calculada?) then (sim)
+  :Química por divisão, conferência e unidade;
+else (não)
+  :Química 0;
+endif
+|Manager|
+:Escolhe X1, Divisões Online ou Copa dos Campeões;
+|Frontend|
+:POST /ultimate/divisions/enter | /ultimate/cup/enter;
+partition "Política de entrada (ordem fixa)" {
+|Backend|
+  if (conta elegível e idade mínima?) then (sim)
+  else (não)
+    :422;
+    stop
+  endif
+  if (sem sanção que bloqueia o modo?) then (sim)
+  else (não)
+    :422 SANCTIONED;
+    stop
+  endif
+  if (depth chart de cartas válido?) then (sim)
+  else (não)
+    :422 SQUAD_INVALID;
+    stop
+  endif
+  if (janela aberta e cota da temporada?) then (sim)
+  else (não)
+    :422 WINDOW_CLOSED / QUOTA_EXHAUSTED;
+    stop
+  endif
+  if (sem entrada ativa e reentrada permitida?) then (sim)
+  else (não)
+    :422;
+    stop
+  endif
+  if (tem ingresso da Copa?) then (sim)
+  else (não)
+    :422 NO_CUP_TICKET;
+    stop
+  endif
+  if (tentativas sob controle?) then (sim)
+  else (não)
+    :422 TOO_MANY_ATTEMPTS;
+    stop
+  endif
+}
+:DivisionRun ou CupEntry ENTERED · cota consumida · EntryAttempt ACCEPTED · MatchmakingTicket QUEUED;
+while (corrida com partidas restantes e janela aberta?) is (sim)
+  :Matchmaker: rating ±150 (+50 a cada 30 s, máx. ±400), mesma divisão;
+|Adversario|
+  :Partida encontrada · ACCEPT_PENDING;
+|Manager|
+  if (partida aceita em 30 s?) then (sim)
+|Backend|
+    :LIVE · seed da partida · motor por descida (RF42);
+    if (chamada online no prazo?) then (sim)
+    else (não)
+      :PlayCaller IA chama por quem não respondeu;
+    endif
+    if (batimento em dia?) then (sim)
+      :FINISHED · Elo online · pontos da corrida;
+    else (não)
+      if (reconectou a tempo?) then (sim)
+        :Retoma LIVE;
+      else (não)
+        :WALKOVER · sanção progressiva;
+      endif
+    endif
+  else (não)
+    :VOID · recusa contada;
+  endif
+endwhile (não)
+|Scheduler|
+if (fim da temporada online?) then (sim)
+  :Sobem 4, caem 4, ingressos da Copa · ONLINE_SEASON_PROCESSED;
+endif
+|Manager|
+:Vê tabela, chave da Copa e sanções · pode recorrer em 72 h;
+end
+@enduml

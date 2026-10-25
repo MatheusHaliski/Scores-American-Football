@@ -1,0 +1,84 @@
+@startuml
+title RF7 — Preparar time (LED 3D, relatório do adversário) e jogar partida · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Manager|
+start
+:Clica em Preparar time no card do próximo jogo;
+|Frontend|
+:GET /me/settings e GET /careers/{id}/next-game/preparation;
+|Backend|
+if (dono do save?) then (sim)
+else (não)
+  :403 + ACCESS_DENIED;
+  stop
+endif
+if (head coach empregado?) then (sim)
+else (não)
+|Frontend|
+  :Abre o painel da semana como espectador;
+  stop
+endif
+|Backend|
+if (jogo SCHEDULED nesta semana?) then (sim)
+else (não)
+|Frontend|
+  :Semana de folga: oferece Simular semana;
+  stop
+endif
+|Backend|
+if (partida já em andamento?) then (sim)
+|Frontend|
+  :GET /matches/{mid} e retoma a partida ao vivo;
+  stop
+endif
+:GET /next-game/opponent-report;
+|Backend|
+:ClubAnalyst: tendências do adversário por unidade e confrontos WR × CB, OL × DL;
+|Frontend|
+if (modelos 3D disponíveis?) then (sim)
+  :Carrega GLB do S3 e renderiza o campo LED em R3F (jardas, hash marks, end zones);
+else (não)
+  :Renderiza tokens 2D sobre o campo padrão;
+endif
+if (movimento reduzido?) then (sim)
+  :Desliga animações do LED;
+endif
+|Manager|
+:Revisa confrontos-chave e ajusta depth chart e plano (RF6);
+|Backend|
+if (depth chart pronto?) then (sim)
+|Frontend|
+  :Habilita Jogar partida;
+else (não)
+  :Destaca slots inválidos e mantém Jogar desabilitado;
+  stop
+endif
+|Manager|
+:Clica em Jogar partida;
+|Frontend|
+:POST /careers/{id}/weeks/current/play;
+|Backend|
+if (semana anterior concluída?) then (sim)
+else (não)
+  :409 WEEK_NOT_COMPLETED;
+  stop
+endif
+:Deriva seed, monta MatchSetup (depth chart, plano, playbook, clima, LeagueRules), MatchSimulator.start;
+:MatchSession KICKOFF no Redis e no MySQL · Fixture LIVE · AuditLog MATCH_STARTED(seed);
+|Scheduler|
+:Simula os outros jogos da semana em job assíncrono;
+|Backend|
+if (nível de controle da partida?) then (sim)
+|Frontend|
+  :Partida ao vivo por descida (RF27) com paradas para chamada de jogada (RF62);
+else (não)
+|Backend|
+  :Simula até o fim sem paradas · resultado pronto;
+endif
+|Manager|
+:Acompanha drives e ajusta no intervalo pelo playbook (RF29);
+end
+@enduml

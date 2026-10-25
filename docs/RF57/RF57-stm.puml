@@ -1,0 +1,17 @@
+@startuml
+title RF57 — All-Star · Máquina de estados: AllStarEvent.status
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "VOTING" as VOTING
+state "ROSTERS_SET" as ROSTERS_SET
+state "SKILLS" as SKILLS
+state "GAME" as GAME
+state "DONE" as DONE
+[*] --> VOTING
+VOTING --> ROSTERS_SET : votação fecha
+ROSTERS_SET --> ROSTERS_SET : substitui lesionado
+ROSTERS_SET --> SKILLS : dia dos desafios
+SKILLS --> GAME : desafios concluídos
+GAME --> DONE : placar final
+DONE --> [*]
+@enduml

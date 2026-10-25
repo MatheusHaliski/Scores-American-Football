@@ -1,0 +1,62 @@
+@startuml
+title RNF11 — Tratamento de uploads de formulários · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Manager|
+start
+:Escolhe o arquivo (logo, decalque, end zone, uniforme, foto);
+|Frontend|
+:Pré-checagem de tamanho e tipo · POST /media/upload;
+|Backend|
+if (autenticado?) then (sim)
+else (não)
+  :401;
+  stop
+endif
+if (rate limit de upload?) then (sim)
+else (não)
+  :429;
+  stop
+endif
+if (cota do usuário?) then (sim)
+else (não)
+  :413 QUOTA_EXCEEDED;
+  stop
+endif
+if (tamanho permitido?) then (sim)
+else (não)
+  :413 FILE_TOO_LARGE;
+  stop
+endif
+if (tipo permitido por magic bytes?) then (sim)
+else (não)
+  :415;
+  stop
+endif
+if (dimensões válidas?) then (sim)
+else (não)
+  :422 IMAGE_DIMENSIONS;
+  stop
+endif
+if (antivírus limpo?) then (sim)
+else (não)
+  :Quarentena · 422 MEDIA_INFECTED;
+  stop
+endif
+if (recodificação ok?) then (sim)
+else (não)
+  :422 IMAGE_CORRUPT;
+  stop
+endif
+:PUT no S3 privado com chave opaca · media_asset · cota · AuditLog MEDIA_UPLOADED;
+|Frontend|
+:Pré-visualiza no capacete, campo ou card;
+|Scheduler|
+if (mídia referenciada?) then (sim)
+else (não)
+  :Remove órfãs > 24 h;
+endif
+end
+@enduml

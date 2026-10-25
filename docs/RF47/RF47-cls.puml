@@ -1,0 +1,106 @@
+@startuml
+title RF47 — Estatísticas em velocímetros por posição · Diagrama de classes
+skinparam classAttributeIconSize 0
+hide empty methods
+package "catalog" {
+  class Player {
+    id: UUID
+    name: String
+    nationality: String
+    college: String
+    birthDate: LocalDate
+    age: int
+    heightCm: int
+    weightKg: int
+    position: Position (QB|RB|FB|WR|TE|LT|LG|C|RG|RT|DE|DT|OLB|MLB|CB|FS|SS|K|P|LS)
+    unit: Unit (OFFENSE|DEFENSE|SPECIAL)
+    attributes: PlayerAttributes
+    overall: int «por posição, OVR v1»
+    potential: int
+    experienceYears: int
+    rosterStatus: RosterStatus (ACTIVE|INACTIVE|PRACTICE_SQUAD|IR|PUP|FREE_AGENT|WAIVED)
+    condition: int
+    morale: int
+    moraleFactors: JSON
+    injury: Injury?
+    suspensionWeeks: int
+    contract: PlayerContract
+    jerseyNumber: int
+    isLegendary: boolean
+    model3dUrl: String
+  }
+}
+package "match" {
+  class PlayerMatchStats {
+    snaps: int
+    passing: cmp/att, yds, td, int, rating, sacked
+    rushing: att, yds, avg, td, fum
+    receiving: tgt, rec, yds, yac, td, drops
+    defense: tkl solo/ast, tfl, sacks, qbHits, int, pd, ff, fr
+    kicking: fg por distância, pat, punts, avg, in20
+    returns: kr/pr, yds, td
+    rating: double
+  }
+  class TeamMatchStats {
+    firstDowns: int
+    thirdDown: String
+    fourthDown: String
+    redZone: String
+    totalYards: int
+    passYards: int
+    rushYards: int
+    timeOfPossession: String
+    turnovers: int
+    penalties: int
+    penaltyYards: int
+    sacks: int
+  }
+  class DepthChartSlot {
+    unit: Unit
+    position: Position | Role (KR|PR|3RD_DOWN_BACK|SNAPPER|HOLDER)
+    depth: int (1, 2, 3…)
+    player: Player
+    outOfPosition: boolean
+  }
+}
+class GaugeDefinition <<record>> {
+  code: String (QB_RATING, YPA, YPC, CATCH_RATE, PRESSURES, SACKS, RATING_ALLOWED, FG_PCT…)
+  family: PositionFamily
+  formula: String
+  higherIsBetter: boolean
+  minSample: double
+  scale: GaugeScale
+}
+class GaugeScale <<record>> {
+  version: int = 1
+  min: double
+  max: double
+  bands: List<Band>
+}
+class PlayerSeasonStats <<alvo (fora do catálogo)>> {
+  season: int
+  games: int
+  snaps: int
+  totais de passe, corrida, recepção, defesa, chute
+}
+class GaugeCalculator <<Engine>> {
+  compute(family, stats, scope): List<GaugeValue>
+  percentile(value, leagueDistribution): int
+}
+class PasserRating <<Engine>> {
+  of(cmp, att, yds, td, int): double «0–158,3»
+}
+class GaugeValue <<record>> {
+  code: String
+  value: Double? «nulo = —»
+  percentile: Integer?
+  smallSample: boolean
+}
+DepthChartSlot "*" -- "1" Player
+GaugeCalculator ..> GaugeDefinition : usa
+GaugeDefinition ..> GaugeScale : escala
+GaugeCalculator ..> PasserRating : usa
+GaugeCalculator ..> PlayerMatchStats : agrega
+PlayerSeasonStats ..> PlayerMatchStats : soma
+GaugeCalculator ..> GaugeValue : produz
+@enduml

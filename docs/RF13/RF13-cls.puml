@@ -1,0 +1,163 @@
+@startuml
+title RF13 — Notificações e mensagens (diretoria, jogadores, franquias) · Diagrama de classes
+skinparam classAttributeIconSize 0
+hide empty methods
+package "career" {
+  class CareerSave {
+    id: UUID
+    name: String
+    seed: long
+    employmentStatus: EmploymentStatus
+    currentWeek: int
+    difficulty: Difficulty
+    seasonMode: SeasonMode
+    scoresPoints: int
+    status: SaveStatus
+    slot: int
+    lastPlayedAt: Instant
+  }
+  class ManagerMorale {
+    moraleClub: int
+    moraleLeague: int
+    factorsClub: JSON
+    factorsLeague: JSON
+    weeksUnderCritical: int
+    trend: Trend
+    updatedWeek: int
+  }
+}
+package "inbox" {
+  class InboxMessage {
+    sender: InboxSender
+    subject: String
+    body: TEXT
+    kind: InboxKind
+    options: JSON
+    chosenOption: String
+    deadlineWeek: int
+    status: MessageStatus
+    refType: String
+    refId: UUID
+  }
+  class Notification {
+    kind: String
+    title: String
+    body: String
+    read: boolean
+    createdAt: Instant «TTL 90d»
+  }
+}
+package "catalog" {
+  class Player {
+    id: UUID
+    name: String
+    nationality: String
+    college: String
+    birthDate: LocalDate
+    age: int
+    heightCm: int
+    weightKg: int
+    position: Position (QB|RB|FB|WR|TE|LT|LG|C|RG|RT|DE|DT|OLB|MLB|CB|FS|SS|K|P|LS)
+    unit: Unit (OFFENSE|DEFENSE|SPECIAL)
+    attributes: PlayerAttributes
+    overall: int «por posição, OVR v1»
+    potential: int
+    experienceYears: int
+    rosterStatus: RosterStatus (ACTIVE|INACTIVE|PRACTICE_SQUAD|IR|PUP|FREE_AGENT|WAIVED)
+    condition: int
+    morale: int
+    moraleFactors: JSON
+    injury: Injury?
+    suspensionWeeks: int
+    contract: PlayerContract
+    jerseyNumber: int
+    isLegendary: boolean
+    model3dUrl: String
+  }
+}
+package "finance" {
+  class BudgetRequest {
+    amount: long
+    reason: String
+    status: RequestStatus
+    boardResponse: String
+  }
+}
+package "market" {
+  class TradeProposal {
+    playersOut: List<UUID>
+    playersIn: List<UUID>
+    picksOut: List<DraftPick>
+    picksIn: List<DraftPick>
+    capImpact: long
+    status: OfferStatus
+    reason: String
+    beforeDeadline: boolean
+  }
+  class FreeAgentOffer {
+    player: Player
+    years: int
+    totalValue: long
+    guaranteed: long
+    signingBonus: long
+    status: OfferStatus
+    phase: FAPhase (NEGOTIATION|OPEN|IN_SEASON)
+    expiresAt: Instant
+    playerInterest: int
+  }
+}
+package "match" {
+  class InjuryReport {
+    week: int
+    player: Player
+    status: InjuryStatus (QUESTIONABLE|DOUBTFUL|OUT|IR)
+    practice: PracticeStatus (FULL|LIMITED|DNP)
+    returnEstimateWeek: Integer
+    publishedAt: Instant
+  }
+}
+class RespondInboxMessageUseCase <<UseCase>> {
+  execute(RespondInboxCommand): RespondResult «@Transactional»
+}
+class RespondInboxCommand <<record>> {
+  careerId: UUID
+  messageId: UUID
+  option: String
+  userId: UUID
+}
+class RespondResult <<record>> {
+  status: MessageStatus
+  replyText: String
+  moraleDelta: int
+  effect: String
+}
+class InboxEffectDispatcher <<Service>> {
+  apply(message, option): Effect «por InboxKind»
+}
+interface TimelinePort <<Port>> {
+  appendInbox(saveId, entry)
+  inbox(saveId, before, limit)
+  appendNotification(userId, entry)
+  markNotificationsRead(userId, ids)
+}
+interface AiNarrativePort <<Port>> {
+  narrate(context): Optional<String> «fallback template»
+}
+CareerSave "1" -- "1" ManagerMorale
+InjuryReport "*" -- "1" Player
+CareerSave "1" -- "*" FreeAgentOffer
+FreeAgentOffer "*" -- "1" Player
+CareerSave "1" -- "*" TradeProposal
+CareerSave "1" -- "*" BudgetRequest
+CareerSave "1" -- "*" InboxMessage
+RespondInboxMessageUseCase ..> RespondInboxCommand : recebe
+RespondInboxMessageUseCase ..> RespondResult : produz
+RespondInboxMessageUseCase ..> InboxMessage : ANSWERED
+RespondInboxMessageUseCase ..> InboxEffectDispatcher : usa
+RespondInboxMessageUseCase ..> AiNarrativePort : opcional
+InboxEffectDispatcher ..> TradeProposal : RF50
+InboxEffectDispatcher ..> FreeAgentOffer : RF65
+InboxEffectDispatcher ..> BudgetRequest : RF14
+InboxEffectDispatcher ..> InjuryReport : RF64
+ListInboxUseCase ..> TimelinePort : usa
+@enduml

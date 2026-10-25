@@ -1,0 +1,121 @@
+@startuml
+title RF25 — Comprar e aplicar consumíveis · Diagrama de classes
+skinparam classAttributeIconSize 0
+hide empty methods
+package "catalog" {
+  class Consumable {
+    code: String
+    name: String
+    category: ConsumableCategory
+    effect: JSON «atributos AF»
+    durationWeeks: int
+    priceCash: long
+    priceScoresPoints: int
+    rarity: Rarity
+  }
+  class ConsumableApplication {
+    appliedWeek: int
+    expiresWeek: int
+    active: boolean
+  }
+  class Player {
+    id: UUID
+    name: String
+    nationality: String
+    college: String
+    birthDate: LocalDate
+    age: int
+    heightCm: int
+    weightKg: int
+    position: Position (QB|RB|FB|WR|TE|LT|LG|C|RG|RT|DE|DT|OLB|MLB|CB|FS|SS|K|P|LS)
+    unit: Unit (OFFENSE|DEFENSE|SPECIAL)
+    attributes: PlayerAttributes
+    overall: int «por posição, OVR v1»
+    potential: int
+    experienceYears: int
+    rosterStatus: RosterStatus (ACTIVE|INACTIVE|PRACTICE_SQUAD|IR|PUP|FREE_AGENT|WAIVED)
+    condition: int
+    morale: int
+    moraleFactors: JSON
+    injury: Injury?
+    suspensionWeeks: int
+    contract: PlayerContract
+    jerseyNumber: int
+    isLegendary: boolean
+    model3dUrl: String
+  }
+  class PlayerPlayStyle {
+    source: NATURAL|CONSUMABLE|STORE
+    weeksRemaining: Integer
+    appliedAt: Instant
+  }
+  class PlayStyle {
+    code: PlayStyleCode
+    name: String
+    positions: List<Position>
+    tier: Tier
+    effects: JSON
+    animationId: String
+    priceScoresPoints: int
+  }
+}
+package "match" {
+  class Injury {
+    «embedded» kind: InjuryKind
+    bodyPart: String
+    severity: Severity
+    weeksOut: int
+    occurredWeek: int
+  }
+}
+package "career" {
+  class ScoresPointsWallet {
+    balance: int
+    lifetimeEarned: int
+  }
+  class PointsTransaction {
+    amount: int
+    reason: PointsReason
+    refId: UUID
+    createdAt: Instant
+  }
+}
+package "finance" {
+  class FinanceLedgerEntry {
+    week: int
+    kind: LedgerKind
+    amount: long
+    balanceAfter: long
+    description: String
+  }
+}
+class ApplyConsumableUseCase <<UseCase>> {
+  execute(saveId, playerId, code, userId): PlayerDto «@Transactional»
+}
+class PointsService <<Service>> {
+  debit(save, amount, refId, desc, week) «@Version»
+  credit(save, amount, reason, refId): boolean
+}
+class ConsumableApplier <<Engine>> {
+  effects(player, applications): Effects «usado pelo motor por descida (RF42)»
+}
+enum ConsumableCategory {
+  PLAYSTYLE_CARD
+  CONDITION_BOOST
+  MORALE_BOOST
+  RECOVERY
+  TRAINING_FOCUS
+  CONTRACT_SWEETENER
+}
+Player "1" -- "0..1" Injury : «embedded»
+Player "1" -- "0..3" PlayerPlayStyle : estilos
+PlayerPlayStyle "*" -- "1" PlayStyle
+Player "1" -- "*" ConsumableApplication
+ConsumableApplication "*" -- "1" Consumable
+ScoresPointsWallet "1" -- "*" PointsTransaction
+ApplyConsumableUseCase ..> PointsService : debit
+ApplyConsumableUseCase ..> ConsumableApplication : cria
+ApplyConsumableUseCase ..> PlayerPlayStyle : CONSUMABLE
+Consumable ..> ConsumableCategory : category
+ConsumableApplier ..> ConsumableApplication : lê ativas
+@enduml

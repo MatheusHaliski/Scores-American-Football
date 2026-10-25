@@ -1,0 +1,270 @@
+@startuml
+title RF34 — Nova carreira de head coach · Diagrama de classes
+skinparam classAttributeIconSize 0
+hide empty methods
+package "career" {
+  class CareerSave {
+    id: UUID
+    name: String
+    seed: long
+    employmentStatus: EmploymentStatus
+    currentWeek: int
+    difficulty: Difficulty
+    seasonMode: SeasonMode
+    scoresPoints: int
+    status: SaveStatus
+    slot: int
+    lastPlayedAt: Instant
+  }
+  class ManagerContract {
+    salaryPerSeason: long
+    startSeason: int
+    endSeason: int
+    objectives: JSON (vitórias, playoffs, título)
+    releaseClause: long
+    status: ContractStatus
+  }
+}
+package "catalog" {
+  class World {
+    id: UUID
+    ownerUser: UserAccount?
+    name: String
+    kind: WorldKind
+    sourceWorld: World?
+  }
+  class League {
+    id: UUID
+    name: String
+    country: String
+    ruleset: Ruleset (PRO|COLLEGE)
+    rules: LeagueRules
+    teamCount: int (8–32)
+    conferenceCount: int
+    divisionsPerConference: int
+    regularSeasonWeeks: int = 18
+    gamesPerTeam: int = 17
+    playoffSeedsPerConference: int = 7
+    neutralSiteFinal: boolean
+    salaryCap: long
+    salaryFloor: long
+    prestige: int
+    tvRightsPerSeason: long
+  }
+  class LeagueRules {
+    «embedded» version: int
+    quarterMinutes: int = 15
+    playClockSeconds: int = 40
+    playClockAfterStoppageSeconds: int = 25
+    twoMinuteWarning: boolean
+    timeoutsPerHalf: int = 3
+    overtimeMinutes: int = 10
+    overtimeBothPossess: boolean
+    regularSeasonTiesAllowed: boolean
+    kickoffYardLine: int = 35
+    touchbackYardLine: int
+    patYardLine: int = 15
+    clockStopsOnFirstDown: boolean (COLLEGE)
+    oneFootInbounds: boolean (COLLEGE)
+    hashFromSidelineFeet: double
+    rosterMax: int = 53
+    gameDayActives: int = 46
+    practiceSquadMax: int = 16
+    offseasonRosterMax: int «Q-7»
+    irReturnsPerSeason: int «Q-7»
+    irMinWeeks: int «Q-7»
+  }
+  class Conference {
+    name: String
+    shortName: String
+    logoKey: String
+  }
+  class Division {
+    name: String
+    conference: Conference
+    teamCount: int = 4
+  }
+  class Club {
+    id: UUID
+    name: String
+    shortName: String
+    city: String
+    conference: Conference
+    division: Division
+    logoKey: String
+    primaryColor: String
+    secondaryColor: String
+    accentColor: String
+    prestige: int
+    reputationBoard: int
+    reputationFans: int
+    cash: long
+    capSpace: long
+    isUserControlled: boolean
+    expectedWins: int
+    scoutingLevel: int
+    scoutingBudget: long
+  }
+  class ManagerProfile {
+    name: String
+    nationality: String
+    isHuman: boolean
+    overall: int
+    coachStyle: CoachStyleCode
+    reputationLeague: int
+    careerTitles: int
+    careerGames: int
+    careerWins: int
+    careerPlayoffWins: int
+  }
+  class ManagerStyle {
+    code: CoachStyleCode (OFFENSIVE|DEFENSIVE|DEVELOPER|MOTIVATOR)
+    effects: JSON
+    priceScoresPoints: int
+    rewardGoal: String
+  }
+}
+package "season" {
+  class Season {
+    number: int
+    year: int
+    phase: SeasonPhase (PRESEASON|REGULAR|PLAYOFFS|DRAFT|FREE_AGENCY|OFFSEASON)
+    currentWeek: int
+    tradeDeadlineWeek: int
+    championClub: Club?
+    mvpPlayer: Player?
+  }
+  class Week {
+    number: int
+    kind: WeekKind (PRESEASON|REGULAR|WILD_CARD|DIVISIONAL|CONFERENCE|FINAL)
+    startsOn: LocalDate
+    status: WeekStatus
+    byeClubs: List<Club>
+  }
+  class Fixture {
+    week: int
+    date: LocalDate
+    slot: KickoffSlot (THU_NIGHT|SUN_EARLY|SUN_LATE|SUN_NIGHT|MON_NIGHT)
+    status: FixtureStatus
+    homeScore: int
+    awayScore: int
+    quarterScores: JSON
+    overtime: boolean
+    isDivisional: boolean
+    isConference: boolean
+    neutralSite: boolean
+    weather: Weather
+    attendance: int
+    revenue: long
+    importance: FixtureImportance
+    seed: long
+    isUserFixture: boolean
+  }
+}
+package "match" {
+  class DepthChart {
+    club: Club
+    version: long
+    updatedAt: Instant
+    validated: boolean
+  }
+  class Playbook {
+    name: String
+    offensiveScheme: OffensiveScheme (WEST_COAST|AIR_RAID|SPREAD|POWER_RUN)
+    defensiveScheme: DefensiveScheme
+    plays: List<PlayDefinition>
+    custom: boolean
+  }
+  class GamePlan {
+    runPassBalance: int (0–100)
+    fourthDownAggression: Aggression
+    tempo: Tempo (HURRY_UP|NORMAL|MILK_CLOCK)
+    offensiveFocus: JSON
+    defensiveFocus: DefensiveFocus
+    blitzFrequency: Emphasis
+    baseDefense: DefensePackage (4-3|3-4)
+    keyPlayers: List<UUID>
+    situationTendencies: JSON (3ª e curta, red zone, 2 minutos)
+  }
+}
+package "finance" {
+  class SalaryCapLedger {
+    season: int
+    cap: long
+    committed: long
+    deadMoney: long
+    space: long
+    rolloverFromPrevious: long
+  }
+}
+package "market" {
+  class DraftPick {
+    season: int (até 3 à frente)
+    round: int (1–7)
+    overall: Integer
+    originalClub: Club
+    ownerClub: Club
+    compensatory: boolean
+  }
+}
+class CreateCareerUseCase <<UseCase>> {
+  execute(CreateCareerCommand, userId): CareerCreatedDto
+}
+class CreateCareerCommand <<record>> {
+  worldId: UUID
+  leagueId: UUID
+  clubId: UUID?
+  newClub: NewClubDto?
+  coachName: String
+  nationality: String
+  coachStyle: CoachStyleCode
+  seasonMode: SeasonMode
+  teamCount: int
+  difficulty: Difficulty
+}
+class CareerBootstrapJob <<Job>> {
+  run(saveId, requestId) «idempotente»
+}
+class SeedPolicy <<Policy>> {
+  newSaveSeed(): long
+  derive(saveSeed, scope, week, id): long
+}
+class DepthChartAutoBuilder <<Engine>> {
+  build(club, rules): DepthChart «overall por posição»
+}
+class ScheduleGenerator <<Engine>> {
+  regularSeason(league, seed): 17 jogos + bye
+  playoffsOnly(league, seed)
+}
+World "1" -- "*" League
+World "1" -- "*" Club
+League "1" -- "1" LeagueRules : «embedded»
+League "1" -- "1..2" Conference : conferências
+Conference "1" -- "*" Division : divisões
+Division "1" -- "*" Club : franquias
+Club "*" -- "*" Club : rivais da divisão
+Club "0..1" -- "1" ManagerProfile : head coach
+Club "1" -- "1" DepthChart
+Club "1" -- "*" Playbook
+ManagerProfile "*" -- "0..1" ManagerStyle
+CareerSave "1" -- "1" World : mundo do save
+CareerSave "1" -- "1" ManagerProfile : manager humano
+CareerSave "*" -- "0..1" Club : franquia atual
+CareerSave "1" -- "*" ManagerContract
+CareerSave "1" -- "*" Season
+CareerSave "1" -- "1" GamePlan
+Season "1" -- "18..22" Week : semanas
+Week "1" -- "*" Fixture
+Fixture "*" -- "1" Club : mandante
+Club "1" -- "*" DraftPick : picks próprios
+Club "1" -- "*" SalaryCapLedger : por temporada
+CreateCareerUseCase ..> CreateCareerCommand : recebe
+CreateCareerUseCase ..> SeedPolicy : usa
+CreateCareerUseCase ..> CareerBootstrapJob : agenda
+CareerBootstrapJob ..> World : clona (kind SAVE)
+CareerBootstrapJob ..> DepthChartAutoBuilder : usa
+CareerBootstrapJob ..> ScheduleGenerator : usa
+CareerBootstrapJob ..> SalaryCapLedger : cria
+CareerBootstrapJob ..> DraftPick : cria 7 × 3
+CreateCareerUseCase ..> CareerSave : cria
+@enduml

@@ -1,0 +1,55 @@
+@startuml
+title RF63 — Times especiais · Diagrama de componentes
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 36
+actor "Head coach / manager (usuário autenticado)" as c1
+actor "Franquia adversária (IA)" as c2
+package "Frontend (Next.js)" as pkg_fe {
+  component "SpecialTeamsPage" as c3
+  frame "componentes de SpecialTeamsPage" as pkg_fe_sub {
+    component "UnitLineup" as c4
+    component "KickStrategyForm" as c5
+    component "KickingStatsCard" as c6
+  }
+}
+package "scores-af-web (REST)" as pkg_web {
+  component "SpecialTeamsController" as c7
+}
+package "scores-af-application (casos de uso)" as pkg_app {
+  component "SpecialTeamsUseCases" as c8
+  component "CareerAccess" as c9
+}
+package "scores-af-domain/engine" as pkg_eng {
+  component "KickResolver" as c10
+  component "SpecialTeamsPolicy" as c11
+  component "TwoPointChart" as c12
+  component "MatchSimulator" as c13
+}
+package "portas (port.out)" as pkg_ports {
+  interface "SpecialTeamsRepository" as c14
+  interface "DepthChartRepository" as c15
+  interface "MatchStatePort" as c16
+}
+package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
+  component "persistence-mysql" as c17
+  component "cache-redis" as c18
+}
+database "MySQL 8" as s1
+database "Redis 7" as s2
+c1 --> c3 : usa
+c3 --> c7 : GET /careers/{id}/special-teams (alvo)\nPUT /careers/{id}/special-teams/{kind} (alvo)\nPUT /careers/{id}/special-teams/strategy (alvo)
+c7 --> c8
+c8 ..> pkg_app : orquestra
+c8 --> c10 : usa
+c8 --> c11 : usa
+c8 --> c12 : usa
+c8 --> c13 : usa
+pkg_app --> pkg_ports : depende (DIP)
+c17 .up.|> c14
+c17 .up.|> c15
+c18 .up.|> c16
+c17 --> s1
+c18 --> s2
+@enduml

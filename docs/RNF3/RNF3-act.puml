@@ -1,0 +1,61 @@
+@startuml
+title RNF3 — Controle de acesso e autorização por perfil · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Manager|
+start
+:Chama uma rota da API;
+|Backend|
+:CorrelationIdFilter: correlationId em toda resposta, inclusive 401, 403 e 429;
+if (rota pública?) then (sim)
+  :Rate limit por IP e rota · segue sem autenticação;
+else (não)
+  if (actuator além do health?) then (sim)
+    :403 (denyAll);
+    stop
+  endif
+  if (JWT válido?) then (sim)
+  else (não)
+    :401 UNAUTHENTICATED (RFC 7807);
+    stop
+  endif
+  if (família de sessão ativa?) then (sim)
+  else (não)
+    :401 UNAUTHENTICATED;
+    stop
+  endif
+  if (conta ativa?) then (sim)
+  else (não)
+    :403 ACCOUNT_BLOCKED;
+    stop
+  endif
+  if (perfil exigido pela rota?) then (sim)
+  else (não)
+    :403 FORBIDDEN + ACCESS_DENIED;
+    stop
+  endif
+endif
+:Controller: CurrentUser.requireId() → caso de uso;
+if (recurso pertence a um save?) then (sim)
+  if (dono do recurso?) then (sim)
+  else (não)
+    :403 + ACCESS_DENIED;
+    stop
+  endif
+  if (recurso filho pertence ao save?) then (sim)
+  else (não)
+    :404 NOT_FOUND;
+    stop
+  endif
+endif
+:Executa o caso de uso e responde;
+|Scheduler|
+:Na subida: AdminBootstrap e guarda de configuração de produção;
+if (admin inicial seguro?) then (sim)
+else (não)
+  :Nenhum admin criado;
+endif
+end
+@enduml

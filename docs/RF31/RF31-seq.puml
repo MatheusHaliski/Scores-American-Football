@@ -1,0 +1,37 @@
+@startuml
+title RF31 — Público e renda da partida · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+control "AuditService" as AuditService
+control "FinanceEngine" as FinanceEngine
+database "MySQL 8" as MySQL
+database "Redis 7" as Redis
+Manager -> Frontend: Detalhes da partida
+Frontend -> API: GET /matches/{mid}/report
+API -> UseCase: GetMatchReportUseCase.execute(mid, userId)
+UseCase -> MySQL: fixture + save (requireOwner) + stadium + sectors + ticketPolicy
+alt não é dono
+  UseCase -> AuditService: record(ACCESS_DENIED)
+  API --> Frontend: 403
+else senão
+  alt fixture FINISHED
+    UseCase -> MySQL: MatchReport (attendance, revenue) + ledger TICKETS
+    MySQL --> UseCase: dados consolidados
+  else senão
+    UseCase -> Redis: GET snapshot do kickoff
+    Redis --> UseCase: snapshot
+    UseCase -> FinanceEngine: estimateAttendance(stadium, prestige, record, rival, slot, weather, prices)
+    FinanceEngine --> UseCase: AttendanceEstimate
+  end
+  UseCase -> FinanceEngine: breakdownBySector(sectors, attendance, policy)
+  FinanceEngine --> UseCase: SectorRevenue[]
+  UseCase --> API: MatchAttendanceDto (público, renda, setores, fatores, estimativa?)
+  API --> Frontend: 200
+  Frontend -> Manager: público, renda e fatores
+end
+@enduml

@@ -1,0 +1,65 @@
+@startuml
+title RF11 — Central de carreiras salvas · Diagrama de componentes
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 36
+actor "Head coach / manager (usuário autenticado)" as c1
+package "Frontend (Next.js)" as pkg_fe {
+  component "CareerHubPage" as c2
+  frame "componentes de CareerHubPage" as pkg_fe_sub {
+    component "CareerSlotCard" as c3
+    component "NewCareerButton" as c4
+    component "RenameCareerDialog" as c5
+    component "ArchiveToggle" as c6
+    component "DeleteCareerDialog" as c7
+  }
+}
+package "scores-af-web (REST)" as pkg_web {
+  component "CareerController" as c8
+}
+package "scores-af-application (casos de uso)" as pkg_app {
+  component "ListCareersUseCase" as c9
+  component "CreateCareerUseCase" as c10
+  component "GetCareerUseCase" as c11
+  component "UpdateCareerUseCase" as c12
+  component "DeleteCareerUseCase" as c13
+  component "CareerAccess" as c14
+  component "AuditService" as c15
+}
+package "portas (port.out)" as pkg_ports {
+  interface "CareerSaveRepository" as c16
+  interface "WorldRepository" as c17
+  interface "MatchSessionRepository" as c18
+  interface "AuditLogRepository" as c19
+  interface "TimelinePort" as c20
+  interface "CounterPort" as c21
+  interface "SearchPort" as c22
+}
+package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
+  component "persistence-mysql" as c23
+  component "persistence-cassandra" as c24
+  component "cache-redis" as c25
+  component "search-opensearch" as c26
+}
+database "MySQL 8" as s1
+database "Redis 7" as s2
+database "Cassandra 4.1" as s3
+database "OpenSearch 2" as s4
+c1 --> c2 : usa
+c2 --> c8 : GET /careers (alvo)\nPOST /careers (alvo)\nGET /careers/{id} (alvo)\n…
+c8 --> c9
+c9 ..> pkg_app : orquestra
+pkg_app --> pkg_ports : depende (DIP)
+c23 .up.|> c16
+c23 .up.|> c17
+c23 .up.|> c18
+c23 .up.|> c19
+c24 .up.|> c20
+c25 .up.|> c21
+c26 .up.|> c22
+c23 --> s1
+c24 --> s3
+c25 --> s2
+c26 --> s4
+@enduml

@@ -1,0 +1,90 @@
+@startuml
+title RNF7 — Auditoria e registro de atividades (logging) · Diagrama de classes
+skinparam classAttributeIconSize 0
+hide empty methods
+package "account" {
+  class AuditLog {
+    actor: String
+    action: String
+    resource: String
+    resourceId: String
+    result: String
+    ip: String
+    userAgent: String
+    correlationId: String
+    timestamp: Instant
+  }
+  class UserAccount {
+    id: UUID
+    email: String «AES-GCM»
+    emailHash: String «unique»
+    passwordHash: String «Argon2id»
+    displayName: String
+    locale: Locale
+    role: Role
+    status: AccountStatus
+    failedLoginAttempts: int
+    lockedUntil: Instant
+    marketingConsent: boolean
+    deletionRequestedAt: Instant
+    profileVisibility: ProfileVisibility
+    birthDate: LocalDate
+    pendingEmail: String
+  }
+  class UserSession {
+    id: UUID
+    refreshTokenHash: String «cookie __Host-»
+    ip: String
+    userAgent: String
+    expiresAt: Instant
+    revokedAt: Instant
+    replacedBy: UUID
+  }
+}
+package "match" {
+  class MatchSession {
+    status: LiveStatus
+    quarter: int
+    clockSeconds: int
+    playClockSeconds: int
+    possession: Club
+    down: int (1–4)
+    distance: int
+    ballOnAbsYd: int (0–100)
+    homeScore: int
+    awayScore: int
+    timeoutsHome: int
+    timeoutsAway: int
+    seed: long
+    rngCursor: long
+    snapshotJson: TEXT
+    decisionsLog: JSON
+    version: long
+  }
+}
+class AuditService <<Service>> {
+  ok(action, resource, id, details) «REQUIRES_NEW»
+  failed(action, resource, id) «REQUIRES_NEW»
+  denied(action, resource, id) «REQUIRES_NEW»
+}
+class AuditActions <<constants>> {
+  REGISTER · LOGIN_OK · LOGIN_FAILED · LOGIN_LOCKED · LOGOUT
+  TOKEN_REFRESHED · TOKEN_REUSE_DETECTED · SESSION_REVOKED
+  SENSITIVE_DATA_CHANGED · CONSENT_* · DATA_EXPORT_* · ACCOUNT_DELETION_*
+  ACCESS_DENIED · STORE_PURCHASE · MATCH_SIMULATED · PLAY_CALLED · ADMIN_*
+}
+class CorrelationIdFilter <<Filter>> {
+  doFilter: X-Correlation-Id seguro ou UUID → MDC + resposta()
+}
+class ClientIpResolver <<Helper>> {
+  resolve(req): String «socket ou cabeçalho assinado»
+}
+class QueryAuditLogUseCase <<UseCase>> {
+  execute(filters, page): Page
+}
+UserAccount "1" -- "*" UserSession : sessões
+AuditService ..> AuditActions : ações
+AuditService ..> AuditLog : cria (imutável)
+CorrelationIdFilter ..> AuditLog : correlationId
+QueryAuditLogUseCase ..> AuditLog : lê
+@enduml

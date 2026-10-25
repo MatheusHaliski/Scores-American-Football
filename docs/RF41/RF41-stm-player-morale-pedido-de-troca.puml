@@ -1,0 +1,19 @@
+@startuml
+title RF41 — Moral do head coach (franquia e liga) e do jogador · Máquina de estados: Player.morale (pedido de troca)
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "Estável (≥ 50)" as ESTAVEL
+state "Insatisfeito (35–49)" as INSATISFEITO
+INSATISFEITO : ouve rumores
+state "Pede troca" as PEDE_TROCA
+PEDE_TROCA : < 35 por 3 semanas
+PEDE_TROCA : inbox PLAYER
+state "Trocado (RF50)" as TROCADO
+[*] --> ESTAVEL
+ESTAVEL --> INSATISFEITO : < 50
+INSATISFEITO --> ESTAVEL : ≥ 50
+INSATISFEITO --> PEDE_TROCA : < 35 por 3 semanas
+PEDE_TROCA --> INSATISFEITO : promessa cumprida / extensão
+PEDE_TROCA --> TROCADO : troca executada
+TROCADO --> [*]
+@enduml

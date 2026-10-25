@@ -1,0 +1,154 @@
+@startuml
+title RF11 — Central de carreiras salvas · Diagrama de classes
+skinparam classAttributeIconSize 0
+hide empty methods
+package "account" {
+  class UserAccount {
+    id: UUID
+    email: String «AES-GCM»
+    emailHash: String «unique»
+    passwordHash: String «Argon2id»
+    displayName: String
+    locale: Locale
+    role: Role
+    status: AccountStatus
+    failedLoginAttempts: int
+    lockedUntil: Instant
+    marketingConsent: boolean
+    deletionRequestedAt: Instant
+    profileVisibility: ProfileVisibility
+    birthDate: LocalDate
+    pendingEmail: String
+  }
+}
+package "career" {
+  class CareerSave {
+    id: UUID
+    name: String
+    seed: long
+    employmentStatus: EmploymentStatus
+    currentWeek: int
+    difficulty: Difficulty
+    seasonMode: SeasonMode
+    scoresPoints: int
+    status: SaveStatus
+    slot: int
+    lastPlayedAt: Instant
+  }
+}
+package "catalog" {
+  class World {
+    id: UUID
+    ownerUser: UserAccount?
+    name: String
+    kind: WorldKind
+    sourceWorld: World?
+  }
+  class ManagerProfile {
+    name: String
+    nationality: String
+    isHuman: boolean
+    overall: int
+    coachStyle: CoachStyleCode
+    reputationLeague: int
+    careerTitles: int
+    careerGames: int
+    careerWins: int
+    careerPlayoffWins: int
+  }
+  class Club {
+    id: UUID
+    name: String
+    shortName: String
+    city: String
+    conference: Conference
+    division: Division
+    logoKey: String
+    primaryColor: String
+    secondaryColor: String
+    accentColor: String
+    prestige: int
+    reputationBoard: int
+    reputationFans: int
+    cash: long
+    capSpace: long
+    isUserControlled: boolean
+    expectedWins: int
+    scoutingLevel: int
+    scoutingBudget: long
+  }
+}
+package "season" {
+  class Season {
+    number: int
+    year: int
+    phase: SeasonPhase (PRESEASON|REGULAR|PLAYOFFS|DRAFT|FREE_AGENCY|OFFSEASON)
+    currentWeek: int
+    tradeDeadlineWeek: int
+    championClub: Club?
+    mvpPlayer: Player?
+  }
+}
+package "match" {
+  class MatchSession {
+    status: LiveStatus
+    quarter: int
+    clockSeconds: int
+    playClockSeconds: int
+    possession: Club
+    down: int (1–4)
+    distance: int
+    ballOnAbsYd: int (0–100)
+    homeScore: int
+    awayScore: int
+    timeoutsHome: int
+    timeoutsAway: int
+    seed: long
+    rngCursor: long
+    snapshotJson: TEXT
+    decisionsLog: JSON
+    version: long
+  }
+}
+class ListCareersUseCase <<UseCase>> {
+  execute(userId): List<CareerSlotDto>
+}
+class CareerSlotDto <<record>> {
+  id: UUID
+  name: String
+  slot: int
+  status: SaveStatus
+  clubName: String
+  leagueName: String
+  season: int
+  week: int
+  record: String (V-D-E)
+  lastPlayedAt: Instant
+  version: long
+}
+class UpdateCareerUseCase <<UseCase>> {
+  execute(UpdateCareerCommand): CareerSlotDto
+}
+class DeleteCareerUseCase <<UseCase>> {
+  execute(careerId, confirm, userId) «@Transactional»
+}
+class CareerAccess <<Policy>> {
+  requireOwner(saveId, userId)
+}
+UserAccount "1" -- "*" CareerSave : carreiras
+UserAccount "1" -- "*" World : mundos editados
+World "1" -- "*" Club
+Club "*" -- "*" Club : rivais da divisão
+Club "0..1" -- "1" ManagerProfile : head coach
+CareerSave "1" -- "1" World : mundo do save
+CareerSave "1" -- "1" ManagerProfile : manager humano
+CareerSave "*" -- "0..1" Club : franquia atual
+CareerSave "1" -- "*" Season
+ListCareersUseCase ..> CareerSlotDto : produz
+ListCareersUseCase ..> CareerSave : lê
+UpdateCareerUseCase ..> CareerAccess : usa
+UpdateCareerUseCase ..> CareerSave : atualiza
+UpdateCareerUseCase ..> MatchSession : checa ao vivo
+DeleteCareerUseCase ..> CareerAccess : usa
+DeleteCareerUseCase ..> World : remove cópia SAVE
+@enduml

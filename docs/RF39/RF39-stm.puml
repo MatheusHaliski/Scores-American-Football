@@ -1,0 +1,32 @@
+@startuml
+title RF39 — Scouting universitário · Máquina de estados: DraftProspect (visão do clube)
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "Não avaliado" as NAO_AVALIADO
+NAO_AVALIADO : potencial ??
+state "Observado" as OBSERVADO
+OBSERVADO : 1 relatório
+OBSERVADO : faixa larga
+state "Avaliado" as AVALIADO
+AVALIADO : 2+ relatórios
+AVALIADO : faixa estreita
+state "No big board" as NO_BOARD
+state "Medido no combine" as COMBINE
+COMBINE : 40 jardas, supino, salto
+state "Draftado" as DRAFTADO
+DRAFTADO : RF51
+state "Não draftado" as NAO_DRAFTADO
+NAO_DRAFTADO : agente livre (RF65)
+[*] --> NAO_AVALIADO
+NAO_AVALIADO --> OBSERVADO : relatório
+OBSERVADO --> AVALIADO : novo relatório
+OBSERVADO --> NO_BOARD : adicionado
+AVALIADO --> NO_BOARD : adicionado
+NAO_AVALIADO --> COMBINE : combine
+NO_BOARD --> COMBINE : combine
+AVALIADO --> COMBINE : combine
+COMBINE --> DRAFTADO : escolhido no draft
+COMBINE --> NAO_DRAFTADO : fim do draft
+DRAFTADO --> [*]
+NAO_DRAFTADO --> [*]
+@enduml

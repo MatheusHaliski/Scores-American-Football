@@ -1,0 +1,149 @@
+@startuml
+title RF50 — Trocas com jogadores e picks de draft · Diagrama de classes
+skinparam classAttributeIconSize 0
+hide empty methods
+package "catalog" {
+  class Club {
+    id: UUID
+    name: String
+    shortName: String
+    city: String
+    conference: Conference
+    division: Division
+    logoKey: String
+    primaryColor: String
+    secondaryColor: String
+    accentColor: String
+    prestige: int
+    reputationBoard: int
+    reputationFans: int
+    cash: long
+    capSpace: long
+    isUserControlled: boolean
+    expectedWins: int
+    scoutingLevel: int
+    scoutingBudget: long
+  }
+  class Player {
+    id: UUID
+    name: String
+    nationality: String
+    college: String
+    birthDate: LocalDate
+    age: int
+    heightCm: int
+    weightKg: int
+    position: Position (QB|RB|FB|WR|TE|LT|LG|C|RG|RT|DE|DT|OLB|MLB|CB|FS|SS|K|P|LS)
+    unit: Unit (OFFENSE|DEFENSE|SPECIAL)
+    attributes: PlayerAttributes
+    overall: int «por posição, OVR v1»
+    potential: int
+    experienceYears: int
+    rosterStatus: RosterStatus (ACTIVE|INACTIVE|PRACTICE_SQUAD|IR|PUP|FREE_AGENT|WAIVED)
+    condition: int
+    morale: int
+    moraleFactors: JSON
+    injury: Injury?
+    suspensionWeeks: int
+    contract: PlayerContract
+    jerseyNumber: int
+    isLegendary: boolean
+    model3dUrl: String
+  }
+}
+package "season" {
+  class Season {
+    number: int
+    year: int
+    phase: SeasonPhase (PRESEASON|REGULAR|PLAYOFFS|DRAFT|FREE_AGENCY|OFFSEASON)
+    currentWeek: int
+    tradeDeadlineWeek: int
+    championClub: Club?
+    mvpPlayer: Player?
+  }
+}
+package "market" {
+  class PlayerContract {
+    «embedded» years: int
+    baseSalaryByYear: JSON
+    signingBonus: long «rateado»
+    guaranteed: long
+    capHitByYear: JSON
+    deadMoneyIfCut: long
+    franchiseTag: boolean
+    type: ContractType (ROOKIE|VETERAN|MINIMUM|TAG|PRACTICE)
+    endSeason: int
+  }
+  class DraftPick {
+    season: int (até 3 à frente)
+    round: int (1–7)
+    overall: Integer
+    originalClub: Club
+    ownerClub: Club
+    compensatory: boolean
+  }
+  class TradeProposal {
+    playersOut: List<UUID>
+    playersIn: List<UUID>
+    picksOut: List<DraftPick>
+    picksIn: List<DraftPick>
+    capImpact: long
+    status: OfferStatus
+    reason: String
+    beforeDeadline: boolean
+  }
+}
+package "finance" {
+  class SalaryCapLedger {
+    season: int
+    cap: long
+    committed: long
+    deadMoney: long
+    space: long
+    rolloverFromPrevious: long
+  }
+}
+package "match" {
+  class DepthChart {
+    club: Club
+    version: long
+    updatedAt: Instant
+    validated: boolean
+  }
+}
+class TradeValuation <<Engine>> {
+  value(side, needs, difficulty): double
+  accept(proposal, seed): ACCEPT | REJECT | COUNTER
+  counter(proposal): TradeProposal
+}
+class PickValueChart <<Policy>> {
+  version: 1
+  valor por overall do pick (1–224)
+  desconto por temporada futura (1 rodada por ano)
+  value(pick, projectedOverall): double
+}
+class RosterLimitPolicy <<Policy>> {
+  check(club, incoming, outgoing): List<Violation> «≤ 53, QB, K, P»
+}
+class TradePreviewDto <<record>> {
+  valueOut: double
+  valueIn: double
+  capAfterOwn: long
+  capAfterPartner: long
+  deadMoneyAccelerated: long
+  acceptChance: double
+  violations: List<String>
+}
+Club "1" -- "0..53" Player : elenco ativo
+Club "*" -- "*" Club : rivais da divisão
+Club "1" -- "1" DepthChart
+Player "1" -- "1" PlayerContract : «embedded»
+TradeProposal "*" -- "*" DraftPick : picks
+Club "1" -- "*" DraftPick : picks próprios
+Club "1" -- "*" SalaryCapLedger : por temporada
+TradeValuation ..> PickValueChart : usa
+TradeValuation ..> TradeProposal : avalia
+TradeProposal ..> TradePreviewDto : prévia
+RosterLimitPolicy ..> Club : elenco
+TradePreviewDto ..> SalaryCapLedger : dois lados
+@enduml

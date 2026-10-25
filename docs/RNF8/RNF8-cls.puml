@@ -1,0 +1,115 @@
+@startuml
+title RNF8 — Privacidade e conformidade com a LGPD · Diagrama de classes
+skinparam classAttributeIconSize 0
+hide empty methods
+package "account" {
+  class UserAccount {
+    id: UUID
+    email: String «AES-GCM»
+    emailHash: String «unique»
+    passwordHash: String «Argon2id»
+    displayName: String
+    locale: Locale
+    role: Role
+    status: AccountStatus
+    failedLoginAttempts: int
+    lockedUntil: Instant
+    marketingConsent: boolean
+    deletionRequestedAt: Instant
+    profileVisibility: ProfileVisibility
+    birthDate: LocalDate
+    pendingEmail: String
+  }
+  class UserSession {
+    id: UUID
+    refreshTokenHash: String «cookie __Host-»
+    ip: String
+    userAgent: String
+    expiresAt: Instant
+    revokedAt: Instant
+    replacedBy: UUID
+  }
+  class ConsentRecord {
+    user: UserAccount
+    purpose: ConsentPurpose
+    granted: boolean
+    textVersion: String
+    source: ConsentSource
+    ipHash: String
+    recordedAt: Instant
+  }
+  class DataExportJob {
+    user: UserAccount
+    status: ExportStatus
+    requestedAt: Instant
+    readyAt: Instant
+    expiresAt: Instant
+    jsonKey: String
+    csvKey: String
+  }
+  class CustomPlayer {
+    user: UserAccount «unique»
+    name: String
+    position: Position
+    heightCm: int
+    weightKg: int
+    jerseyNumber: int
+    attributes: PlayerAttributes
+    appearance: JSON
+    faceMetrics: JSON
+    reconstructionSource: AvatarSource
+    modelKey: String
+    avatarRevision: int
+    confirmedAt: Instant
+  }
+  class AuditLog {
+    actor: String
+    action: String
+    resource: String
+    resourceId: String
+    result: String
+    ip: String
+    userAgent: String
+    correlationId: String
+    timestamp: Instant
+  }
+}
+package "store" {
+  class Purchase {
+    purchasedAt: Instant
+    pricePaid: int
+  }
+}
+enum ConsentPurpose {
+  ANALYTICS
+  MARKETING_EMAIL
+  PUBLIC_RANKING
+  AI_ANALYST
+  BIOMETRIC_AVATAR
+}
+class DataExportUseCases <<UseCase>> {
+  request(userId): jobId
+  process(job) «JSON + CSV, 24 h»
+  download(jobId, userId)
+}
+class AccountDeletionUseCases <<UseCase>> {
+  GRACE = 7 dias
+  request(userId, senha)
+  cancel(userId)
+  purgeDue(now) «anonimiza»
+}
+class PrivacyUseCases <<UseCase>> {
+  update(userId, cmd) «append-only»
+  history(userId)
+}
+UserAccount "1" -- "*" UserSession : sessões
+UserAccount "1" -- "*" ConsentRecord : consentimentos
+UserAccount "1" -- "*" DataExportJob : exportações
+UserAccount "1" -- "0..1" CustomPlayer : Meu jogador
+UserAccount "1" -- "*" Purchase
+PrivacyUseCases ..> ConsentRecord : append-only
+ConsentRecord ..> ConsentPurpose : purpose
+DataExportUseCases ..> DataExportJob : cria
+AccountDeletionUseCases ..> UserAccount : PENDING_DELETION → DELETED
+AccountDeletionUseCases ..> CustomPlayer : apaga mídia
+@enduml

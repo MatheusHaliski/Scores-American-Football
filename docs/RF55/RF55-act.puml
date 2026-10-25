@@ -1,0 +1,57 @@
+@startuml
+title RF55 — Snaps-alvo, rodízio da linha e química · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Manager|
+start
+:Abre Snaps e química;
+|Frontend|
+:GET /snap-plan · GET /chemistry;
+|Backend|
+if (dono do save?) then (sim)
+else (não)
+  :403;
+  stop
+endif
+|Manager|
+:Ajusta alvos por jogador e o rodízio da DL;
+|Frontend|
+:PUT /snap-plan;
+|Backend|
+if (alvos coerentes?) then (sim)
+else (não)
+  :422 SNAP_PLAN_INVALID;
+  stop
+endif
+if (rodízio da DL?) then (sim)
+else (não)
+  :422 DL_ROTATION_INVALID;
+  stop
+endif
+if (jogador ativo?) then (sim)
+else (não)
+  :422 PLAYER_NOT_ACTIVE;
+  stop
+endif
+if (fadiga alta?) then (sim)
+|Frontend|
+  :Mostra aviso de risco;
+endif
+|Backend|
+if (partida em andamento?) then (sim)
+  :Guarda para o intervalo;
+else (não)
+  :Grava o plano;
+endif
+partition "Durante e depois da partida" {
+  :MatchSimulator troca jogadores para aproximar os alvos e a fadiga;
+  :Snaps juntos sobem a química da OL e de QB-WR; troca de titular derruba;
+|JogadorIA|
+  :Moral reage aos snaps abaixo do esperado;
+}
+|Manager|
+:Vê snaps reais × alvo e a química;
+end
+@enduml

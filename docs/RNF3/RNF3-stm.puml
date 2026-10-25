@@ -1,0 +1,42 @@
+@startuml
+title RNF3 — Controle de acesso e autorização por perfil · Máquina de estados: Requisição (decisão de acesso)
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "Recebida" as Recebida
+Recebida : correlationId atribuído
+state "Pública" as Publica
+Publica : allowlist
+Publica : rate limit por IP e rota
+state "Autenticada" as Autenticada
+Autenticada : JWT RS256 válido
+Autenticada : família ativa
+state "Autorizada (perfil)" as Autorizada
+Autorizada : hasRole ok
+state "Dono do recurso" as DonoOk
+DonoOk : requireOwner ok
+state "401" as N401
+N401 : token inválido ou família revogada
+state "403 + auditoria" as N403
+N403 : ACCESS_DENIED
+N403 : actuator denyAll
+state "404" as N404
+N404 : filho fora do save
+state "Executada" as Executada
+Executada : caso de uso concluído
+[*] --> Recebida
+Recebida --> Publica : rota na allowlist
+Publica --> Executada : processa
+Recebida --> Autenticada : JWT válido + família ativa
+Recebida --> N401 : JWT inválido / família revogada
+Autenticada --> Autorizada : perfil compatível
+Autenticada --> N403 : perfil insuficiente / conta bloqueada
+Autorizada --> DonoOk : save.user == sub
+Autorizada --> N403 : não é dono
+Autorizada --> Executada : recurso sem save (/me)
+DonoOk --> Executada : filho pertence ao save
+DonoOk --> N404 : filho de outro save
+Executada --> [*]
+N401 --> [*]
+N403 --> [*]
+N404 --> [*]
+@enduml

@@ -1,0 +1,29 @@
+@startuml
+title RF10 — Configurações de jogo e interface · Máquina de estados: Tela de configurações (interação)
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "Carregando" as LOADING
+LOADING : GET settings + inventory
+state "Exibindo" as VIEWING
+VIEWING : valores atuais
+state "Editando com prévia" as PREVIEW
+PREVIEW : tema, fonte e unidade aplicados localmente
+PREVIEW : não salvo
+state "Salvando" as SAVING
+SAVING : PUT /me/settings
+state "Salvo" as SAVED
+SAVED : aplicado
+SAVED : ou a partir do próximo jogo
+state "Erro" as ERROR
+ERROR : 401 / 422
+[*] --> LOADING
+LOADING --> VIEWING : 200
+LOADING --> ERROR : 401
+VIEWING --> PREVIEW : altera opção
+PREVIEW --> VIEWING : descartar
+PREVIEW --> SAVING : salvar
+SAVING --> SAVED : 200
+SAVING --> ERROR : 422
+ERROR --> PREVIEW : corrige
+SAVED --> VIEWING : ok
+@enduml

@@ -1,0 +1,49 @@
+@startuml
+title RF66 — Playoffs com chave · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Scheduler|
+start
+:Fim da semana 18: fecha a temporada regular;
+|Backend|
+if (temporada regular encerrada?) then (sim)
+else (não)
+  :Atualiza só a projeção;
+  end
+endif
+:Seeds 1–4 campeões de divisão por winPct, 5–7 wild cards;
+while (empate entre seeds?) is (sim)
+  if (desempate resolvido?) then (sim)
+  else (não)
+    :Próximo critério;
+  endif
+endwhile (não)
+if (seed 1 folga?) then (sim)
+  :Wild Card: 2×7, 3×6, 4×5 em cada conferência;
+endif
+while (rodada concluída?) is (sim)
+  :Cria Fixtures da próxima rodada com reseed: maior seed enfrenta o menor restante;
+|ClubeIA|
+  :Jogos da IA simulados;
+|Manager|
+  :Joga a partida do clube (RF7, RF42);
+  note right: playoff não termina empatado: prorrogação até haver vencedor
+|Backend|
+  if (usuário eliminado?) then (sim)
+    :Simula o restante sem parar;
+  endif
+endwhile (não)
+if (final neutra?) then (sim)
+  :Final em estádio neutro;
+else (não)
+  :Final na casa do melhor seed;
+endif
+:Campeão em Season.championClub e ChampionHistory;
+|Imprensa|
+:Notícia do título;
+|Manager|
+:Vê a chave completa;
+end
+@enduml

@@ -1,0 +1,48 @@
+@startuml
+title RF66 — Playoffs com chave · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+control "MatchSimulator" as MatchSimulator
+control "SeasonEngine" as SeasonEngine
+queue "EventBus" as EventBus
+database "MySQL 8" as MySQL
+database "Redis 7" as Redis
+database "Cassandra 4.1" as Cassandra
+participant "Agendador/Job assíncrono" as Scheduler
+Scheduler -> SeasonEngine: CloseRegularSeason(season)
+SeasonEngine -> MySQL: standings, confrontos diretos, divisões
+SeasonEngine -> SeasonEngine: seeds 1–7 por conferência + desempates pela semente
+SeasonEngine -> MySQL: TX: INSERT playoff_seed[14], playoff_matchup WILD_CARD[6], fixtures, phase PLAYOFFS
+SeasonEngine -> EventBus: PlayoffsSeeded
+EventBus -> Cassandra: notícia da chave
+EventBus -> Redis: DEL bracket:{saveId}
+loop cada rodada até a final
+  SeasonEngine -> MatchSimulator: simula jogos da rodada (usuário joga o seu)
+  MatchSimulator --> SeasonEngine: vencedores
+  alt rodada não concluída
+    SeasonEngine -> SeasonEngine: aguarda
+  else senão
+    SeasonEngine -> MySQL: reseed + próxima rodada (final: neutralSite)
+  end
+end
+SeasonEngine -> MySQL: championClub, ChampionHistory, phase DRAFT
+Manager -> Frontend: abre playoffs
+Frontend -> API: GET /careers/{id}/playoffs/bracket
+API -> UseCase: GetPlayoffBracketUseCase
+alt não é dono
+  API --> Frontend: 403
+else senão
+  UseCase -> Redis: GET bracket:{saveId}
+  alt sem cache
+    UseCase -> MySQL: seeds e matchups
+    UseCase -> Redis: SET bracket TTL
+  end
+  UseCase --> API: BracketView
+  API --> Frontend: 200
+end
+@enduml

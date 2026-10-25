@@ -1,0 +1,154 @@
+@startuml
+title RF41 — Moral do head coach (franquia e liga) e do jogador · Diagrama de classes
+skinparam classAttributeIconSize 0
+hide empty methods
+package "career" {
+  class ManagerMorale {
+    moraleClub: int
+    moraleLeague: int
+    factorsClub: JSON
+    factorsLeague: JSON
+    weeksUnderCritical: int
+    trend: Trend
+    updatedWeek: int
+  }
+  class ManagerContract {
+    salaryPerSeason: long
+    startSeason: int
+    endSeason: int
+    objectives: JSON (vitórias, playoffs, título)
+    releaseClause: long
+    status: ContractStatus
+  }
+  class JobOffer {
+    salary: long
+    seasons: int
+    objectives: JSON
+    status: OfferStatus
+    expiresWeek: int
+    reason: String
+  }
+}
+package "catalog" {
+  class ManagerStyle {
+    code: CoachStyleCode (OFFENSIVE|DEFENSIVE|DEVELOPER|MOTIVATOR)
+    effects: JSON
+    priceScoresPoints: int
+    rewardGoal: String
+  }
+  class Player {
+    id: UUID
+    name: String
+    nationality: String
+    college: String
+    birthDate: LocalDate
+    age: int
+    heightCm: int
+    weightKg: int
+    position: Position (QB|RB|FB|WR|TE|LT|LG|C|RG|RT|DE|DT|OLB|MLB|CB|FS|SS|K|P|LS)
+    unit: Unit (OFFENSE|DEFENSE|SPECIAL)
+    attributes: PlayerAttributes
+    overall: int «por posição, OVR v1»
+    potential: int
+    experienceYears: int
+    rosterStatus: RosterStatus (ACTIVE|INACTIVE|PRACTICE_SQUAD|IR|PUP|FREE_AGENT|WAIVED)
+    condition: int
+    morale: int
+    moraleFactors: JSON
+    injury: Injury?
+    suspensionWeeks: int
+    contract: PlayerContract
+    jerseyNumber: int
+    isLegendary: boolean
+    model3dUrl: String
+  }
+}
+package "market" {
+  class PlayerContract {
+    «embedded» years: int
+    baseSalaryByYear: JSON
+    signingBonus: long «rateado»
+    guaranteed: long
+    capHitByYear: JSON
+    deadMoneyIfCut: long
+    franchiseTag: boolean
+    type: ContractType (ROOKIE|VETERAN|MINIMUM|TAG|PRACTICE)
+    endSeason: int
+  }
+  class TradeProposal {
+    playersOut: List<UUID>
+    playersIn: List<UUID>
+    picksOut: List<DraftPick>
+    picksIn: List<DraftPick>
+    capImpact: long
+    status: OfferStatus
+    reason: String
+    beforeDeadline: boolean
+  }
+}
+package "match" {
+  class PlayerMatchStats {
+    snaps: int
+    passing: cmp/att, yds, td, int, rating, sacked
+    rushing: att, yds, avg, td, fum
+    receiving: tgt, rec, yds, yac, td, drops
+    defense: tkl solo/ast, tfl, sacks, qbHits, int, pd, ff, fr
+    kicking: fg por distância, pat, punts, avg, in20
+    returns: kr/pr, yds, td
+    rating: double
+  }
+  class DepthChartSlot {
+    unit: Unit
+    position: Position | Role (KR|PR|3RD_DOWN_BACK|SNAPPER|HOLDER)
+    depth: int (1, 2, 3…)
+    player: Player
+    outOfPosition: boolean
+  }
+}
+package "inbox" {
+  class InboxMessage {
+    sender: InboxSender
+    subject: String
+    body: TEXT
+    kind: InboxKind
+    options: JSON
+    chosenOption: String
+    deadlineWeek: int
+    status: MessageStatus
+    refType: String
+    refId: UUID
+  }
+}
+class MoraleWeekJob <<Job>> {
+  onWeekCompleted(saveId, week)
+}
+class ManagerMoraleEngine <<Engine>> {
+  updateAfterWeek(state, outcome, context, difficulty, style): ManagerMoraleUpdate
+}
+class PlayerMoraleEngine <<Engine>> {
+  updateAfterWeek(PlayerMoraleInput): PlayerMoraleUpdate
+  performanceModifier(morale): double
+}
+class SnapExpectationTable <<Policy>> {
+  expected(position, depth, unit): double
+}
+class PlayerMoraleUpdate <<record>> {
+  morale: int
+  factors: Map<String, Double>
+  tradeRequested: boolean
+  performanceModifier: double
+}
+class ContextFactors <<Engine>> {
+  forMatch(moraleClub, moraleLeague, playerMorale): double[]
+}
+DepthChartSlot "*" -- "1" Player
+Player "1" -- "1" PlayerContract : «embedded»
+MoraleWeekJob ..> ManagerMoraleEngine : usa
+MoraleWeekJob ..> PlayerMoraleEngine : usa
+PlayerMoraleEngine ..> SnapExpectationTable : usa
+SnapExpectationTable ..> DepthChartSlot : papel
+PlayerMoraleEngine ..> PlayerMatchStats : snaps
+PlayerMoraleEngine ..> PlayerMoraleUpdate : produz
+MoraleWeekJob ..> TradeProposal : cria (recebida)
+ContextFactors ..> ManagerMorale : lê
+@enduml

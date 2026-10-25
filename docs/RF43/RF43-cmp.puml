@@ -1,0 +1,60 @@
+@startuml
+title RF43 — Mini campo 3D no intervalo · Diagrama de componentes
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 36
+actor "Head coach / manager (usuário autenticado)" as c1
+package "Frontend (Next.js)" as pkg_fe {
+  component "HalftimePlaybookPanel" as c2
+  frame "componentes de HalftimePlaybookPanel" as pkg_fe_sub {
+    component "TacticalField (WebGL → 3D | 2D)" as c3
+    component "MiniField3D (câmeras aérea e atrás do QB)" as c4
+    component "MiniField2D (SVG)" as c5
+    component "Field (linhas, hash marks, end zones, traves)" as c6
+    component "AthleteFigure (capacete, ombreiras, uniforme)" as c7
+    component "PlayDiagramOverlay (rotas, bloqueios, zonas)" as c8
+    component "lib/match/formation.ts" as c9
+    component "store/match.ts (pendências)" as c10
+  }
+}
+package "scores-af-web (REST)" as pkg_web {
+  component "MatchController" as c11
+  component "PlaybookController" as c12
+}
+package "scores-af-application (casos de uso)" as pkg_app {
+  component "MatchQueryUseCases" as c13
+  component "PlaybookQueryUseCase" as c14
+  component "AdvanceMatchUseCase" as c15
+}
+package "scores-af-domain/engine" as pkg_eng {
+  component "MatchSimulator (validateDecisions)" as c16
+}
+package "portas (port.out)" as pkg_ports {
+  interface "LiveMatchStatePort" as c17
+  interface "MatchSessionRepository" as c18
+  interface "PlaybookRepository" as c19
+  interface "UniformRepository" as c20
+}
+package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
+  component "cache-redis" as c21
+  component "persistence-mysql" as c22
+}
+database "Redis 7" as s1
+database "MySQL 8" as s2
+database "Navegador" as s3
+c1 --> c2 : usa
+c2 --> c11 : GET /matches/{mid} (alvo)\nGET /clubs/{cid}/playbook (alvo)\nPOST /matches/{mid}/decisions (alvo)\n…
+c2 --> c12
+c11 --> c13
+c12 --> c13
+c13 ..> pkg_app : orquestra
+c13 --> c16 : usa
+pkg_app --> pkg_ports : depende (DIP)
+c21 .up.|> c17
+c22 .up.|> c18
+c22 .up.|> c19
+c22 .up.|> c20
+c21 --> s1
+c22 --> s2
+@enduml

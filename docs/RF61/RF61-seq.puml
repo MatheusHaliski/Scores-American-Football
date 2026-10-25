@@ -1,0 +1,40 @@
+@startuml
+title RF61 — Playbook e plano de jogo · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+control "ClubAnalyst" as ClubAnalyst
+queue "EventBus" as EventBus
+database "MySQL 8" as MySQL
+database "Redis 7" as Redis
+actor "Franquia adversária (IA)" as ClubeIA
+Manager -> Frontend: abre plano de jogo
+Frontend -> API: GET /careers/{id}/game-plan/suggestion?fixtureId
+API -> UseCase: SuggestGamePlanUseCase
+UseCase -> MySQL: plano, playbook, elenco, histórico do adversário
+alt não é dono
+  API --> Frontend: 403
+else senão
+  UseCase -> ClubAnalyst: tendências e confrontos-chave
+  ClubAnalyst --> UseCase: sugestão
+  UseCase --> API: GamePlanSuggestion
+  API --> Frontend: 200
+end
+Manager -> Frontend: ajusta e salva
+Frontend -> API: PUT /careers/{id}/game-plan
+API -> UseCase: UpdateGamePlanUseCase
+UseCase -> Redis: partida LIVE?
+alt LIVE ou fora dos limites
+  API --> Frontend: 422 MATCH_LIVE / GAME_PLAN_INVALID
+else senão
+  UseCase -> MySQL: UPDATE game_plan
+  UseCase -> EventBus: GamePlanChanged
+  API --> Frontend: 200 + avisos de personnel
+end
+ClubeIA -> ClubAnalyst: plano da IA pelo estilo
+note over UseCase: no kickoff MatchSimulator copia GamePlan e Playbook para o snapshot
+@enduml

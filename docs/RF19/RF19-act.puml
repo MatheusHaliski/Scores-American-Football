@@ -1,0 +1,106 @@
+@startuml
+title RF19 — Reforçar o elenco: free agency, trocas e waivers · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Manager|
+start
+:Abre o Mercado: free agents, trocas ou waivers;
+|Frontend|
+:GET /market/free-agents | /market/waivers e GET /cap;
+|Backend|
+if (dono do save?) then (sim)
+else (não)
+  :403 + auditoria ACCESS_DENIED;
+  stop
+endif
+if (fase permite a operação?) then (sim)
+else (não)
+  :409 MARKET_CLOSED;
+  stop
+endif
+|Manager|
+if (free agent?) then (sim)
+|Frontend|
+  :POST /free-agents/{pid}/offers {anos, valor, garantia, bônus};
+|Backend|
+  if (não há compra entre clubes?) then (sim)
+  else (não)
+    :422 PLAYER_NOT_AVAILABLE;
+    stop
+  endif
+  if (cabe no teto rígido?) then (sim)
+  else (não)
+    :422 CAP_SPACE_EXCEEDED;
+    stop
+  endif
+  if (elenco tem vaga?) then (sim)
+  else (não)
+    :422 ROSTER_FULL;
+    stop
+  endif
+  :FreeAgentOffer PENDING · ofertas das franquias IA concorrem;
+|JogadorIA|
+  if (jogador aceita a oferta?) then (sim)
+|Backend|
+    :Contrato assinado · rosterStatus ACTIVE · SalaryCapLedger atualizado;
+  else (não)
+    :REJECTED ou assina com outra franquia · inbox do agente;
+    stop
+  endif
+else (não)
+|Manager|
+  if (troca?) then (sim)
+|Frontend|
+    :POST /market/trades {jogadores e picks de cada lado};
+|Backend|
+    if (cabe no teto rígido?) then (sim)
+    else (não)
+      :422 CAP_SPACE_EXCEEDED;
+      stop
+    endif
+|ClubeIA|
+    if (franquia IA aceita a troca?) then (sim)
+|Backend|
+      :TradeProposal aceita pela IA;
+    else (não)
+      :COUNTERED (pede pick ou jogador) ou REJECTED · inbox;
+|Manager|
+      :Responde a contraproposta;
+|Backend|
+      if (contraproposta ainda válida?) then (sim)
+      else (não)
+        :409 OFFER_NOT_PENDING;
+        stop
+      endif
+    endif
+  else (não)
+|Frontend|
+    :POST /market/waivers/{pid}/claim;
+|Backend|
+    :WaiverClaim PENDING com a prioridade atual;
+|Scheduler|
+    if (prioridade de waiver?) then (sim)
+|Backend|
+      :AWARDED · herda o contrato · claim vai ao fim da fila;
+    else (não)
+      :LOST · outra franquia venceu;
+      stop
+    endif
+  endif
+endif
+if (transação única ok?) then (sim)
+else (não)
+  :Rollback · 409 CONFLICT;
+  stop
+endif
+:AuditLog ROSTER_MOVE · evento RosterChanged · reindexa jogador · inbox e notícia;
+|Diretoria|
+:Reage ao movimento: fator elenco e teto na moral do head coach (RF41);
+|Scheduler|
+:Fim do dia de jogo: processa waivers, expira ofertas e contrapropostas vencidas;
+|Frontend|
+:Jogador aparece no elenco (RF4) e no depth chart como reserva (RF60);
+end
+@enduml

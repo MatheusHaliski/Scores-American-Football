@@ -1,0 +1,23 @@
+@startuml
+title RNF12 — Diretrizes de Scores Points e loja · Máquina de estados: ScoresPointsWallet (escopo USER ou SAVE)
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "Zerada" as Zerada
+Zerada : criada com o save ou na primeira compra
+state "Com saldo" as ComSaldo
+ComSaldo : créditos só por jogo
+state "Debitando" as Debitando
+Debitando : SELECT FOR UPDATE
+Debitando : nunca negativa
+state "Divergente" as Divergente
+Divergente : saldo != soma do ledger
+Divergente : alerta
+[*] --> Zerada
+Zerada --> ComSaldo : meta ou vitória
+ComSaldo --> Debitando : compra
+Debitando --> ComSaldo : commit
+Debitando --> Zerada : saldo exato gasto
+Debitando --> ComSaldo : rollback (saldo intacto)
+ComSaldo --> Divergente : reconciliação falha
+Divergente --> ComSaldo : ajuste auditado
+@enduml

@@ -1,0 +1,21 @@
+@startuml
+title RF12 — Estádio (aberto ou coberto), setores e ingressos · Máquina de estados: Stadium.roof (troca de cobertura)
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "OPEN" as OPEN
+OPEN : clima real (vento, chuva, neve)
+state "RETRACTABLE" as RETRACTABLE
+RETRACTABLE : fecha com clima ruim
+state "DOME" as DOME
+DOME : clima neutro
+DOME : gramado TURF
+state "Em obra (offseason)" as WORKS
+WORKS : vale na próxima temporada
+[*] --> OPEN
+OPEN --> WORKS : PUT roof na offseason
+RETRACTABLE --> WORKS : PUT roof na offseason
+DOME --> WORKS : PUT roof na offseason
+WORKS --> OPEN : conclui
+WORKS --> RETRACTABLE : conclui
+WORKS --> DOME : conclui
+@enduml

@@ -1,0 +1,137 @@
+@startuml
+title RF65 — Free agency e waivers · Diagrama de classes
+skinparam classAttributeIconSize 0
+hide empty methods
+package "catalog" {
+  class Club {
+    id: UUID
+    name: String
+    shortName: String
+    city: String
+    conference: Conference
+    division: Division
+    logoKey: String
+    primaryColor: String
+    secondaryColor: String
+    accentColor: String
+    prestige: int
+    reputationBoard: int
+    reputationFans: int
+    cash: long
+    capSpace: long
+    isUserControlled: boolean
+    expectedWins: int
+    scoutingLevel: int
+    scoutingBudget: long
+  }
+  class Player {
+    id: UUID
+    name: String
+    nationality: String
+    college: String
+    birthDate: LocalDate
+    age: int
+    heightCm: int
+    weightKg: int
+    position: Position (QB|RB|FB|WR|TE|LT|LG|C|RG|RT|DE|DT|OLB|MLB|CB|FS|SS|K|P|LS)
+    unit: Unit (OFFENSE|DEFENSE|SPECIAL)
+    attributes: PlayerAttributes
+    overall: int «por posição, OVR v1»
+    potential: int
+    experienceYears: int
+    rosterStatus: RosterStatus (ACTIVE|INACTIVE|PRACTICE_SQUAD|IR|PUP|FREE_AGENT|WAIVED)
+    condition: int
+    morale: int
+    moraleFactors: JSON
+    injury: Injury?
+    suspensionWeeks: int
+    contract: PlayerContract
+    jerseyNumber: int
+    isLegendary: boolean
+    model3dUrl: String
+  }
+}
+package "market" {
+  class PlayerContract {
+    «embedded» years: int
+    baseSalaryByYear: JSON
+    signingBonus: long «rateado»
+    guaranteed: long
+    capHitByYear: JSON
+    deadMoneyIfCut: long
+    franchiseTag: boolean
+    type: ContractType (ROOKIE|VETERAN|MINIMUM|TAG|PRACTICE)
+    endSeason: int
+  }
+  class FreeAgentOffer {
+    player: Player
+    years: int
+    totalValue: long
+    guaranteed: long
+    signingBonus: long
+    status: OfferStatus
+    phase: FAPhase (NEGOTIATION|OPEN|IN_SEASON)
+    expiresAt: Instant
+    playerInterest: int
+  }
+  class WaiverClaim {
+    player: Player
+    claimingClub: Club
+    priority: int «ordem inversa da classificação»
+    status: ClaimStatus (PENDING|AWARDED|LOST)
+    processedAt: Instant
+  }
+}
+package "finance" {
+  class SalaryCapLedger {
+    season: int
+    cap: long
+    committed: long
+    deadMoney: long
+    space: long
+    rolloverFromPrevious: long
+  }
+}
+package "season" {
+  class Standing {
+    wins: int
+    losses: int
+    ties: int
+    winPct: double
+    divisionRecord: String
+    conferenceRecord: String
+    pointsFor: int
+    pointsAgainst: int
+    streak: int
+    last5: JSON
+    divisionRank: int
+    conferenceSeed: Integer
+    tiebreakerNote: String
+  }
+}
+class MakeFreeAgentOfferUseCase <<UseCase>> {
+  execute(saveId, playerId, OfferCommand): FreeAgentOffer
+}
+class SubmitWaiverClaimUseCase <<UseCase>> {
+  execute(saveId, playerId): WaiverClaim
+}
+class WaiverPriorityPolicy <<Policy>> {
+  priority(club, standings, phase): int
+  award(claims): WaiverClaim
+}
+class CapEngine <<Engine>> {
+  fits(club, contract): boolean
+  deadMoney(contract, season): long
+}
+Club "1" -- "0..53" Player : elenco ativo
+Club "*" -- "*" Club : rivais da divisão
+Player "1" -- "1" PlayerContract : «embedded»
+FreeAgentOffer "*" -- "1" Player
+Club "1" -- "*" WaiverClaim
+WaiverClaim "*" -- "1" Player
+Club "1" -- "*" SalaryCapLedger : por temporada
+MakeFreeAgentOfferUseCase ..> CapEngine : valida teto
+SubmitWaiverClaimUseCase ..> WaiverPriorityPolicy : prioridade
+WaiverPriorityPolicy ..> Standing : lê
+MakeFreeAgentOfferUseCase ..> FreeAgentOffer : cria
+@enduml

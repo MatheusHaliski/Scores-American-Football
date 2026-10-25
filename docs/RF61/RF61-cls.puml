@@ -1,0 +1,92 @@
+@startuml
+title RF61 — Playbook e plano de jogo · Diagrama de classes
+skinparam classAttributeIconSize 0
+hide empty methods
+package "career" {
+  class CareerSave {
+    id: UUID
+    name: String
+    seed: long
+    employmentStatus: EmploymentStatus
+    currentWeek: int
+    difficulty: Difficulty
+    seasonMode: SeasonMode
+    scoresPoints: int
+    status: SaveStatus
+    slot: int
+    lastPlayedAt: Instant
+  }
+}
+package "catalog" {
+  class Club {
+    id: UUID
+    name: String
+    shortName: String
+    city: String
+    conference: Conference
+    division: Division
+    logoKey: String
+    primaryColor: String
+    secondaryColor: String
+    accentColor: String
+    prestige: int
+    reputationBoard: int
+    reputationFans: int
+    cash: long
+    capSpace: long
+    isUserControlled: boolean
+    expectedWins: int
+    scoutingLevel: int
+    scoutingBudget: long
+  }
+}
+package "match" {
+  class Playbook {
+    name: String
+    offensiveScheme: OffensiveScheme (WEST_COAST|AIR_RAID|SPREAD|POWER_RUN)
+    defensiveScheme: DefensiveScheme
+    plays: List<PlayDefinition>
+    custom: boolean
+  }
+  class PlayDefinition {
+    code: String
+    side: Side (OFFENSE|DEFENSE|SPECIAL)
+    formation: Formation (I|SINGLEBACK|SHOTGUN|PISTOL|EMPTY|GOAL_LINE)
+    personnel: String (11, 12, 21…)
+    concept: PlayConcept (INSIDE_RUN|OUTSIDE_RUN|SHORT|MEDIUM|DEEP|SCREEN|PLAY_ACTION|SNEAK|PUNT|FG)
+    coverage: Coverage (COVER_0..COVER_6, MAN|ZONE)
+    blitz: boolean
+    diagram: JSON (rotas, bloqueios)
+  }
+  class GamePlan {
+    runPassBalance: int (0–100)
+    fourthDownAggression: Aggression
+    tempo: Tempo (HURRY_UP|NORMAL|MILK_CLOCK)
+    offensiveFocus: JSON
+    defensiveFocus: DefensiveFocus
+    blitzFrequency: Emphasis
+    baseDefense: DefensePackage (4-3|3-4)
+    keyPlayers: List<UUID>
+    situationTendencies: JSON (3ª e curta, red zone, 2 minutos)
+  }
+}
+class UpdateGamePlanUseCase <<UseCase>> {
+  execute(saveId, GamePlanCommand): GamePlanView
+}
+class PlaybookPolicy <<Policy>> {
+  validate(playbook): List<Violation>
+  disabledPlays(playbook, depthChart): List<String>
+}
+class GamePlanPolicy <<Policy>> {
+  validate(plan, roster): List<Violation>
+  suggest(opponentTendencies, roster): GamePlan
+}
+Club "*" -- "*" Club : rivais da divisão
+Club "1" -- "*" Playbook
+Playbook "1" -- "*" PlayDefinition : jogadas
+CareerSave "*" -- "0..1" Club : franquia atual
+CareerSave "1" -- "1" GamePlan
+UpdateGamePlanUseCase ..> GamePlanPolicy : valida
+UpdateGamePlanUseCase ..> GamePlan : grava
+PlaybookPolicy ..> Playbook : valida
+@enduml

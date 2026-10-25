@@ -1,0 +1,84 @@
+@startuml
+title RF34 — Nova carreira de head coach · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Manager|
+start
+:Clica em Nova carreira;
+|Frontend|
+:GET /careers (slots) · GET /worlds;
+|Backend|
+if (autenticado?) then (sim)
+else (não)
+  :401;
+  stop
+endif
+if (slot de carreira livre?) then (sim)
+else (não)
+  :422 CAREER_SLOTS_FULL;
+  stop
+endif
+|Manager|
+:Passo 1: mundo · Passo 2: liga (PRO ou COLLEGE, conferências, divisões);
+|Frontend|
+:GET /worlds/{id}/leagues · GET /leagues/{id}/clubs;
+|Manager|
+if (escolhe franquia existente?) then (sim)
+  :Passo 3: escolhe a franquia na divisão;
+else (não)
+  :Passo 3: nova franquia (nome, cidade, cores, capacete, divisão);
+|Frontend|
+  :POST /leagues/{id}/clubs;
+|Backend|
+  if (franquia nova válida?) then (sim)
+  else (não)
+    :409 / 422;
+    stop
+  endif
+endif
+|Manager|
+:Passo 4: dados do head coach · Passo 5: estilo (ofensivo, defensivo, desenvolvedor, motivador);
+:Passo 6: formato (temporada completa ou só playoffs), nº de franquias, dificuldade;
+|Frontend|
+:POST /careers {worldId, leagueId, clubId ou newClub, coach, coachStyle, seasonMode, teamCount, difficulty};
+|Backend|
+if (mundo acessível e liga do mundo?) then (sim)
+else (não)
+  :403 / 422;
+  stop
+endif
+if (formato, modo, estilo, dificuldade e nome válidos?) then (sim)
+else (não)
+  :422 com código;
+  stop
+endif
+:CareerSave CREATING · seed = SplitMix64 · 202 {saveId};
+|Scheduler|
+:CareerBootstrap: clona o mundo (World kind SAVE): ligas, conferências, divisões, franquias, 53 jogadores por elenco, practice squad, estádios;
+if (nº de franquias difere do original?) then (sim)
+  :Recorta mantendo divisões equilibradas ou gera franquias procedurais pela seed;
+endif
+:ManagerProfile humano com estilo · DepthChart automático por overall da posição · Playbook padrão · GamePlan padrão;
+if (elenco cabe no teto?) then (sim)
+else (não)
+  :IA corta contratos das franquias IA até caber;
+endif
+:SalaryCapLedger da temporada · DraftPick próprios (7 rodadas × 3 temporadas);
+|Diretoria|
+:Contrato inicial: salário por prestígio · metas em vitórias, playoffs e título pelas vitórias esperadas;
+|Scheduler|
+:SeasonEngine: temporada 1 com 17 jogos e 1 bye por franquia (ou chave de playoffs direta) · Standing zerado · Fixture.seed derivada;
+:ManagerMorale 60/50 · ScoresPointsWallet 0 · metas iniciais (RF33);
+|Backend|
+if (bootstrap concluído?) then (sim)
+  :ACTIVE · CatalogChanged (reindexa OpenSearch) · AuditLog CAREER_CREATED;
+else (não)
+  :Retry · FAILED e slot liberado;
+  stop
+endif
+|Frontend|
+:Poll GET /careers/{id} até ACTIVE · abre a central do clube (RF40);
+end
+@enduml

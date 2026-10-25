@@ -1,0 +1,96 @@
+@startuml
+title RF45 — Multiplayer online: salas por turnos e Ultimate Team · Diagrama de componentes
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 36
+actor "Head coach / manager (usuário autenticado)" as c1
+actor "Manager adversário (online)" as c2
+actor "Agendador/Job assíncrono" as c3
+package "Frontend (Next.js)" as pkg_fe {
+  component "UltimateTeamPage" as c4
+  frame "componentes de UltimateTeamPage" as pkg_fe_sub {
+    component "CardDepthChartBuilder" as c5
+    component "ChemistryLinks" as c6
+    component "CardView (macros por família, D-6)" as c7
+    component "SeasonCalendar" as c8
+    component "DivisionTable" as c9
+    component "CupBracket" as c10
+    component "OnlineMatchScreen (chamada de jogada)" as c11
+    component "SanctionsPanel" as c12
+    component "RoomLobby" as c13
+  }
+}
+package "scores-af-web (REST)" as pkg_web {
+  component "UltimateTeamController" as c14
+  component "MultiplayerRoomController" as c15
+}
+package "scores-af-application (casos de uso)" as pkg_app {
+  component "MultiplayerRoomUseCases" as c16
+  component "MultiplayerTurnUseCases" as c17
+  component "UltimateSquadUseCases" as c18
+  component "OnlineCompetitionUseCases" as c19
+  component "OnlineMatchUseCases" as c20
+  component "OnlineSeasonService" as c21
+}
+package "scores-af-domain/engine" as pkg_eng {
+  component "OnlineEntryPolicy" as c22
+  component "ChemistryPolicy" as c23
+  component "WalkoverPolicy" as c24
+  component "SanctionPolicy" as c25
+  component "DivisionStandingsPolicy" as c26
+  component "EloOnline" as c27
+  component "MatchSimulator" as c28
+  component "PlayCaller" as c29
+}
+package "portas (port.out)" as pkg_ports {
+  interface "MultiplayerRoomRepository" as c30
+  interface "UltimateSquadRepository" as c31
+  interface "PlayerCardRepository" as c32
+  interface "CompetitionWindowRepository" as c33
+  interface "DivisionRunRepository" as c34
+  interface "CupEntryRepository" as c35
+  interface "OnlineMatchRepository" as c36
+  interface "MatchmakingTicketRepository" as c37
+  interface "OnlineSanctionRepository" as c38
+  interface "TimelinePort" as c39
+}
+package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
+  component "persistence-mysql" as c40
+  component "cache-redis" as c41
+  component "persistence-cassandra" as c42
+}
+database "MySQL 8" as s1
+database "Redis 7" as s2
+database "Cassandra 4.1" as s3
+c1 --> c4 : usa
+c3 --> c16 : dispara
+c4 --> c14 : POST /online/rooms (alvo)\nPOST /online/rooms/join (alvo)\nPOST /online/rooms/{id}/start (alvo)\n…
+c4 --> c15
+c14 --> c16
+c15 --> c16
+c16 ..> pkg_app : orquestra
+c16 --> c22 : usa
+c16 --> c23 : usa
+c16 --> c24 : usa
+c16 --> c25 : usa
+c16 --> c26 : usa
+c16 --> c27 : usa
+c16 --> c28 : usa
+c16 --> c29 : usa
+pkg_app --> pkg_ports : depende (DIP)
+c40 .up.|> c30
+c40 .up.|> c31
+c40 .up.|> c32
+c40 .up.|> c33
+c40 .up.|> c34
+c40 .up.|> c35
+c40 .up.|> c36
+c41 .up.|> c37
+c40 .up.|> c38
+c42 .up.|> c39
+c40 --> s1
+c41 --> s2
+c42 --> s3
+c3 --> c21 : tick a cada minuto
+@enduml

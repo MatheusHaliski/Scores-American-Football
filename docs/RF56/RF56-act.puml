@@ -1,0 +1,75 @@
+@startuml
+title RF56 — Practice squad · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Manager|
+start
+:Abre o practice squad;
+|Frontend|
+:GET /practice-squad;
+|Backend|
+if (dono do save?) then (sim)
+else (não)
+  :403;
+  stop
+endif
+|Manager|
+if (assinar jogador?) then (sim)
+|Frontend|
+  :POST /practice-squad;
+|Backend|
+  if (vaga no practice squad?) then (sim)
+  else (não)
+    :422 PRACTICE_SQUAD_FULL;
+    stop
+  endif
+  if (elegível?) then (sim)
+  else (não)
+    :422 NOT_ELIGIBLE;
+    stop
+  endif
+  :Contrato PRACTICE, rosterStatus PRACTICE_SQUAD;
+endif
+|Manager|
+if (elevar para o jogo?) then (sim)
+|Frontend|
+  :POST /practice-squad/{psId}/elevate;
+|Backend|
+  if (elevação permitida?) then (sim)
+  else (não)
+    :422 ELEVATION_LIMIT;
+    stop
+  endif
+  :elevationsUsed+1, entra nos 46 do jogo;
+endif
+|Manager|
+if (promover ao 53?) then (sim)
+|Frontend|
+  :POST /practice-squad/{psId}/promote;
+|Backend|
+  if (vaga no 53?) then (sim)
+  else (não)
+    :422 ROSTER_FULL / CAP_EXCEEDED;
+    stop
+  endif
+  :Contrato ativo, cap hit lançado, sai do practice squad;
+endif
+|Manager|
+if (proteger na semana?) then (sim)
+|Backend|
+  if (protegidos da semana?) then (sim)
+  else (não)
+    :422 PROTECTION_LIMIT;
+    stop
+  endif
+endif
+|Scheduler|
+:Depois do jogo: elevados voltam ao practice squad;
+|ClubeIA|
+:Pode contratar membro não protegido para o elenco ativo dela;
+|Backend|
+:Avisa na inbox quando alguém é levado;
+end
+@enduml

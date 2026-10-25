@@ -1,0 +1,51 @@
+@startuml
+title RF10 — Configurações de jogo e interface · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Manager|
+start
+:Abre Configurações;
+|Frontend|
+:GET /me/settings e GET /me/inventory;
+|Backend|
+if (autenticado e conta ativa?) then (sim)
+else (não)
+  :401;
+  stop
+endif
+|Frontend|
+:Aba Jogo: duração do quarto, controle de jogada, tempo de decisão, dificuldade, jardas ou metros · aba Interface: tema, contraste, fonte, movimento;
+if (movimento reduzido forçado pelo SO?) then (sim)
+  :Trava reducedMotion = true;
+endif
+|Manager|
+:Altera opções com prévia imediata (tema, fonte, unidade);
+|Frontend|
+if (dificuldade afeta carreiras existentes?) then (sim)
+else (não)
+  :Aviso: dificuldade vale para novas carreiras;
+endif
+:PUT /me/settings;
+|Backend|
+if (valores válidos?) then (sim)
+else (não)
+  :422 VALIDATION_ERROR;
+  stop
+endif
+if (item visual possuído?) then (sim)
+else (não)
+  :422 ITEM_NOT_OWNED;
+  stop
+endif
+:Grava UserSettings e invalida cache;
+if (partida ao vivo em andamento?) then (sim)
+|Frontend|
+  :Aviso: duração e controle valem a partir do próximo jogo;
+else (não)
+  :Aplica no próximo Jogar partida (RF7);
+endif
+:Aplica tema, fonte e unidade globalmente;
+end
+@enduml

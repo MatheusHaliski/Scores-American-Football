@@ -1,0 +1,94 @@
+@startuml
+title RF42 — Motor de partida por descida (determinístico por semente) · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Manager|
+start
+:Clica em Jogar partida (depois do RF7);
+|Frontend|
+:POST /careers/{id}/weeks/current/play;
+|Backend|
+if (depth chart válido?) then (sim)
+else (não)
+  :422 DEPTH_CHART_INVALID;
+  stop
+endif
+:MatchSetup: elencos e depth charts, atributos, moral, fadiga, GamePlan e Playbook, times especiais, LeagueRules, estádio e clima · seed = derive(save.seed, temporada, semana, fixture);
+:MatchSession NOT_STARTED (Redis + MySQL) · MATCH_SIMULATED(seed);
+|Scheduler|
+:Jogos da IA da semana em FULL (job assíncrono);
+|Backend|
+:Cara ou coroa pela seed · kickoff da 35 (touchback, retorno ou onside);
+while (partida não terminou?) is (sim)
+  partition "Jogada" {
+    :Situação: down, distance, ballOnAbsYd, quarto, relógio, placar, tempos;
+    if (momento decisivo para o humano?) then (sim)
+      :PlayCallDecision OPEN com 3–5 opções do Playbook e prazo · status AWAITING_PLAY_CALL;
+|Manager|
+      :Escolhe a jogada (RF62): formação e conceito, ou ir para a 4ª, FG, punt, 2 pontos;
+|Backend|
+      if (chamada dentro do prazo?) then (sim)
+      else (não)
+        :PlayCaller IA decide (auto);
+      endif
+      if (chamada válida e versão atual?) then (sim)
+      else (não)
+        :422 / 409 e a decisão continua aberta;
+      endif
+    else (não)
+      :PlayCaller IA: ataque escolhe formação (I, Singleback, Shotgun, Pistol, Empty, Goal line) e conceito pelo GamePlan;
+    endif
+    :Defesa escolhe pacote (4-3, 3-4, nickel, dime, goal line), cobertura (Cover 0–6, man ou zona), blitz e espião;
+    if (falta antes do snap?) then (sim)
+      :False start, offside ou encroachment · marca jardas · repete a descida;
+    else (não)
+      :Snap · confrontos: OL × DL (pressão, sack), rota × cobertura (alvo, completo, INT), corredor × tackle (jardas, YAC, fumble) · fadiga, moral, clima;
+      if (turnover na jogada?) then (sim)
+        :INT ou fumble perdido · retorno · troca de posse;
+      endif
+      if (falta durante a jogada?) then (sim)
+        if (aceitar a falta?) then (sim)
+          :Aplica jardas, 1ª descida automática ou perda de descida;
+        else (não)
+          :Vale o resultado da jogada;
+        endif
+      endif
+      if (primeira descida?) then (sim)
+        :1st & 10 (ou & goal);
+      else (não)
+        :down + 1 · turnover on downs se era a 4ª;
+      endif
+    endif
+    if (pontuou?) then (sim)
+      :TD → PAT da 15 ou 2 pontos (decisão) · FG 3 · safety 2 + free kick · kickoff;
+    endif
+    if (relógio para?) then (sim)
+      :Relógio parado · play clock 40 s ou 25 s;
+    else (não)
+      :Consome tempo pelo ritmo (hurry-up, normal, segurar a bola) · spike e kneel;
+    endif
+    :Lesão pela exposição (Injury) · PlayEvent com texto PT-BR · Drive atualizado · box score;
+  }
+  if (fim do quarto?) then (sim)
+    :Snapshot (Redis + MySQL) · play-by-play (Cassandra) · BREAK;
+|Manager|
+    :Ajustes entre quartos e playbook no intervalo (RF29, RF43);
+|Backend|
+    if (empate ao fim do 4º?) then (sim)
+      :OVERTIME (10 min, novo cara ou coroa);
+      if (prorrogação decidida?) then (sim)
+      else (não)
+        :Segue ou termina empatada pela regra da liga;
+      endif
+    endif
+  endif
+endwhile (não)
+:finish(): box score (passe, corrida, recepção, defesa, chute, retornos · '—' para o que o motor não gera), estatísticas de equipe, fatores decisivos, líderes;
+:TX: Fixture FINISHED, PlayerMatchStats, TeamMatchStats, Drive, MatchReport, Standing, ledger de público e renda · MatchFinished;
+:Projeções: Redis (ranking), OpenSearch (stats) · MoraleEngine (RF41);
+|Manager|
+:Vê o pós-jogo (RF30, RF31);
+end
+@enduml

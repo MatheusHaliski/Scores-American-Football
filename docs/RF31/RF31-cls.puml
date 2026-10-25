@@ -1,0 +1,150 @@
+@startuml
+title RF31 — Público e renda da partida · Diagrama de classes
+skinparam classAttributeIconSize 0
+hide empty methods
+package "career" {
+  class CareerSave {
+    id: UUID
+    name: String
+    seed: long
+    employmentStatus: EmploymentStatus
+    currentWeek: int
+    difficulty: Difficulty
+    seasonMode: SeasonMode
+    scoresPoints: int
+    status: SaveStatus
+    slot: int
+    lastPlayedAt: Instant
+  }
+}
+package "catalog" {
+  class Club {
+    id: UUID
+    name: String
+    shortName: String
+    city: String
+    conference: Conference
+    division: Division
+    logoKey: String
+    primaryColor: String
+    secondaryColor: String
+    accentColor: String
+    prestige: int
+    reputationBoard: int
+    reputationFans: int
+    cash: long
+    capSpace: long
+    isUserControlled: boolean
+    expectedWins: int
+    scoutingLevel: int
+    scoutingBudget: long
+  }
+  class Stadium {
+    name: String
+    capacity: int (60–80 mil)
+    roof: RoofType (OPEN|DOME|RETRACTABLE)
+    surface: Surface (GRASS|TURF)
+    climateZone: ClimateZone
+    level: int
+    atmosphere: int
+    maintenanceCostPerWeek: long
+    model3dUrl: String
+    endZoneArtKey: String
+    ticketPolicy: TicketPolicy (preço por setor, carnê de temporada)
+  }
+  class StadiumSector {
+    type: StadiumSectorType (LOWER_BOWL|UPPER_BOWL|SIDELINE_CLUB|END_ZONE|LUXURY_SUITES)
+    seats: int
+    ticketPrice: long
+    condition: int
+    upgradeCost: long
+  }
+}
+package "season" {
+  class Fixture {
+    week: int
+    date: LocalDate
+    slot: KickoffSlot (THU_NIGHT|SUN_EARLY|SUN_LATE|SUN_NIGHT|MON_NIGHT)
+    status: FixtureStatus
+    homeScore: int
+    awayScore: int
+    quarterScores: JSON
+    overtime: boolean
+    isDivisional: boolean
+    isConference: boolean
+    neutralSite: boolean
+    weather: Weather
+    attendance: int
+    revenue: long
+    importance: FixtureImportance
+    seed: long
+    isUserFixture: boolean
+  }
+  class Standing {
+    wins: int
+    losses: int
+    ties: int
+    winPct: double
+    divisionRecord: String
+    conferenceRecord: String
+    pointsFor: int
+    pointsAgainst: int
+    streak: int
+    last5: JSON
+    divisionRank: int
+    conferenceSeed: Integer
+    tiebreakerNote: String
+  }
+}
+package "match" {
+  class MatchReport {
+    decisiveFactors: JSON
+    narrative: TEXT
+    leaders: JSON
+    keyMatchups: JSON (WR×CB, OL×DL)
+    drives: JSON
+    attendance: int
+    revenue: long
+  }
+}
+package "finance" {
+  class FinanceLedgerEntry {
+    week: int
+    kind: LedgerKind
+    amount: long
+    balanceAfter: long
+    description: String
+  }
+}
+class GetMatchReportUseCase <<UseCase>> {
+  execute(matchId, userId): MatchAttendanceDto
+}
+class MatchAttendanceDto <<record>> {
+  attendance: int
+  capacity: int
+  occupancyPct: double
+  revenue: long?
+  sectors: List<SectorRevenueDto>
+  factors: List<FactorDto>
+  weather: Weather
+  estimate: boolean
+  isHome: boolean
+  neutralSite: boolean
+}
+class AttendanceModel <<Engine>> {
+  demand(stadium, prestige, record, divisionalRival, slot, weather, importance, price): int
+  bySector(sectors, demand, policy): List<SectorRevenue>
+}
+Club "1" -- "1" Stadium
+Stadium "1" -- "*" StadiumSector : setores
+Club "*" -- "*" Club : rivais da divisão
+CareerSave "*" -- "0..1" Club : franquia atual
+Fixture "*" -- "1" Club : mandante
+Fixture "1" -- "0..1" MatchReport
+Club "1" -- "*" FinanceLedgerEntry : ledger
+GetMatchReportUseCase ..> AttendanceModel : usa
+GetMatchReportUseCase ..> MatchAttendanceDto : produz
+GetMatchReportUseCase ..> MatchReport : lê
+AttendanceModel ..> StadiumSector : lê
+AttendanceModel ..> Stadium : roof e clima
+@enduml

@@ -1,0 +1,22 @@
+@startuml
+title RNF13 — Traduções de idiomas escolhidas na aba de configurações · Máquina de estados: Idioma da sessão
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "Detectando" as Detectando
+Detectando : ?lang → conta → navegador → pt-BR
+state "Ativo" as Ativo
+Ativo : catálogo carregado
+Ativo : Accept-Language enviado
+state "Trocando" as Trocando
+Trocando : carrega catálogo novo
+Trocando : salva na conta
+state "Fallback" as Fallback
+Fallback : chave ausente
+Fallback : próximo idioma da cadeia
+[*] --> Detectando
+Detectando --> Ativo : idioma resolvido
+Ativo --> Trocando : usuário escolhe outro
+Trocando --> Ativo : catálogo carregado e salvo
+Ativo --> Fallback : chave sem tradução
+Fallback --> Ativo : texto do idioma seguinte
+@enduml

@@ -1,0 +1,63 @@
+@startuml
+title RF58 — Gêmeos digitais licenciados · Diagrama de componentes
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 36
+actor "Administrador" as c1
+actor "Head coach / manager (usuário autenticado)" as c2
+actor "Agendador/Job assíncrono" as c3
+package "Frontend (Next.js)" as pkg_fe {
+  component "LicensesAdminPage" as c4
+  frame "componentes de LicensesAdminPage" as pkg_fe_sub {
+    component "LicenseForm" as c5
+    component "LicensedBadge" as c6
+  }
+}
+package "scores-af-web (REST)" as pkg_web {
+  component "AdminLicenseController" as c7
+  component "PlayerController" as c8
+}
+package "scores-af-application (casos de uso)" as pkg_app {
+  component "DigitalTwinLicenseUseCases" as c9
+  component "GetDigitalTwinUseCase" as c10
+  component "ExpireLicensesJob" as c11
+  component "AuditService" as c12
+}
+package "scores-af-domain/engine" as pkg_eng {
+  component "LicenseScopePolicy" as c13
+}
+package "portas (port.out)" as pkg_ports {
+  interface "DigitalTwinLicenseRepository" as c14
+  interface "PlayerRepository" as c15
+  interface "MediaStoragePort" as c16
+  interface "CachePort" as c17
+  interface "AuditLogRepository" as c18
+}
+package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
+  component "persistence-mysql" as c19
+  component "storage-s3" as c20
+  component "cache-redis" as c21
+}
+database "MySQL 8" as s1
+database "S3/MinIO" as s2
+database "Redis 7" as s3
+c1 --> c4 : usa
+c2 --> c4 : usa
+c3 --> c9 : dispara
+c4 --> c7 : GET /admin/licenses (alvo)\nPOST /admin/licenses (alvo)\nPOST /admin/licenses/{lid}/revoke (alvo)\n…
+c4 --> c8
+c7 --> c9
+c8 --> c9
+c9 ..> pkg_app : orquestra
+c9 --> c13 : usa
+pkg_app --> pkg_ports : depende (DIP)
+c19 .up.|> c14
+c19 .up.|> c15
+c20 .up.|> c16
+c21 .up.|> c17
+c19 .up.|> c18
+c19 --> s1
+c20 --> s2
+c21 --> s3
+@enduml

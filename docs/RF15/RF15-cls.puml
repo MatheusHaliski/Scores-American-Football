@@ -1,0 +1,121 @@
+@startuml
+title RF15 — Estilos de head coach por recompensa e Scores Points · Diagrama de classes
+skinparam classAttributeIconSize 0
+hide empty methods
+package "catalog" {
+  class ManagerStyle {
+    code: CoachStyleCode (OFFENSIVE|DEFENSIVE|DEVELOPER|MOTIVATOR)
+    effects: JSON
+    priceScoresPoints: int
+    rewardGoal: String
+  }
+  class ManagerProfile {
+    name: String
+    nationality: String
+    isHuman: boolean
+    overall: int
+    coachStyle: CoachStyleCode
+    reputationLeague: int
+    careerTitles: int
+    careerGames: int
+    careerWins: int
+    careerPlayoffWins: int
+  }
+}
+package "career" {
+  class CareerSave {
+    id: UUID
+    name: String
+    seed: long
+    employmentStatus: EmploymentStatus
+    currentWeek: int
+    difficulty: Difficulty
+    seasonMode: SeasonMode
+    scoresPoints: int
+    status: SaveStatus
+    slot: int
+    lastPlayedAt: Instant
+  }
+  class ScoresPointsWallet {
+    balance: int
+    lifetimeEarned: int
+  }
+  class PointsTransaction {
+    amount: int
+    reason: PointsReason
+    refId: UUID
+    createdAt: Instant
+  }
+  class Goal {
+    code: String
+    description: String
+    target: int
+    progress: int
+    rewardPoints: int
+    status: GoalStatus
+  }
+}
+package "season" {
+  class Season {
+    number: int
+    year: int
+    phase: SeasonPhase (PRESEASON|REGULAR|PLAYOFFS|DRAFT|FREE_AGENCY|OFFSEASON)
+    currentWeek: int
+    tradeDeadlineWeek: int
+    championClub: Club?
+    mvpPlayer: Player?
+  }
+}
+package "store" {
+  class StoreItem {
+    code: String
+    kind: StoreItemKind
+    name: String
+    priceScoresPoints: int
+    assetUrl: String
+    payload: JSON
+    rarity: Rarity
+  }
+  class Purchase {
+    purchasedAt: Instant
+    pricePaid: int
+  }
+}
+class PurchaseStoreItemUseCase <<UseCase>> {
+  execute(PurchaseCommand): PurchaseDto «@Transactional»
+}
+class ApplyCoachStyleUseCase <<UseCase>> {
+  execute(careerId, CoachStyleCode, userId): ManagerProfileDto «só PRESEASON/OFFSEASON»
+}
+class CoachStyleEffects <<record>> {
+  overallBonus: int
+  offensePlayBonus: double (OFFENSIVE)
+  coverageAndRushBonus: double (DEFENSIVE)
+  progressionBonus: double (DEVELOPER, jovens e practice squad)
+  moraleDropFactor: double (MOTIVATOR)
+}
+class GoalEvaluationJob <<Job>> {
+  onSeasonCompleted(saveId)
+  grantStyleReward(goal, user)
+}
+interface WalletCachePort <<Port>> {
+  debit(userId, amount): boolean
+  credit(userId, amount)
+}
+ManagerProfile "*" -- "0..1" ManagerStyle
+CareerSave "1" -- "1" ManagerProfile : manager humano
+CareerSave "1" -- "1" ScoresPointsWallet
+ScoresPointsWallet "1" -- "*" PointsTransaction
+CareerSave "1" -- "*" Goal
+CareerSave "1" -- "*" Season
+Purchase "*" -- "1" StoreItem
+PurchaseStoreItemUseCase ..> WalletCachePort : debit
+PurchaseStoreItemUseCase ..> Purchase : cria
+PurchaseStoreItemUseCase ..> PointsTransaction : PURCHASE
+ApplyCoachStyleUseCase ..> ManagerProfile : coachStyle
+ApplyCoachStyleUseCase ..> Purchase : posse
+ApplyCoachStyleUseCase ..> Season : phase
+GoalEvaluationJob ..> Goal : avalia
+GoalEvaluationJob ..> Purchase : recompensa
+ManagerStyle ..> CoachStyleEffects : effects JSON
+@enduml

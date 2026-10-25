@@ -1,0 +1,57 @@
+@startuml
+title RF7 — Preparar time (LED 3D, relatório do adversário) e jogar partida · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+control "AuditService" as AuditService
+control "MatchSimulator" as MatchSimulator
+control "ClubAnalyst" as ClubAnalyst
+database "MySQL 8" as MySQL
+database "Redis 7" as Redis
+database "Cassandra 4.1" as Cassandra
+database "S3/MinIO" as S3
+participant "Agendador/Job assíncrono" as Scheduler
+Manager -> Frontend: Preparar time
+Frontend -> API: GET /careers/{id}/next-game/preparation
+API -> UseCase: GetGamePreparationUseCase.execute(id, userId)
+UseCase -> MySQL: save, fixture SCHEDULED, ativos, depth chart, game plan, estádio, clima
+alt não é dono / desempregado / semana de folga
+  UseCase -> AuditService: record(ACCESS_DENIED) se 403
+  API --> Frontend: 403 | 200 byeWeek
+else senão
+  UseCase -> Redis: GET match:{fixtureId}:snapshot (retomar?)
+  UseCase -> S3: publicUrl(models3d/…)
+  API --> Frontend: 200 PreparationResult
+end
+Frontend -> API: GET /careers/{id}/next-game/opponent-report
+API -> UseCase: GetOpponentReportUseCase.execute(id, userId)
+UseCase -> ClubAnalyst: opponentReport(opponent, últimos jogos, depth charts)
+ClubAnalyst --> UseCase: tendências por unidade + keyMatchups (WR×CB, OL×DL)
+API --> Frontend: 200 OpponentReport
+Frontend -> Manager: modal LED 3D com confrontos-chave
+Manager -> Frontend: Jogar partida
+Frontend -> API: POST /careers/{id}/weeks/current/play
+API -> UseCase: PlayWeekUseCase.execute(id, userId) «@Transactional»
+UseCase -> MySQL: fixtures da semana anterior FINISHED? depth chart validated?
+alt semana anterior pendente ou depth chart inválido
+  API --> Frontend: 409 WEEK_NOT_COMPLETED | 422 DEPTH_CHART_INVALID
+else senão
+  UseCase -> MySQL: estado completo (depth chart, plano, playbook, especiais, moral, estádio, clima, regras)
+  UseCase -> UseCase: seed = SeedPolicy.derive(save.seed, season, week, fixtureId)
+  UseCase -> MatchSimulator: start(MatchSetup)
+  MatchSimulator --> UseCase: snapshot KICKOFF (quarto 1, 15:00, kickoff da 35)
+  UseCase -> Redis: SET match:{fid}:snapshot (TTL 24 h)
+  UseCase -> MySQL: INSERT match_session · fixture.status = LIVE
+  UseCase -> AuditService: record(MATCH_STARTED, seed)
+  UseCase -> Scheduler: WeekSimulationJob: jogos da IA
+  Scheduler -> MatchSimulator: simula por descida até o fim, por fixture da IA
+  Scheduler -> MySQL: fixtures da IA FINISHED + stats + standings
+  Scheduler -> Cassandra: appendPlayEvents por fixture (play-by-play)
+  API --> Frontend: 201 {matchId}
+  Frontend -> Manager: partida ao vivo (RF27)
+end
+@enduml

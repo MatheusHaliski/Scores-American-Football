@@ -1,0 +1,30 @@
+@startuml
+title RF37 — Head coach desempregado e propostas pela moral com a liga · Máquina de estados: CareerSave.employmentStatus × JobOffer.status
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "EMPLOYED" as EMPLOYED
+EMPLOYED : franquia e contrato ACTIVE
+state "UNEMPLOYED" as UNEMPLOYED
+UNEMPLOYED : save ACTIVE
+UNEMPLOYED : club nulo
+state "SPECTATOR" as SPECTATOR
+SPECTATOR : simula semanas sem gestão
+state "JobOffer PENDING" as OFFER_PENDING
+OFFER_PENDING : 0–3 por semana
+OFFER_PENDING : prazo 2 semanas
+state "JobOffer ACCEPTED" as OFFER_ACCEPTED
+state "JobOffer REJECTED" as OFFER_REJECTED
+OFFER_REJECTED : chance × 0,5 por 5 semanas
+state "JobOffer EXPIRED" as OFFER_EXPIRED
+[*] --> EMPLOYED
+EMPLOYED --> UNEMPLOYED : demissão (RF41) / pedido (RF8)
+UNEMPLOYED --> SPECTATOR : avança semana
+SPECTATOR --> SPECTATOR : semana sem proposta aceita
+SPECTATOR --> OFFER_PENDING : proposta gerada
+OFFER_PENDING --> OFFER_ACCEPTED : ACCEPT
+OFFER_PENDING --> OFFER_REJECTED : REJECT
+OFFER_PENDING --> OFFER_EXPIRED : prazo / outra aceita
+OFFER_ACCEPTED --> EMPLOYED : contrato ACTIVE
+OFFER_REJECTED --> SPECTATOR : segue
+OFFER_EXPIRED --> SPECTATOR : segue
+@enduml

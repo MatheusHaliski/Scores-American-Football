@@ -1,0 +1,34 @@
+@startuml
+title RF47 — Estatísticas em velocímetros por posição · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+queue "EventBus" as EventBus
+database "MySQL 8" as MySQL
+database "Redis 7" as Redis
+database "OpenSearch 2" as OpenSearch
+Manager -> Frontend: aba Estatísticas
+Frontend -> API: GET /careers/{id}/players/{pid}/gauges?scope=SEASON
+API -> UseCase: GetPlayerGaugesUseCase.execute
+UseCase -> MySQL: owner check · jogador, posição escalada
+alt não é dono
+  API --> Frontend: 403
+else senão
+  UseCase -> Redis: GET gauges:{saveId}:{pid}:SEASON
+  alt cache ausente
+    UseCase -> MySQL: PlayerMatchStats do escopo
+    UseCase -> OpenSearch: média e percentis da liga na posição
+    UseCase -> UseCase: GaugeCalculator(família, escala v1, amostra mínima)
+    UseCase -> Redis: SET gauges (TTL até MatchFinished)
+  else senão
+  end
+  UseCase --> API: GaugePanelDto (valor ou nulo, escala, percentil, amostra)
+  API --> Frontend: 200
+  Frontend -> Manager: velocímetros (— onde o motor não gera)
+end
+EventBus -> Redis: MatchFinished → DEL gauges:{saveId}:*
+@enduml

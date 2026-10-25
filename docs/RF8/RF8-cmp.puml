@@ -1,0 +1,89 @@
+@startuml
+title RF8 — Contrato do head coach e relação com a diretoria · Diagrama de componentes
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 36
+actor "Head coach / manager (usuário autenticado)" as c1
+actor "Diretoria da franquia (IA)" as c2
+actor "Jogador (IA)" as c3
+package "Frontend (Next.js)" as pkg_fe {
+  component "ManagerPanelPage" as c4
+  frame "componentes de ManagerPanelPage" as pkg_fe_sub {
+    component "ContractCard" as c5
+    component "ObjectivesList (vitórias, playoffs, título)" as c6
+    component "MoraleGauges" as c7
+    component "RaiseRequestDialog" as c8
+    component "BoardMessageDialog" as c9
+    component "BudgetRequestDialog" as c10
+    component "PlayerMessageDialog" as c11
+    component "ResignDialog" as c12
+  }
+}
+package "scores-af-web (REST)" as pkg_web {
+  component "ManagerController" as c13
+  component "FinanceController" as c14
+  component "RosterController" as c15
+}
+package "scores-af-application (casos de uso)" as pkg_app {
+  component "GetManagerPanelUseCase" as c16
+  component "GetManagerMoraleUseCase" as c17
+  component "RequestSalaryRaiseUseCase" as c18
+  component "MessageBoardUseCase" as c19
+  component "RequestBudgetUseCase" as c20
+  component "MessagePlayerUseCase" as c21
+  component "ResignUseCase" as c22
+  component "CareerAccess" as c23
+  component "AuditService" as c24
+}
+package "scores-af-domain/engine" as pkg_eng {
+  component "MoraleEngine" as c25
+  component "FinanceEngine" as c26
+}
+package "portas (port.out)" as pkg_ports {
+  interface "CareerSaveRepository" as c27
+  interface "ManagerContractRepository" as c28
+  interface "ManagerMoraleRepository" as c29
+  interface "ManagerCareerRecordRepository" as c30
+  interface "StandingRepository" as c31
+  interface "BudgetRequestRepository" as c32
+  interface "FinanceLedgerRepository" as c33
+  interface "InboxMessageRepository" as c34
+  interface "TimelinePort" as c35
+  interface "CounterPort" as c36
+  interface "AuditLogRepository" as c37
+}
+package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
+  component "persistence-mysql" as c38
+  component "persistence-cassandra" as c39
+  component "cache-redis" as c40
+}
+database "MySQL 8" as s1
+database "Cassandra 4.1" as s2
+database "Redis 7" as s3
+c1 --> c4 : usa
+c4 --> c13 : GET /careers/{id}/manager (alvo)\nGET /careers/{id}/morale (alvo)\nPOST /careers/{id}/manager/raise-request (alvo)\n…
+c4 --> c14
+c4 --> c15
+c13 --> c16
+c14 --> c16
+c15 --> c16
+c16 ..> pkg_app : orquestra
+c16 --> c25 : usa
+c16 --> c26 : usa
+pkg_app --> pkg_ports : depende (DIP)
+c38 .up.|> c27
+c38 .up.|> c28
+c38 .up.|> c29
+c38 .up.|> c30
+c38 .up.|> c31
+c38 .up.|> c32
+c38 .up.|> c33
+c38 .up.|> c34
+c39 .up.|> c35
+c40 .up.|> c36
+c38 .up.|> c37
+c38 --> s1
+c39 --> s2
+c40 --> s3
+@enduml

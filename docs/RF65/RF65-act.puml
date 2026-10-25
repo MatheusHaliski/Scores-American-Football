@@ -1,0 +1,84 @@
+@startuml
+title RF65 — Free agency e waivers · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Manager|
+start
+:Abre o mercado;
+|Frontend|
+:GET /free-agents com filtros;
+|Backend|
+if (dono do save?) then (sim)
+else (não)
+  :403 + auditoria;
+  stop
+endif
+partition "Free agency" {
+|Manager|
+  :Monta a oferta: anos, valor, garantias, bônus;
+|Frontend|
+  :POST /free-agents/{pid}/offers;
+|Backend|
+  if (fase permite?) then (sim)
+  else (não)
+    :422 MARKET_CLOSED;
+    stop
+  endif
+  if (oferta mínima?) then (sim)
+  else (não)
+    :422 BELOW_MINIMUM;
+    stop
+  endif
+  if (cabe no teto?) then (sim)
+  else (não)
+    :422 CAP_EXCEEDED;
+    stop
+  endif
+  if (vaga no elenco?) then (sim)
+  else (não)
+    :422 ROSTER_FULL;
+    stop
+  endif
+  :FreeAgentOffer PENDING;
+|ClubeIA|
+  :Franquias IA também fazem ofertas;
+|JogadorIA|
+  if (jogador aceita?) then (sim)
+|Backend|
+    :ACCEPTED: contrato, cap ledger, elenco;
+  else (não)
+    :REJECTED ou expira;
+  endif
+}
+partition "Waivers" {
+|Manager|
+  :Dispensa jogador (POST /roster/{pid}/release);
+|Backend|
+  :rosterStatus WAIVED, dead money no cap;
+|Manager|
+  :Pede jogador dispensado por outra franquia;
+|Frontend|
+  :POST /waivers/{pid}/claims;
+|Backend|
+  if (cabe no teto?) then (sim)
+  else (não)
+    :422 CAP_EXCEEDED;
+    stop
+  endif
+  :WaiverClaim PENDING com a prioridade do clube;
+|Scheduler|
+  :Prazo de waivers vence: processa claims;
+|Backend|
+  if (claim vence?) then (sim)
+    :AWARDED: herda contrato, entra no elenco;
+  else (não)
+    :LOST;
+  endif
+  :Sem claims: jogador vira FREE_AGENT;
+}
+|Manager|
+:Vê resultado na inbox;
+end
+@enduml

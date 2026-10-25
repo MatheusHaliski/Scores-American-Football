@@ -1,0 +1,149 @@
+@startuml
+title RF43 — Mini campo 3D no intervalo · Diagrama de classes
+skinparam classAttributeIconSize 0
+hide empty methods
+package "match" {
+  class MatchSession {
+    status: LiveStatus
+    quarter: int
+    clockSeconds: int
+    playClockSeconds: int
+    possession: Club
+    down: int (1–4)
+    distance: int
+    ballOnAbsYd: int (0–100)
+    homeScore: int
+    awayScore: int
+    timeoutsHome: int
+    timeoutsAway: int
+    seed: long
+    rngCursor: long
+    snapshotJson: TEXT
+    decisionsLog: JSON
+    version: long
+  }
+  class DepthChartSlot {
+    unit: Unit
+    position: Position | Role (KR|PR|3RD_DOWN_BACK|SNAPPER|HOLDER)
+    depth: int (1, 2, 3…)
+    player: Player
+    outOfPosition: boolean
+  }
+  class GamePlan {
+    runPassBalance: int (0–100)
+    fourthDownAggression: Aggression
+    tempo: Tempo (HURRY_UP|NORMAL|MILK_CLOCK)
+    offensiveFocus: JSON
+    defensiveFocus: DefensiveFocus
+    blitzFrequency: Emphasis
+    baseDefense: DefensePackage (4-3|3-4)
+    keyPlayers: List<UUID>
+    situationTendencies: JSON (3ª e curta, red zone, 2 minutos)
+  }
+  class PlayDefinition {
+    code: String
+    side: Side (OFFENSE|DEFENSE|SPECIAL)
+    formation: Formation (I|SINGLEBACK|SHOTGUN|PISTOL|EMPTY|GOAL_LINE)
+    personnel: String (11, 12, 21…)
+    concept: PlayConcept (INSIDE_RUN|OUTSIDE_RUN|SHORT|MEDIUM|DEEP|SCREEN|PLAY_ACTION|SNEAK|PUNT|FG)
+    coverage: Coverage (COVER_0..COVER_6, MAN|ZONE)
+    blitz: boolean
+    diagram: JSON (rotas, bloqueios)
+  }
+  class PlayerMatchStats {
+    snaps: int
+    passing: cmp/att, yds, td, int, rating, sacked
+    rushing: att, yds, avg, td, fum
+    receiving: tgt, rec, yds, yac, td, drops
+    defense: tkl solo/ast, tfl, sacks, qbHits, int, pd, ff, fr
+    kicking: fg por distância, pat, punts, avg, in20
+    returns: kr/pr, yds, td
+    rating: double
+  }
+}
+package "catalog" {
+  class Player {
+    id: UUID
+    name: String
+    nationality: String
+    college: String
+    birthDate: LocalDate
+    age: int
+    heightCm: int
+    weightKg: int
+    position: Position (QB|RB|FB|WR|TE|LT|LG|C|RG|RT|DE|DT|OLB|MLB|CB|FS|SS|K|P|LS)
+    unit: Unit (OFFENSE|DEFENSE|SPECIAL)
+    attributes: PlayerAttributes
+    overall: int «por posição, OVR v1»
+    potential: int
+    experienceYears: int
+    rosterStatus: RosterStatus (ACTIVE|INACTIVE|PRACTICE_SQUAD|IR|PUP|FREE_AGENT|WAIVED)
+    condition: int
+    morale: int
+    moraleFactors: JSON
+    injury: Injury?
+    suspensionWeeks: int
+    contract: PlayerContract
+    jerseyNumber: int
+    isLegendary: boolean
+    model3dUrl: String
+  }
+  class Uniform {
+    slot: UniformSlot (HOME|AWAY|ALTERNATE)
+    jerseyColor: String
+    pantsColor: String
+    numberColor: String
+    numberOutline: String
+    pattern: String
+    textureKey: String
+    isActive: boolean
+  }
+  class HelmetDesign {
+    shellColor: String
+    stripe: StripeStyle
+    stripeColor: String
+    facemaskColor: String
+    decalKey: String
+    finish: Finish (MATTE|GLOSS|CHROME)
+  }
+}
+package "account" {
+  class CustomPlayer {
+    user: UserAccount «unique»
+    name: String
+    position: Position
+    heightCm: int
+    weightKg: int
+    jerseyNumber: int
+    attributes: PlayerAttributes
+    appearance: JSON
+    faceMetrics: JSON
+    reconstructionSource: AvatarSource
+    modelKey: String
+    avatarRevision: int
+    confirmedAt: Instant
+  }
+}
+class TacticalFieldSnapshot <<contrato front v1>> {
+  matchId · status · quarter · snapshotVersion
+  lineOfScrimmageAbsYd · firstDownAbsYd
+  offense/defense: {clubId, uniform, helmet, onField[11], depth[]}
+  athlete: {playerId, name, number, position, fatigue, snaps}
+}
+class HalftimeDecision <<record>> {
+  type: DEPTH_SWAP | GAME_PLAN | PLAYBOOK_EMPHASIS
+  teamId: UUID
+  payload: JSON
+  snapshotVersion: long
+}
+class DecisionRejected <<record>> {
+  code: PLAYER_INJURED | NOT_ACTIVE | NOT_YOUR_TEAM | STALE_VERSION
+  message
+}
+DepthChartSlot "*" -- "1" Player
+TacticalFieldSnapshot ..> MatchSession : derivado de
+TacticalFieldSnapshot ..> PlayDefinition : diagrama
+TacticalFieldSnapshot ..> Uniform : fixado
+HalftimeDecision ..> MatchSession : tudo ou nada
+HalftimeDecision ..> DecisionRejected : recusa
+@enduml

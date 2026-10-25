@@ -1,0 +1,35 @@
+@startuml
+title RNF12 — Diretrizes de Scores Points e loja · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+control "AuditService" as AuditService
+database "MySQL 8" as MySQL
+database "Redis 7" as Redis
+participant "Agendador/Job assíncrono" as Scheduler
+Manager -> Frontend: comprar capacete cromado
+Frontend -> API: POST /store/purchases (Idempotency-Key)
+API -> UseCase: PurchaseUseCase.execute
+UseCase -> Redis: GET idem:{key} · INCR compras:{userId}:dia
+alt chave repetida ou limite diário
+  API --> Frontend: 200 resposta anterior / 429 (RFC 7807)
+else senão
+  UseCase -> MySQL: BEGIN · SELECT store_item · SELECT wallet FOR UPDATE
+  alt saldo insuficiente ou teto de efeito
+    UseCase -> MySQL: ROLLBACK
+    API --> Frontend: 422 INSUFFICIENT_POINTS / EFFECT_CAP
+  else senão
+    UseCase -> MySQL: UPDATE wallet · INSERT purchase · INSERT points_transaction(balanceAfter)
+    UseCase -> MySQL: COMMIT
+    UseCase -> AuditService: ok(STORE_PURCHASE, correlationId)
+    UseCase -> Redis: SET idem:{key} resposta
+    API --> Frontend: 201 compra + saldo
+  end
+end
+Scheduler -> UseCase: WalletReconciliationJob
+UseCase -> MySQL: saldo == soma(ledger)?
+@enduml

@@ -1,0 +1,85 @@
+@startuml
+title RF27 — Painel da semana e partida ao vivo · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Manager|
+start
+:Clica em Jogar (RF7) ou abre o painel da semana;
+|Frontend|
+:GET /careers/{id}/weeks/{n};
+|Backend|
+if (dono do save?) then (sim)
+else (não)
+  :403 + auditoria ACCESS_DENIED;
+  stop
+endif
+if (semana já iniciada?) then (sim)
+else (não)
+|Frontend|
+  :POST /careers/{id}/weeks/current/play;
+|Backend|
+  :Cria MatchSession do usuário (seed derivada) e agenda as partidas da IA por horário;
+|Scheduler|
+  :Simula as partidas da IA (FULL) drive a drive, publicando placares parciais no Redis;
+endif
+|Backend|
+:Monta WeekBoardDto: cards por horário (TNF, domingo, SNF, MNF) com placar, quarto, posse, descida e distância · byes;
+if (franquia joga nesta semana?) then (sim)
+else (não)
+|Frontend|
+  :Banner de bye ou espectador, sem controles;
+endif
+|Manager|
+if (clica em um placar?) then (sim)
+|Backend|
+  if (placar clicado é o meu?) then (sim)
+|Frontend|
+    :GET /matches/{mid} → placar LED, 3rd and 7 at OPP 34, linha azul e amarela, drive atual;
+  else (não)
+    :Painel somente leitura da partida da IA;
+  endif
+endif
+|Backend|
+while (minha partida não terminou?) is (sim)
+|Manager|
+  :Escolhe Assistir jogada, Drive, Quarto ou Simular;
+|Frontend|
+  :POST /matches/{mid}/advance {mode};
+|Backend|
+  if (chamada de jogada pendente?) then (sim)
+|Manager|
+    :Chama a jogada no tempo limite (RF62) ou o PlayCaller decide;
+  endif
+|Backend|
+  if (modo de avanço permitido?) then (sim)
+  else (não)
+    :422 ADVANCE_MODE_NOT_ALLOWED;
+  endif
+  if (snapshot vivo no Redis?) then (sim)
+  else (não)
+    :Recupera MatchSession do MySQL e recria a chave;
+  endif
+  :MatchSimulator.advance por descida (RF42): grava PlayEvent (Cassandra), Drive e snapshot (Redis);
+|Frontend|
+  :GET /matches/{mid}/plays?after=seq (poll 2 s);
+|Backend|
+  if (há jogadas novas?) then (sim)
+|Frontend|
+    :Feed com jogada, faltas, placar e mudança de posse (respeita reducedMotion);
+  else (não)
+|Backend|
+    :204;
+  endif
+  if (fim de quarto ou intervalo?) then (sim)
+|Manager|
+    :Playbook do intervalo (RF29);
+  endif
+endwhile (não)
+|Backend|
+:FINISHED → placar final, estatísticas do time e drives · demais jogos da semana concluem;
+|Manager|
+:Vai ao pós-jogo (RF30/RF31);
+end
+@enduml

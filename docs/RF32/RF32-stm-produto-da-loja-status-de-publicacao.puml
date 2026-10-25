@@ -1,0 +1,21 @@
+@startuml
+title RF32 — Loja de itens customizáveis (Scores Points) · Máquina de estados: Produto da loja (status de publicação)
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "DRAFT" as DRAFT
+DRAFT : preço, asset, compatibilidade em validação
+state "PUBLISHED" as PUBLISHED
+PUBLISHED : asset READY
+PUBLISHED : janela ou permanente
+state "HIDDEN" as HIDDEN
+state "RETIRED" as RETIRED
+RETIRED : nunca apagado
+RETIRED : inventário preservado
+[*] --> DRAFT
+DRAFT --> PUBLISHED : publicação
+PUBLISHED --> HIDDEN : ocultar
+HIDDEN --> PUBLISHED : reexibir
+PUBLISHED --> RETIRED : retirar
+HIDDEN --> RETIRED : retirar
+RETIRED --> [*]
+@enduml

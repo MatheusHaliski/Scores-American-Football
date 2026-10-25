@@ -1,0 +1,47 @@
+@startuml
+title RF20 — Aba Buscar: ligas, franquias, jogadores e head coaches · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Manager|
+start
+:Abre Buscar e digita um nome ou escolhe filtros (posição, unidade, conferência);
+|Frontend|
+:GET /careers/{id}/search?q=&type=&position=&unit=&conference= (debounce 300 ms);
+|Backend|
+if (dono do save?) then (sim)
+else (não)
+  :403 + auditoria ACCESS_DENIED;
+  stop
+endif
+if (consulta válida?) then (sim)
+else (não)
+  :422 VALIDATION_ERROR;
+  stop
+endif
+if (índice disponível?) then (sim)
+  :Query OpenSearch com worldId e agregações por posição, unidade, conferência e divisão;
+else (não)
+  :Fallback no MySQL do mundo do save;
+endif
+:Monta esquemas compactos (jogador com overall na posição, franquia com campanha, liga, head coach);
+|Frontend|
+:Lista de esquemas + facetas + paginação;
+|Manager|
+if (abre esquema ampliado?) then (sim)
+  if (é jogador?) then (sim)
+|Frontend|
+    :GET /players/{pid} → RF22 com ações se for do meu elenco, ou Propor troca / Oferta de FA (RF19);
+  else (não)
+    :Franquia: GET /clubs/{cid} · Liga: GET /standings · Head coach: esquema do RF18;
+  endif
+endif
+|Scheduler|
+:Eventos de elenco e partida → reindexação AFTER_COMMIT;
+if (índice atualizado?) then (sim)
+else (não)
+  :Retry com backoff;
+endif
+end
+@enduml

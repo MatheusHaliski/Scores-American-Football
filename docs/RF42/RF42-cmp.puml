@@ -1,0 +1,117 @@
+@startuml
+title RF42 — Motor de partida por descida (determinístico por semente) · Diagrama de componentes
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 36
+actor "Head coach / manager (usuário autenticado)" as c1
+actor "Agendador/Job assíncrono" as c2
+actor "Franquia adversária (IA)" as c3
+package "Frontend (Next.js)" as pkg_fe {
+  component "MatchPanelPage" as c4
+  frame "componentes de MatchPanelPage" as pkg_fe_sub {
+    component "LiveScoreboard (descida e distância)" as c5
+    component "FieldPositionBar (linha azul e amarela)" as c6
+    component "DriveTracker" as c7
+    component "PlayByPlayFeed" as c8
+    component "PlayCallDialog (RF62)" as c9
+    component "MatchControls (jogada, drive, quarto, até decisão)" as c10
+  }
+}
+package "scores-af-web (REST)" as pkg_web {
+  component "MatchController" as c11
+  component "WeekController" as c12
+}
+package "scores-af-application (casos de uso)" as pkg_app {
+  component "PlayWeekUseCase" as c13
+  component "AdvanceMatchUseCase" as c14
+  component "SubmitPlayCallUseCase" as c15
+  component "CallTimeoutUseCase" as c16
+  component "GetMatchStateUseCase" as c17
+  component "GetPlayByPlayUseCase" as c18
+  component "GetDrivesUseCase" as c19
+  component "GetMatchReportUseCase" as c20
+  component "MatchSetupAssembler" as c21
+  component "WeekSimulationJob" as c22
+}
+package "scores-af-domain/engine" as pkg_eng {
+  component "DownByDownSimulator" as c23
+  component "PlayCaller (IA, GamePlan)" as c24
+  component "DecisiveMomentDetector" as c25
+  component "PassRushModel (OL × DL)" as c26
+  component "CoverageModel (rota × cobertura)" as c27
+  component "RunModel (corredor × tackle)" as c28
+  component "PenaltyModel" as c29
+  component "SpecialTeamsModel" as c30
+  component "ClockModel" as c31
+  component "FatigueInjuryModel" as c32
+  component "DriveTracker" as c7
+  component "BoxScoreAccumulator" as c33
+  component "DecisiveFactorsAnalyzer" as c34
+  component "DeterministicRng" as c35
+}
+package "portas (port.out)" as pkg_ports {
+  interface "FixtureRepository" as c36
+  interface "PlayerRepository" as c37
+  interface "DepthChartRepository" as c38
+  interface "PlaybookRepository" as c39
+  interface "MatchSessionRepository" as c40
+  interface "PlayCallDecisionRepository" as c41
+  interface "DriveRepository" as c42
+  interface "PlayerMatchStatsRepository" as c43
+  interface "MatchReportRepository" as c44
+  interface "StandingRepository" as c45
+  interface "LiveMatchStatePort" as c46
+  interface "TimelinePort" as c47
+  interface "SearchPort" as c48
+}
+package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
+  component "persistence-mysql" as c49
+  component "cache-redis" as c50
+  component "persistence-cassandra" as c51
+  component "search-opensearch" as c52
+}
+database "MySQL 8" as s1
+database "Redis 7" as s2
+database "Cassandra 4.1" as s3
+database "OpenSearch 2" as s4
+c1 --> c4 : usa
+c2 --> c13 : dispara
+c4 --> c11 : POST /careers/{id}/weeks/current/play (alvo)\nPOST /matches/{mid}/advance (alvo)\nGET /matches/{mid} (alvo)\n…
+c4 --> c12
+c11 --> c13
+c12 --> c13
+c13 ..> pkg_app : orquestra
+c13 --> c23 : usa
+c13 --> c24 : usa
+c13 --> c25 : usa
+c13 --> c26 : usa
+c13 --> c27 : usa
+c13 --> c28 : usa
+c13 --> c29 : usa
+c13 --> c30 : usa
+c13 --> c31 : usa
+c13 --> c32 : usa
+c13 --> c7 : usa
+c13 --> c33 : usa
+c13 --> c34 : usa
+c13 --> c35 : usa
+pkg_app --> pkg_ports : depende (DIP)
+c49 .up.|> c36
+c49 .up.|> c37
+c49 .up.|> c38
+c49 .up.|> c39
+c49 .up.|> c40
+c49 .up.|> c41
+c49 .up.|> c42
+c49 .up.|> c43
+c49 .up.|> c44
+c49 .up.|> c45
+c50 .up.|> c46
+c51 .up.|> c47
+c52 .up.|> c48
+c49 --> s1
+c50 --> s2
+c51 --> s3
+c52 --> s4
+@enduml

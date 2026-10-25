@@ -1,0 +1,40 @@
+@startuml
+title RF42 — Motor de partida por descida (determinístico por semente) · Máquina de estados: MatchSession.status (partida ao vivo)
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "NOT_STARTED" as NOT_STARTED
+NOT_STARTED : setup montado
+NOT_STARTED : seed derivada
+state "LIVE" as LIVE
+LIVE : jogada a jogada
+LIVE : PlayEvent append-only
+state "AWAITING_PLAY_CALL" as AWAITING_PLAY_CALL
+AWAITING_PLAY_CALL : 4ª descida, 2 minutos, prorrogação
+AWAITING_PLAY_CALL : prazo da decisão
+state "BREAK" as BREAK
+BREAK : fim de quarto ou intervalo
+BREAK : ajustes e playbook
+state "OVERTIME" as OVERTIME
+OVERTIME : 10 min
+OVERTIME : regra de posse da liga
+state "FINISHED" as FINISHED
+FINISHED : MatchResult consolidado
+state "ABANDONED" as ABANDONED
+ABANDONED : TTL do Redis expirou
+ABANDONED : resimulável pela seed
+[*] --> NOT_STARTED
+NOT_STARTED --> LIVE : kickoff
+LIVE --> AWAITING_PLAY_CALL : momento decisivo do humano
+AWAITING_PLAY_CALL --> LIVE : jogada chamada ou automática
+LIVE --> BREAK : fim do 1º, 2º ou 3º quarto
+BREAK --> LIVE : advance + ajustes válidos
+LIVE --> FINISHED : fim do 4º sem empate
+LIVE --> OVERTIME : empate ao fim do 4º
+OVERTIME --> AWAITING_PLAY_CALL : decisão na prorrogação
+AWAITING_PLAY_CALL --> OVERTIME : jogada chamada
+OVERTIME --> FINISHED : regra de posse cumprida ou tempo esgotado
+BREAK --> ABANDONED : TTL expirado
+AWAITING_PLAY_CALL --> ABANDONED : TTL expirado
+ABANDONED --> NOT_STARTED : resimula pela seed + decisionsLog
+FINISHED --> [*]
+@enduml

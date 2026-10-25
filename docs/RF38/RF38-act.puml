@@ -1,0 +1,48 @@
+@startuml
+title RF38 — Animações 3D por atributo, posição e estilo (IA do sistema) · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Admin|
+start
+:Abre /admin/animations e vê a cobertura;
+|Backend|
+if (é administrador?) then (sim)
+else (não)
+  :403;
+  stop
+endif
+|Admin|
+:Escolhe um alvo (ex.: POSITION QB dropback, ATTRIBUTE juke) e clica em Gerar com IA;
+|Backend|
+if (alvo conhecido?) then (sim)
+else (não)
+  :422;
+  stop
+endif
+if (IA disponível?) then (sim)
+|Claude|
+  :Gera parâmetros JSON, nunca malha ou vídeo;
+else (não)
+|Backend|
+  :Template determinístico por targetCode;
+endif
+if (parâmetros dentro dos limites biomecânicos?) then (sim)
+else (não)
+  :Clamp e sinaliza;
+endif
+if (equipamento respeitado?) then (sim)
+else (não)
+  :422 ANIMATION_GEAR_CLIP;
+  stop
+endif
+:AnimationClip DRAFT v(n) · ANIMATION_GENERATED;
+|Admin|
+:Compara com a publicada, ajusta sliders e publica;
+|Backend|
+:PUBLISHED · anterior ARCHIVED · invalida catalog:animations · ANIMATION_PUBLISHED;
+|Manager|
+:Hover no velocímetro → a figura 3D executa a animação (crossfade ≤ 300 ms, respeita reduzir movimento);
+end
+@enduml

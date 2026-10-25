@@ -1,0 +1,71 @@
+@startuml
+title RF62 — Chamada de jogada em momentos decisivos · Diagrama de componentes
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 36
+actor "Head coach / manager (usuário autenticado)" as c1
+actor "Franquia adversária (IA)" as c2
+actor "Agendador/Job assíncrono" as c3
+package "Frontend (Next.js)" as pkg_fe {
+  component "LiveMatchPage" as c4
+  frame "componentes de LiveMatchPage" as pkg_fe_sub {
+    component "PlayCallPanel" as c5
+    component "PlayOptionCard" as c6
+    component "DecisionCountdown" as c7
+    component "DownDistanceBanner" as c8
+  }
+}
+package "scores-af-web (REST)" as pkg_web {
+  component "MatchDecisionController" as c9
+  component "MatchStreamController" as c10
+  component "SettingsController" as c11
+}
+package "scores-af-application (casos de uso)" as pkg_app {
+  component "SubmitPlayCallUseCase" as c12
+  component "GetOpenPlayCallUseCase" as c13
+  component "DecisionTimeoutJob" as c14
+  component "CareerAccess" as c15
+}
+package "scores-af-domain/engine" as pkg_eng {
+  component "MatchSimulator" as c16
+  component "PlayCaller" as c17
+  component "KeyMomentPolicy" as c18
+}
+package "portas (port.out)" as pkg_ports {
+  interface "MatchStatePort" as c19
+  interface "DecisionTimerPort" as c20
+  interface "TimelinePort" as c21
+  interface "LiveChannelPort" as c22
+  interface "SettingsRepository" as c23
+}
+package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
+  component "cache-redis" as c24
+  component "persistence-cassandra" as c25
+  component "persistence-mysql" as c26
+}
+database "Redis 7" as s1
+database "MySQL 8" as s2
+database "Cassandra 4.1" as s3
+c1 --> c4 : usa
+c3 --> c12 : dispara
+c4 --> c9 : GET /matches/{mid}/decisions/current (alvo)\nPOST /matches/{mid}/decisions/{did} (alvo)\nGET /matches/{mid}/stream (alvo)\n…
+c4 --> c10
+c4 --> c11
+c9 --> c12
+c10 --> c12
+c11 --> c12
+c12 ..> pkg_app : orquestra
+c12 --> c16 : usa
+c12 --> c17 : usa
+c12 --> c18 : usa
+pkg_app --> pkg_ports : depende (DIP)
+c24 .up.|> c19
+c24 .up.|> c20
+c25 .up.|> c21
+c24 .up.|> c22
+c26 .up.|> c23
+c24 --> s1
+c25 --> s3
+c26 --> s2
+@enduml

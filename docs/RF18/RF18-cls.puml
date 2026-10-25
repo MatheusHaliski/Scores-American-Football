@@ -1,0 +1,152 @@
+@startuml
+title RF18 — Head coaches do mundo: ranking e histórico · Diagrama de classes
+skinparam classAttributeIconSize 0
+hide empty methods
+package "career" {
+  class CareerSave {
+    id: UUID
+    name: String
+    seed: long
+    employmentStatus: EmploymentStatus
+    currentWeek: int
+    difficulty: Difficulty
+    seasonMode: SeasonMode
+    scoresPoints: int
+    status: SaveStatus
+    slot: int
+    lastPlayedAt: Instant
+  }
+  class ManagerCareerRecord {
+    seasonFrom: int
+    seasonTo: int
+    games: int
+    wins: int
+    losses: int
+    ties: int
+    playoffAppearances: int
+    titles: int
+    endReason: EndReason
+  }
+  class ManagerMorale {
+    moraleClub: int
+    moraleLeague: int
+    factorsClub: JSON
+    factorsLeague: JSON
+    weeksUnderCritical: int
+    trend: Trend
+    updatedWeek: int
+  }
+}
+package "catalog" {
+  class ManagerProfile {
+    name: String
+    nationality: String
+    isHuman: boolean
+    overall: int
+    coachStyle: CoachStyleCode
+    reputationLeague: int
+    careerTitles: int
+    careerGames: int
+    careerWins: int
+    careerPlayoffWins: int
+  }
+  class ManagerStyle {
+    code: CoachStyleCode (OFFENSIVE|DEFENSIVE|DEVELOPER|MOTIVATOR)
+    effects: JSON
+    priceScoresPoints: int
+    rewardGoal: String
+  }
+  class Club {
+    id: UUID
+    name: String
+    shortName: String
+    city: String
+    conference: Conference
+    division: Division
+    logoKey: String
+    primaryColor: String
+    secondaryColor: String
+    accentColor: String
+    prestige: int
+    reputationBoard: int
+    reputationFans: int
+    cash: long
+    capSpace: long
+    isUserControlled: boolean
+    expectedWins: int
+    scoutingLevel: int
+    scoutingBudget: long
+  }
+  class League {
+    id: UUID
+    name: String
+    country: String
+    ruleset: Ruleset (PRO|COLLEGE)
+    rules: LeagueRules
+    teamCount: int (8–32)
+    conferenceCount: int
+    divisionsPerConference: int
+    regularSeasonWeeks: int = 18
+    gamesPerTeam: int = 17
+    playoffSeedsPerConference: int = 7
+    neutralSiteFinal: boolean
+    salaryCap: long
+    salaryFloor: long
+    prestige: int
+    tvRightsPerSeason: long
+  }
+}
+package "season" {
+  class SeasonAward {
+    type: AwardType (MVP|OPOY|DPOY|OROY|DROY|COACH)
+    value: double
+  }
+}
+class ListWorldManagersUseCase <<UseCase>> {
+  execute(careerId, sort, page, userId): PageResponse<ManagerCompactDto>
+}
+class ManagerCompactDto <<record>> {
+  id: UUID
+  name: String
+  isHuman: boolean
+  clubName: String?
+  coachStyle: CoachStyleCode?
+  overall: int
+  record: String (V-D-E)
+  playoffWins: int
+  titles: int
+  employmentStatus: EmploymentStatus
+  rank: int
+}
+class GetManagerHistoryUseCase <<UseCase>> {
+  execute(careerId, managerId, userId): ManagerHistoryResult
+}
+class ManagerHistoryResult <<record>> {
+  profile: ManagerCompactDto
+  records: List<CareerRecordDto>
+  overallHistory: List<SeasonValueDto>
+  employmentHistory: List<EmploymentPeriodDto>
+  awards: List<AwardDto>
+}
+class ManagerRankingProjector <<Listener>> {
+  onWeekCompleted(worldId): ZADD por métrica
+  onSeasonEnded(worldId)
+}
+interface RankingPort <<Port>> {
+  top(key, page): List<UUID>
+  upsert(key, id, score)
+}
+Club "*" -- "*" Club : rivais da divisão
+Club "0..1" -- "1" ManagerProfile : head coach
+ManagerProfile "*" -- "0..1" ManagerStyle
+ManagerProfile "1" -- "*" ManagerCareerRecord : histórico
+CareerSave "1" -- "1" ManagerProfile : manager humano
+CareerSave "*" -- "0..1" Club : franquia atual
+CareerSave "1" -- "1" ManagerMorale
+ListWorldManagersUseCase ..> ManagerCompactDto : produz
+ListWorldManagersUseCase ..> RankingPort : usa
+ListWorldManagersUseCase ..> ManagerProfile : lê
+GetManagerHistoryUseCase ..> ManagerHistoryResult : produz
+GetManagerHistoryUseCase ..> ManagerCareerRecord : lê
+ManagerRankingProjector ..> RankingPort : ZADD
+@enduml

@@ -1,0 +1,82 @@
+@startuml
+title RF53 — Regulamentos profissional e college · Diagrama de classes
+skinparam classAttributeIconSize 0
+hide empty methods
+package "catalog" {
+  class World {
+    id: UUID
+    ownerUser: UserAccount?
+    name: String
+    kind: WorldKind
+    sourceWorld: World?
+  }
+  class League {
+    id: UUID
+    name: String
+    country: String
+    ruleset: Ruleset (PRO|COLLEGE)
+    rules: LeagueRules
+    teamCount: int (8–32)
+    conferenceCount: int
+    divisionsPerConference: int
+    regularSeasonWeeks: int = 18
+    gamesPerTeam: int = 17
+    playoffSeedsPerConference: int = 7
+    neutralSiteFinal: boolean
+    salaryCap: long
+    salaryFloor: long
+    prestige: int
+    tvRightsPerSeason: long
+  }
+  class LeagueRules {
+    «embedded» version: int
+    quarterMinutes: int = 15
+    playClockSeconds: int = 40
+    playClockAfterStoppageSeconds: int = 25
+    twoMinuteWarning: boolean
+    timeoutsPerHalf: int = 3
+    overtimeMinutes: int = 10
+    overtimeBothPossess: boolean
+    regularSeasonTiesAllowed: boolean
+    kickoffYardLine: int = 35
+    touchbackYardLine: int
+    patYardLine: int = 15
+    clockStopsOnFirstDown: boolean (COLLEGE)
+    oneFootInbounds: boolean (COLLEGE)
+    hashFromSidelineFeet: double
+    rosterMax: int = 53
+    gameDayActives: int = 46
+    practiceSquadMax: int = 16
+    offseasonRosterMax: int «Q-7»
+    irReturnsPerSeason: int «Q-7»
+    irMinWeeks: int «Q-7»
+  }
+}
+package "season" {
+  class Season {
+    number: int
+    year: int
+    phase: SeasonPhase (PRESEASON|REGULAR|PLAYOFFS|DRAFT|FREE_AGENCY|OFFSEASON)
+    currentWeek: int
+    tradeDeadlineWeek: int
+    championClub: Club?
+    mvpPlayer: Player?
+  }
+}
+class UpdateLeagueRulesUseCase <<UseCase>> {
+  execute(leagueId, userId, RulesCommand, expectedVersion): RulesResult «@Transactional»
+}
+class LeagueRulesPolicy <<Policy>> {
+  validate(LeagueRules): List<RuleViolation>
+  warnings(Ruleset, LeagueRules): List<String>
+}
+class RulesetPresets <<Policy>> {
+  pro(): LeagueRules
+  college(): LeagueRules
+}
+World "1" -- "*" League
+League "1" -- "1" LeagueRules : «embedded»
+UpdateLeagueRulesUseCase ..> LeagueRulesPolicy : valida
+UpdateLeagueRulesUseCase ..> League : atualiza
+RulesetPresets ..> LeagueRules : cria
+@enduml

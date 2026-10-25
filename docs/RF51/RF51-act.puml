@@ -1,0 +1,71 @@
+@startuml
+title RF51 — Draft, scouting universitário e combine · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Scheduler|
+start
+:Fim da temporada regular: cria DraftClass SCOUTING e a ordem inversa da classificação (playoffs por rodada de eliminação);
+|Manager|
+:Abre Draft e filtra prospectos por posição e rodada projetada;
+|Frontend|
+:GET /draft/class;
+|Backend|
+if (dono do save?) then (sim)
+else (não)
+  :403 + auditoria;
+  stop
+endif
+|Manager|
+while (quer mais informação?) is (sim)
+|Frontend|
+  :POST /draft/prospects/{pid}/scouting;
+|Backend|
+  if (fase do draft permite?) then (sim)
+  else (não)
+    :422 DRAFT_PHASE_INVALID;
+    stop
+  endif
+  if (verba de scouting?) then (sim)
+  else (não)
+    :422 SCOUTING_BUDGET_EXCEEDED;
+  endif
+  :DraftEngine gera relatório pela semente: estreita potencialMin..Max conforme o nível do scout;
+endwhile (não)
+|Scheduler|
+:Semana do combine: gera CombineResult por prospecto (atributos verdadeiros + ruído pela semente) e muda para COMBINE;
+|Manager|
+:Ordena o big board e salva (PUT /draft/board);
+|Scheduler|
+:Abre o draft: DraftClass LIVE, relógio do 1º pick;
+partition "Sala do draft — 7 rodadas" {
+|ClubeIA|
+  :Escolhe nos picks da IA: necessidade da posição × valor do prospecto;
+|Manager|
+  if (pick do usuário na vez?) then (sim)
+    if (escolhe a tempo?) then (sim)
+|Frontend|
+      :POST /draft/picks/{pickId}/select;
+|Backend|
+      if (prospecto disponível?) then (sim)
+      else (não)
+        :409 PROSPECT_TAKEN;
+        stop
+      endif
+    else (não)
+      :Escolha automática pelo big board;
+    endif
+    :TX: prospect.draftedBy, cria Player ROOKIE com contrato pela escala do pick e lança o cap hit;
+  else (não)
+|Frontend|
+    :POST /draft/advance até o próximo pick do usuário;
+  endif
+}
+|Backend|
+:Fim da 7ª rodada: DraftClass DONE, não escolhidos viram free agents (RF65);
+:Notícia do draft na timeline e notas por clube;
+|Manager|
+:Vê os rookies no elenco e no depth chart (RF60);
+end
+@enduml

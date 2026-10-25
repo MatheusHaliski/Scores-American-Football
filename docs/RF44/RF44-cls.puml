@@ -1,0 +1,83 @@
+@startuml
+title RF44 — Meu jogador: atleta 3D a partir da foto · Diagrama de classes
+skinparam classAttributeIconSize 0
+hide empty methods
+package "account" {
+  class CustomPlayer {
+    user: UserAccount «unique»
+    name: String
+    position: Position
+    heightCm: int
+    weightKg: int
+    jerseyNumber: int
+    attributes: PlayerAttributes
+    appearance: JSON
+    faceMetrics: JSON
+    reconstructionSource: AvatarSource
+    modelKey: String
+    avatarRevision: int
+    confirmedAt: Instant
+  }
+  class ConsentRecord {
+    user: UserAccount
+    purpose: ConsentPurpose
+    granted: boolean
+    textVersion: String
+    source: ConsentSource
+    ipHash: String
+    recordedAt: Instant
+  }
+  class UserAccount {
+    id: UUID
+    email: String «AES-GCM»
+    emailHash: String «unique»
+    passwordHash: String «Argon2id»
+    displayName: String
+    locale: Locale
+    role: Role
+    status: AccountStatus
+    failedLoginAttempts: int
+    lockedUntil: Instant
+    marketingConsent: boolean
+    deletionRequestedAt: Instant
+    profileVisibility: ProfileVisibility
+    birthDate: LocalDate
+    pendingEmail: String
+  }
+}
+package "catalog" {
+  class PlayerAttributes {
+    «embedded» físicos: 7 (VEL, ACE, AGI, FOR, IMPULSAO, RES, DUR)
+    passe: 8 (precisão curta/média/longa, braço, em movimento, play-action, leitura, calma)
+    corrida e posse: 7 (visão, quebra de tackle, juke, spin, stiff arm, proteção, carregar)
+    recepção: 7 (mãos, tráfego, espetacular, rota curta/média/funda, soltura)
+    bloqueio: 5 (passe, corrida, técnica, finesse, potência)
+    defesa: 9 (tackle, impacto, perseguição, leitura, cobertura individual/zona, press, rush finesse/potência)
+    chute: 3 (potência, precisão, retorno)
+    mental: 2 (consciência, liderança)
+  }
+}
+class CustomPlayerPolicy <<Policy>> {
+  bodyRange(position): Range
+  jerseyRange(position): List<Range>
+  budget(position): AttributeBudget
+  validate(cmd): List<Violation>
+}
+class AvatarReference <<alvo (fora do catálogo)>> {
+  view: FRONT | THREE_QUARTER | PROFILE | BACK
+  photoKey: String
+  retainUntil: Instant
+}
+class DigitalDoubleRevision <<alvo (fora do catálogo)>> {
+  revision: int
+  traits: JSON (manual, observed, confirmed)
+  approvedAt: Instant?
+}
+UserAccount "1" -- "*" ConsentRecord : consentimentos
+UserAccount "1" -- "0..1" CustomPlayer : Meu jogador
+CustomPlayer "1" -- "1" PlayerAttributes : «embedded»
+CustomPlayerPolicy ..> CustomPlayer : valida
+CustomPlayerPolicy ..> PlayerAttributes : orçamento
+AvatarReference ..> CustomPlayer : referência
+DigitalDoubleRevision ..> CustomPlayer : revisões
+@enduml

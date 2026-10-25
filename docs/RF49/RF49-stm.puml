@@ -1,0 +1,36 @@
+@startuml
+title RF49 — Teto salarial rígido e contratos · Máquina de estados: PlayerContract (ciclo de vida)
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "ACTIVE" as ACTIVE
+ACTIVE : cap hit do ano
+state "Em negociação" as NEGOTIATING
+NEGOTIATING : proposta e contraproposta
+state "Reestruturado" as RESTRUCTURED
+RESTRUCTURED : base → bônus rateado
+state "Último ano" as EXPIRING
+state "Franchise tag" as TAGGED
+TAGGED : 1 ano
+TAGGED : 1 por franquia
+state "Cortado" as RELEASED
+RELEASED : dead money no ledger
+RELEASED : waivers (RF65)
+state "Vencido" as EXPIRED
+EXPIRED : agente livre
+[*] --> ACTIVE
+ACTIVE --> NEGOTIATING : proposta de extensão
+NEGOTIATING --> ACTIVE : ACCEPT (novo contrato) / REJECT
+NEGOTIATING --> NEGOTIATING : COUNTER
+ACTIVE --> RESTRUCTURED : reestrutura
+RESTRUCTURED --> ACTIVE : nova temporada
+ACTIVE --> EXPIRING : último ano
+EXPIRING --> NEGOTIATING : proposta
+EXPIRING --> TAGGED : franchise tag
+EXPIRING --> EXPIRED : fim da temporada sem decisão
+TAGGED --> NEGOTIATING : extensão longa
+TAGGED --> EXPIRED : fim do ano da tag
+ACTIVE --> RELEASED : corte confirmado
+EXPIRING --> RELEASED : corte confirmado
+RELEASED --> [*]
+EXPIRED --> [*]
+@enduml

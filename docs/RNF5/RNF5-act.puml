@@ -1,0 +1,67 @@
+@startuml
+title RNF5 — Criptografia de dados sensíveis · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Scheduler|
+start
+:Subida: lê do Cofre a chave AES e o par RSA;
+|Backend|
+if (chave de cifra vinda do Cofre?) then (sim)
+else (não)
+  :Fail-fast citando só o nome da variável;
+  stop
+endif
+|Visitante|
+:Cadastra-se (e-mail, nome, senha);
+|Backend|
+if (TLS em trânsito?) then (sim)
+else (não)
+  :Conexão recusada;
+  stop
+endif
+:emailHash = HMAC(e-mail normalizado);
+if (hash de busca coerente?) then (sim)
+else (não)
+  :409 EMAIL_ALREADY_REGISTERED;
+  stop
+endif
+if (senha com Argon2id sob teto?) then (sim)
+else (não)
+  :503 AUTH_BUSY;
+  stop
+endif
+if (campo marcado como sensível?) then (sim)
+  :AES-256-GCM com nonce novo;
+else (não)
+  :Grava em claro;
+endif
+:INSERT user_account · AuditLog sem valores sensíveis;
+|Manager|
+:Consulta a conta;
+|Backend|
+if (decifragem autorizada?) then (sim)
+  :Decifra e devolve ao titular;
+else (não)
+  :403 + ACCESS_DENIED;
+  stop
+endif
+if (segredo fora de logs e auditoria?) then (sim)
+else (não)
+  :LogSafeTest vermelho;
+endif
+|Scheduler|
+:CI e pre-push: gitleaks no histórico inteiro, npm audit e testes de guarda;
+if (segredo fora do repositório?) then (sim)
+else (não)
+  :CI vermelho · rotacionar no Cofre;
+  stop
+endif
+|Admin|
+if (rotaciona a chave?) then (sim)
+|Backend|
+  :Nova kid para escrita · job recifra em lotes · kid antiga só decifra;
+endif
+end
+@enduml

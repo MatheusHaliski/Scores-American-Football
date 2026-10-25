@@ -1,0 +1,93 @@
+@startuml
+title RF39 — Scouting universitário · Diagrama de classes
+skinparam classAttributeIconSize 0
+hide empty methods
+package "catalog" {
+  class Club {
+    id: UUID
+    name: String
+    shortName: String
+    city: String
+    conference: Conference
+    division: Division
+    logoKey: String
+    primaryColor: String
+    secondaryColor: String
+    accentColor: String
+    prestige: int
+    reputationBoard: int
+    reputationFans: int
+    cash: long
+    capSpace: long
+    isUserControlled: boolean
+    expectedWins: int
+    scoutingLevel: int
+    scoutingBudget: long
+  }
+}
+package "market" {
+  class DraftClass {
+    season: int
+    size: int
+    status: DraftStatus (SCOUTING|COMBINE|LIVE|DONE)
+  }
+  class DraftProspect {
+    name: String
+    college: String
+    position: Position
+    projectedRound: int
+    trueOverall: int «oculto»
+    potentialRangeMin: int
+    potentialRangeMax: int
+    draftedBy: Club?
+  }
+  class ScoutingReport {
+    prospect: DraftProspect
+    scoutLevel: int
+    accuracy: double
+    notes: TEXT
+    grade: String
+    bought: boolean
+  }
+  class CombineResult {
+    prospect: DraftProspect
+    fortyYardSec: double
+    benchReps: int
+    verticalIn: double
+    broadJumpIn: double
+    threeConeSec: double
+    shuttleSec: double
+    interviewScore: int
+  }
+}
+package "finance" {
+  class FinanceLedgerEntry {
+    week: int
+    kind: LedgerKind
+    amount: long
+    balanceAfter: long
+    description: String
+  }
+}
+class ScoutProspectUseCase <<UseCase>> {
+  execute(careerId, prospectId, userId): ScoutingReportDto «@Transactional»
+}
+class ScoutingAccuracyModel <<Engine>> {
+  accuracy(level, previousReports): double
+  range(trueValue, accuracy, seed): IntRange
+}
+class BigBoard <<record>> {
+  careerId: UUID
+  order: List<UUID>
+  version: long
+}
+Club "*" -- "*" Club : rivais da divisão
+DraftClass "1" -- "*" DraftProspect
+DraftProspect "1" -- "0..1" CombineResult
+DraftProspect "1" -- "*" ScoutingReport
+Club "1" -- "*" FinanceLedgerEntry : ledger
+ScoutProspectUseCase ..> ScoutingAccuracyModel : usa
+ScoutProspectUseCase ..> ScoutingReport : cria
+ScoutingAccuracyModel ..> DraftProspect : lê nota oculta
+BigBoard ..> DraftProspect : ordena
+@enduml

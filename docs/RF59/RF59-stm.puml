@@ -1,0 +1,27 @@
+@startuml
+title RF59 — Mini campo com a jogada real · Máquina de estados: Mini campo (interação)
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "Fechado" as Fechado
+Fechado : partida ou intervalo
+state "Carregando" as Carregando
+Carregando : GET diagrama
+state "Animando" as Animando
+Animando : snap até bola morta
+state "Pausado" as Pausado
+Pausado : quadro atual
+state "Concluido" as Concluido
+Concluido : resultado da jogada
+state "Erro" as Erro
+Erro : 403 / 404
+[*] --> Fechado
+Fechado --> Carregando : abre jogada
+Carregando --> Animando : 200
+Carregando --> Erro : 403 / 404
+Animando --> Pausado : pausa
+Pausado --> Animando : continua
+Animando --> Concluido : fim
+Concluido --> Carregando : próxima jogada
+Concluido --> Fechado : fecha
+Erro --> Fechado : fecha
+@enduml

@@ -1,0 +1,33 @@
+@startuml
+title RF42 — Motor de partida por descida (determinístico por semente) · Máquina de estados: Ciclo da jogada (dentro do motor)
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "PRE_SNAP" as PRE_SNAP
+PRE_SNAP : chamada de ataque e defesa
+PRE_SNAP : play clock
+state "Falta pré-snap" as PENALIDADE_PRE
+PENALIDADE_PRE : false start, offside, encroachment
+state "SNAP" as SNAP
+SNAP : confrontos
+state "Bola viva" as BOLA_VIVA
+BOLA_VIVA : passe, corrida, chute, retorno
+state "Falta na jogada" as FALTA_JOGADA
+FALTA_JOGADA : aceita ou recusa
+state "Bola morta" as BOLA_MORTA
+BOLA_MORTA : spot, down e distance
+BOLA_MORTA : relógio
+state "Pontuação" as PONTOS
+PONTOS : TD, FG, safety
+PONTOS : PAT ou 2 pontos
+[*] --> PRE_SNAP
+PRE_SNAP --> PENALIDADE_PRE : falta antes do snap
+PENALIDADE_PRE --> PRE_SNAP : repete a descida
+PRE_SNAP --> SNAP : snap
+SNAP --> BOLA_VIVA : bola em jogo
+BOLA_VIVA --> FALTA_JOGADA : bandeira
+FALTA_JOGADA --> BOLA_MORTA : aplicada ou recusada
+BOLA_VIVA --> BOLA_MORTA : tackle, fora, incompleto
+BOLA_VIVA --> PONTOS : cruza a end zone / FG bom
+BOLA_MORTA --> PRE_SNAP : próxima descida
+PONTOS --> PRE_SNAP : conversão ou kickoff
+@enduml

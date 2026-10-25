@@ -1,0 +1,25 @@
+@startuml
+title RF15 — Estilos de head coach por recompensa e Scores Points · Máquina de estados: ManagerStyle para o usuário
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "Disponível" as Disponivel
+Disponivel : na loja (Scores Points)
+state "Bloqueado por meta" as Bloqueado
+Bloqueado : Goal IN_PROGRESS
+Bloqueado : progresso visível
+state "Adquirido" as Adquirido
+Adquirido : Purchase (compra ou recompensa)
+Adquirido : não ativo
+state "Ativo no head coach" as Ativo
+Ativo : ManagerProfile.coachStyle
+Ativo : efeitos em RF41/RF42
+state "Substituído" as Substituido
+Substituido : outro estilo ativado na offseason
+[*] --> Disponivel
+Disponivel --> Adquirido : POST /store/purchase ok
+Disponivel --> Bloqueado : rewardGoal != null
+Bloqueado --> Adquirido : Goal COMPLETED
+Adquirido --> Ativo : PUT manager/style (pré-temporada)
+Ativo --> Substituido : outro estilo aplicado
+Substituido --> Ativo : reaplicado
+@enduml

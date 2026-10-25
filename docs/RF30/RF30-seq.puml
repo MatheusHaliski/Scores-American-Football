@@ -1,0 +1,61 @@
+@startuml
+title RF30 — Classificação, seeds e notícias com IA · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+control "AuditService" as AuditService
+control "SeasonEngine" as SeasonEngine
+queue "EventBus" as EventBus
+database "MySQL 8" as MySQL
+database "Redis 7" as Redis
+database "Cassandra 4.1" as Cassandra
+participant "Claude (LLM, narrativa)" as Claude
+participant "Agendador/Job assíncrono" as Scheduler
+actor "Imprensa (IA)" as Imprensa
+Scheduler -> UseCase: WeekCompleted(seasonId, week)
+UseCase -> SeasonEngine: recomputeStandings(season) + projectSeeds(conferences)
+SeasonEngine -> MySQL: UPDATE standing (divisionRank, conferenceSeed, tiebreakerNote) · UPSERT playoff_seed
+UseCase -> Imprensa: pickStories(week, fixtures, standings, morale)
+Imprensa --> UseCase: pautas
+alt narrativa Claude habilitada
+  UseCase -> Claude: generateNews(pautas, tom, PT-BR)
+  Claude --> UseCase: manchetes + comentários
+  UseCase -> AuditService: record(AI_CALL)
+else senão
+  UseCase -> UseCase: template determinístico (seed)
+end
+UseCase -> MySQL: INSERT NewsItem[]
+UseCase -> EventBus: NewsPublished(week)
+EventBus -> Cassandra: append news timeline
+Manager -> Frontend: Classificação e semanas
+Frontend -> API: GET /careers/{id}/standings?view=CONFERENCE
+API -> UseCase: GetStandingsUseCase.execute(id, view, userId)
+UseCase -> MySQL: requireOwner + standings + playoff_seed + season.phase
+alt não é dono
+  UseCase -> AuditService: record(ACCESS_DENIED)
+  API --> Frontend: 403
+else senão
+  alt semana em andamento
+    UseCase -> Redis: MGET placares parciais
+    Redis --> UseCase: snapshots
+  else senão
+  end
+  UseCase --> API: StandingsDto (divisões, seeds, desempates, bracket?)
+  API --> Frontend: 200
+end
+Frontend -> API: GET /careers/{id}/weeks/{n}/news
+API -> UseCase: GetWeekNewsUseCase.execute
+UseCase -> Cassandra: SELECT news WHERE season_id = ? AND week = ?
+Cassandra --> UseCase: NewsItem[]
+API --> Frontend: 200
+Frontend -> Manager: tabela com seeds, placares, manchetes
+loop navegar semanas
+  Manager -> Frontend: semana n±1
+  Frontend -> API: GET /weeks/{n±1}
+  API --> Frontend: WeekBoardDto (resultado ou prévia)
+end
+@enduml

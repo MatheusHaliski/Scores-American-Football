@@ -1,0 +1,39 @@
+@startuml
+title RF55 — Snaps-alvo, rodízio da linha e química · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+control "MoraleEngine" as MoraleEngine
+control "MatchSimulator" as MatchSimulator
+control "ClubAnalyst" as ClubAnalyst
+database "MySQL 8" as MySQL
+database "Redis 7" as Redis
+actor "Jogador (IA)" as JogadorIA
+Manager -> Frontend: abre Snaps e química
+Frontend -> API: GET /careers/{id}/snap-plan
+API -> UseCase: GetSnapPlanUseCase
+UseCase -> MySQL: plano, depth chart, snaps da temporada
+UseCase -> ClubAnalyst: química OL e QB-WR
+ClubAnalyst --> UseCase: níveis
+UseCase --> API: SnapPlanView
+API --> Frontend: 200
+Manager -> Frontend: ajusta alvos
+Frontend -> API: PUT /careers/{id}/snap-plan
+API -> UseCase: UpdateSnapPlanUseCase
+alt incoerente / rodízio inválido / jogador inativo
+  API --> Frontend: 422
+else senão
+  UseCase -> MySQL: UPDATE snap_plan version+1
+  alt partida LIVE
+    UseCase -> Redis: pendente para o intervalo
+  end
+  API --> Frontend: 200 + avisos de fadiga
+end
+note over UseCase: no jogo, MatchSimulator lê o plano e grava snaps em PlayerMatchStats
+MatchSimulator -> MoraleEngine: snaps × expectativa
+MoraleEngine -> JogadorIA: moral atualizada
+@enduml

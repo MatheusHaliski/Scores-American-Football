@@ -1,0 +1,27 @@
+@startuml
+title RF33 — Scores Points por metas em qualquer modo · Máquina de estados: Goal.status
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "ACTIVE" as ACTIVE
+ACTIVE : semeada na criação da carreira ou na pré-temporada
+state "IN_PROGRESS" as IN_PROGRESS
+IN_PROGRESS : 0 < progress < target
+state "COMPLETED" as COMPLETED
+COMPLETED : progress ≥ target
+COMPLETED : aguarda crédito
+state "REWARDED" as REWARDED
+REWARDED : PointsTransaction GOAL_COMPLETED
+REWARDED : idempotente por refId
+state "EXPIRED" as EXPIRED
+EXPIRED : temporada ou prazo encerrado
+[*] --> ACTIVE
+ACTIVE --> IN_PROGRESS : evento elegível
+IN_PROGRESS --> IN_PROGRESS : progresso parcial
+IN_PROGRESS --> COMPLETED : progress ≥ target
+ACTIVE --> COMPLETED : meta de evento único
+COMPLETED --> REWARDED : crédito (teto diário, ×dificuldade)
+ACTIVE --> EXPIRED : prazo
+IN_PROGRESS --> EXPIRED : prazo
+REWARDED --> [*]
+EXPIRED --> [*]
+@enduml

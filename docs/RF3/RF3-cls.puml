@@ -1,0 +1,117 @@
+@startuml
+title RF3 — Gerenciar a conta (dados, sessões, segurança, LGPD, notificações) · Diagrama de classes
+skinparam classAttributeIconSize 0
+hide empty methods
+package "account" {
+  class UserAccount {
+    id: UUID
+    email: String «AES-GCM»
+    emailHash: String «unique»
+    passwordHash: String «Argon2id»
+    displayName: String
+    locale: Locale
+    role: Role
+    status: AccountStatus
+    failedLoginAttempts: int
+    lockedUntil: Instant
+    marketingConsent: boolean
+    deletionRequestedAt: Instant
+    profileVisibility: ProfileVisibility
+    birthDate: LocalDate
+    pendingEmail: String
+  }
+  class UserSession {
+    id: UUID
+    refreshTokenHash: String «cookie __Host-»
+    ip: String
+    userAgent: String
+    expiresAt: Instant
+    revokedAt: Instant
+    replacedBy: UUID
+  }
+  class UserSettings {
+    simQuarterMinutes: int
+    playCallingLevel: PlayCallingLevel (KEY_MOMENTS|ALL_PLAYS|NONE)
+    decisionTimeoutSeconds: int
+    difficulty: Difficulty
+    theme: ThemeMode
+    highContrast: boolean
+    fontScale: FontScale
+    reducedMotion: boolean
+    regionalFormat: String
+    units: YardsOrMeters
+    notificationsEnabled: boolean
+  }
+  class NotificationPreference {
+    type: String
+    enabled: boolean
+  }
+  class ConsentRecord {
+    user: UserAccount
+    purpose: ConsentPurpose
+    granted: boolean
+    textVersion: String
+    source: ConsentSource
+    ipHash: String
+    recordedAt: Instant
+  }
+  class DataExportJob {
+    user: UserAccount
+    status: ExportStatus
+    requestedAt: Instant
+    readyAt: Instant
+    expiresAt: Instant
+    jsonKey: String
+    csvKey: String
+  }
+  class AuditLog {
+    actor: String
+    action: String
+    resource: String
+    resourceId: String
+    result: String
+    ip: String
+    userAgent: String
+    correlationId: String
+    timestamp: Instant
+  }
+}
+class AccountUseCases <<UseCase>> {
+  profile(userId): AccountView
+  updateProfile(userId, cmd)
+  changePassword(userId, cmd) «step-up, revoga outras famílias»
+  sessions(userId)
+  revokeSession(id, userId)
+}
+class PrivacyUseCases <<UseCase>> {
+  view(userId)
+  update(userId, cmd) «append-only»
+  history(userId)
+}
+class DataExportUseCases <<UseCase>> {
+  request(userId): jobId
+  process(job) «Scheduler»
+  download(jobId, userId)
+}
+class AccountDeletionUseCases <<UseCase>> {
+  GRACE = 7 dias
+  request(userId, senha, palavra)
+  cancel(userId)
+  purgeDue(now)
+}
+class PasswordAttemptGuard <<Service>> {
+  verifyStepUp(userId, raw, hash) «5 em 15 min → 429»
+}
+UserAccount "1" -- "*" UserSession : sessões
+UserAccount "1" -- "1" UserSettings : configurações
+UserAccount "1" -- "*" NotificationPreference
+UserAccount "1" -- "*" ConsentRecord : consentimentos
+UserAccount "1" -- "*" DataExportJob : exportações
+AccountUseCases ..> PasswordAttemptGuard : step-up
+AccountUseCases ..> UserAccount : atualiza
+AccountUseCases ..> UserSession : revoga famílias
+PrivacyUseCases ..> ConsentRecord : append-only
+DataExportUseCases ..> DataExportJob : cria/processa
+AccountDeletionUseCases ..> UserAccount : PENDING_DELETION → DELETED
+AccountUseCases ..> AuditLog : PASSWORD_CHANGED, SESSION_REVOKED
+@enduml

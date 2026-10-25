@@ -1,0 +1,65 @@
+@startuml
+title RF60 — Depth chart · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Manager|
+start
+:Abre o depth chart;
+|Frontend|
+:GET /depth-chart;
+|Backend|
+if (dono do save?) then (sim)
+else (não)
+  :403;
+  stop
+endif
+|Manager|
+if (usar sugestão?) then (sim)
+|Frontend|
+  :POST /depth-chart/auto;
+|Backend|
+  :Preenche pelo overall na posição e condição;
+else (não)
+|Manager|
+  :Arrasta jogadores por posição e define KR, PR e 3rd-down back;
+endif
+|Frontend|
+:POST /depth-chart/validate · mostra avisos de fora de posição;
+:PUT /depth-chart com expectedVersion;
+|Backend|
+if (partida em andamento?) then (sim)
+  :422 MATCH_LIVE: use o intervalo;
+  stop
+endif
+if (versão atual?) then (sim)
+else (não)
+  :409;
+  stop
+endif
+if (slots obrigatórios?) then (sim)
+else (não)
+  :422 DEPTH_CHART_INCOMPLETE;
+  stop
+endif
+if (jogador disponível?) then (sim)
+else (não)
+  :422 PLAYER_UNAVAILABLE;
+  stop
+endif
+if (46 ativos no jogo?) then (sim)
+else (não)
+  :422 TOO_MANY_ACTIVES;
+  stop
+endif
+if (fora de posição?) then (sim)
+  :Marca outOfPosition;
+endif
+:Grava version+1, sincroniza unidades de times especiais;
+|JogadorIA|
+:Titular rebaixado perde moral;
+|Manager|
+:Vê o depth chart validado;
+end
+@enduml

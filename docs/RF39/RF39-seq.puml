@@ -1,0 +1,39 @@
+@startuml
+title RF39 — Scouting universitário · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+control "AuditService" as AuditService
+control "DraftEngine" as DraftEngine
+database "MySQL 8" as MySQL
+database "Redis 7" as Redis
+database "OpenSearch 2" as OpenSearch
+participant "Agendador/Job assíncrono" as Scheduler
+Scheduler -> DraftEngine: PRESEASON → generateClass(season, seed)
+DraftEngine -> MySQL: INSERT DraftClass + DraftProspect[] (nota oculta)
+Manager -> Frontend: abre Scouting
+Frontend -> API: GET /careers/{id}/scouting/prospects?position=CB
+API -> UseCase: ListProspectsUseCase
+UseCase -> OpenSearch: busca com facetas (posição, faculdade, rodada)
+UseCase -> MySQL: relatórios do clube
+API --> Frontend: 200 prospectos com faixa
+Manager -> Frontend: pedir relatório
+Frontend -> API: POST /scouting/prospects/{pid}/reports
+API -> UseCase: ScoutProspectUseCase «@Transactional»
+UseCase -> Redis: DECRBY scouting:points:{saveId}:{week}
+alt sem pontos
+  API --> Frontend: 422 SCOUTING_POINTS_EXHAUSTED
+else senão
+  UseCase -> DraftEngine: report(prospect, scoutingLevel, anteriores, seed)
+  DraftEngine --> UseCase: nota, faixa, accuracy
+  UseCase -> MySQL: INSERT ScoutingReport
+  UseCase -> AuditService: SCOUTING_REPORT_CREATED
+  API --> Frontend: 201 ScoutingReportDto
+end
+Frontend -> API: PUT /scouting/board {order, expectedVersion}
+API --> Frontend: 200 | 409
+@enduml

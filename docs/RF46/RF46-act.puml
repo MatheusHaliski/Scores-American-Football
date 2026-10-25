@@ -1,0 +1,66 @@
+@startuml
+title RF46 — Configurações com padrão LGPD e tradução completa · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Manager|
+start
+:Abre Configurações e escolhe a seção;
+partition "Privacidade" {
+  :Liga ou desliga um consentimento (nunca pré-marcado);
+|Backend|
+  if (finalidade válida?) then (sim)
+  else (não)
+    :422;
+    stop
+  endif
+  :ConsentRecord (finalidade, versão do texto, origem, hash do IP) · CONSENT_GRANTED/REVOKED;
+  if (revogou biometria?) then (sim)
+    :Apaga foto, textura e modelo 3D · AVATAR_MEDIA_DELETED;
+  endif
+}
+partition "Aparência, idioma e unidades" {
+|Frontend|
+  :Aplica na hora: tema, contraste, fonte, movimento, idioma, formato regional, jardas ou metros;
+|Backend|
+  if (idioma suportado?) then (sim)
+  else (não)
+    :422 INVALID_LOCALE;
+  endif
+  if (unidade válida?) then (sim)
+  else (não)
+    :422 INVALID_UNITS;
+  endif
+  :UserSettings + UserAccount.locale · Accept-Language nas próximas chamadas;
+}
+partition "Seus dados" {
+|Manager|
+  :Solicita exportação;
+|Scheduler|
+  :JSON completo + CSV resumido · READY por 24 h;
+|Manager|
+  if (quer excluir a conta?) then (sim)
+|Backend|
+    if (reautenticado?) then (sim)
+    else (não)
+      :401;
+      stop
+    endif
+    if (palavra de confirmação?) then (sim)
+    else (não)
+      :422;
+      stop
+    endif
+    :PENDING_DELETION · sessões encerradas · mídia apagada;
+|Scheduler|
+    if (prazo de arrependimento vencido?) then (sim)
+      :Anonimiza (DELETED);
+    else (não)
+|Manager|
+      :Pode cancelar;
+    endif
+  endif
+}
+end
+@enduml

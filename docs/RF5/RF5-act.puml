@@ -1,0 +1,95 @@
+@startuml
+title RF5 — Editor de ligas (conferências e divisões), franquias e jogadores · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Manager|
+start
+:Abre Editar ligas & franquias e escolhe um mundo;
+|Frontend|
+:GET /worlds;
+|Backend|
+if (mundo semente sem ser ADMIN?) then (sim)
+|Frontend|
+  :POST /worlds/{id}/clone;
+|Backend|
+  :Copia ligas, conferências, divisões, franquias, estádios e jogadores para um TEMPLATE do usuário;
+endif
+if (mundo editável pelo usuário?) then (sim)
+else (não)
+  :403 + ACCESS_DENIED;
+  stop
+endif
+if (mundo é TEMPLATE?) then (sim)
+else (não)
+  :422 WORLD_NOT_EDITABLE;
+  stop
+endif
+|Frontend|
+:Árvore liga → conferência → divisão → franquia → jogadores;
+|Backend|
+while (usuário continua editando?) is (sim)
+|Manager|
+  if (edita regras da liga?) then (sim)
+|Frontend|
+    :PUT /leagues/{lid} (PRO ou COLLEGE, tempos, elenco, teto);
+|Backend|
+    if (regras da liga válidas?) then (sim)
+    else (não)
+      :422 RULES_INVALID;
+      stop
+    endif
+    :Grava LeagueRules com version + 1 (carreiras já criadas mantêm a versão delas);
+  endif
+|Manager|
+  if (reorganiza conferências e divisões?) then (sim)
+|Frontend|
+    :Arrasta franquias entre divisões · PUT /leagues/{lid}/structure;
+|Backend|
+    if (estrutura válida?) then (sim)
+    else (não)
+      :422 STRUCTURE_INVALID;
+      stop
+    endif
+  endif
+|Manager|
+  if (exclui um item?) then (sim)
+|Backend|
+    if (exclusão segura?) then (sim)
+    else (não)
+      :409 IN_USE;
+      stop
+    endif
+    :Remove e publica CatalogChanged;
+  else (não)
+|Manager|
+    :Edita franquia, capacete, uniformes, estádio ou jogador;
+|Backend|
+    if (mídia válida?) then (sim)
+    else (não)
+      :422 MEDIA_INVALID;
+      stop
+    endif
+    if (jogador válido?) then (sim)
+    else (não)
+      :422 com campos;
+      stop
+    endif
+    if (nome único no mundo?) then (sim)
+    else (não)
+      :409 NAME_TAKEN;
+      stop
+    endif
+    if (elenco cabe no rosterMax?) then (sim)
+    else (não)
+      :422 ROSTER_FULL;
+      stop
+    endif
+    :Overall por posição (OVR v1) · grava · CatalogChanged;
+  endif
+endwhile (não)
+|Manager|
+:Usa o mundo em Nova carreira (RF34);
+end
+@enduml

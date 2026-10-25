@@ -1,0 +1,35 @@
+@startuml
+title RF16 — Classificação (divisões, conferências) e placares das semanas · Máquina de estados: Classificação & semanas (interação)
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "Carregando" as Carregando
+Carregando : GET standings + weeks/{n}
+state "Erro" as Erro
+Erro : 403/404/rede
+state "Tabela carregada" as Tabela
+Tabela : divisões e seeds
+Tabela : meu clube destacado
+state "Semana passada" as SemanaPassada
+SemanaPassada : placares finais
+SemanaPassada : líderes e jogador da semana
+state "Semana atual" as SemanaAtual
+SemanaAtual : parciais ao vivo
+state "Semana futura" as SemanaFutura
+SemanaFutura : horários e folgas
+state "Chave de playoffs" as Playoffs
+Playoffs : 7 seeds por conferência
+[*] --> Carregando
+Carregando --> Erro : falha
+Erro --> Carregando : tentar de novo
+Carregando --> Tabela : 200
+Tabela --> Carregando : troca de visão
+Tabela --> SemanaAtual : semana = currentWeek
+SemanaAtual --> SemanaPassada : semana anterior
+SemanaPassada --> SemanaPassada : anterior / próxima
+SemanaAtual --> SemanaFutura : próxima semana
+SemanaFutura --> SemanaFutura : próxima / anterior
+SemanaPassada --> SemanaAtual : voltar à atual
+SemanaFutura --> SemanaAtual : voltar à atual
+Tabela --> Playoffs : fase PLAYOFFS
+Playoffs --> Tabela : voltar
+@enduml

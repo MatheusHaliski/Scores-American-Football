@@ -1,0 +1,81 @@
+@startuml
+title RF12 — Estádio (aberto ou coberto), setores e ingressos · Diagrama de componentes
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 36
+actor "Head coach / manager (usuário autenticado)" as c1
+actor "Diretoria da franquia (IA)" as c2
+actor "Agendador/Job assíncrono" as c3
+package "Frontend (Next.js)" as pkg_fe {
+  component "StadiumPage" as c4
+  frame "componentes de StadiumPage" as pkg_fe_sub {
+    component "Stadium3DViewer" as c5
+    component "RoofSelector" as c6
+    component "SectorList" as c7
+    component "SectorEditor" as c8
+    component "TicketPricingPanel" as c9
+    component "SeasonTicketPolicyForm" as c10
+    component "HomeGameRevenueForecast" as c11
+    component "WeatherOutlook" as c12
+  }
+}
+package "scores-af-web (REST)" as pkg_web {
+  component "StadiumController" as c13
+}
+package "scores-af-application (casos de uso)" as pkg_app {
+  component "GetStadiumUseCase" as c14
+  component "UpdateStadiumUseCase" as c15
+  component "BuySectorUseCase" as c16
+  component "UpdateSectorUseCase" as c17
+  component "RemoveSectorUseCase" as c18
+  component "UpdateTicketPolicyUseCase" as c19
+  component "StadiumConstructionJob" as c20
+  component "CareerAccess" as c21
+}
+package "scores-af-domain/engine" as pkg_eng {
+  component "FinanceEngine" as c22
+  component "AttendanceModel" as c23
+  component "WeatherModel" as c24
+}
+package "portas (port.out)" as pkg_ports {
+  interface "CareerSaveRepository" as c25
+  interface "ClubRepository" as c26
+  interface "StadiumRepository" as c27
+  interface "StadiumSectorRepository" as c28
+  interface "FinanceLedgerRepository" as c29
+  interface "ManagerMoraleRepository" as c30
+  interface "FixtureRepository" as c31
+  interface "MediaStoragePort" as c32
+  interface "TimelinePort" as c33
+}
+package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
+  component "persistence-mysql" as c34
+  component "storage-s3" as c35
+  component "persistence-cassandra" as c36
+}
+database "MySQL 8" as s1
+database "S3/MinIO" as s2
+database "Cassandra 4.1" as s3
+c1 --> c4 : usa
+c3 --> c14 : dispara
+c4 --> c13 : GET /careers/{id}/stadium (alvo)\nPUT /careers/{id}/stadium (alvo)\nPOST /careers/{id}/stadium/sectors (alvo)\n…
+c13 --> c14
+c14 ..> pkg_app : orquestra
+c14 --> c22 : usa
+c14 --> c23 : usa
+c14 --> c24 : usa
+pkg_app --> pkg_ports : depende (DIP)
+c34 .up.|> c25
+c34 .up.|> c26
+c34 .up.|> c27
+c34 .up.|> c28
+c34 .up.|> c29
+c34 .up.|> c30
+c34 .up.|> c31
+c35 .up.|> c32
+c36 .up.|> c33
+c34 --> s1
+c35 --> s2
+c36 --> s3
+@enduml

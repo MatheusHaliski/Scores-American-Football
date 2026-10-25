@@ -1,0 +1,14 @@
+# Catálogo de atores
+
+| Ator | Descrição | Requisitos |
+|---|---|---|
+| Manager | Head coach / manager (usuário autenticado) | RF2, RF3, RF4, RF5, RF6, RF7, RF8, RF9, RF10, RF11, RF12, RF13, RF14, RF15, RF16, RF17, RF18, RF19, RF20, RF21, RF22, RF23, RF24, RF25, RF26, RF27, RF28, RF29, RF30, RF31, RF32, RF33, RF34, RF35, RF36, RF37, RF38, RF39, RF40, RF41, RF42, RF43, RF44, RF45, RF46, RF47, RF48, RF49, RF50, RF51, RF52, RF53, RF54, RF55, RF56, RF57, RF58, RF59, RF60, RF61, RF62, RF63, RF64, RF65, RF66, RNF1, RNF2, RNF3, RNF4, RNF5, RNF7, RNF8, RNF9, RNF10, RNF11, RNF12, RNF13 |
+| Visitante | Visitante (não autenticado) | RF1, RF2, RNF3, RNF4, RNF5, RNF13 |
+| Admin | Administrador | RF5, RF32, RF38, RF48, RF53, RF58, RNF3, RNF5, RNF6, RNF7, RNF8, RNF11, RNF12 |
+| Diretoria | Diretoria da franquia (IA) | RF8, RF9, RF12, RF13, RF14, RF19, RF24, RF26, RF34, RF35, RF36, RF37, RF39, RF41, RF49, RF52 |
+| ClubeIA | Franquia adversária (IA) | RF9, RF13, RF19, RF24, RF27, RF29, RF35, RF37, RF41, RF42, RF50, RF51, RF54, RF56, RF61, RF62, RF63, RF64, RF65, RF66 |
+| JogadorIA | Jogador (IA) | RF4, RF8, RF13, RF19, RF22, RF24, RF35, RF41, RF49, RF52, RF55, RF57, RF60, RF65 |
+| Imprensa | Imprensa (IA) | RF21, RF24, RF30, RF35, RF41, RF52, RF57, RF64, RF66 |
+| Scheduler | Agendador/Job assíncrono | RF1, RF3, RF4, RF7, RF9, RF12, RF13, RF14, RF15, RF19, RF20, RF21, RF25, RF27, RF30, RF33, RF34, RF35, RF36, RF37, RF39, RF41, RF42, RF44, RF45, RF46, RF49, RF50, RF51, RF52, RF56, RF57, RF58, RF62, RF64, RF65, RF66, RNF1, RNF2, RNF3, RNF5, RNF6, RNF7, RNF8, RNF10, RNF11, RNF12, RNF13 |
+| Claude | Claude (LLM, narrativa) | RF21, RF30, RF35, RF38, RF52 |
+| Adversario | Manager adversário (online) | RF45 |

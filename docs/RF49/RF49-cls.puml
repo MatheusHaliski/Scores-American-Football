@@ -1,0 +1,148 @@
+@startuml
+title RF49 — Teto salarial rígido e contratos · Diagrama de classes
+skinparam classAttributeIconSize 0
+hide empty methods
+package "catalog" {
+  class Club {
+    id: UUID
+    name: String
+    shortName: String
+    city: String
+    conference: Conference
+    division: Division
+    logoKey: String
+    primaryColor: String
+    secondaryColor: String
+    accentColor: String
+    prestige: int
+    reputationBoard: int
+    reputationFans: int
+    cash: long
+    capSpace: long
+    isUserControlled: boolean
+    expectedWins: int
+    scoutingLevel: int
+    scoutingBudget: long
+  }
+  class League {
+    id: UUID
+    name: String
+    country: String
+    ruleset: Ruleset (PRO|COLLEGE)
+    rules: LeagueRules
+    teamCount: int (8–32)
+    conferenceCount: int
+    divisionsPerConference: int
+    regularSeasonWeeks: int = 18
+    gamesPerTeam: int = 17
+    playoffSeedsPerConference: int = 7
+    neutralSiteFinal: boolean
+    salaryCap: long
+    salaryFloor: long
+    prestige: int
+    tvRightsPerSeason: long
+  }
+  class Player {
+    id: UUID
+    name: String
+    nationality: String
+    college: String
+    birthDate: LocalDate
+    age: int
+    heightCm: int
+    weightKg: int
+    position: Position (QB|RB|FB|WR|TE|LT|LG|C|RG|RT|DE|DT|OLB|MLB|CB|FS|SS|K|P|LS)
+    unit: Unit (OFFENSE|DEFENSE|SPECIAL)
+    attributes: PlayerAttributes
+    overall: int «por posição, OVR v1»
+    potential: int
+    experienceYears: int
+    rosterStatus: RosterStatus (ACTIVE|INACTIVE|PRACTICE_SQUAD|IR|PUP|FREE_AGENT|WAIVED)
+    condition: int
+    morale: int
+    moraleFactors: JSON
+    injury: Injury?
+    suspensionWeeks: int
+    contract: PlayerContract
+    jerseyNumber: int
+    isLegendary: boolean
+    model3dUrl: String
+  }
+}
+package "market" {
+  class PlayerContract {
+    «embedded» years: int
+    baseSalaryByYear: JSON
+    signingBonus: long «rateado»
+    guaranteed: long
+    capHitByYear: JSON
+    deadMoneyIfCut: long
+    franchiseTag: boolean
+    type: ContractType (ROOKIE|VETERAN|MINIMUM|TAG|PRACTICE)
+    endSeason: int
+  }
+  class WaiverClaim {
+    player: Player
+    claimingClub: Club
+    priority: int «ordem inversa da classificação»
+    status: ClaimStatus (PENDING|AWARDED|LOST)
+    processedAt: Instant
+  }
+}
+package "finance" {
+  class SalaryCapLedger {
+    season: int
+    cap: long
+    committed: long
+    deadMoney: long
+    space: long
+    rolloverFromPrevious: long
+  }
+  class FinanceLedgerEntry {
+    week: int
+    kind: LedgerKind
+    amount: long
+    balanceAfter: long
+    description: String
+  }
+}
+class CapEngine <<Engine>> {
+  validate(contract, ledger, rules): List<Violation>
+  capHitByYear(contract): Map<Integer, Long>
+  apply(ledger, operation): SalaryCapLedger
+  seasonRollover(club): SalaryCapLedger
+}
+class DeadMoneyCalculator <<Engine>> {
+  onRelease(contract, date, postJune1): DeadMoney
+  onTrade(contract): long «aceleração do bônus»
+}
+class ContractValuation <<Engine>> {
+  marketValue(position, overall, age): long
+  evaluate(offer, player, morale, seed): NegotiationResult
+}
+class FranchiseTagPolicy <<Policy>> {
+  value(position, league, previousSalary): long
+  allowed(club, player, season): boolean
+}
+class RookieScale <<Policy>> {
+  contractFor(pickOverall): PlayerContract «RF51»
+}
+class NegotiationResult <<record>> {
+  decision: ACCEPT | COUNTER | REJECT
+  counter: ContractOffer?
+  moraleDelta: int
+}
+Club "1" -- "0..53" Player : elenco ativo
+Club "*" -- "*" Club : rivais da divisão
+Player "1" -- "1" PlayerContract : «embedded»
+Club "1" -- "*" WaiverClaim
+WaiverClaim "*" -- "1" Player
+Club "1" -- "*" SalaryCapLedger : por temporada
+Club "1" -- "*" FinanceLedgerEntry : ledger
+CapEngine ..> SalaryCapLedger : atualiza
+CapEngine ..> PlayerContract : cap hit
+CapEngine ..> DeadMoneyCalculator : usa
+ContractValuation ..> NegotiationResult : produz
+FranchiseTagPolicy ..> PlayerContract : TAG
+RookieScale ..> PlayerContract : ROOKIE
+@enduml

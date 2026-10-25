@@ -1,0 +1,59 @@
+@startuml
+title RF57 — All-Star · Diagrama de componentes
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 36
+actor "Head coach / manager (usuário autenticado)" as c1
+actor "Agendador/Job assíncrono" as c2
+actor "Jogador (IA)" as c3
+actor "Imprensa (IA)" as c4
+package "Frontend (Next.js)" as pkg_fe {
+  component "AllStarPage" as c5
+  frame "componentes de AllStarPage" as pkg_fe_sub {
+    component "AllStarBallot" as c6
+    component "AllStarRosters" as c7
+    component "SkillsChallengeBoard" as c8
+  }
+}
+package "scores-af-web (REST)" as pkg_web {
+  component "AllStarController" as c9
+}
+package "scores-af-application (casos de uso)" as pkg_app {
+  component "AllStarUseCases" as c10
+  component "AllStarJob" as c11
+  component "CareerAccess" as c12
+}
+package "scores-af-domain/engine" as pkg_eng {
+  component "SeasonEngine" as c13
+  component "AllStarSelectionPolicy" as c14
+  component "SkillsChallengeSimulator" as c15
+  component "MatchSimulator" as c16
+}
+package "portas (port.out)" as pkg_ports {
+  interface "AllStarRepository" as c17
+  interface "PlayerRepository" as c18
+  interface "TimelinePort" as c19
+}
+package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
+  component "persistence-mysql" as c20
+  component "persistence-cassandra" as c21
+}
+database "MySQL 8" as s1
+database "Cassandra 4.1" as s2
+c1 --> c5 : usa
+c2 --> c10 : dispara
+c5 --> c9 : GET /careers/{id}/all-star (alvo)\nPOST /careers/{id}/all-star/votes (alvo)\nGET /careers/{id}/all-star/results (alvo)
+c9 --> c10
+c10 ..> pkg_app : orquestra
+c10 --> c13 : usa
+c10 --> c14 : usa
+c10 --> c15 : usa
+c10 --> c16 : usa
+pkg_app --> pkg_ports : depende (DIP)
+c20 .up.|> c17
+c20 .up.|> c18
+c21 .up.|> c19
+c20 --> s1
+c21 --> s2
+@enduml

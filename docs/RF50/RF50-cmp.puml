@@ -1,0 +1,84 @@
+@startuml
+title RF50 — Trocas com jogadores e picks de draft · Diagrama de componentes
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 36
+actor "Head coach / manager (usuário autenticado)" as c1
+actor "Franquia adversária (IA)" as c2
+actor "Agendador/Job assíncrono" as c3
+package "Frontend (Next.js)" as pkg_fe {
+  component "TradesPage" as c4
+  frame "componentes de TradesPage" as pkg_fe_sub {
+    component "TradeBuilder (dois lados)" as c5
+    component "TradeValueBar" as c6
+    component "CapImpactPanel (dois ledgers)" as c7
+    component "PickChips (temporada e rodada)" as c8
+    component "TradeInbox (enviadas e recebidas)" as c9
+  }
+}
+package "scores-af-web (REST)" as pkg_web {
+  component "TradeController" as c10
+}
+package "scores-af-application (casos de uso)" as pkg_app {
+  component "ListTradeAssetsUseCase" as c11
+  component "ListClubTradeAssetsUseCase" as c12
+  component "EvaluateTradeUseCase" as c13
+  component "ProposeTradeUseCase" as c14
+  component "ListTradesUseCase" as c15
+  component "RespondTradeUseCase" as c16
+  component "WithdrawTradeUseCase" as c17
+  component "AiTradeProposalJob" as c18
+  component "TradeExpiryJob" as c19
+}
+package "scores-af-domain/engine" as pkg_eng {
+  component "TradeValuation" as c20
+  component "PickValueChart" as c21
+  component "CapEngine" as c22
+  component "DeadMoneyCalculator" as c23
+  component "RosterLimitPolicy" as c24
+}
+package "portas (port.out)" as pkg_ports {
+  interface "TradeProposalRepository" as c25
+  interface "PlayerRepository" as c26
+  interface "DraftPickRepository" as c27
+  interface "SalaryCapLedgerRepository" as c28
+  interface "DepthChartRepository" as c29
+  interface "TimelinePort" as c30
+  interface "CounterPort" as c31
+  interface "SearchPort" as c32
+}
+package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
+  component "persistence-mysql" as c33
+  component "cache-redis" as c34
+  component "persistence-cassandra" as c35
+  component "search-opensearch" as c36
+}
+database "MySQL 8" as s1
+database "Redis 7" as s2
+database "Cassandra 4.1" as s3
+database "OpenSearch 2" as s4
+c1 --> c4 : usa
+c3 --> c11 : dispara
+c4 --> c10 : GET /careers/{id}/trade/assets (alvo)\nGET /careers/{id}/clubs/{cid}/trade-assets (alvo)\nPOST /careers/{id}/trades/evaluate (alvo)\n…
+c10 --> c11
+c11 ..> pkg_app : orquestra
+c11 --> c20 : usa
+c11 --> c21 : usa
+c11 --> c22 : usa
+c11 --> c23 : usa
+c11 --> c24 : usa
+pkg_app --> pkg_ports : depende (DIP)
+c33 .up.|> c25
+c33 .up.|> c26
+c33 .up.|> c27
+c33 .up.|> c28
+c33 .up.|> c29
+c35 .up.|> c30
+c34 .up.|> c31
+c36 .up.|> c32
+c33 --> s1
+c34 --> s2
+c35 --> s3
+c36 --> s4
+@enduml

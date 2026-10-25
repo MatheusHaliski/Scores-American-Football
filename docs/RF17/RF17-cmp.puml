@@ -1,0 +1,56 @@
+@startuml
+title RF17 — Sala de troféus · Diagrama de componentes
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 36
+actor "Head coach / manager (usuário autenticado)" as c1
+package "Frontend (Next.js)" as pkg_fe {
+  component "TrophyRoomPage" as c2
+  frame "componentes de TrophyRoomPage" as pkg_fe_sub {
+    component "ChampionsTimeline" as c3
+    component "TrophyKindTabs" as c4
+    component "SeasonFilter" as c5
+    component "MyTrophiesShelf" as c6
+    component "Trophy3DViewer" as c7
+  }
+}
+package "scores-af-web (REST)" as pkg_web {
+  component "TrophyController" as c8
+}
+package "scores-af-application (casos de uso)" as pkg_app {
+  component "GetTrophyRoomUseCase" as c9
+  component "ListSeasonAwardsUseCase" as c10
+  component "CareerAccess" as c11
+  component "TrophyRoomAssembler" as c12
+}
+package "portas (port.out)" as pkg_ports {
+  interface "CareerSaveRepository" as c13
+  interface "ChampionHistoryRepository" as c14
+  interface "PlayoffMatchupRepository" as c15
+  interface "StandingRepository" as c16
+  interface "SeasonAwardRepository" as c17
+  interface "ManagerCareerRecordRepository" as c18
+  interface "MediaStoragePort" as c19
+}
+package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
+  component "persistence-mysql" as c20
+  component "storage-s3" as c21
+}
+database "MySQL 8" as s1
+database "S3/MinIO" as s2
+c1 --> c2 : usa
+c2 --> c8 : GET /careers/{id}/trophies (alvo)\nGET /careers/{id}/awards (alvo)
+c8 --> c9
+c9 ..> pkg_app : orquestra
+pkg_app --> pkg_ports : depende (DIP)
+c20 .up.|> c13
+c20 .up.|> c14
+c20 .up.|> c15
+c20 .up.|> c16
+c20 .up.|> c17
+c20 .up.|> c18
+c21 .up.|> c19
+c20 --> s1
+c21 --> s2
+@enduml

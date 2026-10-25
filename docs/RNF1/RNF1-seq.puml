@@ -1,0 +1,49 @@
+@startuml
+title RNF1 — Transações ACID em dados de usuários, carreiras e database do jogo · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+control "MatchSimulator" as MatchSimulator
+database "MySQL 8" as MySQL
+database "Redis 7" as Redis
+database "Cassandra 4.1" as Cassandra
+database "OpenSearch 2" as OpenSearch
+Manager -> Frontend: criar carreira (liga, franquia, database do jogo)
+Frontend -> API: POST /careers
+API -> UseCase: CreateCareerUseCase.execute (Transactional)
+UseCase -> MySQL: BEGIN · SELECT world TEMPLATE
+UseCase -> MySQL: INSERT world SAVE + ligas, franquias, jogadores, depth charts, playbooks, LeagueRules (clone)
+alt franquia fora da liga / slot ocupado / elenco inconsistente
+  UseCase -> MySQL: ROLLBACK
+  API --> Frontend: 422 RFC 7807 {type, title, status, code, message, details, correlationId, locale} (nada gravado)
+else senão
+  UseCase -> MySQL: INSERT career_save, contrato, moral, game_plan, temporada
+  UseCase -> MySQL: COMMIT
+  UseCase -> OpenSearch: afterCommit: indexa jogadores do mundo SAVE
+  API --> Frontend: 201 carreira
+end
+Manager -> Frontend: reordena o depth chart
+Frontend -> API: PUT /careers/{id}/depth-chart (version)
+API -> UseCase: UpdateDepthChartUseCase.execute
+UseCase -> MySQL: UPDATE depth_chart WHERE version = ?
+alt versão divergente
+  MySQL --> UseCase: OptimisticLock
+  API --> Frontend: 409 CONCURRENT_UPDATE
+else senão
+  UseCase -> MySQL: COMMIT
+  API --> Frontend: 200
+end
+Manager -> Frontend: avançar a partida
+Frontend -> API: POST /matches/{mid}/advance
+API -> UseCase: AdvanceMatchUseCase.execute (Transactional)
+UseCase -> MatchSimulator: advance(snapshot)
+MatchSimulator --> UseCase: snapshot + jogadas
+UseCase -> MySQL: UPDATE match_session WHERE version = ? · COMMIT
+UseCase -> Cassandra: afterCommit: PlayEvent (idempotente por fixtureId + seq)
+UseCase -> Redis: afterCommit: novo estado vivo
+API --> Frontend: 200
+@enduml

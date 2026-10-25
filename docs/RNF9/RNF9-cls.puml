@@ -1,0 +1,121 @@
+@startuml
+title RNF9 — Desempenho e usabilidade da interface (3D com 22 atletas) · Diagrama de classes
+skinparam classAttributeIconSize 0
+hide empty methods
+package "account" {
+  class UserSettings {
+    simQuarterMinutes: int
+    playCallingLevel: PlayCallingLevel (KEY_MOMENTS|ALL_PLAYS|NONE)
+    decisionTimeoutSeconds: int
+    difficulty: Difficulty
+    theme: ThemeMode
+    highContrast: boolean
+    fontScale: FontScale
+    reducedMotion: boolean
+    regionalFormat: String
+    units: YardsOrMeters
+    notificationsEnabled: boolean
+  }
+}
+package "match" {
+  class MatchSession {
+    status: LiveStatus
+    quarter: int
+    clockSeconds: int
+    playClockSeconds: int
+    possession: Club
+    down: int (1–4)
+    distance: int
+    ballOnAbsYd: int (0–100)
+    homeScore: int
+    awayScore: int
+    timeoutsHome: int
+    timeoutsAway: int
+    seed: long
+    rngCursor: long
+    snapshotJson: TEXT
+    decisionsLog: JSON
+    version: long
+  }
+  class PlayEvent {
+    «Cassandra» fixtureId: UUID
+    seq: int
+    drive: int
+    quarter: int
+    clock: String
+    down: int
+    distance: int
+    ballOnAbsYd: int
+    playType: PlayType
+    formation: Formation
+    defense: Coverage
+    yards: int
+    result: PlayResult
+    penalty: Penalty?
+    playerIds: List<UUID>
+    text: String
+    homeScore: int
+    awayScore: int
+  }
+}
+package "catalog" {
+  class Stadium {
+    name: String
+    capacity: int (60–80 mil)
+    roof: RoofType (OPEN|DOME|RETRACTABLE)
+    surface: Surface (GRASS|TURF)
+    climateZone: ClimateZone
+    level: int
+    atmosphere: int
+    maintenanceCostPerWeek: long
+    model3dUrl: String
+    endZoneArtKey: String
+    ticketPolicy: TicketPolicy (preço por setor, carnê de temporada)
+  }
+  class Uniform {
+    slot: UniformSlot (HOME|AWAY|ALTERNATE)
+    jerseyColor: String
+    pantsColor: String
+    numberColor: String
+    numberOutline: String
+    pattern: String
+    textureKey: String
+    isActive: boolean
+  }
+  class HelmetDesign {
+    shellColor: String
+    stripe: StripeStyle
+    stripeColor: String
+    facemaskColor: String
+    decalKey: String
+    finish: Finish (MATTE|GLOSS|CHROME)
+  }
+}
+class PerformanceBudget <<record>> {
+  lcpSeconds: 2.5
+  ttiSeconds: 3
+  apiP95Ms: 300
+  initialBundleKb: 250
+  athletes: 22
+  maxDrawCalls: 150
+  maxTriangles: 300000
+  minFps: 30
+}
+class FpsGovernor <<Frontend>> {
+  sample(dt)
+  downgrade(): LodLevel
+  fallbackTo2D() «< 20 fps»
+}
+class FormationDto <<record>> {
+  seq: int
+  positions: 22 × (playerId, x, y)
+  ballOnAbsYd: int
+}
+class CacheAsidePolicy <<Policy>> {
+  getOrLoad(key, ttl, loader)
+  etagFor(payload): String
+}
+FpsGovernor ..> PerformanceBudget : respeita
+FormationDto ..> MatchSession : derivado de
+CacheAsidePolicy ..> UserSettings : cacheia
+@enduml

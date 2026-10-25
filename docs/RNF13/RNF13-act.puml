@@ -1,0 +1,44 @@
+@startuml
+title RNF13 — Traduções de idiomas escolhidas na aba de configurações · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Visitante|
+start
+:Abre o Scores: idioma = ?lang → conta → navegador → pt-BR;
+|Manager|
+:Configurações → Idioma: escolhe pt-BR, en-US ou es-ES;
+|Frontend|
+:Troca o catálogo na hora e manda Accept-Language;
+|Backend|
+if (idioma suportado?) then (sim)
+else (não)
+  :400 · mantém o anterior;
+  stop
+endif
+:Salva o locale na conta;
+|Frontend|
+if (chave existe no idioma?) then (sim)
+else (não)
+  :Usa o próximo idioma da cadeia;
+endif
+if (conteúdo gerado tem chave?) then (sim)
+  :Formata play-by-play, inbox e notícias no idioma ativo;
+else (não)
+  :Mostra o texto como está;
+endif
+if (descida e distância formatadas?) then (sim)
+else (não)
+  :Teste de formatação vermelho;
+endif
+|Scheduler|
+:CI: i18n-check (chaves) e glossary-check (termos do esporte);
+if (termo do esporte no glossário?) then (sim)
+else (não)
+  :CI vermelho;
+  stop
+endif
+:Jobs (e-mails, alertas) usam o idioma salvo do titular;
+end
+@enduml

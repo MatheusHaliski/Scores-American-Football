@@ -1,0 +1,50 @@
+@startuml
+title RF16 — Classificação (divisões, conferências) e placares das semanas · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+control "AuditService" as AuditService
+control "SeasonEngine" as SeasonEngine
+database "MySQL 8" as MySQL
+database "Redis 7" as Redis
+Manager -> Frontend: abre Classificação & semanas
+Frontend -> API: GET /careers/{id}/standings?view=DIVISION
+API -> UseCase: GetStandingsUseCase.execute(id, view, userId)
+UseCase -> MySQL: save + owner check · season · league · conferências e divisões
+alt não é dono
+  UseCase -> AuditService: record(ACCESS_DENIED)
+  API --> Frontend: 403
+else senão
+  UseCase -> Redis: GET standings:{seasonId}:{view}
+  alt cache miss
+    UseCase -> MySQL: standings + confrontos diretos + jogos em comum
+    UseCase -> SeasonEngine: rank(standings, TiebreakerPolicy) · seeds(conference)
+    SeasonEngine --> UseCase: linhas ordenadas + tiebreakerNote + seeds
+    UseCase -> Redis: SET standings:{seasonId}:{view} (TTL até a próxima semana)
+  else senão
+    Redis --> UseCase: tabela
+  end
+  UseCase --> API: StandingsResult (divisões, seeds, meu clube)
+  API --> Frontend: 200
+end
+Manager -> Frontend: semana anterior
+Frontend -> API: GET /careers/{id}/weeks/{n}
+API -> UseCase: GetWeekPanelUseCase.execute(id, n, userId)
+alt n fora da temporada
+  API --> Frontend: 404 WEEK_NOT_FOUND
+else senão
+  UseCase -> MySQL: fixtures da semana (placar, quarterScores, overtime, slot) · byeClubs · PlayerMatchStats
+  alt semana FINISHED
+    UseCase -> UseCase: líderes por categoria · jogador da semana = maior rating
+  else senão
+    UseCase -> Redis: parciais ao vivo match:{fid}:snapshot (descida e distância)
+  end
+  UseCase --> API: WeekPanelResult
+  API --> Frontend: 200
+  Frontend -> Manager: placares e destaques
+end
+@enduml

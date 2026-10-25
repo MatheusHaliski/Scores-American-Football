@@ -1,0 +1,29 @@
+@startuml
+title RF18 — Head coaches do mundo: ranking e histórico · Máquina de estados: Head coaches do mundo (interação)
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "Carregando" as Carregando
+Carregando : GET inicial
+state "Erro" as Erro
+Erro : 403 / 404 / rede
+Erro : tentar de novo
+state "Ranking" as Ranking
+Ranking : métrica padrão: vitórias
+Ranking : esquemas compactos
+state "Reordenando" as Reordenando
+Reordenando : sort=playoffWins|titles|overall|moraleLeague
+state "Buscando" as Buscando
+Buscando : OpenSearch type=MANAGER
+state "Esquema ampliado" as Ampliado
+Ampliado : campanhas, franquias, overall
+[*] --> Carregando
+Carregando --> Erro : falha
+Erro --> Carregando : tentar de novo
+Carregando --> Ranking : 200
+Ranking --> Reordenando : muda métrica
+Reordenando --> Ranking : 200
+Ranking --> Buscando : digita nome
+Buscando --> Ranking : resultados
+Ranking --> Ampliado : clica no head coach
+Ampliado --> Ranking : fechar
+@enduml

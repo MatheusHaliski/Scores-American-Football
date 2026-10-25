@@ -1,0 +1,27 @@
+@startuml
+title RF19 — Reforçar o elenco: free agency, trocas e waivers · Máquina de estados: FreeAgentOffer.status
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "PENDING" as PENDING
+PENDING : oferta válida no teto
+PENDING : concorre com ofertas da IA
+state "ACCEPTED" as ACCEPTED
+ACCEPTED : contrato assinado
+ACCEPTED : rosterStatus ACTIVE · ledger do teto
+state "REJECTED" as REJECTED
+REJECTED : jogador recusou
+REJECTED : ou assinou com outra franquia
+state "WITHDRAWN" as WITHDRAWN
+WITHDRAWN : manager retirou a oferta
+state "EXPIRED" as EXPIRED
+EXPIRED : expiresAt vencido (Scheduler)
+[*] --> PENDING
+PENDING --> ACCEPTED : jogador aceita
+PENDING --> REJECTED : recusa / outra oferta vence
+PENDING --> WITHDRAWN : retirar
+PENDING --> EXPIRED : prazo
+ACCEPTED --> [*]
+REJECTED --> [*]
+WITHDRAWN --> [*]
+EXPIRED --> [*]
+@enduml

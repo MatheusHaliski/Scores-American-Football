@@ -1,0 +1,52 @@
+@startuml
+title RF33 — Scores Points por metas em qualquer modo · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Backend|
+start
+:Evento de domínio após commit (MatchFinished, WeekCompleted, SeasonEnded, online);
+|Scheduler|
+:Consumidor AFTER_COMMIT recebe o evento;
+if (evento elegível?) then (sim)
+else (não)
+  :Ignora;
+  stop
+endif
+|Backend|
+:Carrega metas ACTIVE do save e a carteira;
+while (para cada meta afetada?) is (sim)
+  if (meta ativa para o modo?) then (sim)
+  else (não)
+    :Pula;
+  endif
+  :Atualiza progress (vitórias, jogos de divisão, seed, jardas, sacks);
+  if (progresso atingiu o alvo?) then (sim)
+    if (já recompensada?) then (sim)
+      :Ignora (idempotente);
+    else (não)
+      if (teto diário (RNF12)?) then (sim)
+      else (não)
+        :Trunca;
+      endif
+      :TX: goal REWARDED · PointsTransaction GOAL_COMPLETED (refId = goal) · wallet @Version · espelho Redis;
+      :PointsEarned → Notification · badge animado (respeita reducedMotion);
+    endif
+  endif
+endwhile (não)
+if (vitória?) then (sim)
+  :+pontos base × dificuldade (playoff vale mais), mesmo teto;
+endif
+|Manager|
+:Abre Metas e Carteira;
+|Backend|
+if (dono do save?) then (sim)
+else (não)
+  :403 + auditoria ACCESS_DENIED;
+  stop
+endif
+|Frontend|
+:Metas com progresso, recompensa e prazo · extrato com balanceAfter;
+end
+@enduml

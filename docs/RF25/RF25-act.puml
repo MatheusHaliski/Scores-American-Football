@@ -1,0 +1,62 @@
+@startuml
+title RF25 — Comprar e aplicar consumíveis · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Manager|
+start
+:Abre o jogador e escolhe um consumível (ConsumableDialog mostra efeito e semanas);
+|Frontend|
+:POST /careers/{id}/players/{pid}/consumables {consumableCode} + Idempotency-Key;
+|Backend|
+if (dono do save?) then (sim)
+else (não)
+  :403 + auditoria ACCESS_DENIED;
+  stop
+endif
+if (jogador do elenco do save?) then (sim)
+else (não)
+  :404;
+  stop
+endif
+if (consumível existe e está ativo?) then (sim)
+else (não)
+  :404 ITEM_NOT_FOUND;
+  stop
+endif
+if (compatível com a posição?) then (sim)
+else (não)
+  :422 CONSUMABLE_INCOMPATIBLE_POSITION;
+  stop
+endif
+if (é recuperação: permitida?) then (sim)
+else (não)
+  :422 RECOVERY_NOT_ALLOWED;
+  stop
+endif
+if (teto de efeito (RNF12)?) then (sim)
+else (não)
+  :409 / 422;
+  stop
+endif
+if (moeda e saldo?) then (sim)
+else (não)
+  :422 INSUFFICIENT_FUNDS / INSUFFICIENT_POINTS;
+  stop
+endif
+:TX: débito · ConsumableApplication (appliedWeek, expiresWeek) · PlayerPlayStyle CONSUMABLE se carta;
+if (efeito mexe em atributo?) then (sim)
+  :Recalcula overall por posição e o card (OVR v1);
+endif
+:AuditLog STORE_PURCHASE · evento PlayerConsumableApplied;
+|Frontend|
+:Chip do efeito no modal do jogador e no depth chart;
+|Scheduler|
+while (a cada semana fechada?) is (sim)
+  if (expirou?) then (sim)
+    :active = false · estilo removido · aviso no inbox;
+  endif
+endwhile (não)
+end
+@enduml

@@ -1,0 +1,33 @@
+@startuml
+title RF17 — Sala de troféus · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+control "AuditService" as AuditService
+database "MySQL 8" as MySQL
+database "S3/MinIO" as S3
+Manager -> Frontend: abre Sala de troféus
+Frontend -> API: GET /careers/{id}/trophies
+API -> UseCase: GetTrophyRoomUseCase.execute(id, filtro, userId)
+UseCase -> MySQL: save + owner check
+alt não é dono
+  UseCase -> AuditService: record(ACCESS_DENIED)
+  API --> Frontend: 403
+else senão
+  UseCase -> MySQL: champion_history · playoff_matchup (CONFERENCE, FINAL) · standing (divisionRank 1) · season_award · manager_career_record
+  MySQL --> UseCase: campeões, prêmios, títulos
+  UseCase -> S3: URLs dos troféus 3D por tipo
+  S3 --> UseCase: model3dUrl (ou padrão)
+  UseCase --> API: TrophyRoomResult
+  API --> Frontend: 200
+  Frontend -> Manager: linha do tempo de campeões + meus troféus
+end
+Manager -> Frontend: abre troféu 3D
+Frontend -> S3: GET GLB do troféu
+S3 --> Frontend: asset
+Frontend -> Manager: troféu 3D com detalhes da temporada
+@enduml

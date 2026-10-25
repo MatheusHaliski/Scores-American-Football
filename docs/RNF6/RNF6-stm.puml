@@ -1,0 +1,42 @@
+@startuml
+title RNF6 — Backup e recuperação do banco de dados · Máquina de estados: Job de backup e restore
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "Agendado" as Agendado
+Agendado : cron 03:00 UTC
+Agendado : lock distribuído
+state "Dumpando" as Dumpando
+Dumpando : --single-transaction
+state "VERIFYING" as Verificando
+Verificando : SHA-256 · restore efêmero
+state "Enviando ao S3" as Enviando
+Enviando : cifrado · versionado
+state "OK" as OK
+OK : RPO ≤ 24 h (binlog 15 min)
+state "FAILED" as FAILED
+FAILED : alerta · anterior mantido
+state "Restaurando" as Restaurando
+Restaurando : somente leitura
+Restaurando : dump + binlog
+state "Reprojetando" as Reprojetando
+Reprojetando : replay pela seed
+Reprojetando : reindex
+state "Restaurado" as Restaurado
+Restaurado : RTO ≤ 2 h
+[*] --> Agendado
+Agendado --> Dumpando : lock obtido
+Agendado --> Agendado : lock ocupado → +30 min
+Dumpando --> Verificando : dump gerado
+Dumpando --> FAILED : erro após retry
+Verificando --> Enviando : integridade ok
+Verificando --> FAILED : checksum ou contagem divergente
+Enviando --> OK : PUT ok
+Enviando --> FAILED : 3 falhas de upload
+OK --> Restaurando : ADMIN confirma restore
+Restaurando --> Reprojetando : MySQL restaurado
+Reprojetando --> Restaurado : projeções prontas
+Restaurando --> FAILED : fora do RTO → plano B
+OK --> [*]
+FAILED --> [*]
+Restaurado --> [*]
+@enduml

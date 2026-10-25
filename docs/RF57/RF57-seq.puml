@@ -1,0 +1,39 @@
+@startuml
+title RF57 — All-Star · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+control "MoraleEngine" as MoraleEngine
+control "MatchSimulator" as MatchSimulator
+control "SeasonEngine" as SeasonEngine
+queue "EventBus" as EventBus
+database "MySQL 8" as MySQL
+database "Cassandra 4.1" as Cassandra
+participant "Agendador/Job assíncrono" as Scheduler
+Scheduler -> SeasonEngine: OpenAllStar(season)
+SeasonEngine -> MySQL: INSERT all_star_event VOTING
+Manager -> Frontend: vota
+Frontend -> API: POST /careers/{id}/all-star/votes
+API -> UseCase: VoteAllStarUseCase
+alt votação fechada ou voto inválido
+  API --> Frontend: 422
+else senão
+  UseCase -> MySQL: INSERT votos
+  API --> Frontend: 200
+end
+Scheduler -> SeasonEngine: CloseVotingAndPlay
+SeasonEngine -> MySQL: ranking por posição + votos
+SeasonEngine -> MatchSimulator: simula jogo (semente, sem lesão)
+MatchSimulator --> SeasonEngine: placar
+SeasonEngine -> MoraleEngine: bônus aos convocados
+SeasonEngine -> MySQL: rosters, desafios, winnerConference, DONE
+SeasonEngine -> EventBus: AllStarFinished
+EventBus -> Cassandra: notícia
+Manager -> Frontend: abre resultado
+Frontend -> API: GET /all-star/results
+API --> Frontend: 200
+@enduml

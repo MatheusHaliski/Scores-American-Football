@@ -1,0 +1,52 @@
+@startuml
+title RF18 — Head coaches do mundo: ranking e histórico · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+control "AuditService" as AuditService
+database "MySQL 8" as MySQL
+database "Redis 7" as Redis
+database "OpenSearch 2" as OpenSearch
+Manager -> Frontend: abre Head coaches do mundo
+Frontend -> API: GET /careers/{id}/managers/world?sort=wins
+API -> UseCase: ListWorldManagersUseCase.execute(id, sort, page, userId)
+UseCase -> MySQL: save + owner check
+alt não é dono
+  UseCase -> AuditService: record(ACCESS_DENIED)
+  API --> Frontend: 403
+else senão
+  UseCase -> Redis: ZREVRANGE managers:rank:{worldId}:wins
+  alt cache miss
+    UseCase -> MySQL: manager_profile × club × career_record × morale (humano)
+    MySQL --> UseCase: head coaches
+    UseCase -> Redis: ZADD managers:rank:{worldId}:*
+  else senão
+    Redis --> UseCase: ids ordenados
+    UseCase -> MySQL: esquemas compactos por ids
+  end
+  UseCase --> API: PageResponse<ManagerCompactDto>
+  API --> Frontend: 200
+end
+Manager -> Frontend: busca por nome
+Frontend -> API: GET /careers/{id}/search?type=MANAGER&q=
+API -> UseCase: SearchUseCase.execute
+UseCase -> OpenSearch: query managers (worldId, q)
+OpenSearch --> UseCase: hits
+API --> Frontend: 200
+Manager -> Frontend: abre esquema do head coach
+Frontend -> API: GET /careers/{id}/managers/world/{mid}
+API -> UseCase: GetManagerHistoryUseCase.execute(id, mid, userId)
+UseCase -> MySQL: manager_profile · career_records · morale · awards · série de overall
+alt head coach de outro mundo
+  API --> Frontend: 404 MANAGER_NOT_FOUND
+else senão
+  MySQL --> UseCase: histórico
+  UseCase --> API: ManagerHistoryResult
+  API --> Frontend: 200
+  Frontend -> Manager: esquema ampliado
+end
+@enduml

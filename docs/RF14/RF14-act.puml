@@ -1,0 +1,88 @@
+@startuml
+title RF14 — Orçamento da franquia, teto salarial e empréstimo · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Manager|
+start
+:Abre a aba Orçamento;
+|Frontend|
+:GET /careers/{id}/finance e /finance/cap;
+|Backend|
+if (dono do save?) then (sim)
+else (não)
+  :403 + ACCESS_DENIED;
+  stop
+endif
+:Carrega caixa, receitas por jogo em casa e TV, empréstimos, pedidos, ledger e SalaryCapLedger;
+|Frontend|
+:Dois painéis separados: Caixa (receitas × despesas) e Teto salarial (comprometido, dead money, espaço);
+|Backend|
+if (head coach empregado?) then (sim)
+else (não)
+|Frontend|
+  :Aba só leitura (espectador);
+  stop
+endif
+|Backend|
+if (dinheiro não vira espaço no teto?) then (sim)
+|Frontend|
+  :Aviso fixo: empréstimo e verba não liberam espaço no teto (RF49);
+endif
+|Manager|
+if (contrata empréstimo?) then (sim)
+|Frontend|
+  :Simulador: principal e prazo → juros por semana e parcela;
+  :POST /finance/loans {principal, weeks};
+|Backend|
+  if (empréstimo dentro do limite?) then (sim)
+  else (não)
+    :422 LOAN_LIMIT_EXCEEDED;
+    stop
+  endif
+  if (parcela cabe na receita?) then (sim)
+  else (não)
+    :422 INSTALLMENT_TOO_HIGH;
+    stop
+  endif
+  :Transação: BankLoan ACTIVE · club.cash += principal · ledger LOAN · AuditLog LOAN_CONTRACTED;
+endif
+|Manager|
+if (negocia dívida?) then (sim)
+|Frontend|
+  :POST /finance/loans/{lid}/settle {mode};
+|Backend|
+  if (quitação antecipada possível?) then (sim)
+    :Quita: cash −= saldo × 0,97 · SETTLED;
+  else (não)
+    :Alonga: +8 semanas · juros +0,5 pp · RENEGOTIATED;
+  endif
+endif
+|Manager|
+if (pede verba à diretoria?) then (sim)
+|Backend|
+  if (pedido de verba permitido?) then (sim)
+  else (não)
+    :422 BUDGET_REQUEST_NOT_ALLOWED;
+    stop
+  endif
+|Diretoria|
+  if (diretoria concede a verba?) then (sim)
+|Backend|
+    :APPROVED · ledger BOARD_GRANT (caixa);
+  else (não)
+    :PARTIAL ou REJECTED · boardResponse · moralClub −2;
+  endif
+endif
+|Scheduler|
+:Após cada jogo em casa: renda de bilheteria no ledger GATE (RF31);
+if (parcela debitada na semana?) then (sim)
+  :ledger INTEREST · remainingWeeks − 1 · SETTLED ao zerar;
+else (não)
+  :Caixa negativo: ledger FINE 2 % · alerta da diretoria;
+endif
+|Frontend|
+:Atualiza caixa, teto, dívidas e histórico;
+end
+@enduml

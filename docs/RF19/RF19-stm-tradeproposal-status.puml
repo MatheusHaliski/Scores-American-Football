@@ -1,0 +1,27 @@
+@startuml
+title RF19 — Reforçar o elenco: free agency, trocas e waivers · Máquina de estados: TradeProposal.status
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "PENDING" as PENDING
+PENDING : avaliada pela franquia IA
+state "COUNTERED" as COUNTERED
+COUNTERED : IA pede pick ou jogador
+COUNTERED : prazo 1 semana
+state "ACCEPTED" as ACCEPTED
+ACCEPTED : transação única
+ACCEPTED : contratos, picks e tetos
+state "REJECTED" as REJECTED
+state "EXPIRED" as EXPIRED
+EXPIRED : prazo vencido ou prazo de trocas
+[*] --> PENDING
+PENDING --> ACCEPTED : IA aceita
+PENDING --> COUNTERED : IA contrapropõe
+PENDING --> REJECTED : IA recusa
+COUNTERED --> ACCEPTED : respond ACCEPT
+COUNTERED --> REJECTED : respond REJECT
+COUNTERED --> PENDING : respond COUNTER (máx. 3)
+COUNTERED --> EXPIRED : prazo / tradeDeadlineWeek
+ACCEPTED --> [*]
+REJECTED --> [*]
+EXPIRED --> [*]
+@enduml

@@ -1,0 +1,87 @@
+@startuml
+title RNF1 — Transações ACID em dados de usuários, carreiras e database do jogo · Diagrama de componentes
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 36
+actor "Head coach / manager (usuário autenticado)" as c1
+actor "Agendador/Job assíncrono" as c2
+package "Frontend (Next.js)" as pkg_fe {
+  component "NewCareerWizard" as c3
+  frame "componentes de NewCareerWizard" as pkg_fe_sub {
+    component "CareersCenter" as c4
+    component "DepthChartEditor" as c5
+  }
+}
+package "scores-af-web (REST)" as pkg_web {
+  component "CareerController" as c6
+  component "WorldEditorController" as c7
+  component "DepthChartController" as c8
+  component "MatchController" as c9
+  component "ApiExceptionHandler" as c10
+}
+package "scores-af-application (casos de uso)" as pkg_app {
+  component "CreateCareerUseCase" as c11
+  component "WorldCloner" as c12
+  component "WorldEditorUseCases" as c13
+  component "UpdateDepthChartUseCase" as c14
+  component "AdvanceMatchUseCase" as c15
+  component "AfterCommit" as c16
+  component "AuditService" as c17
+}
+package "scores-af-domain/engine" as pkg_eng {
+  component "MatchSimulator" as c18
+}
+package "portas (port.out)" as pkg_ports {
+  interface "WorldRepository" as c19
+  interface "CareerSaveRepository" as c20
+  interface "PlayerRepository" as c21
+  interface "DepthChartRepository" as c22
+  interface "MatchSessionRepository" as c23
+  interface "TimelinePort" as c24
+  interface "LiveMatchStatePort" as c25
+  interface "SearchPort" as c26
+  interface "MediaStoragePort" as c27
+}
+package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
+  component "persistence-mysql" as c28
+  component "persistence-cassandra" as c29
+  component "cache-redis" as c30
+  component "search-opensearch" as c31
+  component "storage-s3" as c32
+}
+database "MySQL 8" as s1
+database "Redis 7" as s2
+database "Cassandra 4.1" as s3
+database "OpenSearch 2" as s4
+database "S3/MinIO" as s5
+c1 --> c3 : usa
+c2 --> c11 : dispara
+c3 --> c6 : POST /careers (alvo)\nGET /careers/{id} (alvo)\nPUT /editor/players/{id} (alvo)\n…
+c3 --> c7
+c3 --> c8
+c3 --> c9
+c3 --> c10
+c6 --> c11
+c7 --> c11
+c8 --> c11
+c9 --> c11
+c10 --> c11
+c11 ..> pkg_app : orquestra
+c11 --> c18 : usa
+pkg_app --> pkg_ports : depende (DIP)
+c28 .up.|> c19
+c28 .up.|> c20
+c28 .up.|> c21
+c28 .up.|> c22
+c28 .up.|> c23
+c29 .up.|> c24
+c30 .up.|> c25
+c31 .up.|> c26
+c32 .up.|> c27
+c28 --> s1
+c29 --> s3
+c30 --> s2
+c31 --> s4
+c32 --> s5
+@enduml

@@ -1,0 +1,61 @@
+@startuml
+title RNF13 — Traduções de idiomas escolhidas na aba de configurações · Diagrama de componentes
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 36
+actor "Head coach / manager (usuário autenticado)" as c1
+actor "Visitante (não autenticado)" as c2
+actor "Agendador/Job assíncrono" as c3
+package "Frontend (Next.js)" as pkg_fe {
+  component "I18nProvider" as c4
+  frame "componentes de I18nProvider" as pkg_fe_sub {
+    component "SettingsLanguageTab" as c5
+    component "MessageRef / translate" as c6
+    component "DownDistanceFormatter" as c7
+    component "i18n-check e glossary-check (CI)" as c8
+  }
+}
+package "scores-af-web (REST)" as pkg_web {
+  component "AccountController" as c9
+  component "ApiExceptionHandler" as c10
+  component "LocaleResolver" as c11
+  component "ProblemDetailWriter" as c12
+}
+package "scores-af-application (casos de uso)" as pkg_app {
+  component "SettingsUseCases" as c13
+  component "Messages (MessageSource por conta)" as c14
+  component "SportGlossary" as c15
+  component "MailComposer" as c16
+}
+package "portas (port.out)" as pkg_ports {
+  interface "UserAccountRepository" as c17
+  interface "TimelinePort" as c18
+  interface "EmailPort" as c19
+}
+package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
+  component "persistence-mysql" as c20
+  component "persistence-cassandra" as c21
+  component "mail-smtp" as c22
+}
+database "MySQL 8" as s1
+database "Cassandra 4.1" as s2
+c1 --> c4 : usa
+c2 --> c4 : usa
+c3 --> c13 : dispara
+c4 --> c9 : GET /me/settings (alvo)\nPUT /me/settings (alvo)\n* /** (Accept-Language)
+c4 --> c10
+c4 --> c11
+c4 --> c12
+c9 --> c13
+c10 --> c13
+c11 --> c13
+c12 --> c13
+c13 ..> pkg_app : orquestra
+pkg_app --> pkg_ports : depende (DIP)
+c20 .up.|> c17
+c21 .up.|> c18
+c22 .up.|> c19
+c20 --> s1
+c21 --> s2
+@enduml

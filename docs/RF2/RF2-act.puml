@@ -1,0 +1,104 @@
+@startuml
+title RF2 — Autenticação e recuperação de senha · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Visitante|
+start
+:Abre a tela de entrada;
+if (esqueceu a senha?) then (sim)
+|Frontend|
+  :POST /auth/password/forgot {email};
+|Backend|
+  if (dentro do limite da rota?) then (sim)
+  else (não)
+    :429 RATE_LIMITED;
+    stop
+  endif
+  :Se a conta existe: token 30 min (hash no banco) + e-mail mascarado no log · PASSWORD_RESET_REQUESTED;
+  :202 Accepted sempre;
+|Visitante|
+  :Abre o link e define a nova senha;
+|Frontend|
+  :POST /auth/password/reset {token, newPassword};
+|Backend|
+  if (token de redefinição válido?) then (sim)
+  else (não)
+    :422 TOKEN_INVALID;
+    stop
+  endif
+  if (nova senha atende à política?) then (sim)
+  else (não)
+    :422 WEAK_PASSWORD;
+    stop
+  endif
+  :Hash fora da TX · revoga TODAS as famílias · limpa bloqueio · PASSWORD_CHANGED;
+|Frontend|
+  :Volta ao login com aviso;
+endif
+|Visitante|
+:Informa e-mail e senha;
+|Frontend|
+:POST /auth/login;
+|Backend|
+if (dentro do limite da rota?) then (sim)
+else (não)
+  :429 RATE_LIMITED + Retry-After;
+  stop
+endif
+if (tentativa reservada para o e-mail?) then (sim)
+else (não)
+  :401 AUTH_FAILED · LOGIN_LOCKED;
+  stop
+endif
+if (teto de hashes livre?) then (sim)
+else (não)
+  :503 AUTH_BUSY · libera a reserva;
+  stop
+endif
+if (conta existe, ativa e senha confere?) then (sim)
+else (não)
+  :AuditLog LOGIN_FAILED em REQUIRES_NEW;
+  :401 AUTH_FAILED;
+  stop
+endif
+:Libera a reserva · PENDING_DELETION cancela a exclusão;
+:Access RS256 15 min {sub, roles, sid} no corpo + Set-Cookie __Host-refresh HttpOnly Secure SameSite=Strict Path=/;
+:UserSession com familyId · cache da família no Redis · LOGIN_OK;
+|Frontend|
+:Guarda o access só em memória (nunca localStorage) e abre o menu;
+|Manager|
+:Usa o app (toda chamada passa por BearerTokenAuthenticationFilter + SessionActiveFilter);
+|Frontend|
+if (access expirou ou aba recarregada?) then (sim)
+  :POST /auth/refresh (cookie enviado pelo navegador);
+|Backend|
+  if (origem do refresh confiável?) then (sim)
+  else (não)
+    :401 · apaga cookie;
+|Frontend|
+    :Volta ao login;
+    stop
+  endif
+|Backend|
+  if (refresh válido e não rotacionado?) then (sim)
+    :Rotaciona: nova sessão na família, antiga replacedBy, novo cookie · TOKEN_REFRESHED;
+  else (não)
+    :Revoga a família · TOKEN_REUSE_DETECTED · 401;
+|Frontend|
+    :Volta ao login;
+    stop
+  endif
+endif
+|Manager|
+if (clica em sair?) then (sim)
+|Frontend|
+  :POST /auth/logout;
+|Backend|
+  :Revoga a família · apaga o cookie · invalida cache · LOGOUT;
+|Frontend|
+  :Limpa a memória e avisa as outras abas (BroadcastChannel) · todas voltam à abertura;
+endif
+end
+@enduml

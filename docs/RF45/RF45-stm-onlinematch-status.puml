@@ -1,0 +1,29 @@
+@startuml
+title RF45 — Multiplayer online: salas por turnos e Ultimate Team · Máquina de estados: OnlineMatch.status
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "MATCHMAKING" as MATCHMAKING
+state "ACCEPT_PENDING" as ACCEPT_PENDING
+ACCEPT_PENDING : 30 s
+state "LIVE" as LIVE
+LIVE : heartbeat 5 s
+LIVE : chamadas em momentos decisivos
+state "PAUSED_DISCONNECT" as PAUSED_DISCONNECT
+PAUSED_DISCONNECT : tolerância 60 s
+state "FINISHED" as FINISHED
+state "WALKOVER" as WALKOVER
+state "VOID" as VOID
+[*] --> MATCHMAKING
+MATCHMAKING --> ACCEPT_PENDING : par encontrado
+ACCEPT_PENDING --> LIVE : os dois aceitam
+ACCEPT_PENDING --> VOID : sem aceite
+LIVE --> PAUSED_DISCONNECT : silêncio > 90 s
+PAUSED_DISCONNECT --> LIVE : reconecta
+PAUSED_DISCONNECT --> WALKOVER : não volta
+LIVE --> WALKOVER : quit
+PAUSED_DISCONNECT --> VOID : dupla queda
+LIVE --> FINISHED : fim do jogo
+FINISHED --> [*]
+WALKOVER --> [*]
+VOID --> [*]
+@enduml

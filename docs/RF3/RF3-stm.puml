@@ -1,0 +1,19 @@
+@startuml
+title RF3 — Gerenciar a conta (dados, sessões, segurança, LGPD, notificações) · Máquina de estados: UserAccount.status (ciclo de vida da conta)
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "ACTIVE" as ACTIVE
+ACTIVE : conta em uso
+ACTIVE : dados editáveis
+state "PENDING_DELETION" as PENDING_DELETION
+PENDING_DELETION : 7 dias de arrependimento
+PENDING_DELETION : famílias de sessão revogadas
+state "DELETED" as DELETED
+DELETED : e-mail e nome anonimizados
+DELETED : consentimentos, compras e ledger preservados
+[*] --> ACTIVE
+ACTIVE --> PENDING_DELETION : DELETE /me (senha + palavra)
+PENDING_DELETION --> ACTIVE : POST /me/deletion/cancel ou login no prazo
+PENDING_DELETION --> DELETED : job após 7 dias
+DELETED --> [*]
+@enduml

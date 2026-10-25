@@ -1,0 +1,143 @@
+@startuml
+title RF28 — Editar logo, cores, capacete e uniformes · Diagrama de classes
+skinparam classAttributeIconSize 0
+hide empty methods
+package "career" {
+  class CareerSave {
+    id: UUID
+    name: String
+    seed: long
+    employmentStatus: EmploymentStatus
+    currentWeek: int
+    difficulty: Difficulty
+    seasonMode: SeasonMode
+    scoresPoints: int
+    status: SaveStatus
+    slot: int
+    lastPlayedAt: Instant
+  }
+}
+package "catalog" {
+  class World {
+    id: UUID
+    ownerUser: UserAccount?
+    name: String
+    kind: WorldKind
+    sourceWorld: World?
+  }
+  class League {
+    id: UUID
+    name: String
+    country: String
+    ruleset: Ruleset (PRO|COLLEGE)
+    rules: LeagueRules
+    teamCount: int (8–32)
+    conferenceCount: int
+    divisionsPerConference: int
+    regularSeasonWeeks: int = 18
+    gamesPerTeam: int = 17
+    playoffSeedsPerConference: int = 7
+    neutralSiteFinal: boolean
+    salaryCap: long
+    salaryFloor: long
+    prestige: int
+    tvRightsPerSeason: long
+  }
+  class Club {
+    id: UUID
+    name: String
+    shortName: String
+    city: String
+    conference: Conference
+    division: Division
+    logoKey: String
+    primaryColor: String
+    secondaryColor: String
+    accentColor: String
+    prestige: int
+    reputationBoard: int
+    reputationFans: int
+    cash: long
+    capSpace: long
+    isUserControlled: boolean
+    expectedWins: int
+    scoutingLevel: int
+    scoutingBudget: long
+  }
+  class Uniform {
+    slot: UniformSlot (HOME|AWAY|ALTERNATE)
+    jerseyColor: String
+    pantsColor: String
+    numberColor: String
+    numberOutline: String
+    pattern: String
+    textureKey: String
+    isActive: boolean
+  }
+  class HelmetDesign {
+    shellColor: String
+    stripe: StripeStyle
+    stripeColor: String
+    facemaskColor: String
+    decalKey: String
+    finish: Finish (MATTE|GLOSS|CHROME)
+  }
+}
+package "store" {
+  class StoreItem {
+    code: String
+    kind: StoreItemKind
+    name: String
+    priceScoresPoints: int
+    assetUrl: String
+    payload: JSON
+    rarity: Rarity
+  }
+  class Purchase {
+    purchasedAt: Instant
+    pricePaid: int
+  }
+}
+class ClubIdentityUseCases <<UseCase>> {
+  get(clubId, userId): ClubIdentityDto
+  update(clubId, userId, IdentityCommand): ClubIdentityDto «@Transactional»
+  preview(clubId, userId, IdentityCommand): PreviewDto
+  updateHelmet(clubId, userId, HelmetCommand)
+  updateUniform(clubId, slot, userId, UniformCommand)
+}
+class ClubIdentityPolicy <<Policy>> {
+  resolve(input): ClubIdentity
+  validate(input): List<IdentityViolation>
+}
+class KitClashPolicy <<Policy>> {
+  decide(home, away, highContrast): KitDecision
+  distinguishable(home, away): boolean
+}
+class HelmetCommand <<record>> {
+  shellColor: String
+  stripe: StripeStyle
+  stripeColor: String
+  facemaskColor: String
+  decalKey: String
+  finish: Finish
+  expectedVersion: int
+}
+interface MediaStoragePort <<Port>> {
+  put(key, bytes, contentType): URL
+  delete(key)
+}
+World "1" -- "*" League
+World "1" -- "*" Club
+Club "1" -- "*" Uniform
+Club "1" -- "1" HelmetDesign : capacete
+Club "*" -- "*" Club : rivais da divisão
+CareerSave "1" -- "1" World : mundo do save
+CareerSave "*" -- "0..1" Club : franquia atual
+Purchase "*" -- "1" StoreItem
+ClubIdentityUseCases ..> ClubIdentityPolicy : valida
+ClubIdentityUseCases ..> KitClashPolicy : casa × fora
+ClubIdentityUseCases ..> HelmetCommand : recebe
+ClubIdentityUseCases ..> HelmetDesign : atualiza
+ClubIdentityUseCases ..> Uniform : atualiza
+ClubIdentityUseCases ..> MediaStoragePort : logo/decal
+@enduml

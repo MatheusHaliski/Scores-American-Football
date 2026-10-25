@@ -1,0 +1,61 @@
+@startuml
+title RF61 — Playbook e plano de jogo · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Manager|
+start
+:Abre o playbook;
+|Frontend|
+:GET /playbooks · GET /playbooks/{pbId}/plays;
+|Backend|
+if (dono do save?) then (sim)
+else (não)
+  :403;
+  stop
+endif
+|Manager|
+if (cria playbook próprio?) then (sim)
+|Frontend|
+  :POST /playbooks com as jogadas escolhidas;
+|Backend|
+  if (playbook mínimo?) then (sim)
+  else (não)
+    :422 PLAYBOOK_INCOMPLETE;
+    stop
+  endif
+endif
+|Frontend|
+:PUT /playbooks/active;
+|Manager|
+:Abre o plano de jogo da semana;
+|Frontend|
+:GET /game-plan · GET /game-plan/suggestion;
+|Backend|
+:ClubAnalyst lê tendências do adversário e sugere;
+|Manager|
+:Ajusta corrida × passe, 4ª descida, ritmo, foco defensivo, blitz e situações;
+|Frontend|
+:PUT /game-plan;
+|Backend|
+if (partida em andamento?) then (sim)
+  :422 MATCH_LIVE;
+  stop
+endif
+if (plano nos limites?) then (sim)
+else (não)
+  :422 GAME_PLAN_INVALID;
+  stop
+endif
+if (personnel cabe no elenco?) then (sim)
+else (não)
+|Frontend|
+  :Aviso de jogadas desativadas;
+endif
+|Backend|
+:Grava o plano; o kickoff fixa no snapshot;
+|ClubeIA|
+:Adversário monta o plano dela pelo estilo do head coach;
+end
+@enduml

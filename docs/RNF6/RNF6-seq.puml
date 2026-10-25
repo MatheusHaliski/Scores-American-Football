@@ -1,0 +1,56 @@
+@startuml
+title RNF6 — Backup e recuperação do banco de dados · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Administrador" as Admin
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+control "AuditService" as AuditService
+control "MatchSimulator" as MatchSimulator
+queue "EventBus" as EventBus
+database "MySQL 8" as MySQL
+database "Redis 7" as Redis
+database "Cassandra 4.1" as Cassandra
+database "OpenSearch 2" as OpenSearch
+database "S3/MinIO" as S3
+participant "Email" as Email
+participant "Agendador/Job assíncrono" as Scheduler
+Scheduler -> Redis: SETNX backup:lock TTL 2 h
+alt lock ocupado ou migração em andamento
+  Redis --> Scheduler: 0 → reagenda
+else senão
+  Scheduler -> MySQL: mysqldump --single-transaction
+  MySQL --> Scheduler: dump.sql.gz
+  Scheduler -> MySQL: restore efêmero + COUNT(user_account, career_save, fixture)
+  alt contagem diverge
+    Scheduler -> AuditService: record(BACKUP_FAILED)
+    Scheduler -> Email: alerta à operação
+  else senão
+    Scheduler -> S3: PUT scores-af-backups/mysql/AAAA-MM-DD.sql.gz + .sha256
+    Scheduler -> AuditService: record(BACKUP_COMPLETED)
+    Scheduler -> Redis: SET backup:lastSuccessAt · DEL backup:lock
+  end
+end
+Admin -> Frontend: restaurar o backup de ontem
+Frontend -> API: POST /admin/backups/{id}/restore {confirm}
+API -> UseCase: RestoreBackupUseCase.execute (ADMIN, dupla confirmação)
+alt sem ADMIN ou sem confirmação
+  UseCase -> AuditService: denied(RESTORE)
+  API --> Frontend: 403 / 422 (RFC 7807)
+else senão
+  UseCase -> Redis: SET app:readonly = true
+  UseCase -> Scheduler: RestoreJob(id, pointInTime)
+  Scheduler -> S3: GET dump + binlogs
+  Scheduler -> MySQL: restore · mysqlbinlog --stop-datetime · Flyway validate
+  Scheduler -> EventBus: ProjectionsRebuildRequested
+  EventBus -> MatchSimulator: replay das partidas pela seed
+  EventBus -> Cassandra: PlayEvent, inbox e notícias reprojetados
+  EventBus -> OpenSearch: reindex
+  EventBus -> Redis: recontagem de contadores
+  Scheduler -> AuditService: record(RESTORE_COMPLETED)
+  Scheduler -> Redis: DEL app:readonly
+  API --> Frontend: 202 → acompanhar em /admin/backups
+end
+@enduml

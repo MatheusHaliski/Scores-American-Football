@@ -1,0 +1,50 @@
+@startuml
+title RF23 — Animação 3D do jogador · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Manager|
+start
+:No modal do jogador clica em Animação 3D;
+|Frontend|
+:Usa PlayerExpandedDto já carregado · GET /animations?target=POSITION&code= · GET /clubs/{cid}/identity · GET /me/settings;
+if (WebGL disponível?) then (sim)
+else (não)
+  :Fallback 2D com arte do card;
+  stop
+endif
+if (jogador tem modelo próprio?) then (sim)
+  :Resolve URL do GLB do jogador;
+else (não)
+  :Modelo genérico pelo biotipo da posição e altura/peso;
+endif
+:Veste capacete (cor, faixa, decal, grade por posição), ombreiras e uniforme ativo com número legível;
+if (animação da loja aplicada?) then (sim)
+  :Usa o asset comprado;
+else (não)
+  if (há clipe da posição?) then (sim)
+    :QB snap e drop · WR rota e recepção · RB quebra de tackle · OL bloqueio · DL e LB tackle · DB backpedal · K chute;
+  else (não)
+    :Locomoção genérica;
+  endif
+endif
+if (asset em cache?) then (sim)
+else (não)
+  :GET GLB no S3 com progresso (lazy, fora do bundle);
+endif
+:Cena R3F: faixa de campo com linhas de jardas, luz de estádio, órbita;
+if (reducedMotion ativo?) then (sim)
+  :Pose estática · botão Reproduzir uma vez;
+else (não)
+  :Loop com legenda do efeito do estilo;
+endif
+|Manager|
+while (troca de estilo ou de clipe?) is (sim)
+|Frontend|
+  :Crossfade de 0,3 s para o clipe escolhido;
+endwhile (não)
+|Manager|
+:Fecha o viewer;
+end
+@enduml

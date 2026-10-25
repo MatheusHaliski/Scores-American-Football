@@ -1,0 +1,119 @@
+@startuml
+title RF60 — Depth chart · Diagrama de classes
+skinparam classAttributeIconSize 0
+hide empty methods
+package "catalog" {
+  class Club {
+    id: UUID
+    name: String
+    shortName: String
+    city: String
+    conference: Conference
+    division: Division
+    logoKey: String
+    primaryColor: String
+    secondaryColor: String
+    accentColor: String
+    prestige: int
+    reputationBoard: int
+    reputationFans: int
+    cash: long
+    capSpace: long
+    isUserControlled: boolean
+    expectedWins: int
+    scoutingLevel: int
+    scoutingBudget: long
+  }
+  class Player {
+    id: UUID
+    name: String
+    nationality: String
+    college: String
+    birthDate: LocalDate
+    age: int
+    heightCm: int
+    weightKg: int
+    position: Position (QB|RB|FB|WR|TE|LT|LG|C|RG|RT|DE|DT|OLB|MLB|CB|FS|SS|K|P|LS)
+    unit: Unit (OFFENSE|DEFENSE|SPECIAL)
+    attributes: PlayerAttributes
+    overall: int «por posição, OVR v1»
+    potential: int
+    experienceYears: int
+    rosterStatus: RosterStatus (ACTIVE|INACTIVE|PRACTICE_SQUAD|IR|PUP|FREE_AGENT|WAIVED)
+    condition: int
+    morale: int
+    moraleFactors: JSON
+    injury: Injury?
+    suspensionWeeks: int
+    contract: PlayerContract
+    jerseyNumber: int
+    isLegendary: boolean
+    model3dUrl: String
+  }
+  class LeagueRules {
+    «embedded» version: int
+    quarterMinutes: int = 15
+    playClockSeconds: int = 40
+    playClockAfterStoppageSeconds: int = 25
+    twoMinuteWarning: boolean
+    timeoutsPerHalf: int = 3
+    overtimeMinutes: int = 10
+    overtimeBothPossess: boolean
+    regularSeasonTiesAllowed: boolean
+    kickoffYardLine: int = 35
+    touchbackYardLine: int
+    patYardLine: int = 15
+    clockStopsOnFirstDown: boolean (COLLEGE)
+    oneFootInbounds: boolean (COLLEGE)
+    hashFromSidelineFeet: double
+    rosterMax: int = 53
+    gameDayActives: int = 46
+    practiceSquadMax: int = 16
+    offseasonRosterMax: int «Q-7»
+    irReturnsPerSeason: int «Q-7»
+    irMinWeeks: int «Q-7»
+  }
+}
+package "match" {
+  class DepthChart {
+    club: Club
+    version: long
+    updatedAt: Instant
+    validated: boolean
+  }
+  class DepthChartSlot {
+    unit: Unit
+    position: Position | Role (KR|PR|3RD_DOWN_BACK|SNAPPER|HOLDER)
+    depth: int (1, 2, 3…)
+    player: Player
+    outOfPosition: boolean
+  }
+  class SpecialTeamsUnit {
+    kind: STUnit (KICKOFF|KICK_RETURN|PUNT|PUNT_RETURN|FG_PAT|ONSIDE)
+    kicker: Player
+    holder: Player
+    longSnapper: Player
+    returners: List<Player>
+    onsideAllowed: boolean
+  }
+}
+class UpdateDepthChartUseCase <<UseCase>> {
+  execute(saveId, DepthChartCommand, expectedVersion): DepthChartView «@Transactional»
+}
+class DepthChartPolicy <<Policy>> {
+  validate(chart, roster, rules): List<Violation>
+  autoFill(roster): DepthChart
+}
+class PositionOverallCalculator <<Engine>> {
+  overall(player, position): int «OVR v1»
+}
+Club "1" -- "0..53" Player : elenco ativo
+Club "*" -- "*" Club : rivais da divisão
+Club "1" -- "1" DepthChart
+DepthChart "1" -- "*" DepthChartSlot : slots
+DepthChartSlot "*" -- "1" Player
+Club "1" -- "*" SpecialTeamsUnit
+UpdateDepthChartUseCase ..> DepthChartPolicy : valida
+DepthChartPolicy ..> PositionOverallCalculator : usa
+UpdateDepthChartUseCase ..> DepthChart : grava
+@enduml

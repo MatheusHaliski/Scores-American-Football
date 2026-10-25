@@ -1,0 +1,24 @@
+@startuml
+title RF60 — Depth chart · Máquina de estados: DepthChart (validade)
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "VALIDO" as VALIDO
+VALIDO : todos os slots
+VALIDO : validated = true
+state "EDITANDO" as EDITANDO
+EDITANDO : arrastar e soltar
+state "INVALIDO" as INVALIDO
+INVALIDO : vaga aberta por lesão, corte ou troca
+state "TRAVADO" as TRAVADO
+TRAVADO : snapshot do kickoff
+TRAVADO : edição só no intervalo
+[*] --> VALIDO
+VALIDO --> EDITANDO : abre
+EDITANDO --> VALIDO : grava 200
+EDITANDO --> INVALIDO : 422
+VALIDO --> INVALIDO : lesão / corte / troca
+INVALIDO --> VALIDO : auto ou correção
+VALIDO --> TRAVADO : kickoff
+TRAVADO --> VALIDO : fim da partida
+TRAVADO --> TRAVADO : ajuste no intervalo
+@enduml

@@ -1,0 +1,22 @@
+@startuml
+title RF62 — Chamada de jogada em momentos decisivos · Máquina de estados: PlayCallDecision.status
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "OPEN" as OPEN
+OPEN : opções e prazo
+OPEN : simulação pausada
+state "CHOSEN" as CHOSEN
+CHOSEN : escolha do manager
+state "AUTO" as AUTO
+AUTO : prazo vencido
+AUTO : PlayCaller pelo plano
+state "RESOLVED" as RESOLVED
+RESOLVED : jogada executada
+RESOLVED : PlayEvent gravado
+[*] --> OPEN
+OPEN --> CHOSEN : POST dentro do prazo
+OPEN --> AUTO : timeout
+CHOSEN --> RESOLVED : snap
+AUTO --> RESOLVED : snap
+RESOLVED --> [*]
+@enduml

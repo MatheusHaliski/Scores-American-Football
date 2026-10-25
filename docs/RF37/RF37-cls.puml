@@ -1,0 +1,132 @@
+@startuml
+title RF37 — Head coach desempregado e propostas pela moral com a liga · Diagrama de classes
+skinparam classAttributeIconSize 0
+hide empty methods
+package "career" {
+  class CareerSave {
+    id: UUID
+    name: String
+    seed: long
+    employmentStatus: EmploymentStatus
+    currentWeek: int
+    difficulty: Difficulty
+    seasonMode: SeasonMode
+    scoresPoints: int
+    status: SaveStatus
+    slot: int
+    lastPlayedAt: Instant
+  }
+  class ManagerMorale {
+    moraleClub: int
+    moraleLeague: int
+    factorsClub: JSON
+    factorsLeague: JSON
+    weeksUnderCritical: int
+    trend: Trend
+    updatedWeek: int
+  }
+  class ManagerContract {
+    salaryPerSeason: long
+    startSeason: int
+    endSeason: int
+    objectives: JSON (vitórias, playoffs, título)
+    releaseClause: long
+    status: ContractStatus
+  }
+  class ManagerCareerRecord {
+    seasonFrom: int
+    seasonTo: int
+    games: int
+    wins: int
+    losses: int
+    ties: int
+    playoffAppearances: int
+    titles: int
+    endReason: EndReason
+  }
+  class JobOffer {
+    salary: long
+    seasons: int
+    objectives: JSON
+    status: OfferStatus
+    expiresWeek: int
+    reason: String
+  }
+}
+package "catalog" {
+  class ManagerProfile {
+    name: String
+    nationality: String
+    isHuman: boolean
+    overall: int
+    coachStyle: CoachStyleCode
+    reputationLeague: int
+    careerTitles: int
+    careerGames: int
+    careerWins: int
+    careerPlayoffWins: int
+  }
+  class Club {
+    id: UUID
+    name: String
+    shortName: String
+    city: String
+    conference: Conference
+    division: Division
+    logoKey: String
+    primaryColor: String
+    secondaryColor: String
+    accentColor: String
+    prestige: int
+    reputationBoard: int
+    reputationFans: int
+    cash: long
+    capSpace: long
+    isUserControlled: boolean
+    expectedWins: int
+    scoutingLevel: int
+    scoutingBudget: long
+  }
+  class League {
+    id: UUID
+    name: String
+    country: String
+    ruleset: Ruleset (PRO|COLLEGE)
+    rules: LeagueRules
+    teamCount: int (8–32)
+    conferenceCount: int
+    divisionsPerConference: int
+    regularSeasonWeeks: int = 18
+    gamesPerTeam: int = 17
+    playoffSeedsPerConference: int = 7
+    neutralSiteFinal: boolean
+    salaryCap: long
+    salaryFloor: long
+    prestige: int
+    tvRightsPerSeason: long
+  }
+}
+class JobOfferPolicy <<Engine>> {
+  generate(state, vagas, standings, seed, week): List<JobOfferProposal>
+  salaryFor(base, moraleLeague): long
+}
+class RespondJobOfferUseCase <<UseCase>> {
+  execute(RespondJobOfferCommand) «@Transactional»
+}
+class DismissManagerHandler <<Listener>> {
+  onManagerDismissed(saveId, reason)
+}
+Club "*" -- "*" Club : rivais da divisão
+Club "0..1" -- "1" ManagerProfile : head coach
+ManagerProfile "1" -- "*" ManagerCareerRecord : histórico
+CareerSave "1" -- "1" ManagerProfile : manager humano
+CareerSave "*" -- "0..1" Club : franquia atual
+CareerSave "1" -- "*" ManagerContract
+CareerSave "1" -- "1" ManagerMorale
+CareerSave "1" -- "*" JobOffer
+JobOfferPolicy ..> JobOffer : propõe
+JobOfferPolicy ..> ManagerMorale : moraleLeague
+RespondJobOfferUseCase ..> ManagerContract : novo ACTIVE
+RespondJobOfferUseCase ..> CareerSave : EMPLOYED
+DismissManagerHandler ..> ManagerCareerRecord : fecha
+@enduml

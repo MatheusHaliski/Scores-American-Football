@@ -1,0 +1,75 @@
+@startuml
+title RF40 — Central do clube · Diagrama de componentes
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 36
+actor "Head coach / manager (usuário autenticado)" as c1
+package "Frontend (Next.js)" as pkg_fe {
+  component "ClubCentralPage" as c2
+  frame "componentes de ClubCentralPage" as pkg_fe_sub {
+    component "CoachCard" as c3
+    component "NextGameCard (bye)" as c4
+    component "LiveGameCard (descida e distância)" as c5
+    component "DivisionRaceTable" as c6
+    component "InjuryReportCard" as c7
+    component "CapSpaceGauge" as c8
+    component "AnalystAlerts" as c9
+    component "InboxPreview" as c10
+    component "Sidebar" as c11
+  }
+}
+package "scores-af-web (REST)" as pkg_web {
+  component "CareerController" as c12
+  component "MatchController" as c13
+}
+package "scores-af-application (casos de uso)" as pkg_app {
+  component "GetClubDashboardUseCase" as c14
+  component "GetManagerMoraleUseCase" as c15
+  component "GetLiveMatchCardUseCase" as c16
+  component "DashboardAssembler" as c17
+  component "CareerAccess" as c18
+}
+package "scores-af-domain/engine" as pkg_eng {
+  component "ClubAnalyst" as c19
+}
+package "portas (port.out)" as pkg_ports {
+  interface "CareerSaveRepository" as c20
+  interface "FixtureRepository" as c21
+  interface "StandingRepository" as c22
+  interface "SalaryCapLedgerRepository" as c23
+  interface "InjuryReportRepository" as c24
+  interface "AiAnalysisReportRepository" as c25
+  interface "LiveMatchStatePort" as c26
+  interface "TimelinePort" as c27
+  interface "CounterPort" as c28
+}
+package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
+  component "persistence-mysql" as c29
+  component "persistence-cassandra" as c30
+  component "cache-redis" as c31
+}
+database "MySQL 8" as s1
+database "Redis 7" as s2
+database "Cassandra 4.1" as s3
+c1 --> c2 : usa
+c2 --> c12 : GET /careers/{id}/dashboard (alvo)\nGET /careers/{id}/morale (alvo)\nGET /matches/{mid}/live-card (alvo)
+c2 --> c13
+c12 --> c14
+c13 --> c14
+c14 ..> pkg_app : orquestra
+c14 --> c19 : usa
+pkg_app --> pkg_ports : depende (DIP)
+c29 .up.|> c20
+c29 .up.|> c21
+c29 .up.|> c22
+c29 .up.|> c23
+c29 .up.|> c24
+c29 .up.|> c25
+c31 .up.|> c26
+c30 .up.|> c27
+c31 .up.|> c28
+c29 --> s1
+c30 --> s3
+c31 --> s2
+@enduml

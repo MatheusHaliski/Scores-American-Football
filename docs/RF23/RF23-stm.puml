@@ -1,0 +1,37 @@
+@startuml
+title RF23 — Animação 3D do jogador · Máquina de estados: Viewer 3D do jogador (interação)
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "Fechado" as Fechado
+Fechado : modal do jogador visível
+state "Verificando" as Verificando
+Verificando : WebGL? reducedMotion? clipes? inventário?
+state "Fallback 2D" as Fallback2D
+Fallback2D : arte do card
+state "Carregando asset" as Carregando
+Carregando : GLB do S3
+Carregando : barra de progresso
+state "Pose estática" as Estatico
+Estatico : reducedMotion
+state "Reproduzindo" as Reproduzindo
+Reproduzindo : clipe da posição ou do estilo
+state "Crossfade" as Trocando
+Trocando : 0,3 s
+state "Erro de asset" as Erro
+Erro : 404 / timeout
+[*] --> Fechado
+Fechado --> Verificando : Animação 3D
+Verificando --> Fallback2D : sem WebGL
+Verificando --> Carregando : WebGL ok
+Carregando --> Erro : falha
+Erro --> Carregando : tentar de novo
+Erro --> Fallback2D : usar 2D
+Carregando --> Estatico : reducedMotion
+Carregando --> Reproduzindo : pronto
+Estatico --> Reproduzindo : Reproduzir uma vez
+Reproduzindo --> Trocando : outro clipe
+Trocando --> Reproduzindo : concluído
+Reproduzindo --> Fechado : fechar
+Estatico --> Fechado : fechar
+Fallback2D --> Fechado : fechar
+@enduml

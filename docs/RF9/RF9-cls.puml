@@ -1,0 +1,136 @@
+@startuml
+title RF9 — Propostas de contrato de outras franquias · Diagrama de classes
+skinparam classAttributeIconSize 0
+hide empty methods
+package "career" {
+  class CareerSave {
+    id: UUID
+    name: String
+    seed: long
+    employmentStatus: EmploymentStatus
+    currentWeek: int
+    difficulty: Difficulty
+    seasonMode: SeasonMode
+    scoresPoints: int
+    status: SaveStatus
+    slot: int
+    lastPlayedAt: Instant
+  }
+  class JobOffer {
+    salary: long
+    seasons: int
+    objectives: JSON
+    status: OfferStatus
+    expiresWeek: int
+    reason: String
+  }
+  class ManagerContract {
+    salaryPerSeason: long
+    startSeason: int
+    endSeason: int
+    objectives: JSON (vitórias, playoffs, título)
+    releaseClause: long
+    status: ContractStatus
+  }
+  class ManagerMorale {
+    moraleClub: int
+    moraleLeague: int
+    factorsClub: JSON
+    factorsLeague: JSON
+    weeksUnderCritical: int
+    trend: Trend
+    updatedWeek: int
+  }
+  class ManagerCareerRecord {
+    seasonFrom: int
+    seasonTo: int
+    games: int
+    wins: int
+    losses: int
+    ties: int
+    playoffAppearances: int
+    titles: int
+    endReason: EndReason
+  }
+}
+package "season" {
+  class Season {
+    number: int
+    year: int
+    phase: SeasonPhase (PRESEASON|REGULAR|PLAYOFFS|DRAFT|FREE_AGENCY|OFFSEASON)
+    currentWeek: int
+    tradeDeadlineWeek: int
+    championClub: Club?
+    mvpPlayer: Player?
+  }
+}
+package "catalog" {
+  class ManagerProfile {
+    name: String
+    nationality: String
+    isHuman: boolean
+    overall: int
+    coachStyle: CoachStyleCode
+    reputationLeague: int
+    careerTitles: int
+    careerGames: int
+    careerWins: int
+    careerPlayoffWins: int
+  }
+  class Club {
+    id: UUID
+    name: String
+    shortName: String
+    city: String
+    conference: Conference
+    division: Division
+    logoKey: String
+    primaryColor: String
+    secondaryColor: String
+    accentColor: String
+    prestige: int
+    reputationBoard: int
+    reputationFans: int
+    cash: long
+    capSpace: long
+    isUserControlled: boolean
+    expectedWins: int
+    scoutingLevel: int
+    scoutingBudget: long
+  }
+}
+class RespondJobOfferUseCase <<UseCase>> {
+  execute(RespondJobOfferCommand): JobOfferResult «@Transactional»
+}
+class RespondJobOfferCommand <<record>> {
+  careerId: UUID
+  offerId: UUID
+  decision: ACCEPT|REJECT|LATER
+  userId: UUID
+}
+class JobOfferGenerationJob <<Job>> {
+  onWeekCompleted(saveId, week)
+}
+class JobOfferPolicy <<Engine>> {
+  window(season.phase, eliminated): boolean
+  generate(save, moralLiga, clubs, seed): List<JobOfferDraft>
+  boardReleases(contract, offer, moralClub): boolean
+}
+Club "*" -- "*" Club : rivais da divisão
+Club "0..1" -- "1" ManagerProfile : head coach
+ManagerProfile "1" -- "*" ManagerCareerRecord : histórico
+CareerSave "1" -- "1" ManagerProfile : manager humano
+CareerSave "*" -- "0..1" Club : franquia atual
+CareerSave "1" -- "*" ManagerContract
+CareerSave "1" -- "1" ManagerMorale
+CareerSave "1" -- "*" JobOffer
+CareerSave "1" -- "*" Season
+RespondJobOfferUseCase ..> RespondJobOfferCommand : recebe
+RespondJobOfferUseCase ..> JobOffer : ACCEPTED/REJECTED
+RespondJobOfferUseCase ..> ManagerContract : TRANSFERRED + novo ACTIVE
+RespondJobOfferUseCase ..> ManagerCareerRecord : fecha/abre
+RespondJobOfferUseCase ..> JobOfferPolicy : boardReleases
+JobOfferGenerationJob ..> JobOfferPolicy : usa
+JobOfferPolicy ..> Season : phase
+JobOfferPolicy ..> ManagerMorale : lê
+@enduml

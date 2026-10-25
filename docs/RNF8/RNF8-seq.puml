@@ -1,0 +1,50 @@
+@startuml
+title RNF8 — Privacidade e conformidade com a LGPD · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+control "AuditService" as AuditService
+database "MySQL 8" as MySQL
+database "Redis 7" as Redis
+database "Cassandra 4.1" as Cassandra
+database "S3/MinIO" as S3
+participant "Email" as Email
+participant "Agendador/Job assíncrono" as Scheduler
+Manager -> Frontend: exportar meus dados
+Frontend -> API: POST /me/export
+API -> UseCase: DataExportUseCases.request(sub)
+UseCase -> MySQL: último DataExportJob do usuário
+alt pedido nas últimas 24 h
+  API --> Frontend: 429 EXPORT_RATE_LIMITED (RFC 7807) + link vigente
+else senão
+  UseCase -> MySQL: INSERT data_export_job PENDING
+  UseCase -> Scheduler: ExportJob(userId)
+  API --> Frontend: 202
+  Scheduler -> MySQL: conta, settings, consentimentos, saves, compras, auditoria própria
+  Scheduler -> Cassandra: inbox e notificações do usuário
+  Scheduler -> S3: PUT exports/{userId}/{ts}.json e .csv (privado, 24 h)
+  Scheduler -> AuditService: record(DATA_EXPORT_READY)
+  Scheduler -> Email: link de download
+end
+Manager -> Frontend: excluir minha conta (senha)
+Frontend -> API: DELETE /me
+API -> UseCase: AccountDeletionUseCases.request
+alt senha errada ou último ADMIN
+  API --> Frontend: 401 / 422 LAST_ADMIN
+else senão
+  UseCase -> MySQL: TX: PENDING_DELETION · revokedAt nas sessões
+  UseCase -> Redis: DEL session:family:* do usuário
+  UseCase -> AuditService: record(ACCOUNT_DELETION_REQUESTED)
+  API --> Frontend: 202
+end
+loop job diário de anonimização
+  Scheduler -> MySQL: contas com carência vencida
+  Scheduler -> MySQL: TX: e-mail e nome anonimizados · saves apagados · compras pseudonimizadas · DELETED
+  Scheduler -> S3: apaga mídia do titular
+  Scheduler -> AuditService: record(ACCOUNT_DELETED)
+end
+@enduml

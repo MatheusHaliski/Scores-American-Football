@@ -1,0 +1,29 @@
+@startuml
+title RF44 — Meu jogador: atleta 3D a partir da foto · Máquina de estados: Editor do Meu jogador
+skinparam StateBackgroundColor #FFF7EE
+skinparam StateBorderColor #DC5B26
+state "SemJogador" as SemJogador
+state "Dados e posição" as Dados
+Dados : faixa de corpo e número
+state "Atributos" as Atributos
+Atributos : orçamento por grupo
+state "Consentimento" as Consentimento
+state "Foto e marcos" as Foto
+Foto : gate no aparelho
+state "Insuficiente" as Insuficiente
+state "Prévia" as Previa
+Previa : revisão não aprovada
+state "Aprovado" as Aprovado
+[*] --> SemJogador
+SemJogador --> Dados : cria
+Dados --> Atributos : corpo e número válidos
+Atributos --> Previa : sem foto
+Atributos --> Consentimento : usar foto sem consentimento
+Consentimento --> Foto : autoriza
+Atributos --> Foto : usar foto
+Foto --> Insuficiente : gate reprova
+Insuficiente --> Foto : nova captura
+Foto --> Previa : gate aprova
+Previa --> Aprovado : aprovação explícita
+Aprovado --> Previa : editar anula a aprovação
+@enduml

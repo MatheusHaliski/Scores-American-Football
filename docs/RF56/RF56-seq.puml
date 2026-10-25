@@ -1,0 +1,47 @@
+@startuml
+title RF56 — Practice squad · Diagrama de sequência
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+actor "Head coach / manager (usuário autenticado)" as Manager
+participant "Frontend" as Frontend
+boundary "API" as API
+control "UseCase" as UseCase
+control "MarketEngine" as MarketEngine
+control "CapEngine" as CapEngine
+database "MySQL 8" as MySQL
+database "Cassandra 4.1" as Cassandra
+participant "Agendador/Job assíncrono" as Scheduler
+actor "Franquia adversária (IA)" as ClubeIA
+Manager -> Frontend: abre practice squad
+Frontend -> API: GET /careers/{id}/practice-squad
+API -> UseCase: GetPracticeSquadUseCase
+UseCase -> MySQL: membros, regras da liga
+UseCase --> API: PracticeSquadView
+API --> Frontend: 200
+Manager -> Frontend: elevar jogador
+Frontend -> API: POST /practice-squad/{psId}/elevate
+API -> UseCase: ElevatePracticeSquadPlayerUseCase
+alt limite de elevações
+  API --> Frontend: 422 ELEVATION_LIMIT
+else senão
+  UseCase -> MySQL: elevationsUsed+1, ativo no jogo
+  API --> Frontend: 200
+end
+Manager -> Frontend: promover ao 53
+Frontend -> API: POST /practice-squad/{psId}/promote
+API -> UseCase: PromoteToActiveRosterUseCase
+UseCase -> CapEngine: cabe no teto?
+alt elenco cheio ou sem cap
+  API --> Frontend: 422 ROSTER_FULL / CAP_EXCEEDED
+else senão
+  UseCase -> MySQL: TX: contrato ativo, cap ledger, remove membro
+  API --> Frontend: 200
+end
+Scheduler -> UseCase: PostGameReturnElevated
+UseCase -> MySQL: elevados de volta ao practice squad
+Scheduler -> MarketEngine: IA procura reforços no practice squad alheio
+MarketEngine -> ClubeIA: contrata não protegido?
+ClubeIA --> MarketEngine: sim / não
+MarketEngine -> Cassandra: inbox: jogador levado
+@enduml

@@ -1,0 +1,80 @@
+@startuml
+title RF37 — Head coach desempregado e propostas pela moral com a liga · Diagrama de atividades
+skinparam ActivityBackgroundColor #FFF7EE
+skinparam ActivityBorderColor #DC5B26
+skinparam ActivityDiamondBackgroundColor #FBE9D8
+skinparam swimlaneWidth same
+|Scheduler|
+start
+:WeekCompleted: MoraleEngine detecta demissão (RF41) ou pedido de demissão (RF8);
+|Diretoria|
+:Comunica a demissão (inbox BOARD) · contrato DISMISSED;
+|Scheduler|
+if (save continua após demissão?) then (sim)
+  :UNEMPLOYED · club nulo · ManagerCareerRecord fechado · MANAGER_DISMISSED;
+else (não)
+  :Nunca encerra o save;
+endif
+|Manager|
+:Abre a carreira;
+|Backend|
+if (dono do save?) then (sim)
+else (não)
+  :403;
+  stop
+endif
+if (modo espectador?) then (sim)
+|Frontend|
+  :Banner Modo espectador · classificação, placares, notícias;
+else (não)
+  :Central normal (RF40);
+  stop
+endif
+|Manager|
+while (desempregado e sem proposta aceita?) is (sim)
+  :Avançar semana (espectador);
+|Backend|
+  :Simula todos os jogos da semana · WeekCompleted;
+|ClubeIA|
+  if (há franquias com vaga elegíveis?) then (sim)
+    if (franquia faz a proposta?) then (sim)
+|Scheduler|
+      :JobOffer PENDING (salário pela moral, 1–4 temporadas, metas, prazo 2 semanas) · inbox · JOB_OFFER_GENERATED;
+    else (não)
+      :Franquia pula a semana;
+    endif
+  else (não)
+    :Notícia mercado frio;
+  endif
+  :Expira ofertas vencidas;
+|Manager|
+  if (responde a uma proposta?) then (sim)
+|Backend|
+    if (proposta PENDING e no prazo?) then (sim)
+    else (não)
+      :409 OFFER_NOT_PENDING;
+    endif
+|Manager|
+    if (aceita?) then (sim)
+|Backend|
+      if (aceite em transação única?) then (sim)
+        :JOB_OFFER_ACCEPTED · inbox de boas-vindas · notícia;
+|Frontend|
+        :Central da nova franquia (RF40);
+      else (não)
+|Backend|
+        :409 CONFLICT;
+      endif
+    else (não)
+      if (recusa penaliza a franquia?) then (sim)
+        :REJECTED · chance × 0,5 por 5 semanas;
+      else (não)
+        :LATER;
+      endif
+    endif
+  endif
+endwhile (não)
+|Frontend|
+:Managers do mundo mostra franquias, demissões e período sem emprego;
+end
+@enduml

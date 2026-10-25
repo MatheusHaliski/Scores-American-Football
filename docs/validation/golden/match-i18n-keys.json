@@ -1,0 +1,355 @@
+{
+  "events" : [ {
+    "textKey" : "match:event.coinToss",
+    "required" : [ "receiving" ],
+    "params" : {
+      "receiving" : "Cometas de Porto Brisa"
+    }
+  }, {
+    "textKey" : "match:event.kickoff.touchback",
+    "required" : [ "kicker" ],
+    "params" : {
+      "kicker" : "Théo Jorsen"
+    }
+  }, {
+    "textKey" : "match:event.kickoff.return",
+    "required" : [ "returner", "yards" ],
+    "params" : {
+      "kicker" : "Dante Zelberg",
+      "returner" : "Gonzalo Branberg",
+      "yards" : "13",
+      "tackler" : "Guilherme Esperdell"
+    }
+  }, {
+    "textKey" : "match:event.kickoff.returnTouchdown",
+    "required" : [ "returner" ],
+    "params" : {
+      "kicker" : "Théo Jorsen",
+      "returner" : "Rafael Casaro",
+      "yards" : "144"
+    }
+  }, {
+    "textKey" : "match:event.kickoff.fumble",
+    "required" : [ "returner" ],
+    "params" : {
+      "kicker" : "Pedro Quelino",
+      "returner" : "Tyler Salmore",
+      "yards" : "27",
+      "tackler" : "Brandon Lorquist"
+    }
+  }, {
+    "textKey" : "match:event.onside.recovered",
+    "required" : [ "kicker" ],
+    "params" : {
+      "kicker" : "Théo Gilaro"
+    }
+  }, {
+    "textKey" : "match:event.onside.lost",
+    "required" : [ "kicker" ],
+    "params" : {
+      "kicker" : "Dante Zelberg"
+    }
+  }, {
+    "textKey" : "match:event.freeKick.return",
+    "required" : [ "returner", "yards" ],
+    "params" : {
+      "kicker" : "Dante Ulmmore",
+      "returner" : "André Mararo",
+      "yards" : "5",
+      "tackler" : "Ravi Feneiro"
+    }
+  }, {
+    "textKey" : "match:event.run.gain",
+    "required" : [ "rusher", "yards" ],
+    "params" : {
+      "rusher" : "Rafael Casaro",
+      "yards" : "3",
+      "tackler" : "Kenji Salales"
+    }
+  }, {
+    "textKey" : "match:event.run.touchdown",
+    "required" : [ "rusher", "yards" ],
+    "params" : {
+      "rusher" : "Gonzalo Branberg",
+      "yards" : "1"
+    }
+  }, {
+    "textKey" : "match:event.run.fumble",
+    "required" : [ "rusher", "recoveredBy" ],
+    "params" : {
+      "rusher" : "Iván Ivardell",
+      "yards" : "3",
+      "tackler" : "Tunde Lorvane",
+      "recoveredBy" : "Gabriel Norales"
+    }
+  }, {
+    "textKey" : "match:event.run.safety",
+    "required" : [ ],
+    "params" : {
+      "rusher" : "Guilherme Fenado",
+      "yards" : "-5",
+      "tackler" : "Otávio Torard"
+    }
+  }, {
+    "textKey" : "match:event.pass.complete",
+    "required" : [ "passer", "receiver", "yards" ],
+    "params" : {
+      "passer" : "Mason Penvane",
+      "receiver" : "Malik Ulmard",
+      "yards" : "18",
+      "tackler" : "Jamal Quelwick"
+    }
+  }, {
+    "textKey" : "match:event.pass.touchdown",
+    "required" : [ "passer", "receiver", "yards" ],
+    "params" : {
+      "passer" : "Mason Penvane",
+      "receiver" : "Austin Saleiro",
+      "yards" : "12"
+    }
+  }, {
+    "textKey" : "match:event.pass.incomplete",
+    "required" : [ "passer" ],
+    "params" : {
+      "passer" : "Mason Penvane",
+      "receiver" : "Malik Ulmard"
+    }
+  }, {
+    "textKey" : "match:event.pass.drop",
+    "required" : [ "passer", "receiver" ],
+    "params" : {
+      "passer" : "Mason Penvane",
+      "receiver" : "Danilo Mondell"
+    }
+  }, {
+    "textKey" : "match:event.pass.defended",
+    "required" : [ "passer", "receiver", "defender" ],
+    "params" : {
+      "passer" : "Mason Penvane",
+      "receiver" : "Bruno Norales",
+      "defender" : "Tyler Fenberg"
+    }
+  }, {
+    "textKey" : "match:event.pass.fumble",
+    "required" : [ "receiver", "recoveredBy" ],
+    "params" : {
+      "passer" : "Nolan Falquist",
+      "receiver" : "Vinícius Jorley",
+      "yards" : "30",
+      "tackler" : "Mateo Torette",
+      "recoveredBy" : "Kenji Zelton"
+    }
+  }, {
+    "textKey" : "match:event.pass.interception",
+    "required" : [ "passer", "interceptedBy" ],
+    "params" : {
+      "passer" : "Garrett Ulmford",
+      "receiver" : "Kofi Wesvane",
+      "interceptedBy" : "Théo Norado"
+    }
+  }, {
+    "textKey" : "match:event.pass.interceptionTouchdown",
+    "required" : [ "passer", "interceptedBy" ],
+    "params" : {
+      "passer" : "Marcus Norore",
+      "receiver" : "Logan Esperore",
+      "interceptedBy" : "Henrique Casford"
+    }
+  }, {
+    "textKey" : "match:event.sack",
+    "required" : [ "passer", "sackedBy", "yards" ],
+    "params" : {
+      "passer" : "Mason Penvane",
+      "sackedBy" : "Diego Branelli",
+      "yards" : "4"
+    }
+  }, {
+    "textKey" : "match:event.sack.fumble",
+    "required" : [ "passer", "sackedBy", "recoveredBy" ],
+    "params" : {
+      "passer" : "Lucas Kelovic",
+      "sackedBy" : "Cameron Garette",
+      "yards" : "3",
+      "recoveredBy" : "Dante Penley"
+    }
+  }, {
+    "textKey" : "match:event.sack.safety",
+    "required" : [ "passer", "sackedBy" ],
+    "params" : {
+      "passer" : "Austin Zelard",
+      "sackedBy" : "Noah Lorovic",
+      "yards" : "9"
+    }
+  }, {
+    "textKey" : "match:event.scramble",
+    "required" : [ "rusher", "yards" ],
+    "params" : {
+      "passer" : "Mason Penvane",
+      "rusher" : "Mason Penvane",
+      "yards" : "14",
+      "tackler" : "Tyler Rosquist"
+    }
+  }, {
+    "textKey" : "match:event.punt.return",
+    "required" : [ "punter", "yards", "returner", "returnYards" ],
+    "params" : {
+      "punter" : "Enzo Penales",
+      "yards" : "34",
+      "returner" : "Rafael Casaro",
+      "returnYards" : "8",
+      "tackler" : "André Torton"
+    }
+  }, {
+    "textKey" : "match:event.punt.returnTouchdown",
+    "required" : [ "returner" ],
+    "params" : {
+      "punter" : "Jamal Norsby",
+      "yards" : "36",
+      "returner" : "Théo Peneiro",
+      "returnYards" : "71"
+    }
+  }, {
+    "textKey" : "match:event.punt.fairCatch",
+    "required" : [ "punter", "yards", "returner" ],
+    "params" : {
+      "punter" : "Aleksander Ulmanski",
+      "yards" : "43",
+      "returner" : "Gonzalo Branberg"
+    }
+  }, {
+    "textKey" : "match:event.punt.touchback",
+    "required" : [ "punter", "yards" ],
+    "params" : {
+      "punter" : "Eduardo Cassby",
+      "yards" : "37"
+    }
+  }, {
+    "textKey" : "match:event.punt.downed",
+    "required" : [ "punter", "yards" ],
+    "params" : {
+      "punter" : "Enzo Penales",
+      "yards" : "27",
+      "returner" : "Rafael Casaro"
+    }
+  }, {
+    "textKey" : "match:event.punt.blocked",
+    "required" : [ "punter" ],
+    "params" : {
+      "punter" : "Noah Ivararo"
+    }
+  }, {
+    "textKey" : "match:event.punt.muffed",
+    "required" : [ "returner" ],
+    "params" : {
+      "punter" : "Rodrigo Fenton",
+      "yards" : "44",
+      "returner" : "Mason Quelmore"
+    }
+  }, {
+    "textKey" : "match:event.fieldGoal.good",
+    "required" : [ "kicker", "distance" ],
+    "params" : {
+      "kicker" : "Dante Zelberg",
+      "distance" : "21"
+    }
+  }, {
+    "textKey" : "match:event.fieldGoal.missed",
+    "required" : [ "kicker", "distance" ],
+    "params" : {
+      "kicker" : "Cameron Espermore",
+      "distance" : "48"
+    }
+  }, {
+    "textKey" : "match:event.fieldGoal.blocked",
+    "required" : [ "kicker", "distance" ],
+    "params" : {
+      "kicker" : "Tomás Maranski",
+      "distance" : "30"
+    }
+  }, {
+    "textKey" : "match:event.extraPoint.good",
+    "required" : [ "kicker" ],
+    "params" : {
+      "kicker" : "Théo Jorsen",
+      "distance" : "32"
+    }
+  }, {
+    "textKey" : "match:event.extraPoint.missed",
+    "required" : [ "kicker" ],
+    "params" : {
+      "kicker" : "Théo Jorsen",
+      "distance" : "32"
+    }
+  }, {
+    "textKey" : "match:event.twoPoint.good",
+    "required" : [ ],
+    "params" : {
+      "passer" : "Mason Penvane",
+      "receiver" : "Kenji Marsby",
+      "yards" : "2"
+    }
+  }, {
+    "textKey" : "match:event.twoPoint.failed",
+    "required" : [ ],
+    "params" : {
+      "passer" : "Mason Penvane",
+      "receiver" : "Danilo Mondell"
+    }
+  }, {
+    "textKey" : "match:event.kneel",
+    "required" : [ "rusher" ],
+    "params" : {
+      "rusher" : "Théo Lorovic"
+    }
+  }, {
+    "textKey" : "match:event.spike",
+    "required" : [ "passer" ],
+    "params" : {
+      "passer" : "Lucas Kelovic"
+    }
+  }, {
+    "textKey" : "match:event.penalty",
+    "required" : [ "code" ],
+    "params" : {
+      "code" : "DELAY_OF_GAME",
+      "player" : "Théo Lorovic"
+    }
+  }, {
+    "textKey" : "match:event.timeout",
+    "required" : [ "team", "remaining" ],
+    "params" : {
+      "team" : "Javalis de Nova Esmeralda",
+      "remaining" : "2"
+    }
+  }, {
+    "textKey" : "match:event.twoMinuteWarning",
+    "required" : [ ],
+    "params" : { }
+  }, {
+    "textKey" : "match:event.endOfQuarter",
+    "required" : [ "quarter" ],
+    "params" : {
+      "quarter" : "1"
+    }
+  }, {
+    "textKey" : "match:event.endOfHalf",
+    "required" : [ ],
+    "params" : { }
+  }, {
+    "textKey" : "match:event.endOfRegulation",
+    "required" : [ ],
+    "params" : { }
+  }, {
+    "textKey" : "match:event.endOfOvertime",
+    "required" : [ "period" ],
+    "params" : {
+      "period" : "1"
+    }
+  }, {
+    "textKey" : "match:event.final",
+    "required" : [ ],
+    "params" : { }
+  } ],
+  "options" : [ "INSIDE_RUN", "OUTSIDE_RUN", "QB_SNEAK", "SHORT_PASS", "MEDIUM_PASS", "DEEP_PASS", "PUNT", "FIELD_GOAL", "KNEEL", "SPIKE", "EXTRA_POINT", "TWO_POINT_RUN", "TWO_POINT_PASS", "DEF_BASE_COVER_3", "DEF_NICKEL_COVER_2", "DEF_DIME_COVER_4", "DEF_BLITZ_COVER_1", "DEF_GOAL_LINE_COVER_0" ],
+  "penalties" : [ "FALSE_START", "OFFSIDE", "ENCROACHMENT", "HOLDING_OFFENSE", "HOLDING_DEFENSE", "PASS_INTERFERENCE_OFFENSE", "PASS_INTERFERENCE_DEFENSE", "ROUGHING_THE_PASSER", "UNNECESSARY_ROUGHNESS", "DELAY_OF_GAME", "ILLEGAL_FORMATION", "FACEMASK", "INTENTIONAL_GROUNDING" ]
+}

@@ -151,7 +151,12 @@ export default function PlayerPage() {
                 <p className="text-[0.8rem] text-text-muted">
                   {t("player.contract.bonus", { value: f.money(fromCents(contract.signingBonus)) })} · {t("player.contract.total", { value: f.money(fromCents(contract.totalValue)) })}
                 </p>
-                {p.ownPlayer && <p className="text-[0.82rem] text-warn">{t("player.deadNow", { value: f.money(fromCents(p.deadMoneyIfReleased)) })}</p>}
+                {p.ownPlayer && (
+                  <p className="text-[0.82rem] text-warn">
+                    {t("player.deadNow", { value: f.money(fromCents(p.deadMoneyIfReleased)) })}
+                    {p.deadMoneyNextSeasonIfReleased > 0 && ` ${t("player.deadNext", { value: f.money(fromCents(p.deadMoneyNextSeasonIfReleased)) })}`}
+                  </p>
+                )}
               </div>
             ) : (
               <p className="text-sm text-text-muted">{t("player.contract.none")}</p>

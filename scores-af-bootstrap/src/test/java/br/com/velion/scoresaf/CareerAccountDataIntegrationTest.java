@@ -27,6 +27,10 @@ import br.com.velion.scoresaf.application.seed.DefaultWorldSeeder;
 import br.com.velion.scoresaf.application.usecase.rf46.AccountDeletionUseCases;
 import br.com.velion.scoresaf.domain.account.UserRole;
 import br.com.velion.scoresaf.web.security.TokenService;
+import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.transaction.PlatformTransactionManager;
+import br.com.velion.scoresaf.domain.shared.WorldKind;
+import br.com.velion.scoresaf.domain.catalog.World;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -64,6 +68,7 @@ class CareerAccountDataIntegrationTest {
   @Autowired PlayerMatchStatsRepository stats;
   @Autowired GamePlanSetupRepository plans;
   @Autowired PlaybookSetupRepository playbooks;
+  @Autowired PlatformTransactionManager txManager;
 
   @Test
   @SuppressWarnings("unchecked")
@@ -141,4 +146,53 @@ class CareerAccountDataIntegrationTest {
     assertThat(plans.findByCareerId(careerId)).isEmpty();
     assertThat(playbooks.findByCareerId(careerId)).isEmpty();
   }
+
+  /**
+   * Q-27 (D-81): eliminar a conta apaga também os mundos modelo que o titular criou e clonou no editor (RF5), com o catálogo; o mundo
+   * padrão fica. A carreira de outro usuário cujo mundo nasceu de um desses modelos sobrevive inteira: o mundo dela é uma cópia SAVE
+   * própria (RNF1) e só perde a referência de origem. Pela API ninguém inicia carreira em mundo alheio (403), então o vínculo de
+   * origem da carreira de B é gravado direto, como a cópia da criação o grava.
+   */
+  @Test
+  @SuppressWarnings("unchecked")
+  void eliminacao_apaga_os_mundos_modelo_do_titular_e_a_carreira_de_outro_usuario_sobrevive() throws Exception {
+    UUID defaultWorld = seeder.seedIfMissing().getId();
+    TestSessions.Session a = TestSessions.open(users, sessions, tokens, UserRole.PLAYER);
+    TestSessions.Session b = TestSessions.open(users, sessions, tokens, UserRole.PLAYER);
+    UUID created = UUID.fromString(id(ok(call(mvc, post("/api/v1/worlds"), a.bearer(), Map.of("name", "Criado por A")))));
+    UUID cloned = UUID.fromString(id(ok(call(mvc, post("/api/v1/worlds/" + created + "/clone"), a.bearer(), Map.of("name", "Clone de A")))));
+    Map<String, Object> careerA = create(mvc, a.bearer(), body("Carreira de A", created, club(mvc, a.bearer(), created, "PAV"), 2L));
+    UUID careerAWorld = UUID.fromString((String) careerA.get("worldId"));
+
+    Map<String, Object> careerB = create(mvc, b.bearer(), body("Carreira de B", null, club(mvc, b.bearer(), defaultWorld, "PAV"), 3L));
+    UUID careerBId = UUID.fromString(id(careerB));
+    UUID careerBWorld = UUID.fromString((String) careerB.get("worldId"));
+    tx().executeWithoutResult(st -> {
+      World w = worlds.findById(careerBWorld).orElseThrow();
+      w.setSourceWorld(worlds.findById(created).orElseThrow());
+      saves.findById(careerBId).orElseThrow().setSourceWorldName("Criado por A");
+    });
+    assertThat(ok(call(mvc, get("/api/v1/careers/" + careerBId), b.bearer(), null))).containsEntry("sourceWorldId", created.toString());
+    long careerBPlayers = players.countByWorldId(careerBWorld);
+
+    deletion.erase(users.findById(a.user().getId()).orElseThrow());
+
+    assertThat(worlds.findById(created)).as("mundo criado no editor").isEmpty();
+    assertThat(worlds.findById(cloned)).as("mundo clonado no editor").isEmpty();
+    assertThat(players.countByWorldId(created) + players.countByWorldId(cloned)).isZero();
+    assertThat(worlds.findById(careerAWorld)).as("o mundo SAVE da carreira do titular sai com ela").isEmpty();
+    assertThat(worlds.findByOwnerUserIdAndKindOrderByCreatedAtAsc(a.user().getId(), WorldKind.TEMPLATE)).isEmpty();
+    assertThat(worlds.findById(defaultWorld)).as("o mundo padrão nunca é apagado").isPresent();
+    assertThat(players.countByWorldId(defaultWorld)).isEqualTo(32 * 69);
+
+    // a carreira de B continua jogável, com o próprio mundo SAVE
+    Map<String, Object> after = ok(call(mvc, get("/api/v1/careers/" + careerBId), b.bearer(), null));
+    assertThat(after).doesNotContainKey("sourceWorldId").containsEntry("sourceWorldName", "Criado por A").containsEntry("worldId", careerBWorld.toString());
+    assertThat(players.countByWorldId(careerBWorld)).isEqualTo(careerBPlayers);
+    Map<String, Object> roster = ok(call(mvc, get("/api/v1/careers/" + careerBId + "/roster"), b.bearer(), null));
+    assertThat((Map<String, Object>) roster.get("counts")).containsEntry("roster", 53);
+    ok(call(mvc, get("/api/v1/careers/" + careerBId + "/dashboard"), b.bearer(), null));
+  }
+
+  private TransactionTemplate tx() { return new TransactionTemplate(txManager); }
 }

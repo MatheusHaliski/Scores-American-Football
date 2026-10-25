@@ -2489,7 +2489,7 @@
     "path": "/api/v1/careers/{id}/players/{pid}/roster-status",
     "usecase": "ChangeRosterStatusUseCase",
     "auth": "JWT · dono do save",
-    "desc": "ACTIVE ↔ INACTIVE do dia de jogo (46 ativos) ou move ao practice squad",
+    "desc": "ACTIVE ↔ INACTIVE do dia de jogo (46 ativos) ou move ao practice squad (dos 53, passa por waivers até a semana avançar: PRACTICE_SQUAD_WAIVERS, Q-23)",
     "implemented": true
    },
    {
@@ -2576,7 +2576,7 @@
    },
    {
     "name": "Vaga no practice squad?",
-    "rule": "count(PRACTICE_SQUAD) < rules.practiceSquadMax (16) e jogador elegível (experienceYears ≤ 3 ou vaga de veterano)",
+    "rule": "count(PRACTICE_SQUAD + PRACTICE_SQUAD_WAIVERS) < rules.practiceSquadMax (16) e jogador elegível (experienceYears ≤ 3 ou vaga de veterano, contando os em waivers)",
     "onFalse": "422 PRACTICE_SQUAD_FULL"
    },
    {
@@ -2596,8 +2596,8 @@
    },
    {
     "name": "Dead money cabe no teto?",
-    "rule": "CapEngine: capSpace − deadMoneyIfCut ≥ 0 na temporada (ou dividido em 2 se após o 1º de junho do jogo)",
-    "onFalse": "422 CAP_EXCEEDED (dispensa bloqueada)"
+    "rule": "comprometido − cap hit + dead money da temporada ≤ teto, ou não aumenta (antes de 1º de junho: dead money inteiro; a partir dele: parcela do ano agora, resto na próxima, D-79/D-80)",
+    "onFalse": "422 CAP_EXCEEDED (dispensa bloqueada; details: teto, comprometido, excedente)"
    },
    {
     "name": "Consumível aplicável?",
@@ -2702,7 +2702,7 @@
      },
      {
       "actor": "Backend",
-      "do": "PracticeSquadMember criado ou elevationsUsed + 1 (volta sozinho após o jogo)"
+      "do": "Dos 53: rosterStatus PRACTICE_SQUAD_WAIVERS (exposto a waivers, vaga reservada) · elevação: elevationsUsed + 1 (volta sozinho após o jogo)"
      }
     ]
    },
@@ -2812,7 +2812,7 @@
    },
    {
     "actor": "Scheduler",
-    "do": "Fim da semana: elevados voltam ao practice squad · contagem de semanas na IR"
+    "do": "Fim da semana: waivers resolvidos (sem reivindicação da IA, entra no practice squad: WAIVER_CLEARED) · elevados voltam ao practice squad · contagem de semanas na IR"
    },
    {
     "actor": "Frontend",

@@ -139,6 +139,7 @@
     "franchiseTag" : false,
     "totalValue" : 4832681900
   },
-  "deadMoneyIfReleased" : 966536400,
+  "deadMoneyIfReleased" : 241634100,
+  "deadMoneyNextSeasonIfReleased" : 724902300,
   "history" : [ ]
 }

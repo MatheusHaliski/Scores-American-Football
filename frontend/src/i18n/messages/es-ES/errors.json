@@ -123,5 +123,6 @@
   "ADJUSTMENT_NOT_ALLOWED": "Ajustes del playbook solo entre cuartos, en el descanso o antes del kickoff (ahora: {0}).",
   "TIMEOUT_NOT_ALLOWED": "Tiempo muerto no disponible ahora: solo con el balón muerto antes de un snap y con tiempos restantes.",
   "INVALID_ADJUSTMENT": "Ajuste no válido: {0}. Usa GAME_PLAN, PLAYBOOK o TIMEOUT con los datos del ajuste.",
-  "notFound.match": "Partido no encontrado."
+  "notFound.match": "Partido no encontrado.",
+  "CAP_EXCEEDED": "La baja supera el tope salarial de la temporada en S$ {0} (tope de S$ {1}; comprometido tras la baja: S$ {2})."
 }

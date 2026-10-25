@@ -263,7 +263,8 @@
     "salaryCap" : 25500000000,
     "capUsed" : 24224996068,
     "deadMoney" : 0,
-    "capSpace" : 1275003932
+    "capSpace" : 1275003932,
+    "deadMoneyNextSeason" : 0
   },
   "depthChart" : {
     "version" : 0,

@@ -337,4 +337,75 @@ class CareerIntegrationTest {
     @SuppressWarnings("unchecked") Map<String, Object> chart = (Map<String, Object>) d.get("depthChart");
     assertThat(chart).containsEntry("valid", true);
   }
+
+  /**
+   * Q-25 (confirmado pelo PO em 25/10/2026): o DELETE da carreira é definitivo e exige a confirmação pelo nome exato; sem ela ou com
+   * outro nome, 422 e nada muda; com ela, o save some do banco (não vira arquivada) junto com o mundo SAVE, e não há como voltar.
+   */
+  @Test
+  void delete_da_carreira_e_definitivo_com_confirmacao_pelo_nome() throws Exception {
+    String auth = bearer();
+    Map<String, Object> c = career(auth, "Definitiva", "PAV", 31L);
+    String base = "/api/v1/careers/" + id(c);
+    UUID careerId = UUID.fromString(id(c));
+    UUID careerWorld = UUID.fromString((String) c.get("worldId"));
+    assertProblem(call(mvc, delete(base), auth, null), 422, "CAREER_CONFIRMATION_REQUIRED");
+    assertProblem(call(mvc, delete(base + "?confirm=definitiva"), auth, null), 422, "CAREER_CONFIRMATION_REQUIRED");
+    assertThat(saves.findById(careerId)).isPresent();
+    assertThat(call(mvc, delete(base + "?confirm=Definitiva"), auth, null).getResponse().getStatus()).isEqualTo(204);
+    assertThat(saves.findById(careerId)).as("apagada, não arquivada").isEmpty();
+    assertThat(worlds.findById(careerWorld)).isEmpty();
+    assertProblem(call(mvc, patch(base), auth, Map.of("status", "ACTIVE")), 404, "NOT_FOUND");
+    assertThat(call(mvc, delete(base + "?confirm=Definitiva"), auth, null).getResponse().getStatus()).isEqualTo(404);
+  }
+
+  /**
+   * Q-26 (D-82): o PO não quer bloquear — o dono clona o mundo SAVE da carreira como mundo modelo (imersão: leva a temporada para o
+   * editor). O clone traz o estado da carreira (dispensado sem franquia; quem estava em waivers entra no practice squad), editar o
+   * clone não chega à carreira (RNF1), dá para iniciar carreira nova nele, e outro usuário não clona o mundo da carreira alheia.
+   */
+  @Test
+  @SuppressWarnings("unchecked")
+  void dono_clona_o_mundo_da_carreira_como_mundo_modelo() throws Exception {
+    String auth = bearer(), other = bearer();
+    Map<String, Object> c = career(auth, "Imersao", "PAV", 12L);
+    String base = "/api/v1/careers/" + id(c);
+    UUID careerWorld = UUID.fromString((String) c.get("worldId"));
+    Map<String, Object> roster = ok(call(mvc, get(base + "/roster"), auth, null));
+    Map<String, Object> released = ((List<Map<String, Object>>) roster.get("practiceSquad")).get(0);
+    ok(call(mvc, post(base + "/players/" + released.get("id") + "/release"), auth, null));
+    Map<String, Object> young = ((Map<String, List<Map<String, Object>>>) roster.get("units")).get("DEFENSE").stream()
+        .filter(p -> ((Number) p.get("experienceYears")).intValue() <= 3).findFirst().orElseThrow();
+    ok(call(mvc, patch(base + "/players/" + young.get("id") + "/roster-status"), auth, Map.of("status", "PRACTICE_SQUAD")));
+
+    MvcResult r = call(mvc, post("/api/v1/worlds/" + careerWorld + "/clone"), auth, Map.of("name", "Minha temporada"));
+    assertThat(r.getResponse().getStatus()).as(r.getResponse().getContentAsString()).isEqualTo(201);
+    Map<String, Object> clone = CareerFixtures.map(r);
+    assertThat(clone).containsEntry("kind", "TEMPLATE").containsEntry("editable", true).containsEntry("sourceWorldId", careerWorld.toString());
+    UUID tpl = UUID.fromString(id(clone));
+    Player releasedCopy = copyIn(tpl, (String) released.get("id"));
+    assertThat(releasedCopy.getRosterStatus().name()).isEqualTo("WAIVED");
+    assertThat(releasedCopy.getClub()).isNull();
+    assertThat(copyIn(tpl, (String) young.get("id")).getRosterStatus().name()).as("em waivers na carreira, practice squad no modelo").isEqualTo("PRACTICE_SQUAD");
+
+    // editar o clone não chega à carreira; a carreira continua com o mundo dela
+    UUID tplClub = club(mvc, auth, tpl, "PAV");
+    String clonedPlayer = (String) CareerFixtures.list(call(mvc, get("/api/v1/clubs/" + tplClub + "/players"), auth, null)).get(0).get("id");
+    ok(call(mvc, put("/api/v1/players/" + clonedPlayer), auth, Map.of("name", "Editado no Clone")));
+    assertThat(names(careerWorld)).doesNotContain("Editado no Clone");
+    assertThat(ok(call(mvc, get(base), auth, null))).containsEntry("worldId", careerWorld.toString());
+    // carreira nova no mundo clonado
+    create(mvc, auth, body("Do Clone", tpl, tplClub, 5L));
+    // o mundo da carreira de outro usuário não é clonado
+    assertProblem(call(mvc, post("/api/v1/worlds/" + careerWorld + "/clone"), other, null), 403, "FORBIDDEN");
+  }
+
+  /** A cópia, no mundo {@code worldId}, do jogador {@code playerId} (mesmo nome, nascimento, posição e número). */
+  private Player copyIn(UUID worldId, String playerId) {
+    return tx().execute(st -> {
+      Player o = players.findById(UUID.fromString(playerId)).orElseThrow();
+      return players.findByWorldId(worldId).stream().filter(p -> p.getName().equals(o.getName()) && p.getBirthDate().equals(o.getBirthDate())
+          && p.getPosition() == o.getPosition() && p.getJerseyNumber() == o.getJerseyNumber()).findFirst().orElseThrow();
+    });
+  }
 }

@@ -12,4 +12,6 @@ public interface WorldRepository extends BaseRepository<World, UUID> {
   Optional<World> findFirstByKindAndOwnerUserIsNullOrderByCreatedAtAsc(WorldKind kind);
   boolean existsByKindAndOwnerUserIsNull(WorldKind kind);
   List<World> findByOwnerUserIdAndKindOrderByCreatedAtAsc(UUID ownerUserId, WorldKind kind);
+  /** Mundos copiados de {@code sourceWorldId} (modelos clonados e mundos SAVE de carreiras), para soltar a origem antes de apagá-lo. */
+  List<World> findBySourceWorldId(UUID sourceWorldId);
 }

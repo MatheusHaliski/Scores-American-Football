@@ -123,5 +123,6 @@
   "ADJUSTMENT_NOT_ALLOWED": "Playbook adjustments only between quarters, at halftime or before kickoff (now: {0}).",
   "TIMEOUT_NOT_ALLOWED": "Timeout not available now: only with a dead ball before a snap and with timeouts left.",
   "INVALID_ADJUSTMENT": "Invalid adjustment: {0}. Use GAME_PLAN, PLAYBOOK or TIMEOUT with the adjustment data.",
-  "notFound.match": "Game not found."
+  "notFound.match": "Game not found.",
+  "CAP_EXCEEDED": "This release puts the season over the salary cap by S$ {0} (cap of S$ {1}; committed after the release: S$ {2})."
 }

@@ -9,7 +9,7 @@ import { COACH_STYLES, DEPTH_ROLES, DIFFICULTIES, UNITS } from "@/lib/api/career
 import { readFileSync } from "node:fs";
 import { loadGolden } from "../golden.mts";
 
-const ROSTER_STATUSES = ["ACTIVE", "INACTIVE", "PRACTICE_SQUAD", "IR", "PUP", "FREE_AGENT", "WAIVED"];
+const ROSTER_STATUSES = ["ACTIVE", "INACTIVE", "PRACTICE_SQUAD", "IR", "PUP", "FREE_AGENT", "WAIVED", "PRACTICE_SQUAD_WAIVERS"];
 const KICKOFFS = ["THU_NIGHT", "SUN_EARLY", "SUN_LATE", "SUN_NIGHT", "MON_NIGHT"];
 
 function keys(): string[] {
@@ -28,8 +28,8 @@ function keys(): string[] {
     for (const a of attrs) k.push(`attr.${a}`);
   }
   for (const c of ["ROOKIE", "VETERAN", "PRACTICE"]) k.push(`contractType.${c}`);
-  for (const m of ["STATUS_CHANGE", "RELEASE"]) k.push(`moveKind.${m}`);
-  k.push("seasonPhase.REGULAR", "rosterStatusShort.IR", "slotLabel", "tierLabel");
+  for (const m of ["STATUS_CHANGE", "RELEASE", "WAIVER_CLEARED"]) k.push(`moveKind.${m}`);
+  k.push("seasonPhase.REGULAR", "rosterStatusShort.IR", "rosterStatusShort.PRACTICE_SQUAD_WAIVERS", "slotLabel", "tierLabel");
   return k;
 }
 

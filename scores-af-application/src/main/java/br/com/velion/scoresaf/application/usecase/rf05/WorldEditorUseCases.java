@@ -122,11 +122,17 @@ public class WorldEditorUseCases {
   @Transactional(readOnly = true)
   public EditorDtos.WorldDto getWorld(UUID worldId, EditorActor actor) { return worldDto(access.readable(worldId, actor), actor); }
 
-  /** Cópia editável de um mundo modelo legível (o padrão ou um do usuário). */
+  /**
+   * Cópia editável de um mundo legível: um modelo (o padrão ou um do usuário) ou o mundo SAVE de uma carreira do próprio usuário (Q-26:
+   * levar o mundo da carreira para o editor, pela imersão; a carreira continua com o mundo dela, RNF1). Mundo SAVE de outro usuário
+   * não é clonado, nem por ADMIN (a leitura de suporte da D-21 não vira cópia).
+   */
   @Transactional
   public EditorDtos.WorldDto cloneWorld(UUID worldId, EditorActor actor, String name) {
     World src = access.readable(worldId, actor);
-    if (src.getKind() != WorldKind.TEMPLATE) throw new BusinessRuleException("WORLD_NOT_TEMPLATE", "Só mundos modelo podem ser clonados");
+    if (src.getKind() != WorldKind.TEMPLATE && !(src.getKind() == WorldKind.SAVE && WorldAccess.isOwner(src, actor))) {
+      throw new BusinessRuleException("WORLD_NOT_TEMPLATE", "Só mundos modelo e o mundo das suas carreiras podem ser clonados");
+    }
     if (worlds.findByOwnerUserIdAndKindOrderByCreatedAtAsc(actor.userId(), WorldKind.TEMPLATE).size() >= MAX_WORLDS_PER_USER) {
       throw new BusinessRuleException("WORLD_LIMIT", "Limite de mundos atingido", MAX_WORLDS_PER_USER);
     }
@@ -642,6 +648,10 @@ public class WorldEditorUseCases {
     }
     RosterStatus status = p.getRosterStatus();
     if (c.rosterStatus() != null) status = CatalogInput.enumValue(RosterStatus.class, c.rosterStatus(), "INVALID_ROSTER_STATUS");
+    if (status == RosterStatus.PRACTICE_SQUAD_WAIVERS) {
+      // waivers só existem na carreira (Q-23): o editor não tem semana para avançar
+      throw new InvalidInputException("INVALID_ROSTER_STATUS", "Situação inválida no editor", status.name());
+    }
     if (!status.requiresClub()) {
       if (creating) throw new InvalidInputException("INVALID_ROSTER_STATUS", "Situação inválida para jogador de franquia", status.name());
       target = null;

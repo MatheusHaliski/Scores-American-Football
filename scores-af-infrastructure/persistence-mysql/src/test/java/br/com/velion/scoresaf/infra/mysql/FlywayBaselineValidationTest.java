@@ -7,6 +7,8 @@ import br.com.velion.scoresaf.application.seed.DefaultWorld;
 import br.com.velion.scoresaf.application.seed.DefaultWorldFactory;
 import br.com.velion.scoresaf.domain.account.UserAccount;
 import br.com.velion.scoresaf.domain.catalog.Player;
+import br.com.velion.scoresaf.domain.career.RosterMove;
+import br.com.velion.scoresaf.domain.career.RosterMoveKind;
 import br.com.velion.scoresaf.domain.shared.RosterStatus;
 import java.util.EnumSet;
 import br.com.velion.scoresaf.domain.account.UserSettings;
@@ -99,5 +101,30 @@ class FlywayBaselineValidationTest {
     });
     assertThat(match.reports.findByFixtureId(saved.fixture().getId())).get().satisfies(r -> assertThat(r.getPlayCount()).isEqualTo(152));
     assertThat(match.stats.findByFixtureId(saved.fixture().getId())).singleElement().satisfies(l -> assertThat(l.getPassYards()).isEqualTo(254));
+  }
+
+  /**
+   * A V5 (respostas Q-22..Q-28) aceita o jogador exposto a waivers rumo ao practice squad, o movimento WAIVER_CLEARED e o dead money
+   * da temporada seguinte (regra do 1º de junho) e devolve o que foi gravado.
+   */
+  @Test
+  void respostas_q22_q28_gravam_pela_v5_e_releem() {
+    DefaultWorld w = new DefaultWorldFactory().build(DefaultWorldFactory.DEFAULT_SEED + 4);
+    catalog.persist(w);
+    CareerGraph.Saved saved = career.persist(w, "v5-" + java.util.UUID.randomUUID() + "@example.com");
+    Player p = saved.move().getPlayer();
+    p.setRosterStatus(RosterStatus.PRACTICE_SQUAD_WAIVERS);
+    catalog.players.saveAndFlush(p);
+    RosterMove release = career.moves.findById(saved.move().getId()).orElseThrow();
+    release.setDeadMoneyNextSeason(3_000_00L);
+    career.moves.saveAndFlush(release);
+    RosterMove m = new RosterMove();
+    m.setCareer(saved.career()); m.setSeason(saved.season()); m.setPlayer(p); m.setClub(p.getClub()); m.setWeek(1); m.setKind(RosterMoveKind.WAIVER_CLEARED);
+    m.setFromStatus(RosterStatus.PRACTICE_SQUAD_WAIVERS); m.setToStatus(RosterStatus.PRACTICE_SQUAD);
+    career.moves.saveAndFlush(m);
+    assertThat(catalog.players.findById(p.getId())).get().satisfies(x -> assertThat(x.getRosterStatus()).isEqualTo(RosterStatus.PRACTICE_SQUAD_WAIVERS));
+    assertThat(career.moves.findByCareerIdOrderByCreatedAtAsc(saved.career().getId())).extracting(RosterMove::getKind)
+        .containsExactly(RosterMoveKind.RELEASE, RosterMoveKind.WAIVER_CLEARED);
+    assertThat(career.moves.findById(release.getId())).get().satisfies(x -> assertThat(x.getDeadMoneyNextSeason()).isEqualTo(3_000_00L));
   }
 }

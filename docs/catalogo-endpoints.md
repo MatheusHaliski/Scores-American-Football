@@ -25,7 +25,7 @@
 | ✅ | `POST` | `/api/v1/me/deletion/cancel` | RF3 | `AccountDeletionUseCases.cancel` | JWT | Cancela dentro do prazo |
 | ⛔ alvo | `PUT` | `/api/v1/me/notification-preferences` | RF3 | `NotificationPreferenceUseCases.update` | JWT | Liga/desliga por tipo (resultado da semana, lesão, proposta, prazo de trocas, draft) |
 | ✅ | `GET` | `/api/v1/careers/{id}/roster` | RF4 | `GetRosterUseCase` | JWT · dono do save | Cards compactos por unidade (unit=OFFENSE\|DEFENSE\|SPECIAL): posição, overall na posição, macros da família (D-6), condição, moral, lesão, rosterStatus, contrato e cap hit; contadores 53/46/16 |
-| ✅ | `PATCH` | `/api/v1/careers/{id}/players/{pid}/roster-status` | RF4 | `ChangeRosterStatusUseCase` | JWT · dono do save | ACTIVE ↔ INACTIVE do dia de jogo (46 ativos) ou move ao practice squad |
+| ✅ | `PATCH` | `/api/v1/careers/{id}/players/{pid}/roster-status` | RF4 | `ChangeRosterStatusUseCase` | JWT · dono do save | ACTIVE ↔ INACTIVE do dia de jogo (46 ativos) ou move ao practice squad (dos 53, passa por waivers até a semana avançar: PRACTICE_SQUAD_WAIVERS, Q-23) |
 | ⛔ alvo | `POST` | `/api/v1/careers/{id}/players/{pid}/injured-reserve` | RF4 | `PlaceOnInjuredReserveUseCase` | JWT · dono do save | Coloca na IR (mínimo 4 semanas) e libera vaga no elenco de 53; retorno com POST …/activate |
 | ⛔ alvo | `POST` | `/api/v1/careers/{id}/practice-squad/{pid}/elevate` | RF4 | `ElevatePracticeSquadPlayerUseCase` | JWT · dono do save | Sobe um jogador do practice squad para o jogo da semana (até 3 elevações por temporada) |
 | ✅ | `POST` | `/api/v1/careers/{id}/players/{pid}/release` | RF4 | `ReleasePlayerUseCase` | JWT · dono do save | Dispensa: vai a waivers (RF65) e gera dead money no teto (RF49) |

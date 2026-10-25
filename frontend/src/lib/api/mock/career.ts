@@ -43,7 +43,7 @@ import type {
 import { CAREER_NAME, COACH_NAME, COACH_STYLES, DIFFICULTIES, MAX_ACTIVE_SLOTS, MAX_DEPTH, MOVABLE_STATUSES, UNITS } from "../career-types";
 import type { Difficulty, UserAccount } from "../types";
 import { chartLabels, defaultChart, emptyChart, removeFromChart, SLOT_BY_KEY, SLOTS, validate, available, overallAt, outOfPosition, type Chart } from "./depth";
-import { capHitOf, deadMoneyOf, generateRoster, UNIT_OF, type MockPlayer } from "./players";
+import { capHitOf, deadMoneySplitOf, generateRoster, UNIT_OF, type MockPlayer } from "./players";
 import { uuidFrom } from "./rng";
 import { CLUBS, CONFERENCES, FIXTURES, KICKOFF_SLOTS, LEAGUE_NAME, LEAGUE_SHORT, REGULAR_WEEKS, SALARY_CAP, SEASON_START, SEASON_YEAR, WORLD_NAME } from "./world-data";
 
@@ -113,7 +113,7 @@ export interface StoredCareer {
   chart: Chart;
   chartVersion: number;
   chartUpdatedAt: string;
-  moves: (RosterMove & { playerId: string; capHitRemoved: number })[];
+  moves: (RosterMove & { playerId: string; capHitRemoved: number; deadMoneyNextSeason?: number })[];
   /** bloco 6b: placar de cada jogo encerrado (id do jogo → [casa, visitante]) */
   results?: Record<string, [number, number]>;
   /** bloco 6b: jogo do usuário com partida ao vivo em andamento */
@@ -218,17 +218,34 @@ function deadMoney(c: StoredCareer): number {
   return c.moves.filter((m) => m.kind === "RELEASE").reduce((a, m) => a + m.deadMoney, 0);
 }
 
+function deadMoneyNextSeason(c: StoredCareer): number {
+  return c.moves.filter((m) => m.kind === "RELEASE").reduce((a, m) => a + (m.deadMoneyNextSeason ?? 0), 0);
+}
+
+/** Regra do 1º de junho pela data do jogo (a quinta-feira da semana atual; o calendário do mock começa em setembro). */
+function fromJuneFirst(c: StoredCareer): boolean {
+  return weekStart(Math.min(c.summary.currentWeek, REGULAR_WEEKS)) >= `${SEASON_YEAR}-06-01`;
+}
+
 function capOf(c: StoredCareer): CapSummary {
   const hits = club(c).reduce((a, p) => a + capHitOf(p, SEASON_YEAR), 0);
   const dead = deadMoney(c);
-  return { salaryCap: SALARY_CAP, capUsed: hits + dead, deadMoney: dead, capSpace: SALARY_CAP - hits - dead };
+  return { salaryCap: SALARY_CAP, capUsed: hits + dead, deadMoney: dead, capSpace: SALARY_CAP - hits - dead, deadMoneyNextSeason: deadMoneyNextSeason(c) };
 }
 
 function countsOf(c: StoredCareer): RosterCounts {
   const ps = club(c);
   const n = (s: RosterStatus) => ps.filter((p) => p.rosterStatus === s).length;
   const irReturnsUsed = c.moves.filter((m) => m.fromStatus === "IR" && (m.toStatus === "ACTIVE" || m.toStatus === "INACTIVE")).length;
-  return { roster: n("ACTIVE") + n("INACTIVE"), active: n("ACTIVE"), inactive: n("INACTIVE"), practiceSquad: n("PRACTICE_SQUAD"), injuredReserve: n("IR"), irReturnsUsed };
+  return { roster: n("ACTIVE") + n("INACTIVE"), active: n("ACTIVE"), inactive: n("INACTIVE"), practiceSquad: n("PRACTICE_SQUAD"), injuredReserve: n("IR"), irReturnsUsed, waivers: n("PRACTICE_SQUAD_WAIVERS") };
+}
+
+/** Fim do período de waivers no avanço da semana (Q-23): sem reivindicação da IA (bloco 7), o exposto entra no practice squad. */
+function clearWaivers(c: StoredCareer, week: number): void {
+  for (const p of club(c).filter((x) => x.rosterStatus === "PRACTICE_SQUAD_WAIVERS")) {
+    p.rosterStatus = "PRACTICE_SQUAD";
+    c.moves.push({ id: uuidFrom("move", `${c.summary.id}:${c.moves.length}:${p.id}`), week, kind: "WAIVER_CLEARED", fromStatus: "PRACTICE_SQUAD_WAIVERS", toStatus: "PRACTICE_SQUAD", deadMoney: 0, at: new Date().toISOString(), playerId: p.id, capHitRemoved: 0 });
+  }
 }
 
 function card(p: MockPlayer, labels: string[]): PlayerCard {
@@ -360,8 +377,8 @@ export function mockCareers(user: UserAccount): MockCareers {
   const touch = (c: StoredCareer) => {
     c.summary.lastPlayedAt = new Date().toISOString();
   };
-  const record = (c: StoredCareer, p: MockPlayer, kind: string, from: RosterStatus, to: RosterStatus, dead: number, hit: number) => {
-    c.moves.push({ id: uuidFrom("move", `${c.summary.id}:${c.moves.length}:${p.id}`), week: c.summary.currentWeek, kind, fromStatus: from, toStatus: to, deadMoney: dead, at: new Date().toISOString(), playerId: p.id, capHitRemoved: hit });
+  const record = (c: StoredCareer, p: MockPlayer, kind: string, from: RosterStatus, to: RosterStatus, dead: number, hit: number, deadNext = 0) => {
+    c.moves.push({ id: uuidFrom("move", `${c.summary.id}:${c.moves.length}:${p.id}`), week: c.summary.currentWeek, kind, fromStatus: from, toStatus: to, deadMoney: dead, at: new Date().toISOString(), playerId: p.id, capHitRemoved: hit, deadMoneyNextSeason: deadNext });
   };
 
   return {
@@ -567,6 +584,7 @@ export function mockCareers(user: UserAccount): MockCareers {
         units: { OFFENSE: inRoster.filter((p) => UNIT_OF[p.position] === "OFFENSE").map(cardOf), DEFENSE: inRoster.filter((p) => UNIT_OF[p.position] === "DEFENSE").map(cardOf), SPECIAL_TEAMS: inRoster.filter((p) => UNIT_OF[p.position] === "SPECIAL_TEAMS").map(cardOf) },
         practiceSquad: mine.filter((p) => p.rosterStatus === "PRACTICE_SQUAD").map(cardOf),
         injuredReserve: mine.filter((p) => p.rosterStatus === "IR").map(cardOf),
+        waivers: mine.filter((p) => p.rosterStatus === "PRACTICE_SQUAD_WAIVERS").map(cardOf),
       };
     },
     player(id, playerId) {
@@ -577,6 +595,7 @@ export function mockCareers(user: UserAccount): MockCareers {
       const history = c.moves.filter((m) => m.playerId === p.id);
       const irMove = [...history].reverse().find((m) => m.toStatus === "IR");
       const irWeek = p.rosterStatus === "IR" ? (irMove?.week ?? null) : null;
+      const dead = p.onClub ? deadMoneySplitOf(p, SEASON_YEAR, fromJuneFirst(c)) : { currentSeason: 0, nextSeason: 0 };
       return {
         card: card(p, p.onClub ? (chartLabels(c.chart).get(p.id) ?? []) : []),
         clubId: p.onClub ? wc.id : null,
@@ -589,7 +608,8 @@ export function mockCareers(user: UserAccount): MockCareers {
         attributes: p.attributes as unknown as Record<string, Record<string, number>>,
         overallByPosition: overallByPosition(p.attributes),
         contract: { ...p.contract },
-        deadMoneyIfReleased: p.onClub ? deadMoneyOf(p, SEASON_YEAR) : 0,
+        deadMoneyIfReleased: dead.currentSeason,
+        deadMoneyNextSeasonIfReleased: dead.nextSeason,
         irPlacedWeek: irWeek,
         irEarliestReturnWeek: irWeek == null ? null : irWeek + RULES.irMinWeeks,
         history: history.map((m) => ({ id: m.id, week: m.week, kind: m.kind, fromStatus: m.fromStatus, toStatus: m.toStatus, deadMoney: m.deadMoney, at: m.at })),
@@ -616,16 +636,19 @@ export function mockCareers(user: UserAccount): MockCareers {
           if (!inRoster(from) && counts.roster >= RULES.rosterMax) throw ApiError.of(422, "ROSTER_FULL", { 0: RULES.rosterMax });
         } else if (status === "PRACTICE_SQUAD") {
           if (from === "IR") throw notAllowed();
-          if (counts.practiceSquad >= RULES.practiceSquadMax) throw ApiError.of(422, "PRACTICE_SQUAD_FULL", { 0: RULES.practiceSquadMax });
-          const vets = club(c).filter((x) => x.rosterStatus === "PRACTICE_SQUAD" && x.experienceYears > PS_MAX_EXPERIENCE).length;
+          // a vaga de quem está em waivers fica reservada (Q-23)
+          if (counts.practiceSquad + counts.waivers >= RULES.practiceSquadMax) throw ApiError.of(422, "PRACTICE_SQUAD_FULL", { 0: RULES.practiceSquadMax });
+          const vets = club(c).filter((x) => (x.rosterStatus === "PRACTICE_SQUAD" || x.rosterStatus === "PRACTICE_SQUAD_WAIVERS") && x.experienceYears > PS_MAX_EXPERIENCE).length;
           if (p.experienceYears > PS_MAX_EXPERIENCE && vets >= PS_VETERAN_SLOTS) throw ApiError.of(422, "PRACTICE_SQUAD_INELIGIBLE", { 0: PS_MAX_EXPERIENCE, 1: PS_VETERAN_SLOTS });
         } else if (status === "IR") {
           if (from === "PRACTICE_SQUAD") throw notAllowed();
           if (p.injuryWeeksOut < RULES.irMinWeeks) throw ApiError.of(422, "IR_NOT_ALLOWED", { 0: RULES.irMinWeeks });
         }
-        p.rosterStatus = status;
-        record(c, p, "STATUS_CHANGE", from, status, 0, 0);
-        if (status !== "ACTIVE" && removeFromChart(c.chart, p.id)) c.chartVersion += 1;
+        // dos 53 para o practice squad passa por waivers até a semana avançar (Q-23)
+        const landing: RosterStatus = status === "PRACTICE_SQUAD" && inRoster(from) ? "PRACTICE_SQUAD_WAIVERS" : status;
+        p.rosterStatus = landing;
+        record(c, p, "STATUS_CHANGE", from, landing, 0, 0);
+        if (landing !== "ACTIVE" && removeFromChart(c.chart, p.id)) c.chartVersion += 1;
         touch(c);
         commit();
       }
@@ -634,16 +657,24 @@ export function mockCareers(user: UserAccount): MockCareers {
     release(id, playerId) {
       const c = writable(id);
       const p = clubPlayer(c, playerId);
-      const dead = deadMoneyOf(p, SEASON_YEAR);
+      const dead = deadMoneySplitOf(p, SEASON_YEAR, fromJuneFirst(c));
       const hit = capHitOf(p, SEASON_YEAR);
+      // Q-24: recusa quando o dead money da temporada faz o comprometido subir e passar do teto (D-80)
+      const before = capOf(c);
+      const after = before.capUsed - hit + dead.currentSeason;
+      if (after > before.capUsed && after > before.salaryCap) {
+        const excess = after - before.salaryCap;
+        const reais = (cents: number) => (cents / 100).toFixed(2);
+        throw new ApiError({ status: 422, code: "CAP_EXCEEDED", message: "", details: { salaryCap: before.salaryCap, capUsed: after, excess }, correlationId: null, locale: null, params: { 0: reais(excess), 1: reais(before.salaryCap), 2: reais(after) } });
+      }
       const from = p.rosterStatus;
       p.rosterStatus = "WAIVED";
       p.onClub = false;
-      record(c, p, "RELEASE", from, "WAIVED", dead, hit);
+      record(c, p, "RELEASE", from, "WAIVED", dead.currentSeason, hit, dead.nextSeason);
       if (removeFromChart(c.chart, p.id)) c.chartVersion += 1;
       touch(c);
       commit();
-      return { playerId: p.id, name: p.name, rosterStatus: "WAIVED", deadMoney: dead, capHitRemoved: hit, counts: countsOf(c), cap: capOf(c) };
+      return { playerId: p.id, name: p.name, rosterStatus: "WAIVED", deadMoney: dead.currentSeason, deadMoneyNextSeason: dead.nextSeason, capHitRemoved: hit, counts: countsOf(c), cap: capOf(c) };
     },
     depthChart: (id) => depthChartView(find(id)),
     saveDepthChart(id, req) {
@@ -761,6 +792,7 @@ export function mockCareerAccess(user: UserAccount): MockCareerAccess {
         c.results[f.id] = [h, a];
       }
       if (c.liveFixtureId && c.results[c.liveFixtureId]) c.liveFixtureId = null;
+      if (c.summary.currentWeek === week) clearWaivers(c, week);
       c.summary.currentWeek = Math.min(REGULAR_WEEKS + 1, week + 1);
       touch(c);
       save(user.id, st);

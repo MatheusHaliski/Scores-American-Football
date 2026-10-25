@@ -1,0 +1,18 @@
+{
+  "detail" : "A dispensa estoura o teto salarial da temporada em S$ 3.505.746,37 (teto de S$ 245.755.707,06; comprometido depois da dispensa: S$ 249.261.453,43).",
+  "instance" : "/api/v1/careers/00000000-0000-4000-8000-000000000001/players/00000000-0000-4000-8000-000000000002/release",
+  "status" : 422,
+  "title" : "Regra de negócio",
+  "code" : "CAP_EXCEEDED",
+  "message" : "A dispensa estoura o teto salarial da temporada em S$ 3.505.746,37 (teto de S$ 245.755.707,06; comprometido depois da dispensa: S$ 249.261.453,43).",
+  "details" : {
+    "salaryCap" : 24575570706,
+    "capUsed" : 24926145343,
+    "excess" : 350574637
+  },
+  "correlationId" : "golden-422-cap",
+  "locale" : "pt-BR",
+  "salaryCap" : 24575570706,
+  "capUsed" : 24926145343,
+  "excess" : 350574637
+}

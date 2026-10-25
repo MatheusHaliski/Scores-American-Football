@@ -25,6 +25,7 @@ import br.com.velion.scoresaf.domain.catalog.StadiumSector;
 import br.com.velion.scoresaf.domain.catalog.TicketPolicy;
 import br.com.velion.scoresaf.domain.catalog.Uniform;
 import br.com.velion.scoresaf.domain.catalog.World;
+import br.com.velion.scoresaf.domain.shared.RosterStatus;
 import br.com.velion.scoresaf.domain.shared.WorldKind;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -87,9 +88,14 @@ public class WorldGraphStore {
         players.findByWorldId(id));
   }
 
-  /** Apaga o mundo e todo o catálogo, na ordem inversa das FKs. */
+  /**
+   * Apaga o mundo e todo o catálogo, na ordem inversa das FKs. As cópias feitas dele (mundos modelo clonados e mundos SAVE de
+   * carreiras, inclusive de outros usuários) só perdem a referência de origem: cada uma tem o próprio catálogo (RNF1, Q-27). Isso é
+   * o ON DELETE SET NULL da {@code fk_world_source}, feito nas entidades para valer também no H2 e no contexto de persistência.
+   */
   @Transactional
   public void delete(World world) {
+    for (World copy : worlds.findBySourceWorldId(world.getId())) copy.setSourceWorld(null);
     DefaultWorld g = load(world);
     g.players().forEach(players::delete);
     g.helmets().forEach(helmets::delete);
@@ -123,7 +129,8 @@ public class WorldGraphStore {
   /**
    * Cópia profunda com o tipo escolhido: TEMPLATE para o editor (RF5) ou SAVE para uma carreira nova (RF34, RNF1: o mundo da
    * carreira é dela; editar o catálogo depois não a altera). O que é da carreira (head coach humano, franquia controlada) não é
-   * copiado: as cópias nascem com head coaches da IA e nenhuma franquia controlada.
+   * copiado: as cópias nascem com head coaches da IA e nenhuma franquia controlada. Numa cópia TEMPLATE (mundo SAVE clonado como
+   * modelo, Q-26), quem estava exposto a waivers rumo ao practice squad entra nele: mundo modelo não tem semana para avançar.
    */
   @Transactional
   public Cloned cloneGraph(World source, UserAccount owner, String name, WorldKind kind) {
@@ -224,7 +231,9 @@ public class WorldGraphStore {
       n.setName(o.getName()); n.setNationality(o.getNationality()); n.setCollege(o.getCollege()); n.setBirthDate(o.getBirthDate()); n.setAge(o.getAge());
       n.setHeightCm(o.getHeightCm()); n.setWeightKg(o.getWeightKg()); n.setPosition(o.getPosition()); n.setSecondaryPosition(o.getSecondaryPosition());
       n.setAttributes(o.getAttributes().copy()); n.setOverall(o.getOverall()); n.setPotential(o.getPotential()); n.setExperienceYears(o.getExperienceYears());
-      n.setRosterStatus(o.getRosterStatus()); n.setCondition(o.getCondition()); n.setMorale(o.getMorale()); n.setSuspensionWeeks(o.getSuspensionWeeks());
+      n.setRosterStatus(kind == WorldKind.TEMPLATE && o.getRosterStatus() == RosterStatus.PRACTICE_SQUAD_WAIVERS ? RosterStatus.PRACTICE_SQUAD
+          : o.getRosterStatus());
+      n.setCondition(o.getCondition()); n.setMorale(o.getMorale()); n.setSuspensionWeeks(o.getSuspensionWeeks());
       n.setContract(o.getContract() == null ? null : o.getContract().toBuilder().baseSalaryByYear(new ArrayList<>(o.getContract().getBaseSalaryByYear())).build());
       n.setJerseyNumber(o.getJerseyNumber()); n.setLegendary(o.isLegendary()); n.setPhotoUrl(o.getPhotoUrl()); n.setModel3dUrl(o.getModel3dUrl());
       n.setInjuryWeeksOut(o.getInjuryWeeksOut());

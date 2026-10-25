@@ -49,7 +49,8 @@ public class WorldEditorController {
   public EditorDtos.WorldDto world(@PathVariable UUID id) { return editor.getWorld(id, actor()); }
 
   @PostMapping("/worlds/{id}/clone") @ResponseStatus(HttpStatus.CREATED)
-  @Operation(summary = "RF5 — Clonar mundo (padrão ou meu) para um modelo editável", description = "O mundo padrão nunca é alterado.")
+  @Operation(summary = "RF5 — Clonar mundo (padrão, meu modelo ou o mundo de uma carreira minha) para um modelo editável",
+      description = "O mundo padrão nunca é alterado; a carreira continua com o próprio mundo (Q-26, RNF1).")
   public EditorDtos.WorldDto clone(@PathVariable UUID id, @Valid @RequestBody(required = false) WorldRequest r) {
     return editor.cloneWorld(id, actor(), r == null ? null : r.name());
   }

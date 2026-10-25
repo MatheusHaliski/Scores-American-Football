@@ -16,13 +16,15 @@
     "inactive" : 0,
     "practiceSquad" : 16,
     "injuredReserve" : 0,
-    "irReturnsUsed" : 0
+    "irReturnsUsed" : 0,
+    "waivers" : 0
   },
   "cap" : {
     "salaryCap" : 25500000000,
     "capUsed" : 24224996068,
     "deadMoney" : 0,
-    "capSpace" : 1275003932
+    "capSpace" : 1275003932,
+    "deadMoneyNextSeason" : 0
   },
   "units" : {
     "OFFENSE" : [ {
@@ -2115,5 +2117,6 @@
     "contractType" : "PRACTICE",
     "depthChart" : [ ]
   } ],
-  "injuredReserve" : [ ]
+  "injuredReserve" : [ ],
+  "waivers" : [ ]
 }

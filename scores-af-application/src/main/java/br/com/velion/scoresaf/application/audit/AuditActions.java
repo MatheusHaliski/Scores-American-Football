@@ -49,6 +49,8 @@ public final class AuditActions {
   public static final String CAREER_DELETED = "CAREER_DELETED";
   public static final String ROSTER_MOVE = "ROSTER_MOVE";
   public static final String PLAYER_RELEASED = "PLAYER_RELEASED";
+  /** Jogador saiu de waivers sem reivindicação e entrou no practice squad no avanço da semana (Q-23). */
+  public static final String WAIVER_CLEARED = "WAIVER_CLEARED";
   public static final String DEPTH_CHART_UPDATED = "DEPTH_CHART_UPDATED";
   // RF61/RF7/RF27/RF29/RF62 — plano de jogo, playbook e partida (bloco 6b). Recurso: GamePlanSetup, PlaybookSetup, MatchSession, Fixture.
   public static final String GAME_PLAN_UPDATED = "GAME_PLAN_UPDATED";

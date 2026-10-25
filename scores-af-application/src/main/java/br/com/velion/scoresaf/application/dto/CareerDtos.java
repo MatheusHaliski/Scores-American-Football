@@ -52,8 +52,11 @@ public final class CareerDtos {
 
   public record InjuryDto(UUID playerId, String name, String position, String rosterStatus, int weeksOut) {}
 
-  /** Teto salarial da temporada: teto, comprometido (cap hits + dead money), dead money e espaço. */
-  public record CapDto(long salaryCap, long capUsed, long deadMoney, long capSpace) {}
+  /**
+   * Teto salarial da temporada: teto, comprometido (cap hits + dead money), dead money da temporada, espaço e o dead money das
+   * dispensas desta temporada que a regra do 1º de junho já lançou na temporada seguinte (Q-24, D-79).
+   */
+  public record CapDto(long salaryCap, long capUsed, long deadMoney, long capSpace, long deadMoneyNextSeason) {}
 
   public record DepthChartAlertDto(long version, boolean valid, int errors, int warnings, List<String> codes) {}
 

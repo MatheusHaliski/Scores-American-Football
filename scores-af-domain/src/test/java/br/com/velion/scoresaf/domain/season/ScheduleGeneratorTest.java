@@ -143,4 +143,45 @@ class ScheduleGeneratorTest {
       if (w < 5 || w > 14) assertThat(teamsPlaying).as("semana " + w).isEqualTo(32);
     }
   }
+
+  /**
+   * Q-28 (aceito pelo PO em 25/10/2026): em ligas do editor, divisões de 7 ou mais franquias se enfrentam uma vez só (um jogo por par
+   * de rivais, sem ida e volta); divisões de até 6 continuam com ida e volta.
+   */
+  @ParameterizedTest(name = "{0} franquias, {1} conf × {2} div")
+  @CsvSource({"14,1,2", "16,1,2", "28,2,2", "21,1,3", "28,1,4"})
+  void divisoes_de_7_ou_mais_se_enfrentam_uma_vez(int n, int conferences, int divisions) {
+    List<Team> teams = league(n, conferences, divisions);
+    Schedule s = ScheduleGenerator.regularSeason(teams, 18, 17, 13L * n);
+    assertInvariants(teams, s, 18, s.gamesPerTeam());
+    for (Team a : teams) {
+      for (Team b : teams) {
+        if (a.key().compareTo(b.key()) >= 0 || a.conference() != b.conference() || a.division() != b.division()) continue;
+        assertThat(divisionSizeOf(teams, a)).isGreaterThanOrEqualTo(7);
+        long games = s.games().stream().filter(g -> g.divisional() && (g.homeKey().equals(a.key()) && g.awayKey().equals(b.key())
+            || g.homeKey().equals(b.key()) && g.awayKey().equals(a.key()))).count();
+        assertThat(games).as("rivais de divisão " + a.key() + " × " + b.key()).isEqualTo(1);
+      }
+    }
+    // contraste: divisões de 6 continuam com ida e volta
+    List<Team> six = league(12, 1, 2);
+    Schedule s6 = ScheduleGenerator.regularSeason(six, 18, 17, 5L);
+    Team t = six.get(0);
+    assertThat(s6.games().stream().filter(g -> g.divisional() && (g.homeKey().equals(t.key()) || g.awayKey().equals(t.key()))).count()).isEqualTo(10);
+  }
+
+  private static long divisionSizeOf(List<Team> teams, Team t) {
+    return teams.stream().filter(x -> x.conference() == t.conference() && x.division() == t.division()).count();
+  }
+
+  /** Q-28 (aceito): liga do editor com número ímpar de franquias joga 16 jogos (alguém folga toda semana). */
+  @ParameterizedTest(name = "{0} franquias")
+  @ValueSource(ints = {9, 11, 15, 21, 25, 31})
+  void liga_impar_joga_16_jogos(int n) {
+    List<Team> teams = league(n, n >= 16 ? 2 : 1, 2);
+    Schedule s = ScheduleGenerator.regularSeason(teams, 18, 17, 17L * n);
+    assertThat(s.gamesPerTeam()).isEqualTo(16);
+    assertInvariants(teams, s, 18, 16);
+    for (int w = 1; w <= 18; w++) assertThat(s.week(w).size() * 2).as("semana " + w + ": alguém folga").isLessThan(n);
+  }
 }

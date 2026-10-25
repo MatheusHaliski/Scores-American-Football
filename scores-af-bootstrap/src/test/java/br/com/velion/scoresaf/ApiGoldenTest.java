@@ -6,7 +6,16 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 
+import br.com.velion.scoresaf.application.port.out.persistence.CareerSaveRepository;
+import br.com.velion.scoresaf.application.port.out.persistence.PlayerRepository;
+import br.com.velion.scoresaf.application.port.out.persistence.WeekRepository;
 import br.com.velion.scoresaf.application.seed.DefaultWorldSeeder;
+import br.com.velion.scoresaf.domain.career.CareerSave;
+import br.com.velion.scoresaf.domain.catalog.Player;
+import br.com.velion.scoresaf.domain.catalog.PlayerContract;
+import br.com.velion.scoresaf.domain.shared.RosterStatus;
+import java.time.LocalDate;
+import java.util.Comparator;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -24,6 +33,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.node.ObjectNode;
@@ -68,6 +79,10 @@ class ApiGoldenTest {
   @Autowired MockMvc mvc;
   @Autowired JsonMapper json;
   @Autowired DefaultWorldSeeder seeder;
+  @Autowired CareerSaveRepository saves;
+  @Autowired WeekRepository weeks;
+  @Autowired PlayerRepository players;
+  @Autowired PlatformTransactionManager txManager;
 
   private void assertGolden(String file, MockHttpServletRequestBuilder request) throws Exception {
     assertGolden(file, mvc.perform(request).andReturn());
@@ -236,6 +251,39 @@ class ApiGoldenTest {
         .header("Accept-Language", "pt-BR").contentType(MediaType.APPLICATION_JSON).content("{\"version\":7,\"slots\":[]}")).andReturn();
     assertThat(conflict.getResponse().getStatus()).as(conflict.getResponse().getContentAsString()).isEqualTo(409);
     assertCareerGolden("problem-409-depth-chart.json", conflict);
+  }
+
+  /**
+   * Q-24: o 422 {@code CAP_EXCEEDED} da dispensa ({@code details}: teto, comprometido depois da dispensa e excedente, em centavos;
+   * mensagem em pt-BR), lido pelo front. Carreira dourada com a data do jogo em março (antes de 1º de junho: todo o dead money na
+   * temporada) e o teto da liga ajustado para a dispensa do jogador com o maior dead money além do cap hit passar dele.
+   */
+  @Test
+  void dispensa_que_estoura_o_teto_bate_com_a_amostra_dourada() throws Exception {
+    String auth = bearer();
+    UUID career = UUID.fromString(goldenCareer(auth));
+    long used = json.readTree(mvc.perform(get("/api/v1/careers/" + career + "/roster").header("Authorization", auth)).andReturn().getResponse()
+        .getContentAsString()).get("cap").get("capUsed").asLong();
+    UUID target = new TransactionTemplate(txManager).execute(st -> {
+      CareerSave save = saves.findById(career).orElseThrow();
+      weeks.findBySeasonIdAndNumber(save.getSeason().getId(), 1).orElseThrow().setStartsOn(LocalDate.of(2026, 3, 12));
+      Comparator<Player> byExtra = Comparator.comparingLong(p -> extraDeadMoney(p.getContract()));
+      Player p = players.findByClubIdOrderByOverallDesc(save.getClub().getId()).stream().filter(x -> x.getRosterStatus() == RosterStatus.ACTIVE)
+          .max(byExtra.thenComparing(Player::getName).thenComparingInt(Player::getJerseyNumber)).orElseThrow();
+      long extra = extraDeadMoney(p.getContract());
+      save.getLeague().setSalaryCap(used + extra - extra / 2);
+      return p.getId();
+    });
+    MvcResult refused = mvc.perform(post("/api/v1/careers/" + career + "/players/" + target + "/release").header("Authorization", auth)
+        .header("X-Correlation-Id", "golden-422-cap").header("Accept-Language", "pt-BR")).andReturn();
+    assertThat(refused.getResponse().getStatus()).as(refused.getResponse().getContentAsString()).isEqualTo(422);
+    assertCareerGolden("problem-422-cap-exceeded.json", refused);
+  }
+
+  /** Dead money do corte antes de 1º de junho de 2026 menos o cap hit liberado. */
+  private static long extraDeadMoney(PlayerContract c) {
+    int y = c.yearIndexOf(2026);
+    return c.deadMoneyIfCut(y, 5) - c.capHit(y, 5);
   }
 
   /**

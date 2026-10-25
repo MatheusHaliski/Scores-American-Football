@@ -17,7 +17,9 @@ export type CoachStyle = "OFFENSIVE" | "DEFENSIVE" | "DEVELOPER" | "MOTIVATOR";
 export const COACH_STYLES: CoachStyle[] = ["OFFENSIVE", "DEFENSIVE", "DEVELOPER", "MOTIVATOR"];
 export type Unit = "OFFENSE" | "DEFENSE" | "SPECIAL_TEAMS";
 export const UNITS: Unit[] = ["OFFENSE", "DEFENSE", "SPECIAL_TEAMS"];
-export type RosterStatus = "ACTIVE" | "INACTIVE" | "PRACTICE_SQUAD" | "IR" | "PUP" | "FREE_AGENT" | "WAIVED";
+/** `PRACTICE_SQUAD_WAIVERS`: saiu dos 53 rumo ao practice squad e está exposto a waivers até a semana avançar (Q-23, D-78). */
+export type RosterStatus = "ACTIVE" | "INACTIVE" | "PRACTICE_SQUAD" | "IR" | "PUP" | "FREE_AGENT" | "WAIVED" | "PRACTICE_SQUAD_WAIVERS";
+export const ROSTER_STATUSES: RosterStatus[] = ["ACTIVE", "INACTIVE", "PRACTICE_SQUAD", "IR", "PUP", "FREE_AGENT", "WAIVED", "PRACTICE_SQUAD_WAIVERS"];
 /** Situações que a franquia escolhe por movimento (dispensar é outra rota). */
 export type MovableStatus = "ACTIVE" | "INACTIVE" | "PRACTICE_SQUAD" | "IR";
 export const MOVABLE_STATUSES: MovableStatus[] = ["ACTIVE", "INACTIVE", "PRACTICE_SQUAD", "IR"];
@@ -254,6 +256,8 @@ export interface CapSummary {
   capUsed: number;
   deadMoney: number;
   capSpace: number;
+  /** dead money das dispensas desta temporada já lançado na seguinte (regra do 1º de junho, Q-24) */
+  deadMoneyNextSeason: number;
 }
 
 export interface DepthChartAlert {
@@ -331,6 +335,8 @@ export interface RosterCounts {
   practiceSquad: number;
   injuredReserve: number;
   irReturnsUsed: number;
+  /** expostos a waivers rumo ao practice squad (fora dos 53 e do practice squad, com a vaga reservada) */
+  waivers: number;
 }
 
 /** `PlayerCardDto`: card compacto com overall na posição natural, nível, macros da família e vagas no depth chart. */
@@ -373,6 +379,8 @@ export interface Roster {
   units: Record<Unit, PlayerCard[]>;
   practiceSquad: PlayerCard[];
   injuredReserve: PlayerCard[];
+  /** expostos a waivers rumo ao practice squad (Q-23) */
+  waivers: PlayerCard[];
 }
 
 /** `ContractDto` do editor (valores por temporada, a partir de `startSeason`). */
@@ -413,7 +421,10 @@ export interface PlayerDetail {
   attributes: Record<string, Record<string, number>>;
   overallByPosition: Partial<Record<Position, number>>;
   contract: PlayerContract | null;
+  /** dead money na temporada atual se dispensado agora */
   deadMoneyIfReleased: number;
+  /** o que a regra do 1º de junho jogaria para a temporada seguinte */
+  deadMoneyNextSeasonIfReleased: number;
   irPlacedWeek: number | null;
   irEarliestReturnWeek: number | null;
   history: RosterMove[];
@@ -430,6 +441,7 @@ export interface ReleaseResult {
   name: string;
   rosterStatus: string;
   deadMoney: number;
+  deadMoneyNextSeason: number;
   capHitRemoved: number;
   counts: RosterCounts;
   cap: CapSummary;

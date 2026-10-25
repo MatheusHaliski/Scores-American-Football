@@ -2,7 +2,7 @@
 import { useParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { api } from "@/lib/api";
-import { describeError } from "@/lib/api/errors";
+import { capExceededExcess, describeError } from "@/lib/api/errors";
 import { MOVABLE_STATUSES, type MovableStatus, type PlayerCard, type PlayerDetail, type Roster, type Unit } from "@/lib/api/types";
 import { useQuery } from "@/lib/hooks/useQuery";
 import { fromCents } from "@/lib/career/format";
@@ -19,11 +19,12 @@ import { EmptyState, ErrorState, InlineAlert, PageSkeleton } from "@/components/
 import { toast } from "@/components/ui/Toast";
 import { IconSwap, IconTrash, IconUsers } from "@/components/ui/icons";
 
-type TabKey = Unit | "PRACTICE_SQUAD" | "IR";
-const TABS: TabKey[] = ["OFFENSE", "DEFENSE", "SPECIAL_TEAMS", "PRACTICE_SQUAD", "IR"];
+type TabKey = Unit | "PRACTICE_SQUAD" | "WAIVERS" | "IR";
+const TABS: TabKey[] = ["OFFENSE", "DEFENSE", "SPECIAL_TEAMS", "PRACTICE_SQUAD", "WAIVERS", "IR"];
 
 function cardsOf(r: Roster, tab: TabKey): PlayerCard[] {
   if (tab === "PRACTICE_SQUAD") return r.practiceSquad;
+  if (tab === "WAIVERS") return r.waivers;
   if (tab === "IR") return r.injuredReserve;
   return r.units[tab];
 }
@@ -57,8 +58,9 @@ function MoveDialog({ careerId, player, onClose, onDone }: { careerId: string; p
     setBusy(status);
     setError(null);
     try {
-      await api.roster.changeStatus(careerId, player.id, status);
-      toast(t("move.done", { name: player.name, status: td("enums", `rosterStatus.${status}`) }), "good");
+      const r = await api.roster.changeStatus(careerId, player.id, status);
+      if (r.player.rosterStatus === "PRACTICE_SQUAD_WAIVERS") toast(t("move.waivers", { name: player.name }), "info");
+      else toast(t("move.done", { name: player.name, status: td("enums", `rosterStatus.${r.player.rosterStatus}`) }), "good");
       onDone();
     } catch (e) {
       setError(describeError(e));
@@ -84,16 +86,23 @@ function MoveDialog({ careerId, player, onClose, onDone }: { careerId: string; p
     setError(null);
     try {
       const r = await api.roster.release(careerId, player.id);
-      toast(t("release.done", { name: r.name, value: f.money(fromCents(r.deadMoney)) }), "info");
+      toast(
+        r.deadMoneyNextSeason > 0
+          ? t("release.doneSplit", { name: r.name, value: f.money(fromCents(r.deadMoney)), next: f.money(fromCents(r.deadMoneyNextSeason)) })
+          : t("release.done", { name: r.name, value: f.money(fromCents(r.deadMoney)) }),
+        "info",
+      );
       onDone();
     } catch (e) {
-      setError(describeError(e));
+      const excess = capExceededExcess(e);
+      setError(excess != null ? t("release.capExceeded", { excess: f.money(fromCents(excess)) }) : describeError(e));
     } finally {
       setBusy(null);
     }
   };
 
   const dead = releasing?.deadMoneyIfReleased ?? 0;
+  const deadNext = releasing?.deadMoneyNextSeasonIfReleased ?? 0;
   const hit = player?.capHit ?? 0;
   return (
     <Dialog
@@ -119,11 +128,17 @@ function MoveDialog({ careerId, player, onClose, onDone }: { careerId: string; p
         <div className="grid gap-3">
           <p className="text-[0.9rem] text-text-muted">{t("move.body")}</p>
           <div className="grid gap-2">
-            {MOVABLE_STATUSES.filter((s) => s !== player.rosterStatus).map((s) => (
-              <Button key={s} variant="secondary" block onClick={() => void move(s)} loading={busy === s} disabled={!!busy} icon={<IconSwap size={16} />} className="justify-start">
-                {t("move.to", { status: td("enums", `rosterStatus.${s}`) })}
-              </Button>
-            ))}
+            {player.rosterStatus === "PRACTICE_SQUAD_WAIVERS" ? (
+              <InlineAlert tone="warn">{t("move.onWaivers")}</InlineAlert>
+            ) : (
+              MOVABLE_STATUSES.filter((s) => s !== player.rosterStatus).map((s) => (
+                <Button key={s} variant="secondary" block onClick={() => void move(s)} loading={busy === s} disabled={!!busy} icon={<IconSwap size={16} />} className="justify-start">
+                  {s === "PRACTICE_SQUAD" && (player.rosterStatus === "ACTIVE" || player.rosterStatus === "INACTIVE")
+                    ? t("move.toPracticeSquadWaivers")
+                    : t("move.to", { status: td("enums", `rosterStatus.${s}`) })}
+                </Button>
+              ))
+            )}
           </div>
           <div className="border-t border-border pt-3">
             <Button variant="danger" block icon={<IconTrash size={16} />} onClick={() => void askRelease()} loading={loadingDetail} disabled={!!busy}>
@@ -135,10 +150,16 @@ function MoveDialog({ careerId, player, onClose, onDone }: { careerId: string; p
       )}
       {player && releasing && (
         <div className="grid gap-3">
-          <p className="text-[0.95rem] leading-relaxed text-text-soft">{t("release.body", { name: player.name })}</p>
+          <p className="text-[0.95rem] leading-relaxed text-text-soft">{t(deadNext > 0 ? "release.bodySplit" : "release.body", { name: player.name })}</p>
           <dl className="grid grid-cols-[1fr_auto] gap-x-3 gap-y-1.5 rounded-[var(--radius-md)] border border-border bg-pitch p-3 text-[0.9rem]">
             <dt className="text-text-muted">{t("release.dead")}</dt>
             <dd className="text-right font-semibold tabular text-[var(--bad-text)]">{f.money(fromCents(dead))}</dd>
+            {deadNext > 0 && (
+              <>
+                <dt className="text-text-muted">{t("release.deadNext")}</dt>
+                <dd className="text-right tabular text-text-soft">{f.money(fromCents(deadNext))}</dd>
+              </>
+            )}
             <dt className="text-text-muted">{t("release.capHit")}</dt>
             <dd className="text-right tabular">{f.money(fromCents(hit))}</dd>
             <dt className="text-text">{t("release.net")}</dt>
@@ -176,6 +197,7 @@ export default function RosterPage() {
         <Badge tone={r.counts.roster > r.rules.rosterMax ? "bad" : "neutral"}>{t("counts.roster", { n: r.counts.roster, max: r.rules.rosterMax })}</Badge>
         <Badge>{t("counts.inactive", { n: r.counts.inactive })}</Badge>
         <Badge>{t("counts.ps", { n: r.counts.practiceSquad, max: r.rules.practiceSquadMax })}</Badge>
+        {r.counts.waivers > 0 && <Badge tone="warn">{t("counts.waivers", { n: r.counts.waivers })}</Badge>}
         <Badge tone={r.counts.injuredReserve ? "bad" : "neutral"}>{t("counts.ir", { n: r.counts.injuredReserve })}</Badge>
         <Badge>{t("counts.irReturns", { n: r.counts.irReturnsUsed, max: r.rules.irReturnsPerSeason })}</Badge>
         <Badge tone={r.cap.capSpace < 0 ? "bad" : "led"}>{t("counts.capSpace", { value: f.money(fromCents(r.cap.capSpace)) })}</Badge>
@@ -186,9 +208,14 @@ export default function RosterPage() {
         tabs={TABS.map((k) => ({ value: k, label: t(`tab.${k}`), badge: <span className="tabular text-[0.7rem] text-text-dim">{count(k)}</span> }))}
       />
       {groups.length === 0 ? (
-        <EmptyState compact icon={<IconUsers size={22} />} title={tab === "PRACTICE_SQUAD" ? t("empty.PRACTICE_SQUAD") : tab === "IR" ? t("empty.IR") : t("empty.unit")} />
+        <EmptyState
+          compact
+          icon={<IconUsers size={22} />}
+          title={tab === "PRACTICE_SQUAD" ? t("empty.PRACTICE_SQUAD") : tab === "WAIVERS" ? t("empty.WAIVERS") : tab === "IR" ? t("empty.IR") : t("empty.unit")}
+        />
       ) : (
         <div className="grid gap-5" role="tabpanel">
+          {tab === "WAIVERS" && <p className="text-[0.85rem] text-text-muted">{t("waivers.hint")}</p>}
           {groups.map(([pos, cards]) => (
             <section key={pos} aria-label={td("enums", `position.${pos}`)}>
               <h2 className="mb-2 flex items-baseline gap-2 font-heading text-sm uppercase tracking-[0.14em] text-text-muted">

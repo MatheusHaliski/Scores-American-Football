@@ -123,5 +123,6 @@
   "ADJUSTMENT_NOT_ALLOWED": "Ajustes do playbook só entre quartos, no intervalo ou antes do kickoff (agora: {0}).",
   "TIMEOUT_NOT_ALLOWED": "Tempo técnico indisponível agora: só com a bola morta antes de um snap e com tempos restantes.",
   "INVALID_ADJUSTMENT": "Ajuste inválido: {0}. Use GAME_PLAN, PLAYBOOK ou TIMEOUT com os dados do ajuste.",
-  "notFound.match": "Partida não encontrada."
+  "notFound.match": "Partida não encontrada.",
+  "CAP_EXCEEDED": "A dispensa estoura o teto salarial da temporada em S$ {0} (teto de S$ {1}; comprometido depois da dispensa: S$ {2})."
 }

@@ -230,22 +230,24 @@ public class WorldEditorUseCases {
     if (c.salaryCap() != null) l.setSalaryCap(CatalogInput.nonNegative("salaryCap", c.salaryCap()));
     if (c.salaryFloor() != null) l.setSalaryFloor(CatalogInput.nonNegative("salaryFloor", c.salaryFloor()));
     if (l.getSalaryFloor() > l.getSalaryCap()) throw new InvalidInputException("INVALID_VALUE", "Piso acima do teto", "salaryFloor");
+    // regras resultantes: as atuais (já trocadas para o padrão do novo ruleset, se mudou) com o patch do comando por cima
+    LeagueRules next = l.getRules();
     if (c.rules() != null) {
-      LeagueRules next;
       try { next = c.rules().applyTo(l.getRules()); }
       catch (IllegalArgumentException e) { throw new InvalidInputException("INVALID_RULES", "Regras inválidas", "overtimeFormat"); }
       List<String> bad = next.violations();
       if (!bad.isEmpty()) throw new InvalidInputException("INVALID_RULES", "Regras inválidas: " + bad, String.join(", ", bad));
-      if (!creating) {
-        for (Club club : clubs.findByLeagueIdOrderByNameAsc(l.getId())) {
-          if (players.countByClubIdAndRosterStatusIn(club.getId(), ROSTER) > next.getRosterMax()
-              || players.countByClubIdAndRosterStatusIn(club.getId(), PRACTICE) > next.getPracticeSquadMax()) {
-            throw new BusinessRuleException("ROSTER_ABOVE_LIMIT", "Há franquias acima do novo limite de elenco", club.getName());
-          }
+    }
+    if (!creating) {
+      // sempre contra os elencos existentes: a troca de ruleset muda os limites tanto quanto um patch de regras
+      for (Club club : clubs.findByLeagueIdOrderByNameAsc(l.getId())) {
+        if (players.countByClubIdAndRosterStatusIn(club.getId(), ROSTER) > next.getRosterMax()
+            || players.countByClubIdAndRosterStatusIn(club.getId(), PRACTICE) > next.getPracticeSquadMax()) {
+          throw new BusinessRuleException("ROSTER_ABOVE_LIMIT", "Há franquias acima do novo limite de elenco", club.getName());
         }
       }
-      l.setRules(next);
     }
+    l.setRules(next);
   }
 
   // ---------------------------------------------------------------- estrutura (conferências e divisões)
@@ -277,6 +279,15 @@ public class WorldEditorUseCases {
         throw new BusinessRuleException("STRUCTURE_DIVISIONS", "Divisões inconsistentes entre as conferências");
       }
       divisionsEach = n;
+    }
+    // um id de conferência ou de divisão em duas entradas faria as duas mutarem a mesma entidade (estrutura gravada menor que a
+    // pedida, franquias com conferência que não bate com a da divisão): recusa antes de mexer em qualquer entidade
+    Set<UUID> confIds = new HashSet<>(), divIds = new HashSet<>();
+    for (EditorDtos.ConferenceDto cf : confs) {
+      if (cf.id() != null && !confIds.add(cf.id())) throw new BusinessRuleException("STRUCTURE_DUPLICATE_ID", "Conferência repetida na estrutura");
+      for (EditorDtos.DivisionDto d : cf.divisions()) {
+        if (d.id() != null && !divIds.add(d.id())) throw new BusinessRuleException("STRUCTURE_DUPLICATE_ID", "Divisão repetida na estrutura");
+      }
     }
     List<Club> leagueClubs = clubs.findByLeagueIdOrderByNameAsc(leagueId);
     Map<UUID, Club> byId = new HashMap<>();
@@ -739,17 +750,22 @@ public class WorldEditorUseCases {
 
   private EditorDtos.LeagueDto leagueDto(League l) {
     List<Club> cs = clubs.findByLeagueIdOrderByNameAsc(l.getId());
-    return EditorAssembler.league(l, cs.size(), structureValid(cs));
+    return EditorAssembler.league(l, cs.size(), structureValid(cs, divisions.findByConferenceLeagueIdOrderByConferenceSortOrderAscSortOrderAsc(l.getId())));
   }
 
-  /** Estrutura válida: 8–32 franquias, todas com divisão, divisões equilibradas. */
-  static boolean structureValid(List<Club> cs) {
-    if (cs.size() < League.MIN_TEAMS || cs.size() > League.MAX_TEAMS) return false;
+  /**
+   * Estrutura válida: 8–32 franquias, todas numa divisão da liga, nenhuma divisão vazia e tamanhos diferindo em no máximo 1. As
+   * contagens partem das divisões reais da liga (uma divisão sem franquias conta como tamanho zero).
+   */
+  static boolean structureValid(List<Club> cs, List<Division> leagueDivisions) {
+    if (cs.size() < League.MIN_TEAMS || cs.size() > League.MAX_TEAMS || leagueDivisions.isEmpty()) return false;
     Map<UUID, Integer> sizes = new HashMap<>();
+    for (Division d : leagueDivisions) sizes.put(d.getId(), 0);
     for (Club c : cs) {
-      if (c.getDivision() == null) return false;
+      if (c.getDivision() == null || !sizes.containsKey(c.getDivision().getId())) return false;
       sizes.merge(c.getDivision().getId(), 1, Integer::sum);
     }
+    if (sizes.containsValue(0)) return false;
     int min = sizes.values().stream().mapToInt(Integer::intValue).min().orElse(0);
     int max = sizes.values().stream().mapToInt(Integer::intValue).max().orElse(0);
     return max - min <= 1;

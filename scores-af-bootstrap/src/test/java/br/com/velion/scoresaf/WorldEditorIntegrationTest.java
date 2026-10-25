@@ -312,6 +312,81 @@ class WorldEditorIntegrationTest {
     assertThat(map(ok)).containsEntry("roof", "DOME").containsEntry("surface", "TURF");
   }
 
+  @Test
+  void estrutura_recusa_ids_repetidos_de_divisao_e_de_conferencia_sem_gravar_nada() throws Exception {
+    String auth = bearer(UserRole.PLAYER);
+    UUID world = cloneDefault(auth);
+    UUID league = firstLeague(world, auth);
+    String route = "/api/v1/worlds/" + world + "/leagues/" + league + "/structure";
+    Map<String, Object> before = map(call(get(route), auth, null));
+    List<Map<String, Object>> confs = cast(before.get("conferences"));
+    String conf0 = (String) confs.get(0).get("id"), conf1 = (String) confs.get(1).get("id");
+    String div0 = (String) ((Map<?, ?>) ((List<?>) confs.get(0).get("divisions")).get(0)).get("id");
+    String div1 = (String) ((Map<?, ?>) ((List<?>) confs.get(0).get("divisions")).get(1)).get("id");
+    List<String> ids = clubsOf(league, auth).stream().map(c -> (String) c.get("id")).toList();
+
+    // o mesmo id de divisão em duas entradas (uma em cada conferência), listas disjuntas e equilibradas
+    Map<String, Object> dupDivision = Map.of("conferences", List.of(
+        conf(conf0, "A", div(div0, "A1", ids.subList(0, 8)), div(div1, "A2", ids.subList(8, 16))),
+        conf(conf1, "B", div(div0, "B1", ids.subList(16, 24)), div(null, "B2", ids.subList(24, 32)))));
+    assertProblem(call(put(route), auth, dupDivision), 422, "STRUCTURE_DUPLICATE_ID");
+    // o mesmo id de conferência nas duas entradas
+    Map<String, Object> dupConference = Map.of("conferences", List.of(
+        conf(conf0, "A", div(null, "A1", ids.subList(0, 8)), div(null, "A2", ids.subList(8, 16))),
+        conf(conf0, "B", div(null, "B1", ids.subList(16, 24)), div(null, "B2", ids.subList(24, 32)))));
+    assertProblem(call(put(route), auth, dupConference), 422, "STRUCTURE_DUPLICATE_ID");
+    assertThat(map(call(get(route), auth, null))).as("nada gravado").isEqualTo(before);
+  }
+
+  @Test
+  void trocar_o_ruleset_confere_os_elencos_contra_as_regras_resultantes() throws Exception {
+    String auth = bearer(UserRole.PLAYER);
+    UUID world = cloneDefault(auth);
+    UUID pro = firstLeague(world, auth);
+    // PRO → COLLEGE: o college não tem practice squad, e cada franquia tem 16
+    assertProblem(call(put("/api/v1/leagues/" + pro), auth, Map.of("ruleset", "COLLEGE")), 422, "ROSTER_ABOVE_LIMIT");
+    assertThat(list(call(get("/api/v1/worlds/" + world + "/leagues"), auth, null)).get(0)).containsEntry("ruleset", "PRO");
+
+    // COLLEGE → PRO: elenco de 54 cabe no college (105), não no PRO (53)
+    UUID college = UUID.fromString((String) map(call(post("/api/v1/worlds/" + world + "/leagues"), auth,
+        Map.of("name", "Liga Universitária", "ruleset", "COLLEGE"))).get("id"));
+    UUID club = UUID.fromString((String) map(call(post("/api/v1/leagues/" + college + "/clubs"), auth, Map.of("name", "Universidade A", "shortName", "UNA"))).get("id"));
+    for (int i = 0; i < 54; i++) {
+      MvcResult r = call(post("/api/v1/clubs/" + club + "/players"), auth, Map.of("name", "Calouro " + i, "position", "WR", "jerseyNumber", i));
+      assertThat(r.getResponse().getStatus()).as(r.getResponse().getContentAsString()).isEqualTo(201);
+    }
+    assertProblem(call(put("/api/v1/leagues/" + college), auth, Map.of("ruleset", "PRO")), 422, "ROSTER_ABOVE_LIMIT");
+  }
+
+  @Test
+  void divisao_vazia_deixa_a_estrutura_invalida() throws Exception {
+    String auth = bearer(UserRole.PLAYER);
+    UUID world = cloneDefault(auth);
+    UUID league = firstLeague(world, auth);
+    Map<String, Object> structure = map(call(get("/api/v1/worlds/" + world + "/leagues/" + league + "/structure"), auth, null));
+    List<Map<String, Object>> confs = cast(structure.get("conferences"));
+    List<?> firstDivisionClubs = (List<?>) ((Map<?, ?>) ((List<?>) confs.get(0).get("divisions")).get(0)).get("clubIds");
+    for (Object id : firstDivisionClubs) assertThat(call(delete("/api/v1/clubs/" + id), auth, null).getResponse().getStatus()).isEqualTo(204);
+    assertThat(list(call(get("/api/v1/worlds/" + world + "/leagues"), auth, null)).get(0))
+        .containsEntry("teamCount", 28).containsEntry("structureValid", false);
+  }
+
+  private static Map<String, Object> conf(String id, String name, Map<String, Object>... divisions) {
+    Map<String, Object> m = new HashMap<>();
+    if (id != null) m.put("id", id);
+    m.put("name", name);
+    m.put("divisions", List.of(divisions));
+    return m;
+  }
+
+  private static Map<String, Object> div(String id, String name, List<String> clubIds) {
+    Map<String, Object> m = new HashMap<>();
+    if (id != null) m.put("id", id);
+    m.put("name", name);
+    m.put("clubIds", clubIds);
+    return m;
+  }
+
   // ---- apoio
   @SuppressWarnings("unchecked")
   private static <T> T cast(Object o) { return (T) o; }

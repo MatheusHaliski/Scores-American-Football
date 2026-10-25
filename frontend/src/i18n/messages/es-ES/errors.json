@@ -51,6 +51,7 @@
   "STRUCTURE_CLUBS": "Cada franquicia de la liga debe estar en exactamente una división.",
   "STRUCTURE_CONFERENCES": "La liga necesita de 1 a {0} conferencias.",
   "STRUCTURE_DIVISIONS": "Divisiones inconsistentes: cada conferencia necesita el mismo número de divisiones (1 a 4) y los tamaños pueden diferir como máximo en una franquicia.",
+  "STRUCTURE_DUPLICATE_ID": "Cada conferencia y cada división puede aparecer solo una vez en la estructura.",
   "TOO_MANY_ATTEMPTS": "Demasiados intentos de contraseña. Inténtalo más tarde.",
   "UNAUTHENTICATED": "Inicia sesión para continuar",
   "UNAVAILABLE": "No disponible.",

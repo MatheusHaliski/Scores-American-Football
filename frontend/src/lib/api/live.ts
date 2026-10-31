@@ -15,6 +15,7 @@ import {
   worldFromDto,
 } from "./live-career";
 import { gamePlanFromDto, matchEventsFromDto, matchReportFromDto, matchStateFromDto, playbookFromDto, preparationFromDto, weekBoardFromDto } from "./live-match";
+import { analysisFromDto, bracketFromDto, playoffsFromDto, seasonAdvanceFromDto, seasonSummaryFromDto, squadMoraleFromDto, standingsFromDto, trophiesFromDto, weekNewsFromDto } from "./live-season";
 import { authFromDto, profileFromDto, settingsFromDto, userFromDto, type AccountDto, type SettingsDto, type TokenResponseDto } from "./live-account";
 
 /** Implementação `live` do contrato: chama o backend Java em NEXT_PUBLIC_API_URL (rotas iguais às do Scores de basquete). */
@@ -92,6 +93,20 @@ export function createLiveApi(baseUrl: string, tokens: TokenStorage, onUnauthori
       remove: (id, confirm) => http.delete(`/careers/${id}?confirm=${encodeURIComponent(confirm)}`),
       dashboard: async (id) => dashboardFromDto(await http.get(`/careers/${id}/dashboard`)),
       calendar: async (id, week) => calendarFromDto(await http.get(`/careers/${id}/calendar`, { week })),
+      morale: async (id) => squadMoraleFromDto(await http.get(`/careers/${id}/morale`)),
+    },
+    season: {
+      standings: async (careerId) => standingsFromDto(await http.get(`/careers/${careerId}/standings`)),
+      weekNews: async (careerId, week) => weekNewsFromDto(await http.get(`/careers/${careerId}/weeks/${week}/news`)),
+      playoffs: async (careerId) => playoffsFromDto(await http.get(`/careers/${careerId}/playoffs`)),
+      bracket: async (careerId) => bracketFromDto(await http.get(`/careers/${careerId}/playoffs/bracket`)),
+      summary: async (careerId, number) => seasonSummaryFromDto(await http.get(`/careers/${careerId}/season/summary`, { number })),
+      advance: async (careerId, req) => seasonAdvanceFromDto(await http.post(`/careers/${careerId}/season/advance`, req?.seasonId ? { seasonId: req.seasonId } : {})),
+      trophies: async (careerId) => trophiesFromDto(await http.get(`/careers/${careerId}/trophies`)),
+    },
+    analysis: {
+      get: async (careerId) => analysisFromDto(await http.get(`/careers/${careerId}/analysis`)),
+      refresh: async (careerId) => analysisFromDto(await http.post(`/careers/${careerId}/analysis/refresh`)),
     },
     roster: {
       get: async (careerId) => rosterFromDto(await http.get(`/careers/${careerId}/roster`)),

@@ -52,7 +52,7 @@ package "adaptadores (scores-af-infrastructure, D-8)" as pkg_ad {
 database "MySQL 8" as s1
 database "Redis 7" as s2
 c1 --> c2 : usa
-c2 --> c11 : GET /careers/{id}/standings (alvo)\nGET /careers/{id}/weeks/{n}\nGET /careers/{id}/playoffs (alvo)\n…
+c2 --> c11 : GET /careers/{id}/standings\nGET /careers/{id}/weeks/{n}\nGET /careers/{id}/playoffs\n…
 c2 --> c12
 c11 --> c13
 c12 --> c13

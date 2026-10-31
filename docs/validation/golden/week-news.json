@@ -1,0 +1,171 @@
+{
+  "seasonId" : "00000000-0000-4000-8000-000000000001",
+  "week" : 2,
+  "weekKind" : "REGULAR",
+  "completed" : true,
+  "items" : [ {
+    "id" : "00000000-0000-4000-8000-000000000002",
+    "week" : 2,
+    "kind" : "USER_WIN",
+    "tone" : "POSITIVE",
+    "headline" : "Trovões de Porto Alvorada vence Centauros de Cerro Ventania por 21 a 10",
+    "body" : "Vitória: Trovões de Porto Alvorada chega a 2-0 na temporada.",
+    "textKey" : "news.USER_WIN",
+    "params" : {
+      "team" : "Trovões de Porto Alvorada",
+      "opponent" : "Centauros de Cerro Ventania",
+      "pointsFor" : 21,
+      "pointsAgainst" : 10,
+      "record" : "2-0",
+      "overtime" : 0
+    },
+    "clubId" : "00000000-0000-4000-8000-000000000003",
+    "fixtureId" : "00000000-0000-4000-8000-000000000004"
+  }, {
+    "id" : "00000000-0000-4000-8000-000000000005",
+    "week" : 2,
+    "kind" : "BLOWOUT",
+    "tone" : "DRAMATIC",
+    "headline" : "Atropelo: Marujos de Costa Safira vence Tamanduás de Campos Rubi por 28 a 7",
+    "body" : "A diferença de 21 pontos foi a maior da semana.",
+    "textKey" : "news.BLOWOUT",
+    "params" : {
+      "winner" : "Marujos de Costa Safira",
+      "loser" : "Tamanduás de Campos Rubi",
+      "winnerScore" : 28,
+      "loserScore" : 7,
+      "margin" : 21
+    },
+    "clubId" : "00000000-0000-4000-8000-000000000006",
+    "fixtureId" : "00000000-0000-4000-8000-000000000007"
+  }, {
+    "id" : "00000000-0000-4000-8000-000000000008",
+    "week" : 2,
+    "kind" : "THRILLER",
+    "tone" : "DRAMATIC",
+    "headline" : "Jogo da semana: Mamutes de Planalto Anil 31 x 28 Lobos-Guará de Serra Alta",
+    "body" : "Decidido por 3 ponto(s) no fim.",
+    "textKey" : "news.THRILLER",
+    "params" : {
+      "winner" : "Mamutes de Planalto Anil",
+      "loser" : "Lobos-Guará de Serra Alta",
+      "winnerScore" : 31,
+      "loserScore" : 28,
+      "overtime" : 0,
+      "margin" : 3
+    },
+    "clubId" : "00000000-0000-4000-8000-000000000009",
+    "fixtureId" : "00000000-0000-4000-8000-000000000010"
+  }, {
+    "id" : "00000000-0000-4000-8000-000000000011",
+    "week" : 2,
+    "kind" : "PASSING",
+    "tone" : "NEUTRAL",
+    "headline" : "Lucas Kelovic lança para 337 jardas e 3 TD",
+    "body" : "O quarterback de Albatrozes de São Lucário comandou o ataque contra Pioneiros de Terra Ventura.",
+    "textKey" : "news.PASSING",
+    "params" : {
+      "player" : "Lucas Kelovic",
+      "team" : "Albatrozes de São Lucário",
+      "opponent" : "Pioneiros de Terra Ventura",
+      "yards" : 337,
+      "touchdowns" : 3
+    },
+    "clubId" : "00000000-0000-4000-8000-000000000012",
+    "playerId" : "00000000-0000-4000-8000-000000000013",
+    "fixtureId" : "00000000-0000-4000-8000-000000000014"
+  }, {
+    "id" : "00000000-0000-4000-8000-000000000015",
+    "week" : 2,
+    "kind" : "RUSHING",
+    "tone" : "NEUTRAL",
+    "headline" : "André Mararo corre para 159 jardas",
+    "body" : "André Mararo (Rinocerontes de Morro Carmim) castigou a defesa de Javalis de Nova Esmeralda e marcou 0 TD.",
+    "textKey" : "news.RUSHING",
+    "params" : {
+      "player" : "André Mararo",
+      "team" : "Rinocerontes de Morro Carmim",
+      "opponent" : "Javalis de Nova Esmeralda",
+      "yards" : 159,
+      "touchdowns" : 0
+    },
+    "clubId" : "00000000-0000-4000-8000-000000000016",
+    "playerId" : "00000000-0000-4000-8000-000000000017",
+    "fixtureId" : "00000000-0000-4000-8000-000000000018"
+  }, {
+    "id" : "00000000-0000-4000-8000-000000000019",
+    "week" : 2,
+    "kind" : "RECEIVING",
+    "tone" : "NEUTRAL",
+    "headline" : "Gabriel Wesanski recebe para 140 jardas",
+    "body" : "Gabriel Wesanski (Tubarões-Martelo de Pedra Lume) foi o alvo preferido contra Avalanches de Vila Âmbar e marcou 3 TD.",
+    "textKey" : "news.RECEIVING",
+    "params" : {
+      "player" : "Gabriel Wesanski",
+      "team" : "Tubarões-Martelo de Pedra Lume",
+      "opponent" : "Avalanches de Vila Âmbar",
+      "yards" : 140,
+      "touchdowns" : 3
+    },
+    "clubId" : "00000000-0000-4000-8000-000000000020",
+    "playerId" : "00000000-0000-4000-8000-000000000021",
+    "fixtureId" : "00000000-0000-4000-8000-000000000022"
+  }, {
+    "id" : "00000000-0000-4000-8000-000000000023",
+    "week" : 2,
+    "kind" : "DEFENSE",
+    "tone" : "NEUTRAL",
+    "headline" : "Tyler Casado domina a defesa contra Jaguatiricas de Campo Celeste",
+    "body" : "0 sack(s) e 3 interceptação(ões) para Escorpiões de Serra Cobalto.",
+    "textKey" : "news.DEFENSE",
+    "params" : {
+      "player" : "Tyler Casado",
+      "team" : "Escorpiões de Serra Cobalto",
+      "opponent" : "Jaguatiricas de Campo Celeste",
+      "sacks" : 0,
+      "interceptions" : 3
+    },
+    "clubId" : "00000000-0000-4000-8000-000000000024",
+    "playerId" : "00000000-0000-4000-8000-000000000025",
+    "fixtureId" : "00000000-0000-4000-8000-000000000026"
+  }, {
+    "id" : "00000000-0000-4000-8000-000000000027",
+    "week" : 2,
+    "kind" : "USER_SEED",
+    "tone" : "POSITIVE",
+    "headline" : "Trovões de Porto Alvorada entra nos playoffs como semente 2",
+    "body" : "A temporada regular acabou: começa a disputa pelo título.",
+    "textKey" : "news.USER_SEED",
+    "params" : {
+      "team" : "Trovões de Porto Alvorada",
+      "seed" : 2
+    },
+    "clubId" : "00000000-0000-4000-8000-000000000003"
+  }, {
+    "id" : "00000000-0000-4000-8000-000000000028",
+    "week" : 2,
+    "kind" : "TOP_SEED",
+    "tone" : "NEUTRAL",
+    "headline" : "Harpias de Rio Ametista é a semente 1 da Conferência Atlântica",
+    "body" : "Folga na primeira rodada e mando de campo nos playoffs.",
+    "textKey" : "news.TOP_SEED",
+    "params" : {
+      "team" : "Harpias de Rio Ametista",
+      "conference" : "Conferência Atlântica"
+    },
+    "clubId" : "00000000-0000-4000-8000-000000000029"
+  }, {
+    "id" : "00000000-0000-4000-8000-000000000030",
+    "week" : 2,
+    "kind" : "TOP_SEED",
+    "tone" : "NEUTRAL",
+    "headline" : "Marujos de Costa Safira é a semente 1 da Conferência Pacífica",
+    "body" : "Folga na primeira rodada e mando de campo nos playoffs.",
+    "textKey" : "news.TOP_SEED",
+    "params" : {
+      "team" : "Marujos de Costa Safira",
+      "conference" : "Conferência Pacífica"
+    },
+    "clubId" : "00000000-0000-4000-8000-000000000006"
+  } ]
+}

@@ -14,4 +14,15 @@ public interface PlayerMatchStatsJpaRepository extends JpaRepository<PlayerMatch
   @Modifying(flushAutomatically = true)
   @Query("delete from PlayerMatchStats x where x.career.id = :id")
   void deleteByCareerId(@Param("id") UUID id);
+
+  @Override
+  @Query("select new br.com.velion.scoresaf.application.port.out.persistence.PlayerSeasonTotals(x.player.id, x.club.id, count(x), sum(x.snaps), "
+      + "sum(x.passAttempts), sum(x.passCompletions), sum(x.passYards), sum(x.passTouchdowns), sum(x.interceptionsThrown), sum(x.sacked), "
+      + "sum(x.rushAttempts), sum(x.rushYards), sum(x.rushTouchdowns), sum(x.fumblesLost), sum(x.targets), sum(x.receptions), sum(x.receivingYards), "
+      + "sum(x.receivingTouchdowns), sum(x.soloTackles), sum(x.tacklesForLoss), sum(x.sacks), sum(x.interceptions), sum(x.passesDefended), "
+      + "sum(x.forcedFumbles), sum(x.fumbleRecoveries), sum(x.fieldGoalsMade), sum(x.fieldGoalAttempts), sum(x.extraPointsMade), "
+      + "sum(x.extraPointAttempts), sum(x.punts), sum(x.puntYards)) from PlayerMatchStats x "
+      + "where x.fixture.season.id = :season and x.fixture.weekNumber <= :lastWeek and x.snaps > 0 group by x.player.id, x.club.id")
+  java.util.List<br.com.velion.scoresaf.application.port.out.persistence.PlayerSeasonTotals> totalsBySeason(@Param("season") UUID seasonId,
+      @Param("lastWeek") int lastWeek);
 }

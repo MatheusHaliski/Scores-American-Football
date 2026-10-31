@@ -1,6 +1,8 @@
 package br.com.velion.scoresaf.web.controller.career;
 
 import br.com.velion.scoresaf.application.dto.CareerDtos;
+import br.com.velion.scoresaf.application.dto.MoraleDtos;
+import br.com.velion.scoresaf.application.usecase.rf41.GetMoraleUseCase;
 import br.com.velion.scoresaf.application.usecase.rf11.CareerUseCases;
 import br.com.velion.scoresaf.application.usecase.rf34.CreateCareerUseCase;
 import br.com.velion.scoresaf.application.usecase.rf40.GetClubDashboardUseCase;
@@ -27,10 +29,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/** RF11 / RF34 / RF40 — carreiras salvas (slots), nova carreira e central da franquia. Toda rota com {@code {id}} exige o dono do save. */
+/**
+ * RF11 / RF34 / RF40 / RF41 — carreiras salvas (slots), nova carreira, central da franquia e moral do elenco. Toda rota com {@code {id}}
+ * exige o dono do save.
+ */
 @RestController
 @RequestMapping("/api/v1/careers")
-@Tag(name = "RF11/RF34/RF40 — Carreiras e central da franquia")
+@Tag(name = "RF11/RF34/RF40/RF41 — Carreiras, central da franquia e moral")
 public class CareerController {
   public record CreateRequest(@NotBlank @Size(max = 40) String name, UUID worldId, UUID leagueId, @NotNull UUID clubId, @Size(max = 40) String coachName,
                               @Size(max = 3) String coachNationality, @Size(max = 32) String coachStyle, @Size(max = 32) String difficulty,
@@ -39,10 +44,11 @@ public class CareerController {
   public record PatchRequest(@Size(max = 40) String name, @Size(max = 32) String difficulty, @Size(max = 32) String status, Long version) {}
 
   private final CareerUseCases careers; private final CreateCareerUseCase create; private final GetClubDashboardUseCase dashboard;
-  private final CurrentUser current;
+  private final GetMoraleUseCase morale; private final CurrentUser current;
 
-  public CareerController(CareerUseCases careers, CreateCareerUseCase create, GetClubDashboardUseCase dashboard, CurrentUser current) {
-    this.careers = careers; this.create = create; this.dashboard = dashboard; this.current = current;
+  public CareerController(CareerUseCases careers, CreateCareerUseCase create, GetClubDashboardUseCase dashboard, GetMoraleUseCase morale,
+                          CurrentUser current) {
+    this.careers = careers; this.create = create; this.dashboard = dashboard; this.morale = morale; this.current = current;
   }
 
   @GetMapping @Operation(summary = "RF11 — Carreiras salvas e slots livres", description = "ACTIVE por slot (máx. 5), depois ARCHIVED.")
@@ -76,6 +82,12 @@ public class CareerController {
 
   @GetMapping("/{id}/dashboard")
   @Operation(summary = "RF40 — Central da franquia", description = "Próximo jogo ou bye, campanha, divisão, próximos jogos de divisão, destaques do elenco, "
-      + "lesionados, teto salarial e estado do depth chart. live, morale, analysis, inbox e scoresPoints ficam nulos até os blocos que os criam.")
+      + "lesionados, teto salarial, estado do depth chart, partida ao vivo, moral do elenco, último relatório do analista, notícias da última semana e o "
+      + "usuário nos playoffs. inbox e scoresPoints ficam nulos até os blocos que os criam.")
   public CareerDtos.DashboardDto dashboard(@PathVariable UUID id) { return dashboard.execute(id, current.requireId()); }
+
+  @GetMapping("/{id}/morale")
+  @Operation(summary = "RF41 — Moral do elenco", description = "Moral do elenco e de cada jogador, por regras: resultados, snaps × esperado para o papel no "
+      + "depth chart, contrato, idade e sequência, com os fatores da última semana, tendência, pedido de troca e modificador de desempenho (fora do motor).")
+  public MoraleDtos.SquadMoraleDto morale(@PathVariable UUID id) { return morale.execute(id, current.requireId()); }
 }

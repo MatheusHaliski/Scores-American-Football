@@ -79,7 +79,7 @@ database "S3/MinIO" as s4
 database "Anthropic Claude" as s5
 c1 --> c8 : usa
 c2 --> c21 : dispara
-c8 --> c17 : GET /careers/{id}/season/summary (alvo)\nGET /careers/{id}/playoffs (alvo)\nGET /careers/{id}/awards (alvo)\n…
+c8 --> c17 : GET /careers/{id}/season/summary\nGET /careers/{id}/playoffs\nGET /careers/{id}/awards (alvo)\n…
 c8 --> c18
 c8 --> c19
 c8 --> c20

@@ -124,5 +124,9 @@
   "TIMEOUT_NOT_ALLOWED": "Tempo técnico indisponível agora: só com a bola morta antes de um snap e com tempos restantes.",
   "INVALID_ADJUSTMENT": "Ajuste inválido: {0}. Use GAME_PLAN, PLAYBOOK ou TIMEOUT com os dados do ajuste.",
   "notFound.match": "Partida não encontrada.",
-  "CAP_EXCEEDED": "A dispensa estoura o teto salarial da temporada em S$ {0} (teto de S$ {1}; comprometido depois da dispensa: S$ {2})."
+  "CAP_EXCEEDED": "A dispensa estoura o teto salarial da temporada em S$ {0} (teto de S$ {1}; comprometido depois da dispensa: S$ {2}).",
+  "SEASON_NOT_FINISHED": "A temporada só avança depois da final dos playoffs (fase atual: {0}).",
+  "SEASON_ALREADY_ADVANCED": "Esta temporada já foi encerrada e a temporada {0} já começou.",
+  "ANALYSIS_NOT_FOUND": "O analista ainda não fez nenhum relatório. Peça uma atualização.",
+  "notFound.season": "Temporada não encontrada nesta carreira."
 }

@@ -9,6 +9,7 @@ import br.com.velion.scoresaf.application.port.out.persistence.ClubRepository;
 import br.com.velion.scoresaf.application.port.out.persistence.FixtureRepository;
 import br.com.velion.scoresaf.application.port.out.persistence.MatchReportRepository;
 import br.com.velion.scoresaf.application.port.out.persistence.MatchSessionRepository;
+import br.com.velion.scoresaf.application.port.out.persistence.WeekRepository;
 import br.com.velion.scoresaf.application.usecase.support.CareerAssembler;
 import br.com.velion.scoresaf.application.usecase.support.CareerSupport;
 import br.com.velion.scoresaf.domain.career.CareerSave;
@@ -36,11 +37,12 @@ public class MatchQueryUseCases {
   public static final int MAX_EVENTS = 1000;
 
   private final CareerSupport support; private final MatchSupport matches; private final MatchSessionRepository sessions; private final FixtureRepository fixtures;
-  private final MatchReportRepository reports; private final ClubRepository clubs;
+  private final MatchReportRepository reports; private final ClubRepository clubs; private final WeekRepository weeks;
 
   public MatchQueryUseCases(CareerSupport support, MatchSupport matches, MatchSessionRepository sessions, FixtureRepository fixtures,
-                            MatchReportRepository reports, ClubRepository clubs) {
+                            MatchReportRepository reports, ClubRepository clubs, WeekRepository weeks) {
     this.support = support; this.matches = matches; this.sessions = sessions; this.fixtures = fixtures; this.reports = reports; this.clubs = clubs;
+    this.weeks = weeks;
   }
 
   @Transactional(readOnly = true)
@@ -94,7 +96,8 @@ public class MatchQueryUseCases {
     CareerSave save = support.owned(careerId, userId);
     Season season = save.getSeason();
     if (season == null) throw new BusinessRuleException("NO_SEASON", "Carreira sem temporada");
-    if (n < 1 || n > season.getRegularSeasonWeeks()) throw new InvalidInputException("INVALID_WEEK", "Semana inválida: " + n, n, season.getRegularSeasonWeeks());
+    int last = CareerAssembler.lastWeek(weeks.findBySeasonIdOrderByNumberAsc(season.getId()), season);
+    if (n < 1 || n > last) throw new InvalidInputException("INVALID_WEEK", "Semana inválida: " + n, n, last);
     return matches.board(save, season, n, clubs.findByLeagueIdOrderByNameAsc(season.getLeague().getId()));
   }
 

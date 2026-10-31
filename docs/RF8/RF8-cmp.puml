@@ -62,7 +62,7 @@ database "MySQL 8" as s1
 database "Cassandra 4.1" as s2
 database "Redis 7" as s3
 c1 --> c4 : usa
-c4 --> c13 : GET /careers/{id}/manager (alvo)\nGET /careers/{id}/morale (alvo)\nPOST /careers/{id}/manager/raise-request (alvo)\n…
+c4 --> c13 : GET /careers/{id}/manager (alvo)\nGET /careers/{id}/morale\nPOST /careers/{id}/manager/raise-request (alvo)\n…
 c4 --> c14
 c4 --> c15
 c13 --> c16

@@ -47,7 +47,8 @@ import tools.jackson.core.type.TypeReference;
  * RF46 CA07 / LGPD com a carreira plugada no {@code AccountDataContributor} e no {@code AccountErasureHandler} (D-12): a exportação
  * (JSON imediato e o arquivo do pedido) leva as carreiras e os movimentos do elenco; a eliminação da conta apaga as carreiras com o
  * mundo de cada uma e não toca no mundo padrão. Bloco 6b: as partidas, o plano de jogo e o playbook entram na exportação e saem na
- * eliminação.
+ * eliminação. Bloco 6c: as temporadas (campeã, semente do usuário, prêmios) e os relatórios do analista entram na exportação; sementes,
+ * prêmios e relatórios saem na eliminação.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -69,6 +70,42 @@ class CareerAccountDataIntegrationTest {
   @Autowired GamePlanSetupRepository plans;
   @Autowired PlaybookSetupRepository playbooks;
   @Autowired PlatformTransactionManager txManager;
+  @Autowired br.com.velion.scoresaf.application.port.out.persistence.PlayoffSeedRepository seeds;
+  @Autowired br.com.velion.scoresaf.application.port.out.persistence.SeasonAwardRepository awards;
+  @Autowired br.com.velion.scoresaf.application.port.out.persistence.AnalysisReportRepository analyses;
+
+  /** Bloco 6c: a exportação leva a temporada encerrada e o relatório do analista; a eliminação apaga sementes, prêmios e relatórios. */
+  @Test
+  @SuppressWarnings("unchecked")
+  void exportacao_leva_temporada_e_analista_e_eliminacao_apaga_sementes_premios_e_relatorios() throws Exception {
+    UUID defaultWorld = seeder.seedIfMissing().getId();
+    TestSessions.Session s = TestSessions.open(users, sessions, tokens, UserRole.PLAYER);
+    String auth = s.bearer();
+    SeasonFixtures.Career c = SeasonFixtures.shortCareer(mvc, auth, defaultWorld, "Temporada Exportada", "CRU", 6L, 1);
+    ok(call(mvc, post(c.base() + "/analysis/refresh").with(r -> { r.setRemoteAddr("203.0.113.81"); return r; }), auth, null));
+    SeasonFixtures.playToEnd(mvc, c);
+    UUID careerId = UUID.fromString(c.id());
+    UUID seasonId = UUID.fromString((String) ok(call(mvc, get(c.base()), auth, null)).get("seasonId"));
+    assertThat(seeds.findBySeasonIdOrderBySeedAsc(seasonId)).hasSize(14);
+    assertThat(awards.findBySeasonId(seasonId)).isNotEmpty();
+
+    Map<String, Object> export = ok(call(mvc, get("/api/v1/me/export"), auth, null));
+    assertThat((List<Map<String, Object>>) export.get("careerSeasons")).singleElement().satisfies(row -> {
+      assertThat(row).containsEntry("careerId", c.id()).containsEntry("number", 1).containsEntry("phase", "OFFSEASON");
+      assertThat(row.get("champion")).isNotNull();
+      assertThat((List<String>) row.get("awards")).anySatisfy(a -> assertThat(a).startsWith("MVP: "));
+    });
+    assertThat((List<Map<String, Object>>) export.get("careerAnalyses")).singleElement().satisfies(row -> assertThat(row).containsEntry("week", 1)
+        .containsEntry("source", "RULES"));
+
+    deletion.erase(users.findById(s.user().getId()).orElseThrow());
+    assertThat(saves.findById(careerId)).isEmpty();
+    assertThat(seeds.findBySeasonIdOrderBySeedAsc(seasonId)).isEmpty();
+    assertThat(awards.findBySeasonId(seasonId)).isEmpty();
+    assertThat(analyses.findByCareerIdOrderByCreatedAtAsc(careerId)).isEmpty();
+    assertThat(worlds.findById(c.world())).as("o mundo modelo clonado no editor também sai (D-81)").isEmpty();
+    assertThat(players.countByWorldId(defaultWorld)).isEqualTo(32 * 69);
+  }
 
   @Test
   @SuppressWarnings("unchecked")

@@ -51,7 +51,7 @@ Fonte: [`RF66-stm-playoffmatchup-confronto.puml`](RF66-stm-playoffmatchup-confro
 | Estado | Método | Rota | Caso de uso | Autorização | Descrição |
 |---|---|---|---|---|---|
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/playoffs/seeds` | `GetPlayoffSeedsUseCase` | JWT · dono do save | Seeds por conferência (projeção na temporada, oficial no fim) |
-| ⛔ alvo | `GET` | `/api/v1/careers/{id}/playoffs/bracket` | `GetPlayoffBracketUseCase` | JWT · dono do save | Chave por rodada (Wild Card, Divisional, Conferência, Final) |
+| ✅ | `GET` | `/api/v1/careers/{id}/playoffs/bracket` | `GetPlayoffBracketUseCase` | JWT · dono do save | Chave por rodada (Wild Card, Divisional, Conferência, Final) |
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/playoffs/matchups/{mid}` | `GetPlayoffMatchupUseCase` | JWT · dono do save | Confronto: seeds, local, placar, vencedor |
 
 ## Pontos de decisão

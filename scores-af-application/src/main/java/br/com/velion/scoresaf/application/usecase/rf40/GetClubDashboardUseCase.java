@@ -21,6 +21,18 @@ import br.com.velion.scoresaf.domain.season.Fixture;
 import br.com.velion.scoresaf.domain.season.Season;
 import br.com.velion.scoresaf.domain.shared.FixtureStatus;
 import br.com.velion.scoresaf.domain.shared.RosterStatus;
+import br.com.velion.scoresaf.application.port.out.persistence.WeekRepository;
+import br.com.velion.scoresaf.application.service.MoraleService;
+import br.com.velion.scoresaf.application.service.PlayoffService;
+import br.com.velion.scoresaf.application.service.StandingsService;
+import br.com.velion.scoresaf.application.usecase.rf21.GetWeekNewsUseCase;
+import br.com.velion.scoresaf.application.usecase.rf41.AnalysisUseCases;
+import br.com.velion.scoresaf.application.usecase.rf66.PlayoffUseCases;
+import br.com.velion.scoresaf.domain.season.Standings;
+import br.com.velion.scoresaf.domain.season.Week;
+import br.com.velion.scoresaf.domain.shared.WeekStatus;
+import java.util.Locale;
+import org.springframework.context.i18n.LocaleContextHolder;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -30,22 +42,30 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * RF40 / HU-RF40 — central da franquia, com o que existe no bloco 6a: carreira, franquia, head coach, próximo jogo (ou semana de
- * folga), campanha, posição e tabela da divisão (empate: saldo de pontos, depois prestígio — a projeção de pré-temporada, D-48), próximos jogos de divisão, destaques do elenco (5 maiores overalls), lesionados,
- * teto salarial (cap hits + dead money), o estado do depth chart e a partida ao vivo em andamento (bloco 6b). Moral, análise, inbox e
- * Scores Points vêm nulos até os blocos que os criam.
+ * RF40 / HU-RF40 — central da franquia: carreira, franquia, head coach, próximo jogo (ou semana de folga), campanha da temporada
+ * regular, posição e tabela da divisão (cadeia de desempate do RF16, D-95; sem jogos, a projeção de pré-temporada da D-48), próximos
+ * jogos de divisão, destaques do elenco (5 maiores overalls), lesionados, teto salarial (cap hits + dead money), o estado do depth
+ * chart, a partida ao vivo em andamento (bloco 6b) e, desde o bloco 6c (D-106), o resumo da moral do elenco, o último relatório do
+ * analista, até 3 notícias da última semana encerrada e o usuário nos playoffs. Inbox e Scores Points vêm nulos até os blocos que os
+ * criam (D-54).
  */
 @Service
 public class GetClubDashboardUseCase {
   private static final int HIGHLIGHTS = 5;
+  private static final int NEWS = 3;
 
   private final CareerSupport support; private final FixtureRepository fixtures; private final ClubRepository clubs; private final PlayerRepository players;
-  private final DepthChartService depthCharts; private final CapSheet cap; private final MatchSessionRepository sessions;
+  private final DepthChartService depthCharts; private final CapSheet cap; private final MatchSessionRepository sessions; private final StandingsService standings;
+  private final MoraleService morale; private final AnalysisUseCases analysis; private final GetWeekNewsUseCase news; private final PlayoffUseCases playoffs;
+  private final PlayoffService playoffService; private final WeekRepository weeks;
 
   public GetClubDashboardUseCase(CareerSupport support, FixtureRepository fixtures, ClubRepository clubs, PlayerRepository players,
-                                 DepthChartService depthCharts, CapSheet cap, MatchSessionRepository sessions) {
+                                 DepthChartService depthCharts, CapSheet cap, MatchSessionRepository sessions, StandingsService standings, MoraleService morale,
+                                 AnalysisUseCases analysis, GetWeekNewsUseCase news, PlayoffUseCases playoffs, PlayoffService playoffService,
+                                 WeekRepository weeks) {
     this.support = support; this.fixtures = fixtures; this.clubs = clubs; this.players = players; this.depthCharts = depthCharts; this.cap = cap;
-    this.sessions = sessions;
+    this.sessions = sessions; this.standings = standings; this.morale = morale; this.analysis = analysis; this.news = news; this.playoffs = playoffs;
+    this.playoffService = playoffService; this.weeks = weeks;
   }
 
   /** Partida ao vivo não encerrada da carreira (bloco 6b), ou {@code null}. */
@@ -69,13 +89,13 @@ public class GetClubDashboardUseCase {
     CareerDtos.CareerDto career = CareerAssembler.career(save, record);
     if (club == null) {
       return new CareerDtos.DashboardDto(career, null, coach, save.getCurrentWeek(), null, false, record, null, List.of(), List.of(), List.of(), List.of(),
-          null, null, null, null, null, null, null, null);
+          null, null, null, null, null, List.of(), null, null, null, null);
     }
     UUID clubId = club.getId();
     List<Fixture> mine = all.stream().filter(f -> f.involves(clubId)).toList();
     Fixture next = mine.stream().filter(f -> f.getStatus() != FixtureStatus.FINISHED).findFirst().orElse(null);
-    boolean bye = mine.stream().noneMatch(f -> f.getWeekNumber() == save.getCurrentWeek()) && season != null
-        && save.getCurrentWeek() <= season.getRegularSeasonWeeks();
+    boolean bye = season != null && mine.stream().noneMatch(f -> f.getWeekNumber() == save.getCurrentWeek())
+        && (save.getCurrentWeek() <= season.getRegularSeasonWeeks() ? !season.isCompleted() : byeInPlayoffs(season, clubId));
     CareerDtos.NextGameDto nextGame = null;
     if (next != null) {
       Club opp = next.getHomeClub().getId().equals(clubId) ? next.getAwayClub() : next.getHomeClub();
@@ -85,18 +105,14 @@ public class GetClubDashboardUseCase {
     List<CareerDtos.StandingRowDto> division = new ArrayList<>();
     Integer rank = null;
     if (club.getDivision() != null && season != null) {
-      List<Club> rivals = clubs.findByLeagueIdOrderByNameAsc(season.getLeague().getId()).stream()
-          .filter(c -> c.getDivision() != null && c.getDivision().getId().equals(club.getDivision().getId()))
-          .sorted(Comparator.comparingDouble((Club c) -> -CareerAssembler.tally(tallies, c.getId()).winPct())
-              .thenComparingInt(c -> -(CareerAssembler.tally(tallies, c.getId()).pointsFor() - CareerAssembler.tally(tallies, c.getId()).pointsAgainst()))
-              .thenComparing(Comparator.comparingInt(Club::getPrestige).reversed()).thenComparing(Club::getName))
-          .toList();
-      for (int i = 0; i < rivals.size(); i++) {
-        Club c = rivals.get(i);
+      StandingsService.League league = standings.league(season);
+      Standings.Table table = standings.table(season, league, all, season.getRegularSeasonWeeks(), CareerSupport.rules(save));
+      for (Standings.Ranked r : table.divisions().getOrDefault(club.getDivision().getId().toString(), List.of())) {
+        Club c = league.byId().get(UUID.fromString(r.line().team().key()));
         CareerAssembler.Tally t = CareerAssembler.tally(tallies, c.getId());
         boolean user = c.getId().equals(clubId);
-        if (user) rank = i + 1;
-        division.add(new CareerDtos.StandingRowDto(i + 1, CareerAssembler.club(c), t.record(), t.winPct(), t.pointsFor(), t.pointsAgainst(), user));
+        if (user) rank = r.rank();
+        division.add(new CareerDtos.StandingRowDto(r.rank(), CareerAssembler.club(c), t.record(), t.winPct(), t.pointsFor(), t.pointsAgainst(), user));
       }
     }
     List<CareerDtos.FixtureDto> divisionGames = mine.stream().filter(f -> f.isDivisional() && f.getStatus() != FixtureStatus.FINISHED).limit(3)
@@ -114,7 +130,23 @@ public class GetClubDashboardUseCase {
     DepthChartPolicy.Result r = DepthChartPolicy.validate(depthCharts.read(dc), DepthChartService.byId(roster), clubId, rules.getGameDayActives());
     CareerDtos.DepthChartAlertDto chart = new CareerDtos.DepthChartAlertDto(dc.currentVersion(), r.valid(), r.errors().size(), r.warnings().size(),
         r.errors().stream().map(DepthChartPolicy.Issue::code).distinct().toList());
+    Object moraleSummary = season == null ? null : MoraleService.summary(morale.compute(save).squad());
+    Locale locale = LocaleContextHolder.getLocale();
+    List<Object> latestNews = new ArrayList<>();
+    Object playoff = null;
+    if (season != null) {
+      weeks.findBySeasonIdOrderByNumberAsc(season.getId()).stream().filter(w -> w.getStatus() == WeekStatus.COMPLETED).mapToInt(Week::getNumber).max()
+          .ifPresent(n -> news.news(save, season, n, locale).items().stream().limit(NEWS).forEach(latestNews::add));
+      playoff = playoffs.user(save);
+    }
     return new CareerDtos.DashboardDto(career, CareerAssembler.club(club), coach, save.getCurrentWeek(), nextGame, bye, record, rank, division, divisionGames,
-        highlights, injuries, cap.of(save, roster), chart, live(save), null, null, null, null, null);
+        highlights, injuries, cap.of(save, roster), chart, live(save), moraleSummary, analysis.latestSummary(save, locale), latestNews, playoff, null, null, null);
+  }
+
+  /** Semana de playoff em que a franquia folga (semente com folga na rodada). */
+  private boolean byeInPlayoffs(Season season, UUID clubId) {
+    if (season.isCompleted()) return false;
+    java.util.Set<UUID> byes = playoffService.byes(season, season.getCurrentWeek());
+    return byes != null && byes.contains(clubId);
   }
 }

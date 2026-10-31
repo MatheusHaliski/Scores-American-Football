@@ -6,6 +6,10 @@ import { api } from "@/lib/api";
 import { ApiError, describeError } from "@/lib/api/errors";
 import { issuesFromDetails } from "@/lib/api/live-career";
 import { playToMatch } from "@/lib/match/play";
+import { isPlayoffKind } from "@/lib/season/bracket";
+import { weekSituation } from "@/lib/season/week";
+import { useCareer } from "@/store/career";
+import { toast } from "@/components/ui/Toast";
 import type { DepthIssue } from "@/lib/api/career-types";
 import type { Matchup, PlayerRef, Preparation } from "@/lib/api/match-types";
 import { useT, useTd } from "@/i18n/provider";
@@ -119,18 +123,46 @@ function PrepareDialog({ open, onClose, careerId, onPlayed }: PrepareTeamModalPr
   const [blocking, setBlocking] = useState<DepthIssue[]>([]);
   const [byeWeeks, setByeWeeks] = useState<number[]>([]);
   const [tab, setTab] = useState<"OUR_OFFENSE" | "THEIR_OFFENSE">("OUR_OFFENSE");
+  // rodada de playoff do jogo da preparação (tipo da semana: WILD_CARD…FINAL), para o título (6c)
+  const [roundKind, setRoundKind] = useState<string | null>(null);
+  const dashboard = useCareer((s) => s.dashboard);
+  const situation = dashboard && dashboard.career.id === careerId ? weekSituation(dashboard) : null;
+  const ts = useT("season");
 
   useEffect(() => {
     let alive = true;
     api.gamePlan
       .preparation(careerId)
-      .then((d) => alive && setData(d))
+      .then((d) => {
+        if (!alive) return;
+        setData(d);
+        api.weeks
+          .get(careerId, d.fixture.week)
+          .then((b) => alive && setRoundKind(isPlayoffKind(b.kind) ? b.kind : null))
+          .catch(() => undefined);
+      })
       .catch((e) => alive && setLoadError(e as Error))
       .finally(() => alive && setLoading(false));
     return () => {
       alive = false;
     };
   }, [careerId]);
+
+  // rodada de playoff em que o usuário folga ou não joga: não há preparação (409 NO_NEXT_GAME); "jogar" só fecha a semana (D-92/D-96)
+  const closeRound = async () => {
+    setPlaying(true);
+    setPlayError(null);
+    try {
+      await api.weeks.playCurrent(careerId);
+      toast(situation === "playoffBye" ? ts("hub.round.byeDone") : ts("hub.round.outDone"), "good");
+      onPlayed?.();
+      onClose();
+    } catch (e) {
+      setPlayError(describeError(e));
+    } finally {
+      setPlaying(false);
+    }
+  };
 
   const play = async () => {
     setPlaying(true);
@@ -166,7 +198,7 @@ function PrepareDialog({ open, onClose, careerId, onPlayed }: PrepareTeamModalPr
       open={open}
       onClose={onClose}
       size="xl"
-      eyebrow={t("prepare.eyebrow")}
+      eyebrow={d && roundKind ? ts("round.label", { round: td("season", `playoffs.round.${roundKind}`), week: d.fixture.week }) : t("prepare.eyebrow")}
       title={d ? t("prepare.title", { week: d.fixture.week, opponent: d.opponent.name }) : t("prepare.titleFallback")}
       footer={
         <>
@@ -192,6 +224,16 @@ function PrepareDialog({ open, onClose, careerId, onPlayed }: PrepareTeamModalPr
           <Skeleton className="h-32 w-full" />
           <Skeleton className="h-32 w-full" />
           <Skeleton className="h-48 w-full md:col-span-2" />
+        </div>
+      ) : noNext && (situation === "playoffBye" || situation === "playoffOut") ? (
+        <div className="grid gap-3">
+          <EmptyState
+            icon={<IconBall size={24} />}
+            title={t("prepare.noNext.title")}
+            body={situation === "playoffBye" ? ts("hub.round.byeBody") : ts("hub.round.outBody")}
+            action={<Button variant="led" onClick={() => void closeRound()} loading={playing}>{situation === "playoffBye" ? ts("hub.round.closeBye") : ts("hub.round.closeOut")}</Button>}
+          />
+          {playError && <InlineAlert tone="bad">{playError}</InlineAlert>}
         </div>
       ) : noNext ? (
         <EmptyState icon={<IconBall size={24} />} title={t("prepare.noNext.title")} body={t("prepare.noNext.body")} />

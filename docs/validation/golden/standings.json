@@ -1,0 +1,3328 @@
+{
+  "seasonId" : "00000000-0000-4000-8000-000000000001",
+  "seasonYear" : 2026,
+  "phase" : "REGULAR",
+  "throughWeek" : 1,
+  "regularSeasonWeeks" : 2,
+  "official" : false,
+  "seedsPerConference" : 7,
+  "byeSeeds" : 1,
+  "userClubId" : "00000000-0000-4000-8000-000000000002",
+  "divisionTiebreakers" : [ "HEAD_TO_HEAD", "DIVISION", "COMMON_GAMES", "CONFERENCE", "STRENGTH_OF_VICTORY", "STRENGTH_OF_SCHEDULE", "POINT_DIFFERENTIAL", "PROJECTION", "DRAW" ],
+  "wildCardTiebreakers" : [ "HEAD_TO_HEAD", "CONFERENCE", "COMMON_GAMES", "STRENGTH_OF_VICTORY", "STRENGTH_OF_SCHEDULE", "POINT_DIFFERENTIAL", "PROJECTION", "DRAW" ],
+  "conferences" : [ {
+    "id" : "00000000-0000-4000-8000-000000000003",
+    "name" : "Conferência Atlântica",
+    "shortName" : "CAT",
+    "divisions" : [ {
+      "id" : "00000000-0000-4000-8000-000000000004",
+      "name" : "Atlântica Norte",
+      "rows" : [ {
+        "rank" : 1,
+        "club" : {
+          "id" : "00000000-0000-4000-8000-000000000002",
+          "name" : "Trovões de Porto Alvorada",
+          "shortName" : "PAV",
+          "city" : "Porto Alvorada",
+          "primaryColor" : "#1B2A4A",
+          "secondaryColor" : "#F2B705",
+          "conference" : "CAT",
+          "division" : "Atlântica Norte"
+        },
+        "record" : {
+          "wins" : 1,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "1-0"
+        },
+        "winPct" : 1.0,
+        "pointsFor" : 34,
+        "pointsAgainst" : 7,
+        "pointDiff" : 27,
+        "streak" : "W1",
+        "lastFive" : [ "W" ],
+        "home" : {
+          "wins" : 1,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "1-0"
+        },
+        "away" : {
+          "wins" : 0,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "0-0"
+        },
+        "division" : {
+          "wins" : 0,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "0-0"
+        },
+        "conference" : {
+          "wins" : 1,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "1-0"
+        },
+        "seed" : 1,
+        "eliminated" : false,
+        "tiebreaker" : "POINT_DIFFERENTIAL",
+        "userClub" : true
+      }, {
+        "rank" : 2,
+        "club" : {
+          "id" : "00000000-0000-4000-8000-000000000005",
+          "name" : "Arpões de Baía Serena",
+          "shortName" : "BSE",
+          "city" : "Baía Serena",
+          "primaryColor" : "#005B7F",
+          "secondaryColor" : "#9AD1D4",
+          "conference" : "CAT",
+          "division" : "Atlântica Norte"
+        },
+        "record" : {
+          "wins" : 1,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "1-0"
+        },
+        "winPct" : 1.0,
+        "pointsFor" : 20,
+        "pointsAgainst" : 17,
+        "pointDiff" : 3,
+        "streak" : "W1",
+        "lastFive" : [ "W" ],
+        "home" : {
+          "wins" : 0,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "0-0"
+        },
+        "away" : {
+          "wins" : 1,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "1-0"
+        },
+        "division" : {
+          "wins" : 0,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "0-0"
+        },
+        "conference" : {
+          "wins" : 1,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "1-0"
+        },
+        "eliminated" : false,
+        "userClub" : false
+      }, {
+        "rank" : 3,
+        "club" : {
+          "id" : "00000000-0000-4000-8000-000000000006",
+          "name" : "Carcarás de Vila Aurora",
+          "shortName" : "VAU",
+          "city" : "Vila Aurora",
+          "primaryColor" : "#3B1F5C",
+          "secondaryColor" : "#F28C28",
+          "conference" : "CAT",
+          "division" : "Atlântica Norte"
+        },
+        "record" : {
+          "wins" : 0,
+          "losses" : 1,
+          "ties" : 0,
+          "summary" : "0-1"
+        },
+        "winPct" : 0.0,
+        "pointsFor" : 10,
+        "pointsAgainst" : 19,
+        "pointDiff" : -9,
+        "streak" : "L1",
+        "lastFive" : [ "L" ],
+        "home" : {
+          "wins" : 0,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "0-0"
+        },
+        "away" : {
+          "wins" : 0,
+          "losses" : 1,
+          "ties" : 0,
+          "summary" : "0-1"
+        },
+        "division" : {
+          "wins" : 0,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "0-0"
+        },
+        "conference" : {
+          "wins" : 0,
+          "losses" : 1,
+          "ties" : 0,
+          "summary" : "0-1"
+        },
+        "eliminated" : false,
+        "tiebreaker" : "POINT_DIFFERENTIAL",
+        "userClub" : false
+      }, {
+        "rank" : 4,
+        "club" : {
+          "id" : "00000000-0000-4000-8000-000000000007",
+          "name" : "Lobos-Guará de Serra Alta",
+          "shortName" : "SAL",
+          "city" : "Serra Alta",
+          "primaryColor" : "#7A2E1F",
+          "secondaryColor" : "#E8C39E",
+          "conference" : "CAT",
+          "division" : "Atlântica Norte"
+        },
+        "record" : {
+          "wins" : 0,
+          "losses" : 1,
+          "ties" : 0,
+          "summary" : "0-1"
+        },
+        "winPct" : 0.0,
+        "pointsFor" : 13,
+        "pointsAgainst" : 29,
+        "pointDiff" : -16,
+        "streak" : "L1",
+        "lastFive" : [ "L" ],
+        "home" : {
+          "wins" : 0,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "0-0"
+        },
+        "away" : {
+          "wins" : 0,
+          "losses" : 1,
+          "ties" : 0,
+          "summary" : "0-1"
+        },
+        "division" : {
+          "wins" : 0,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "0-0"
+        },
+        "conference" : {
+          "wins" : 0,
+          "losses" : 1,
+          "ties" : 0,
+          "summary" : "0-1"
+        },
+        "eliminated" : false,
+        "userClub" : false
+      } ]
+    }, {
+      "id" : "00000000-0000-4000-8000-000000000008",
+      "name" : "Atlântica Leste",
+      "rows" : [ {
+        "rank" : 1,
+        "club" : {
+          "id" : "00000000-0000-4000-8000-000000000009",
+          "name" : "Harpias de Rio Ametista",
+          "shortName" : "RAM",
+          "city" : "Rio Ametista",
+          "primaryColor" : "#5E2B97",
+          "secondaryColor" : "#C0C0C0",
+          "conference" : "CAT",
+          "division" : "Atlântica Leste"
+        },
+        "record" : {
+          "wins" : 1,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "1-0"
+        },
+        "winPct" : 1.0,
+        "pointsFor" : 24,
+        "pointsAgainst" : 7,
+        "pointDiff" : 17,
+        "streak" : "W1",
+        "lastFive" : [ "W" ],
+        "home" : {
+          "wins" : 1,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "1-0"
+        },
+        "away" : {
+          "wins" : 0,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "0-0"
+        },
+        "division" : {
+          "wins" : 0,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "0-0"
+        },
+        "conference" : {
+          "wins" : 1,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "1-0"
+        },
+        "seed" : 3,
+        "eliminated" : false,
+        "tiebreaker" : "POINT_DIFFERENTIAL",
+        "userClub" : false
+      }, {
+        "rank" : 2,
+        "club" : {
+          "id" : "00000000-0000-4000-8000-000000000010",
+          "name" : "Tubarões-Martelo de Pedra Lume",
+          "shortName" : "PLU",
+          "city" : "Pedra Lume",
+          "primaryColor" : "#0E3B43",
+          "secondaryColor" : "#57C4AD",
+          "conference" : "CAT",
+          "division" : "Atlântica Leste"
+        },
+        "record" : {
+          "wins" : 1,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "1-0"
+        },
+        "winPct" : 1.0,
+        "pointsFor" : 29,
+        "pointsAgainst" : 13,
+        "pointDiff" : 16,
+        "streak" : "W1",
+        "lastFive" : [ "W" ],
+        "home" : {
+          "wins" : 1,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "1-0"
+        },
+        "away" : {
+          "wins" : 0,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "0-0"
+        },
+        "division" : {
+          "wins" : 0,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "0-0"
+        },
+        "conference" : {
+          "wins" : 1,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "1-0"
+        },
+        "seed" : 5,
+        "eliminated" : false,
+        "tiebreaker" : "POINT_DIFFERENTIAL",
+        "userClub" : false
+      }, {
+        "rank" : 3,
+        "club" : {
+          "id" : "00000000-0000-4000-8000-000000000011",
+          "name" : "Jaguatiricas de Campo Celeste",
+          "shortName" : "CCE",
+          "city" : "Campo Celeste",
+          "primaryColor" : "#0D47A1",
+          "secondaryColor" : "#FFCA28",
+          "conference" : "CAT",
+          "division" : "Atlântica Leste"
+        },
+        "record" : {
+          "wins" : 1,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "1-0"
+        },
+        "winPct" : 1.0,
+        "pointsFor" : 19,
+        "pointsAgainst" : 10,
+        "pointDiff" : 9,
+        "streak" : "W1",
+        "lastFive" : [ "W" ],
+        "home" : {
+          "wins" : 1,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "1-0"
+        },
+        "away" : {
+          "wins" : 0,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "0-0"
+        },
+        "division" : {
+          "wins" : 0,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "0-0"
+        },
+        "conference" : {
+          "wins" : 1,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "1-0"
+        },
+        "seed" : 7,
+        "eliminated" : false,
+        "userClub" : false
+      }, {
+        "rank" : 4,
+        "club" : {
+          "id" : "00000000-0000-4000-8000-000000000012",
+          "name" : "Bisões de Vale Sereno",
+          "shortName" : "VSE",
+          "city" : "Vale Sereno",
+          "primaryColor" : "#4E342E",
+          "secondaryColor" : "#D7CCC8",
+          "conference" : "CAT",
+          "division" : "Atlântica Leste"
+        },
+        "record" : {
+          "wins" : 0,
+          "losses" : 1,
+          "ties" : 0,
+          "summary" : "0-1"
+        },
+        "winPct" : 0.0,
+        "pointsFor" : 21,
+        "pointsAgainst" : 27,
+        "pointDiff" : -6,
+        "streak" : "L1",
+        "lastFive" : [ "L" ],
+        "home" : {
+          "wins" : 0,
+          "losses" : 1,
+          "ties" : 0,
+          "summary" : "0-1"
+        },
+        "away" : {
+          "wins" : 0,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "0-0"
+        },
+        "division" : {
+          "wins" : 0,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "0-0"
+        },
+        "conference" : {
+          "wins" : 0,
+          "losses" : 1,
+          "ties" : 0,
+          "summary" : "0-1"
+        },
+        "eliminated" : false,
+        "userClub" : false
+      } ]
+    }, {
+      "id" : "00000000-0000-4000-8000-000000000013",
+      "name" : "Atlântica Sul",
+      "rows" : [ {
+        "rank" : 1,
+        "club" : {
+          "id" : "00000000-0000-4000-8000-000000000014",
+          "name" : "Centauros de Cerro Ventania",
+          "shortName" : "CVE",
+          "city" : "Cerro Ventania",
+          "primaryColor" : "#1B5E20",
+          "secondaryColor" : "#FFD54F",
+          "conference" : "CAT",
+          "division" : "Atlântica Sul"
+        },
+        "record" : {
+          "wins" : 1,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "1-0"
+        },
+        "winPct" : 1.0,
+        "pointsFor" : 27,
+        "pointsAgainst" : 21,
+        "pointDiff" : 6,
+        "streak" : "W1",
+        "lastFive" : [ "W" ],
+        "home" : {
+          "wins" : 0,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "0-0"
+        },
+        "away" : {
+          "wins" : 1,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "1-0"
+        },
+        "division" : {
+          "wins" : 0,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "0-0"
+        },
+        "conference" : {
+          "wins" : 1,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "1-0"
+        },
+        "seed" : 4,
+        "eliminated" : false,
+        "userClub" : false
+      }, {
+        "rank" : 2,
+        "club" : {
+          "id" : "00000000-0000-4000-8000-000000000015",
+          "name" : "Tempestades de Monte Azulão",
+          "shortName" : "MAZ",
+          "city" : "Monte Azulão",
+          "primaryColor" : "#263238",
+          "secondaryColor" : "#4FC3F7",
+          "conference" : "CAT",
+          "division" : "Atlântica Sul"
+        },
+        "record" : {
+          "wins" : 0,
+          "losses" : 1,
+          "ties" : 0,
+          "summary" : "0-1"
+        },
+        "winPct" : 0.0,
+        "pointsFor" : 17,
+        "pointsAgainst" : 20,
+        "pointDiff" : -3,
+        "streak" : "L1",
+        "lastFive" : [ "L" ],
+        "home" : {
+          "wins" : 0,
+          "losses" : 1,
+          "ties" : 0,
+          "summary" : "0-1"
+        },
+        "away" : {
+          "wins" : 0,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "0-0"
+        },
+        "division" : {
+          "wins" : 0,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "0-0"
+        },
+        "conference" : {
+          "wins" : 0,
+          "losses" : 1,
+          "ties" : 0,
+          "summary" : "0-1"
+        },
+        "eliminated" : false,
+        "tiebreaker" : "POINT_DIFFERENTIAL",
+        "userClub" : false
+      }, {
+        "rank" : 3,
+        "club" : {
+          "id" : "00000000-0000-4000-8000-000000000016",
+          "name" : "Mamutes de Planalto Anil",
+          "shortName" : "PAN",
+          "city" : "Planalto Anil",
+          "primaryColor" : "#283593",
+          "secondaryColor" : "#FF7043",
+          "conference" : "CAT",
+          "division" : "Atlântica Sul"
+        },
+        "record" : {
+          "wins" : 0,
+          "losses" : 1,
+          "ties" : 0,
+          "summary" : "0-1"
+        },
+        "winPct" : 0.0,
+        "pointsFor" : 17,
+        "pointsAgainst" : 29,
+        "pointDiff" : -12,
+        "streak" : "L1",
+        "lastFive" : [ "L" ],
+        "home" : {
+          "wins" : 0,
+          "losses" : 1,
+          "ties" : 0,
+          "summary" : "0-1"
+        },
+        "away" : {
+          "wins" : 0,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "0-0"
+        },
+        "division" : {
+          "wins" : 0,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "0-0"
+        },
+        "conference" : {
+          "wins" : 0,
+          "losses" : 1,
+          "ties" : 0,
+          "summary" : "0-1"
+        },
+        "eliminated" : false,
+        "tiebreaker" : "POINT_DIFFERENTIAL",
+        "userClub" : false
+      }, {
+        "rank" : 4,
+        "club" : {
+          "id" : "00000000-0000-4000-8000-000000000017",
+          "name" : "Furacões de Lagoa Prata",
+          "shortName" : "LPR",
+          "city" : "Lagoa Prata",
+          "primaryColor" : "#B71C1C",
+          "secondaryColor" : "#ECEFF1",
+          "conference" : "CAT",
+          "division" : "Atlântica Sul"
+        },
+        "record" : {
+          "wins" : 0,
+          "losses" : 1,
+          "ties" : 0,
+          "summary" : "0-1"
+        },
+        "winPct" : 0.0,
+        "pointsFor" : 10,
+        "pointsAgainst" : 35,
+        "pointDiff" : -25,
+        "streak" : "L1",
+        "lastFive" : [ "L" ],
+        "home" : {
+          "wins" : 0,
+          "losses" : 1,
+          "ties" : 0,
+          "summary" : "0-1"
+        },
+        "away" : {
+          "wins" : 0,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "0-0"
+        },
+        "division" : {
+          "wins" : 0,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "0-0"
+        },
+        "conference" : {
+          "wins" : 0,
+          "losses" : 1,
+          "ties" : 0,
+          "summary" : "0-1"
+        },
+        "eliminated" : false,
+        "userClub" : false
+      } ]
+    }, {
+      "id" : "00000000-0000-4000-8000-000000000018",
+      "name" : "Atlântica Oeste",
+      "rows" : [ {
+        "rank" : 1,
+        "club" : {
+          "id" : "00000000-0000-4000-8000-000000000019",
+          "name" : "Ciclones de Baía Coral",
+          "shortName" : "BCO",
+          "city" : "Baía Coral",
+          "primaryColor" : "#E65100",
+          "secondaryColor" : "#263238",
+          "conference" : "CAT",
+          "division" : "Atlântica Oeste"
+        },
+        "record" : {
+          "wins" : 1,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "1-0"
+        },
+        "winPct" : 1.0,
+        "pointsFor" : 35,
+        "pointsAgainst" : 10,
+        "pointDiff" : 25,
+        "streak" : "W1",
+        "lastFive" : [ "W" ],
+        "home" : {
+          "wins" : 0,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "0-0"
+        },
+        "away" : {
+          "wins" : 1,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "1-0"
+        },
+        "division" : {
+          "wins" : 0,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "0-0"
+        },
+        "conference" : {
+          "wins" : 1,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "1-0"
+        },
+        "seed" : 2,
+        "eliminated" : false,
+        "tiebreaker" : "POINT_DIFFERENTIAL",
+        "userClub" : false
+      }, {
+        "rank" : 2,
+        "club" : {
+          "id" : "00000000-0000-4000-8000-000000000020",
+          "name" : "Cometas de Porto Brisa",
+          "shortName" : "PBR",
+          "city" : "Porto Brisa",
+          "primaryColor" : "#00695C",
+          "secondaryColor" : "#FFAB00",
+          "conference" : "CAT",
+          "division" : "Atlântica Oeste"
+        },
+        "record" : {
+          "wins" : 1,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "1-0"
+        },
+        "winPct" : 1.0,
+        "pointsFor" : 29,
+        "pointsAgainst" : 17,
+        "pointDiff" : 12,
+        "streak" : "W1",
+        "lastFive" : [ "W" ],
+        "home" : {
+          "wins" : 0,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "0-0"
+        },
+        "away" : {
+          "wins" : 1,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "1-0"
+        },
+        "division" : {
+          "wins" : 0,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "0-0"
+        },
+        "conference" : {
+          "wins" : 1,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "1-0"
+        },
+        "seed" : 6,
+        "eliminated" : false,
+        "userClub" : false
+      }, {
+        "rank" : 3,
+        "club" : {
+          "id" : "00000000-0000-4000-8000-000000000021",
+          "name" : "Escorpiões de Serra Cobalto",
+          "shortName" : "SCO",
+          "city" : "Serra Cobalto",
+          "primaryColor" : "#1A237E",
+          "secondaryColor" : "#B0BEC5",
+          "conference" : "CAT",
+          "division" : "Atlântica Oeste"
+        },
+        "record" : {
+          "wins" : 0,
+          "losses" : 1,
+          "ties" : 0,
+          "summary" : "0-1"
+        },
+        "winPct" : 0.0,
+        "pointsFor" : 7,
+        "pointsAgainst" : 24,
+        "pointDiff" : -17,
+        "streak" : "L1",
+        "lastFive" : [ "L" ],
+        "home" : {
+          "wins" : 0,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "0-0"
+        },
+        "away" : {
+          "wins" : 0,
+          "losses" : 1,
+          "ties" : 0,
+          "summary" : "0-1"
+        },
+        "division" : {
+          "wins" : 0,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "0-0"
+        },
+        "conference" : {
+          "wins" : 0,
+          "losses" : 1,
+          "ties" : 0,
+          "summary" : "0-1"
+        },
+        "eliminated" : false,
+        "tiebreaker" : "POINT_DIFFERENTIAL",
+        "userClub" : false
+      }, {
+        "rank" : 4,
+        "club" : {
+          "id" : "00000000-0000-4000-8000-000000000022",
+          "name" : "Avalanches de Vila Âmbar",
+          "shortName" : "VAM",
+          "city" : "Vila Âmbar",
+          "primaryColor" : "#37474F",
+          "secondaryColor" : "#FFB300",
+          "conference" : "CAT",
+          "division" : "Atlântica Oeste"
+        },
+        "record" : {
+          "wins" : 0,
+          "losses" : 1,
+          "ties" : 0,
+          "summary" : "0-1"
+        },
+        "winPct" : 0.0,
+        "pointsFor" : 7,
+        "pointsAgainst" : 34,
+        "pointDiff" : -27,
+        "streak" : "L1",
+        "lastFive" : [ "L" ],
+        "home" : {
+          "wins" : 0,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "0-0"
+        },
+        "away" : {
+          "wins" : 0,
+          "losses" : 1,
+          "ties" : 0,
+          "summary" : "0-1"
+        },
+        "division" : {
+          "wins" : 0,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "0-0"
+        },
+        "conference" : {
+          "wins" : 0,
+          "losses" : 1,
+          "ties" : 0,
+          "summary" : "0-1"
+        },
+        "eliminated" : false,
+        "userClub" : false
+      } ]
+    } ],
+    "rows" : [ {
+      "rank" : 1,
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000002",
+        "name" : "Trovões de Porto Alvorada",
+        "shortName" : "PAV",
+        "city" : "Porto Alvorada",
+        "primaryColor" : "#1B2A4A",
+        "secondaryColor" : "#F2B705",
+        "conference" : "CAT",
+        "division" : "Atlântica Norte"
+      },
+      "record" : {
+        "wins" : 1,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "1-0"
+      },
+      "winPct" : 1.0,
+      "pointsFor" : 34,
+      "pointsAgainst" : 7,
+      "pointDiff" : 27,
+      "streak" : "W1",
+      "lastFive" : [ "W" ],
+      "home" : {
+        "wins" : 1,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "1-0"
+      },
+      "away" : {
+        "wins" : 0,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "0-0"
+      },
+      "division" : {
+        "wins" : 0,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "0-0"
+      },
+      "conference" : {
+        "wins" : 1,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "1-0"
+      },
+      "seed" : 1,
+      "eliminated" : false,
+      "tiebreaker" : "POINT_DIFFERENTIAL",
+      "userClub" : true
+    }, {
+      "rank" : 2,
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000019",
+        "name" : "Ciclones de Baía Coral",
+        "shortName" : "BCO",
+        "city" : "Baía Coral",
+        "primaryColor" : "#E65100",
+        "secondaryColor" : "#263238",
+        "conference" : "CAT",
+        "division" : "Atlântica Oeste"
+      },
+      "record" : {
+        "wins" : 1,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "1-0"
+      },
+      "winPct" : 1.0,
+      "pointsFor" : 35,
+      "pointsAgainst" : 10,
+      "pointDiff" : 25,
+      "streak" : "W1",
+      "lastFive" : [ "W" ],
+      "home" : {
+        "wins" : 0,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "0-0"
+      },
+      "away" : {
+        "wins" : 1,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "1-0"
+      },
+      "division" : {
+        "wins" : 0,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "0-0"
+      },
+      "conference" : {
+        "wins" : 1,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "1-0"
+      },
+      "seed" : 2,
+      "eliminated" : false,
+      "tiebreaker" : "POINT_DIFFERENTIAL",
+      "userClub" : false
+    }, {
+      "rank" : 3,
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000009",
+        "name" : "Harpias de Rio Ametista",
+        "shortName" : "RAM",
+        "city" : "Rio Ametista",
+        "primaryColor" : "#5E2B97",
+        "secondaryColor" : "#C0C0C0",
+        "conference" : "CAT",
+        "division" : "Atlântica Leste"
+      },
+      "record" : {
+        "wins" : 1,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "1-0"
+      },
+      "winPct" : 1.0,
+      "pointsFor" : 24,
+      "pointsAgainst" : 7,
+      "pointDiff" : 17,
+      "streak" : "W1",
+      "lastFive" : [ "W" ],
+      "home" : {
+        "wins" : 1,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "1-0"
+      },
+      "away" : {
+        "wins" : 0,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "0-0"
+      },
+      "division" : {
+        "wins" : 0,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "0-0"
+      },
+      "conference" : {
+        "wins" : 1,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "1-0"
+      },
+      "seed" : 3,
+      "eliminated" : false,
+      "tiebreaker" : "POINT_DIFFERENTIAL",
+      "userClub" : false
+    }, {
+      "rank" : 4,
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000014",
+        "name" : "Centauros de Cerro Ventania",
+        "shortName" : "CVE",
+        "city" : "Cerro Ventania",
+        "primaryColor" : "#1B5E20",
+        "secondaryColor" : "#FFD54F",
+        "conference" : "CAT",
+        "division" : "Atlântica Sul"
+      },
+      "record" : {
+        "wins" : 1,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "1-0"
+      },
+      "winPct" : 1.0,
+      "pointsFor" : 27,
+      "pointsAgainst" : 21,
+      "pointDiff" : 6,
+      "streak" : "W1",
+      "lastFive" : [ "W" ],
+      "home" : {
+        "wins" : 0,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "0-0"
+      },
+      "away" : {
+        "wins" : 1,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "1-0"
+      },
+      "division" : {
+        "wins" : 0,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "0-0"
+      },
+      "conference" : {
+        "wins" : 1,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "1-0"
+      },
+      "seed" : 4,
+      "eliminated" : false,
+      "userClub" : false
+    }, {
+      "rank" : 5,
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000010",
+        "name" : "Tubarões-Martelo de Pedra Lume",
+        "shortName" : "PLU",
+        "city" : "Pedra Lume",
+        "primaryColor" : "#0E3B43",
+        "secondaryColor" : "#57C4AD",
+        "conference" : "CAT",
+        "division" : "Atlântica Leste"
+      },
+      "record" : {
+        "wins" : 1,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "1-0"
+      },
+      "winPct" : 1.0,
+      "pointsFor" : 29,
+      "pointsAgainst" : 13,
+      "pointDiff" : 16,
+      "streak" : "W1",
+      "lastFive" : [ "W" ],
+      "home" : {
+        "wins" : 1,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "1-0"
+      },
+      "away" : {
+        "wins" : 0,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "0-0"
+      },
+      "division" : {
+        "wins" : 0,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "0-0"
+      },
+      "conference" : {
+        "wins" : 1,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "1-0"
+      },
+      "seed" : 5,
+      "eliminated" : false,
+      "tiebreaker" : "POINT_DIFFERENTIAL",
+      "userClub" : false
+    }, {
+      "rank" : 6,
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000020",
+        "name" : "Cometas de Porto Brisa",
+        "shortName" : "PBR",
+        "city" : "Porto Brisa",
+        "primaryColor" : "#00695C",
+        "secondaryColor" : "#FFAB00",
+        "conference" : "CAT",
+        "division" : "Atlântica Oeste"
+      },
+      "record" : {
+        "wins" : 1,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "1-0"
+      },
+      "winPct" : 1.0,
+      "pointsFor" : 29,
+      "pointsAgainst" : 17,
+      "pointDiff" : 12,
+      "streak" : "W1",
+      "lastFive" : [ "W" ],
+      "home" : {
+        "wins" : 0,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "0-0"
+      },
+      "away" : {
+        "wins" : 1,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "1-0"
+      },
+      "division" : {
+        "wins" : 0,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "0-0"
+      },
+      "conference" : {
+        "wins" : 1,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "1-0"
+      },
+      "seed" : 6,
+      "eliminated" : false,
+      "tiebreaker" : "POINT_DIFFERENTIAL",
+      "userClub" : false
+    }, {
+      "rank" : 7,
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000011",
+        "name" : "Jaguatiricas de Campo Celeste",
+        "shortName" : "CCE",
+        "city" : "Campo Celeste",
+        "primaryColor" : "#0D47A1",
+        "secondaryColor" : "#FFCA28",
+        "conference" : "CAT",
+        "division" : "Atlântica Leste"
+      },
+      "record" : {
+        "wins" : 1,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "1-0"
+      },
+      "winPct" : 1.0,
+      "pointsFor" : 19,
+      "pointsAgainst" : 10,
+      "pointDiff" : 9,
+      "streak" : "W1",
+      "lastFive" : [ "W" ],
+      "home" : {
+        "wins" : 1,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "1-0"
+      },
+      "away" : {
+        "wins" : 0,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "0-0"
+      },
+      "division" : {
+        "wins" : 0,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "0-0"
+      },
+      "conference" : {
+        "wins" : 1,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "1-0"
+      },
+      "seed" : 7,
+      "eliminated" : false,
+      "tiebreaker" : "POINT_DIFFERENTIAL",
+      "userClub" : false
+    }, {
+      "rank" : 8,
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000005",
+        "name" : "Arpões de Baía Serena",
+        "shortName" : "BSE",
+        "city" : "Baía Serena",
+        "primaryColor" : "#005B7F",
+        "secondaryColor" : "#9AD1D4",
+        "conference" : "CAT",
+        "division" : "Atlântica Norte"
+      },
+      "record" : {
+        "wins" : 1,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "1-0"
+      },
+      "winPct" : 1.0,
+      "pointsFor" : 20,
+      "pointsAgainst" : 17,
+      "pointDiff" : 3,
+      "streak" : "W1",
+      "lastFive" : [ "W" ],
+      "home" : {
+        "wins" : 0,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "0-0"
+      },
+      "away" : {
+        "wins" : 1,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "1-0"
+      },
+      "division" : {
+        "wins" : 0,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "0-0"
+      },
+      "conference" : {
+        "wins" : 1,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "1-0"
+      },
+      "eliminated" : false,
+      "userClub" : false
+    }, {
+      "rank" : 9,
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000015",
+        "name" : "Tempestades de Monte Azulão",
+        "shortName" : "MAZ",
+        "city" : "Monte Azulão",
+        "primaryColor" : "#263238",
+        "secondaryColor" : "#4FC3F7",
+        "conference" : "CAT",
+        "division" : "Atlântica Sul"
+      },
+      "record" : {
+        "wins" : 0,
+        "losses" : 1,
+        "ties" : 0,
+        "summary" : "0-1"
+      },
+      "winPct" : 0.0,
+      "pointsFor" : 17,
+      "pointsAgainst" : 20,
+      "pointDiff" : -3,
+      "streak" : "L1",
+      "lastFive" : [ "L" ],
+      "home" : {
+        "wins" : 0,
+        "losses" : 1,
+        "ties" : 0,
+        "summary" : "0-1"
+      },
+      "away" : {
+        "wins" : 0,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "0-0"
+      },
+      "division" : {
+        "wins" : 0,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "0-0"
+      },
+      "conference" : {
+        "wins" : 0,
+        "losses" : 1,
+        "ties" : 0,
+        "summary" : "0-1"
+      },
+      "eliminated" : false,
+      "tiebreaker" : "POINT_DIFFERENTIAL",
+      "userClub" : false
+    }, {
+      "rank" : 10,
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000012",
+        "name" : "Bisões de Vale Sereno",
+        "shortName" : "VSE",
+        "city" : "Vale Sereno",
+        "primaryColor" : "#4E342E",
+        "secondaryColor" : "#D7CCC8",
+        "conference" : "CAT",
+        "division" : "Atlântica Leste"
+      },
+      "record" : {
+        "wins" : 0,
+        "losses" : 1,
+        "ties" : 0,
+        "summary" : "0-1"
+      },
+      "winPct" : 0.0,
+      "pointsFor" : 21,
+      "pointsAgainst" : 27,
+      "pointDiff" : -6,
+      "streak" : "L1",
+      "lastFive" : [ "L" ],
+      "home" : {
+        "wins" : 0,
+        "losses" : 1,
+        "ties" : 0,
+        "summary" : "0-1"
+      },
+      "away" : {
+        "wins" : 0,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "0-0"
+      },
+      "division" : {
+        "wins" : 0,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "0-0"
+      },
+      "conference" : {
+        "wins" : 0,
+        "losses" : 1,
+        "ties" : 0,
+        "summary" : "0-1"
+      },
+      "eliminated" : false,
+      "tiebreaker" : "POINT_DIFFERENTIAL",
+      "userClub" : false
+    }, {
+      "rank" : 11,
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000006",
+        "name" : "Carcarás de Vila Aurora",
+        "shortName" : "VAU",
+        "city" : "Vila Aurora",
+        "primaryColor" : "#3B1F5C",
+        "secondaryColor" : "#F28C28",
+        "conference" : "CAT",
+        "division" : "Atlântica Norte"
+      },
+      "record" : {
+        "wins" : 0,
+        "losses" : 1,
+        "ties" : 0,
+        "summary" : "0-1"
+      },
+      "winPct" : 0.0,
+      "pointsFor" : 10,
+      "pointsAgainst" : 19,
+      "pointDiff" : -9,
+      "streak" : "L1",
+      "lastFive" : [ "L" ],
+      "home" : {
+        "wins" : 0,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "0-0"
+      },
+      "away" : {
+        "wins" : 0,
+        "losses" : 1,
+        "ties" : 0,
+        "summary" : "0-1"
+      },
+      "division" : {
+        "wins" : 0,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "0-0"
+      },
+      "conference" : {
+        "wins" : 0,
+        "losses" : 1,
+        "ties" : 0,
+        "summary" : "0-1"
+      },
+      "eliminated" : false,
+      "tiebreaker" : "POINT_DIFFERENTIAL",
+      "userClub" : false
+    }, {
+      "rank" : 12,
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000016",
+        "name" : "Mamutes de Planalto Anil",
+        "shortName" : "PAN",
+        "city" : "Planalto Anil",
+        "primaryColor" : "#283593",
+        "secondaryColor" : "#FF7043",
+        "conference" : "CAT",
+        "division" : "Atlântica Sul"
+      },
+      "record" : {
+        "wins" : 0,
+        "losses" : 1,
+        "ties" : 0,
+        "summary" : "0-1"
+      },
+      "winPct" : 0.0,
+      "pointsFor" : 17,
+      "pointsAgainst" : 29,
+      "pointDiff" : -12,
+      "streak" : "L1",
+      "lastFive" : [ "L" ],
+      "home" : {
+        "wins" : 0,
+        "losses" : 1,
+        "ties" : 0,
+        "summary" : "0-1"
+      },
+      "away" : {
+        "wins" : 0,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "0-0"
+      },
+      "division" : {
+        "wins" : 0,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "0-0"
+      },
+      "conference" : {
+        "wins" : 0,
+        "losses" : 1,
+        "ties" : 0,
+        "summary" : "0-1"
+      },
+      "eliminated" : false,
+      "tiebreaker" : "POINT_DIFFERENTIAL",
+      "userClub" : false
+    }, {
+      "rank" : 13,
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000007",
+        "name" : "Lobos-Guará de Serra Alta",
+        "shortName" : "SAL",
+        "city" : "Serra Alta",
+        "primaryColor" : "#7A2E1F",
+        "secondaryColor" : "#E8C39E",
+        "conference" : "CAT",
+        "division" : "Atlântica Norte"
+      },
+      "record" : {
+        "wins" : 0,
+        "losses" : 1,
+        "ties" : 0,
+        "summary" : "0-1"
+      },
+      "winPct" : 0.0,
+      "pointsFor" : 13,
+      "pointsAgainst" : 29,
+      "pointDiff" : -16,
+      "streak" : "L1",
+      "lastFive" : [ "L" ],
+      "home" : {
+        "wins" : 0,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "0-0"
+      },
+      "away" : {
+        "wins" : 0,
+        "losses" : 1,
+        "ties" : 0,
+        "summary" : "0-1"
+      },
+      "division" : {
+        "wins" : 0,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "0-0"
+      },
+      "conference" : {
+        "wins" : 0,
+        "losses" : 1,
+        "ties" : 0,
+        "summary" : "0-1"
+      },
+      "eliminated" : false,
+      "tiebreaker" : "POINT_DIFFERENTIAL",
+      "userClub" : false
+    }, {
+      "rank" : 14,
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000021",
+        "name" : "Escorpiões de Serra Cobalto",
+        "shortName" : "SCO",
+        "city" : "Serra Cobalto",
+        "primaryColor" : "#1A237E",
+        "secondaryColor" : "#B0BEC5",
+        "conference" : "CAT",
+        "division" : "Atlântica Oeste"
+      },
+      "record" : {
+        "wins" : 0,
+        "losses" : 1,
+        "ties" : 0,
+        "summary" : "0-1"
+      },
+      "winPct" : 0.0,
+      "pointsFor" : 7,
+      "pointsAgainst" : 24,
+      "pointDiff" : -17,
+      "streak" : "L1",
+      "lastFive" : [ "L" ],
+      "home" : {
+        "wins" : 0,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "0-0"
+      },
+      "away" : {
+        "wins" : 0,
+        "losses" : 1,
+        "ties" : 0,
+        "summary" : "0-1"
+      },
+      "division" : {
+        "wins" : 0,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "0-0"
+      },
+      "conference" : {
+        "wins" : 0,
+        "losses" : 1,
+        "ties" : 0,
+        "summary" : "0-1"
+      },
+      "eliminated" : false,
+      "tiebreaker" : "POINT_DIFFERENTIAL",
+      "userClub" : false
+    }, {
+      "rank" : 15,
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000017",
+        "name" : "Furacões de Lagoa Prata",
+        "shortName" : "LPR",
+        "city" : "Lagoa Prata",
+        "primaryColor" : "#B71C1C",
+        "secondaryColor" : "#ECEFF1",
+        "conference" : "CAT",
+        "division" : "Atlântica Sul"
+      },
+      "record" : {
+        "wins" : 0,
+        "losses" : 1,
+        "ties" : 0,
+        "summary" : "0-1"
+      },
+      "winPct" : 0.0,
+      "pointsFor" : 10,
+      "pointsAgainst" : 35,
+      "pointDiff" : -25,
+      "streak" : "L1",
+      "lastFive" : [ "L" ],
+      "home" : {
+        "wins" : 0,
+        "losses" : 1,
+        "ties" : 0,
+        "summary" : "0-1"
+      },
+      "away" : {
+        "wins" : 0,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "0-0"
+      },
+      "division" : {
+        "wins" : 0,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "0-0"
+      },
+      "conference" : {
+        "wins" : 0,
+        "losses" : 1,
+        "ties" : 0,
+        "summary" : "0-1"
+      },
+      "eliminated" : false,
+      "tiebreaker" : "POINT_DIFFERENTIAL",
+      "userClub" : false
+    }, {
+      "rank" : 16,
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000022",
+        "name" : "Avalanches de Vila Âmbar",
+        "shortName" : "VAM",
+        "city" : "Vila Âmbar",
+        "primaryColor" : "#37474F",
+        "secondaryColor" : "#FFB300",
+        "conference" : "CAT",
+        "division" : "Atlântica Oeste"
+      },
+      "record" : {
+        "wins" : 0,
+        "losses" : 1,
+        "ties" : 0,
+        "summary" : "0-1"
+      },
+      "winPct" : 0.0,
+      "pointsFor" : 7,
+      "pointsAgainst" : 34,
+      "pointDiff" : -27,
+      "streak" : "L1",
+      "lastFive" : [ "L" ],
+      "home" : {
+        "wins" : 0,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "0-0"
+      },
+      "away" : {
+        "wins" : 0,
+        "losses" : 1,
+        "ties" : 0,
+        "summary" : "0-1"
+      },
+      "division" : {
+        "wins" : 0,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "0-0"
+      },
+      "conference" : {
+        "wins" : 0,
+        "losses" : 1,
+        "ties" : 0,
+        "summary" : "0-1"
+      },
+      "eliminated" : false,
+      "userClub" : false
+    } ]
+  }, {
+    "id" : "00000000-0000-4000-8000-000000000023",
+    "name" : "Conferência Pacífica",
+    "shortName" : "CPA",
+    "divisions" : [ {
+      "id" : "00000000-0000-4000-8000-000000000024",
+      "name" : "Pacífica Norte",
+      "rows" : [ {
+        "rank" : 1,
+        "club" : {
+          "id" : "00000000-0000-4000-8000-000000000025",
+          "name" : "Tamanduás de Campos Rubi",
+          "shortName" : "CRU",
+          "city" : "Campos Rubi",
+          "primaryColor" : "#880E4F",
+          "secondaryColor" : "#F8BBD0",
+          "conference" : "CPA",
+          "division" : "Pacífica Norte"
+        },
+        "record" : {
+          "wins" : 1,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "1-0"
+        },
+        "winPct" : 1.0,
+        "pointsFor" : 21,
+        "pointsAgainst" : 18,
+        "pointDiff" : 3,
+        "streak" : "W1",
+        "lastFive" : [ "W" ],
+        "home" : {
+          "wins" : 1,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "1-0"
+        },
+        "away" : {
+          "wins" : 0,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "0-0"
+        },
+        "division" : {
+          "wins" : 0,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "0-0"
+        },
+        "conference" : {
+          "wins" : 1,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "1-0"
+        },
+        "seed" : 4,
+        "eliminated" : false,
+        "tiebreaker" : "POINT_DIFFERENTIAL",
+        "userClub" : false
+      }, {
+        "rank" : 2,
+        "club" : {
+          "id" : "00000000-0000-4000-8000-000000000026",
+          "name" : "Condores de Alto Jacarandá",
+          "shortName" : "AJA",
+          "city" : "Alto Jacarandá",
+          "primaryColor" : "#4A148C",
+          "secondaryColor" : "#FFEB3B",
+          "conference" : "CPA",
+          "division" : "Pacífica Norte"
+        },
+        "record" : {
+          "wins" : 1,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "1-0"
+        },
+        "winPct" : 1.0,
+        "pointsFor" : 19,
+        "pointsAgainst" : 17,
+        "pointDiff" : 2,
+        "streak" : "W1",
+        "lastFive" : [ "W" ],
+        "home" : {
+          "wins" : 1,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "1-0"
+        },
+        "away" : {
+          "wins" : 0,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "0-0"
+        },
+        "division" : {
+          "wins" : 0,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "0-0"
+        },
+        "conference" : {
+          "wins" : 1,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "1-0"
+        },
+        "eliminated" : false,
+        "userClub" : false
+      }, {
+        "rank" : 3,
+        "club" : {
+          "id" : "00000000-0000-4000-8000-000000000027",
+          "name" : "Javalis de Nova Esmeralda",
+          "shortName" : "NES",
+          "city" : "Nova Esmeralda",
+          "primaryColor" : "#004D40",
+          "secondaryColor" : "#FFFFFF",
+          "conference" : "CPA",
+          "division" : "Pacífica Norte"
+        },
+        "record" : {
+          "wins" : 0,
+          "losses" : 1,
+          "ties" : 0,
+          "summary" : "0-1"
+        },
+        "winPct" : 0.0,
+        "pointsFor" : 22,
+        "pointsAgainst" : 33,
+        "pointDiff" : -11,
+        "streak" : "L1",
+        "lastFive" : [ "L" ],
+        "home" : {
+          "wins" : 0,
+          "losses" : 1,
+          "ties" : 0,
+          "summary" : "0-1"
+        },
+        "away" : {
+          "wins" : 0,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "0-0"
+        },
+        "division" : {
+          "wins" : 0,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "0-0"
+        },
+        "conference" : {
+          "wins" : 0,
+          "losses" : 1,
+          "ties" : 0,
+          "summary" : "0-1"
+        },
+        "eliminated" : false,
+        "tiebreaker" : "POINT_DIFFERENTIAL",
+        "userClub" : false
+      }, {
+        "rank" : 4,
+        "club" : {
+          "id" : "00000000-0000-4000-8000-000000000028",
+          "name" : "Sucuris de Ponta Granito",
+          "shortName" : "PGR",
+          "city" : "Ponta Granito",
+          "primaryColor" : "#33691E",
+          "secondaryColor" : "#CDDC39",
+          "conference" : "CPA",
+          "division" : "Pacífica Norte"
+        },
+        "record" : {
+          "wins" : 0,
+          "losses" : 1,
+          "ties" : 0,
+          "summary" : "0-1"
+        },
+        "winPct" : 0.0,
+        "pointsFor" : 7,
+        "pointsAgainst" : 23,
+        "pointDiff" : -16,
+        "streak" : "L1",
+        "lastFive" : [ "L" ],
+        "home" : {
+          "wins" : 0,
+          "losses" : 1,
+          "ties" : 0,
+          "summary" : "0-1"
+        },
+        "away" : {
+          "wins" : 0,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "0-0"
+        },
+        "division" : {
+          "wins" : 0,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "0-0"
+        },
+        "conference" : {
+          "wins" : 0,
+          "losses" : 1,
+          "ties" : 0,
+          "summary" : "0-1"
+        },
+        "eliminated" : false,
+        "userClub" : false
+      } ]
+    }, {
+      "id" : "00000000-0000-4000-8000-000000000029",
+      "name" : "Pacífica Leste",
+      "rows" : [ {
+        "rank" : 1,
+        "club" : {
+          "id" : "00000000-0000-4000-8000-000000000030",
+          "name" : "Bigornas de Barra do Sol Poente",
+          "shortName" : "BSP",
+          "city" : "Barra do Sol Poente",
+          "primaryColor" : "#212121",
+          "secondaryColor" : "#FF5722",
+          "conference" : "CPA",
+          "division" : "Pacífica Leste"
+        },
+        "record" : {
+          "wins" : 1,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "1-0"
+        },
+        "winPct" : 1.0,
+        "pointsFor" : 20,
+        "pointsAgainst" : 13,
+        "pointDiff" : 7,
+        "streak" : "W1",
+        "lastFive" : [ "W" ],
+        "home" : {
+          "wins" : 0,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "0-0"
+        },
+        "away" : {
+          "wins" : 1,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "1-0"
+        },
+        "division" : {
+          "wins" : 0,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "0-0"
+        },
+        "conference" : {
+          "wins" : 1,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "1-0"
+        },
+        "seed" : 3,
+        "eliminated" : false,
+        "tiebreaker" : "POINT_DIFFERENTIAL",
+        "userClub" : false
+      }, {
+        "rank" : 2,
+        "club" : {
+          "id" : "00000000-0000-4000-8000-000000000031",
+          "name" : "Faróis de Ribeira Turquesa",
+          "shortName" : "RTU",
+          "city" : "Ribeira Turquesa",
+          "primaryColor" : "#006064",
+          "secondaryColor" : "#FFD600",
+          "conference" : "CPA",
+          "division" : "Pacífica Leste"
+        },
+        "record" : {
+          "wins" : 1,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "1-0"
+        },
+        "winPct" : 1.0,
+        "pointsFor" : 21,
+        "pointsAgainst" : 16,
+        "pointDiff" : 5,
+        "streak" : "W1",
+        "lastFive" : [ "W" ],
+        "home" : {
+          "wins" : 1,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "1-0"
+        },
+        "away" : {
+          "wins" : 0,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "0-0"
+        },
+        "division" : {
+          "wins" : 0,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "0-0"
+        },
+        "conference" : {
+          "wins" : 1,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "1-0"
+        },
+        "seed" : 7,
+        "eliminated" : false,
+        "userClub" : false
+      }, {
+        "rank" : 3,
+        "club" : {
+          "id" : "00000000-0000-4000-8000-000000000032",
+          "name" : "Albatrozes de São Lucário",
+          "shortName" : "SLU",
+          "city" : "São Lucário",
+          "primaryColor" : "#01579B",
+          "secondaryColor" : "#FFFFFF",
+          "conference" : "CPA",
+          "division" : "Pacífica Leste"
+        },
+        "record" : {
+          "wins" : 0,
+          "losses" : 1,
+          "ties" : 0,
+          "summary" : "0-1"
+        },
+        "winPct" : 0.0,
+        "pointsFor" : 18,
+        "pointsAgainst" : 21,
+        "pointDiff" : -3,
+        "streak" : "L1",
+        "lastFive" : [ "L" ],
+        "home" : {
+          "wins" : 0,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "0-0"
+        },
+        "away" : {
+          "wins" : 0,
+          "losses" : 1,
+          "ties" : 0,
+          "summary" : "0-1"
+        },
+        "division" : {
+          "wins" : 0,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "0-0"
+        },
+        "conference" : {
+          "wins" : 0,
+          "losses" : 1,
+          "ties" : 0,
+          "summary" : "0-1"
+        },
+        "eliminated" : false,
+        "tiebreaker" : "POINT_DIFFERENTIAL",
+        "userClub" : false
+      }, {
+        "rank" : 4,
+        "club" : {
+          "id" : "00000000-0000-4000-8000-000000000033",
+          "name" : "Vulcões de Santa Bruma",
+          "shortName" : "SBR",
+          "city" : "Santa Bruma",
+          "primaryColor" : "#BF360C",
+          "secondaryColor" : "#212121",
+          "conference" : "CPA",
+          "division" : "Pacífica Leste"
+        },
+        "record" : {
+          "wins" : 0,
+          "losses" : 1,
+          "ties" : 0,
+          "summary" : "0-1"
+        },
+        "winPct" : 0.0,
+        "pointsFor" : 17,
+        "pointsAgainst" : 26,
+        "pointDiff" : -9,
+        "streak" : "L1",
+        "lastFive" : [ "L" ],
+        "home" : {
+          "wins" : 0,
+          "losses" : 1,
+          "ties" : 0,
+          "summary" : "0-1"
+        },
+        "away" : {
+          "wins" : 0,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "0-0"
+        },
+        "division" : {
+          "wins" : 0,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "0-0"
+        },
+        "conference" : {
+          "wins" : 0,
+          "losses" : 1,
+          "ties" : 0,
+          "summary" : "0-1"
+        },
+        "eliminated" : false,
+        "userClub" : false
+      } ]
+    }, {
+      "id" : "00000000-0000-4000-8000-000000000034",
+      "name" : "Pacífica Sul",
+      "rows" : [ {
+        "rank" : 1,
+        "club" : {
+          "id" : "00000000-0000-4000-8000-000000000035",
+          "name" : "Meteoros de Porto Quartzo",
+          "shortName" : "PQU",
+          "city" : "Porto Quartzo",
+          "primaryColor" : "#311B92",
+          "secondaryColor" : "#00E5FF",
+          "conference" : "CPA",
+          "division" : "Pacífica Sul"
+        },
+        "record" : {
+          "wins" : 1,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "1-0"
+        },
+        "winPct" : 1.0,
+        "pointsFor" : 23,
+        "pointsAgainst" : 7,
+        "pointDiff" : 16,
+        "streak" : "W1",
+        "lastFive" : [ "W" ],
+        "home" : {
+          "wins" : 0,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "0-0"
+        },
+        "away" : {
+          "wins" : 1,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "1-0"
+        },
+        "division" : {
+          "wins" : 0,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "0-0"
+        },
+        "conference" : {
+          "wins" : 1,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "1-0"
+        },
+        "seed" : 1,
+        "eliminated" : false,
+        "tiebreaker" : "DRAW",
+        "userClub" : false
+      }, {
+        "rank" : 2,
+        "club" : {
+          "id" : "00000000-0000-4000-8000-000000000036",
+          "name" : "Sentinelas de Cedro Alto",
+          "shortName" : "CAL",
+          "city" : "Cedro Alto",
+          "primaryColor" : "#3E2723",
+          "secondaryColor" : "#8BC34A",
+          "conference" : "CPA",
+          "division" : "Pacífica Sul"
+        },
+        "record" : {
+          "wins" : 1,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "1-0"
+        },
+        "winPct" : 1.0,
+        "pointsFor" : 37,
+        "pointsAgainst" : 21,
+        "pointDiff" : 16,
+        "streak" : "W1",
+        "lastFive" : [ "W" ],
+        "home" : {
+          "wins" : 0,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "0-0"
+        },
+        "away" : {
+          "wins" : 1,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "1-0"
+        },
+        "division" : {
+          "wins" : 0,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "0-0"
+        },
+        "conference" : {
+          "wins" : 1,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "1-0"
+        },
+        "seed" : 5,
+        "eliminated" : false,
+        "tiebreaker" : "POINT_DIFFERENTIAL",
+        "userClub" : false
+      }, {
+        "rank" : 3,
+        "club" : {
+          "id" : "00000000-0000-4000-8000-000000000037",
+          "name" : "Marujos de Costa Safira",
+          "shortName" : "CSA",
+          "city" : "Costa Safira",
+          "primaryColor" : "#0D47A1",
+          "secondaryColor" : "#FFFFFF",
+          "conference" : "CPA",
+          "division" : "Pacífica Sul"
+        },
+        "record" : {
+          "wins" : 1,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "1-0"
+        },
+        "winPct" : 1.0,
+        "pointsFor" : 26,
+        "pointsAgainst" : 17,
+        "pointDiff" : 9,
+        "streak" : "W1",
+        "lastFive" : [ "W" ],
+        "home" : {
+          "wins" : 0,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "0-0"
+        },
+        "away" : {
+          "wins" : 1,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "1-0"
+        },
+        "division" : {
+          "wins" : 0,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "0-0"
+        },
+        "conference" : {
+          "wins" : 1,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "1-0"
+        },
+        "seed" : 6,
+        "eliminated" : false,
+        "userClub" : false
+      }, {
+        "rank" : 4,
+        "club" : {
+          "id" : "00000000-0000-4000-8000-000000000038",
+          "name" : "Pioneiros de Terra Ventura",
+          "shortName" : "TVE",
+          "city" : "Terra Ventura",
+          "primaryColor" : "#827717",
+          "secondaryColor" : "#FFFFFF",
+          "conference" : "CPA",
+          "division" : "Pacífica Sul"
+        },
+        "record" : {
+          "wins" : 0,
+          "losses" : 1,
+          "ties" : 0,
+          "summary" : "0-1"
+        },
+        "winPct" : 0.0,
+        "pointsFor" : 13,
+        "pointsAgainst" : 20,
+        "pointDiff" : -7,
+        "streak" : "L1",
+        "lastFive" : [ "L" ],
+        "home" : {
+          "wins" : 0,
+          "losses" : 1,
+          "ties" : 0,
+          "summary" : "0-1"
+        },
+        "away" : {
+          "wins" : 0,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "0-0"
+        },
+        "division" : {
+          "wins" : 0,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "0-0"
+        },
+        "conference" : {
+          "wins" : 0,
+          "losses" : 1,
+          "ties" : 0,
+          "summary" : "0-1"
+        },
+        "eliminated" : false,
+        "userClub" : false
+      } ]
+    }, {
+      "id" : "00000000-0000-4000-8000-000000000039",
+      "name" : "Pacífica Oeste",
+      "rows" : [ {
+        "rank" : 1,
+        "club" : {
+          "id" : "00000000-0000-4000-8000-000000000040",
+          "name" : "Arraias de Lagoa Funda",
+          "shortName" : "LFU",
+          "city" : "Lagoa Funda",
+          "primaryColor" : "#0277BD",
+          "secondaryColor" : "#B3E5FC",
+          "conference" : "CPA",
+          "division" : "Pacífica Oeste"
+        },
+        "record" : {
+          "wins" : 1,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "1-0"
+        },
+        "winPct" : 1.0,
+        "pointsFor" : 33,
+        "pointsAgainst" : 22,
+        "pointDiff" : 11,
+        "streak" : "W1",
+        "lastFive" : [ "W" ],
+        "home" : {
+          "wins" : 0,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "0-0"
+        },
+        "away" : {
+          "wins" : 1,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "1-0"
+        },
+        "division" : {
+          "wins" : 0,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "0-0"
+        },
+        "conference" : {
+          "wins" : 1,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "1-0"
+        },
+        "seed" : 2,
+        "eliminated" : false,
+        "userClub" : false
+      }, {
+        "rank" : 2,
+        "club" : {
+          "id" : "00000000-0000-4000-8000-000000000041",
+          "name" : "Cascavéis de Areia Branca do Leste",
+          "shortName" : "ABL",
+          "city" : "Areia Branca do Leste",
+          "primaryColor" : "#5D4037",
+          "secondaryColor" : "#FFE082",
+          "conference" : "CPA",
+          "division" : "Pacífica Oeste"
+        },
+        "record" : {
+          "wins" : 0,
+          "losses" : 1,
+          "ties" : 0,
+          "summary" : "0-1"
+        },
+        "winPct" : 0.0,
+        "pointsFor" : 17,
+        "pointsAgainst" : 19,
+        "pointDiff" : -2,
+        "streak" : "L1",
+        "lastFive" : [ "L" ],
+        "home" : {
+          "wins" : 0,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "0-0"
+        },
+        "away" : {
+          "wins" : 0,
+          "losses" : 1,
+          "ties" : 0,
+          "summary" : "0-1"
+        },
+        "division" : {
+          "wins" : 0,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "0-0"
+        },
+        "conference" : {
+          "wins" : 0,
+          "losses" : 1,
+          "ties" : 0,
+          "summary" : "0-1"
+        },
+        "eliminated" : false,
+        "tiebreaker" : "POINT_DIFFERENTIAL",
+        "userClub" : false
+      }, {
+        "rank" : 3,
+        "club" : {
+          "id" : "00000000-0000-4000-8000-000000000042",
+          "name" : "Rinocerontes de Morro Carmim",
+          "shortName" : "MCA",
+          "city" : "Morro Carmim",
+          "primaryColor" : "#8E0000",
+          "secondaryColor" : "#9E9E9E",
+          "conference" : "CPA",
+          "division" : "Pacífica Oeste"
+        },
+        "record" : {
+          "wins" : 0,
+          "losses" : 1,
+          "ties" : 0,
+          "summary" : "0-1"
+        },
+        "winPct" : 0.0,
+        "pointsFor" : 16,
+        "pointsAgainst" : 21,
+        "pointDiff" : -5,
+        "streak" : "L1",
+        "lastFive" : [ "L" ],
+        "home" : {
+          "wins" : 0,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "0-0"
+        },
+        "away" : {
+          "wins" : 0,
+          "losses" : 1,
+          "ties" : 0,
+          "summary" : "0-1"
+        },
+        "division" : {
+          "wins" : 0,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "0-0"
+        },
+        "conference" : {
+          "wins" : 0,
+          "losses" : 1,
+          "ties" : 0,
+          "summary" : "0-1"
+        },
+        "eliminated" : false,
+        "tiebreaker" : "POINT_DIFFERENTIAL",
+        "userClub" : false
+      }, {
+        "rank" : 4,
+        "club" : {
+          "id" : "00000000-0000-4000-8000-000000000043",
+          "name" : "Tatus-Canastra de Vila Topázio",
+          "shortName" : "VTO",
+          "city" : "Vila Topázio",
+          "primaryColor" : "#F57F17",
+          "secondaryColor" : "#3E2723",
+          "conference" : "CPA",
+          "division" : "Pacífica Oeste"
+        },
+        "record" : {
+          "wins" : 0,
+          "losses" : 1,
+          "ties" : 0,
+          "summary" : "0-1"
+        },
+        "winPct" : 0.0,
+        "pointsFor" : 21,
+        "pointsAgainst" : 37,
+        "pointDiff" : -16,
+        "streak" : "L1",
+        "lastFive" : [ "L" ],
+        "home" : {
+          "wins" : 0,
+          "losses" : 1,
+          "ties" : 0,
+          "summary" : "0-1"
+        },
+        "away" : {
+          "wins" : 0,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "0-0"
+        },
+        "division" : {
+          "wins" : 0,
+          "losses" : 0,
+          "ties" : 0,
+          "summary" : "0-0"
+        },
+        "conference" : {
+          "wins" : 0,
+          "losses" : 1,
+          "ties" : 0,
+          "summary" : "0-1"
+        },
+        "eliminated" : false,
+        "userClub" : false
+      } ]
+    } ],
+    "rows" : [ {
+      "rank" : 1,
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000035",
+        "name" : "Meteoros de Porto Quartzo",
+        "shortName" : "PQU",
+        "city" : "Porto Quartzo",
+        "primaryColor" : "#311B92",
+        "secondaryColor" : "#00E5FF",
+        "conference" : "CPA",
+        "division" : "Pacífica Sul"
+      },
+      "record" : {
+        "wins" : 1,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "1-0"
+      },
+      "winPct" : 1.0,
+      "pointsFor" : 23,
+      "pointsAgainst" : 7,
+      "pointDiff" : 16,
+      "streak" : "W1",
+      "lastFive" : [ "W" ],
+      "home" : {
+        "wins" : 0,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "0-0"
+      },
+      "away" : {
+        "wins" : 1,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "1-0"
+      },
+      "division" : {
+        "wins" : 0,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "0-0"
+      },
+      "conference" : {
+        "wins" : 1,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "1-0"
+      },
+      "seed" : 1,
+      "eliminated" : false,
+      "tiebreaker" : "POINT_DIFFERENTIAL",
+      "userClub" : false
+    }, {
+      "rank" : 2,
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000040",
+        "name" : "Arraias de Lagoa Funda",
+        "shortName" : "LFU",
+        "city" : "Lagoa Funda",
+        "primaryColor" : "#0277BD",
+        "secondaryColor" : "#B3E5FC",
+        "conference" : "CPA",
+        "division" : "Pacífica Oeste"
+      },
+      "record" : {
+        "wins" : 1,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "1-0"
+      },
+      "winPct" : 1.0,
+      "pointsFor" : 33,
+      "pointsAgainst" : 22,
+      "pointDiff" : 11,
+      "streak" : "W1",
+      "lastFive" : [ "W" ],
+      "home" : {
+        "wins" : 0,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "0-0"
+      },
+      "away" : {
+        "wins" : 1,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "1-0"
+      },
+      "division" : {
+        "wins" : 0,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "0-0"
+      },
+      "conference" : {
+        "wins" : 1,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "1-0"
+      },
+      "seed" : 2,
+      "eliminated" : false,
+      "tiebreaker" : "POINT_DIFFERENTIAL",
+      "userClub" : false
+    }, {
+      "rank" : 3,
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000030",
+        "name" : "Bigornas de Barra do Sol Poente",
+        "shortName" : "BSP",
+        "city" : "Barra do Sol Poente",
+        "primaryColor" : "#212121",
+        "secondaryColor" : "#FF5722",
+        "conference" : "CPA",
+        "division" : "Pacífica Leste"
+      },
+      "record" : {
+        "wins" : 1,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "1-0"
+      },
+      "winPct" : 1.0,
+      "pointsFor" : 20,
+      "pointsAgainst" : 13,
+      "pointDiff" : 7,
+      "streak" : "W1",
+      "lastFive" : [ "W" ],
+      "home" : {
+        "wins" : 0,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "0-0"
+      },
+      "away" : {
+        "wins" : 1,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "1-0"
+      },
+      "division" : {
+        "wins" : 0,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "0-0"
+      },
+      "conference" : {
+        "wins" : 1,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "1-0"
+      },
+      "seed" : 3,
+      "eliminated" : false,
+      "tiebreaker" : "POINT_DIFFERENTIAL",
+      "userClub" : false
+    }, {
+      "rank" : 4,
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000025",
+        "name" : "Tamanduás de Campos Rubi",
+        "shortName" : "CRU",
+        "city" : "Campos Rubi",
+        "primaryColor" : "#880E4F",
+        "secondaryColor" : "#F8BBD0",
+        "conference" : "CPA",
+        "division" : "Pacífica Norte"
+      },
+      "record" : {
+        "wins" : 1,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "1-0"
+      },
+      "winPct" : 1.0,
+      "pointsFor" : 21,
+      "pointsAgainst" : 18,
+      "pointDiff" : 3,
+      "streak" : "W1",
+      "lastFive" : [ "W" ],
+      "home" : {
+        "wins" : 1,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "1-0"
+      },
+      "away" : {
+        "wins" : 0,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "0-0"
+      },
+      "division" : {
+        "wins" : 0,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "0-0"
+      },
+      "conference" : {
+        "wins" : 1,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "1-0"
+      },
+      "seed" : 4,
+      "eliminated" : false,
+      "userClub" : false
+    }, {
+      "rank" : 5,
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000036",
+        "name" : "Sentinelas de Cedro Alto",
+        "shortName" : "CAL",
+        "city" : "Cedro Alto",
+        "primaryColor" : "#3E2723",
+        "secondaryColor" : "#8BC34A",
+        "conference" : "CPA",
+        "division" : "Pacífica Sul"
+      },
+      "record" : {
+        "wins" : 1,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "1-0"
+      },
+      "winPct" : 1.0,
+      "pointsFor" : 37,
+      "pointsAgainst" : 21,
+      "pointDiff" : 16,
+      "streak" : "W1",
+      "lastFive" : [ "W" ],
+      "home" : {
+        "wins" : 0,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "0-0"
+      },
+      "away" : {
+        "wins" : 1,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "1-0"
+      },
+      "division" : {
+        "wins" : 0,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "0-0"
+      },
+      "conference" : {
+        "wins" : 1,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "1-0"
+      },
+      "seed" : 5,
+      "eliminated" : false,
+      "tiebreaker" : "POINT_DIFFERENTIAL",
+      "userClub" : false
+    }, {
+      "rank" : 6,
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000037",
+        "name" : "Marujos de Costa Safira",
+        "shortName" : "CSA",
+        "city" : "Costa Safira",
+        "primaryColor" : "#0D47A1",
+        "secondaryColor" : "#FFFFFF",
+        "conference" : "CPA",
+        "division" : "Pacífica Sul"
+      },
+      "record" : {
+        "wins" : 1,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "1-0"
+      },
+      "winPct" : 1.0,
+      "pointsFor" : 26,
+      "pointsAgainst" : 17,
+      "pointDiff" : 9,
+      "streak" : "W1",
+      "lastFive" : [ "W" ],
+      "home" : {
+        "wins" : 0,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "0-0"
+      },
+      "away" : {
+        "wins" : 1,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "1-0"
+      },
+      "division" : {
+        "wins" : 0,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "0-0"
+      },
+      "conference" : {
+        "wins" : 1,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "1-0"
+      },
+      "seed" : 6,
+      "eliminated" : false,
+      "tiebreaker" : "POINT_DIFFERENTIAL",
+      "userClub" : false
+    }, {
+      "rank" : 7,
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000031",
+        "name" : "Faróis de Ribeira Turquesa",
+        "shortName" : "RTU",
+        "city" : "Ribeira Turquesa",
+        "primaryColor" : "#006064",
+        "secondaryColor" : "#FFD600",
+        "conference" : "CPA",
+        "division" : "Pacífica Leste"
+      },
+      "record" : {
+        "wins" : 1,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "1-0"
+      },
+      "winPct" : 1.0,
+      "pointsFor" : 21,
+      "pointsAgainst" : 16,
+      "pointDiff" : 5,
+      "streak" : "W1",
+      "lastFive" : [ "W" ],
+      "home" : {
+        "wins" : 1,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "1-0"
+      },
+      "away" : {
+        "wins" : 0,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "0-0"
+      },
+      "division" : {
+        "wins" : 0,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "0-0"
+      },
+      "conference" : {
+        "wins" : 1,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "1-0"
+      },
+      "seed" : 7,
+      "eliminated" : false,
+      "tiebreaker" : "POINT_DIFFERENTIAL",
+      "userClub" : false
+    }, {
+      "rank" : 8,
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000026",
+        "name" : "Condores de Alto Jacarandá",
+        "shortName" : "AJA",
+        "city" : "Alto Jacarandá",
+        "primaryColor" : "#4A148C",
+        "secondaryColor" : "#FFEB3B",
+        "conference" : "CPA",
+        "division" : "Pacífica Norte"
+      },
+      "record" : {
+        "wins" : 1,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "1-0"
+      },
+      "winPct" : 1.0,
+      "pointsFor" : 19,
+      "pointsAgainst" : 17,
+      "pointDiff" : 2,
+      "streak" : "W1",
+      "lastFive" : [ "W" ],
+      "home" : {
+        "wins" : 1,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "1-0"
+      },
+      "away" : {
+        "wins" : 0,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "0-0"
+      },
+      "division" : {
+        "wins" : 0,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "0-0"
+      },
+      "conference" : {
+        "wins" : 1,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "1-0"
+      },
+      "eliminated" : false,
+      "userClub" : false
+    }, {
+      "rank" : 9,
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000041",
+        "name" : "Cascavéis de Areia Branca do Leste",
+        "shortName" : "ABL",
+        "city" : "Areia Branca do Leste",
+        "primaryColor" : "#5D4037",
+        "secondaryColor" : "#FFE082",
+        "conference" : "CPA",
+        "division" : "Pacífica Oeste"
+      },
+      "record" : {
+        "wins" : 0,
+        "losses" : 1,
+        "ties" : 0,
+        "summary" : "0-1"
+      },
+      "winPct" : 0.0,
+      "pointsFor" : 17,
+      "pointsAgainst" : 19,
+      "pointDiff" : -2,
+      "streak" : "L1",
+      "lastFive" : [ "L" ],
+      "home" : {
+        "wins" : 0,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "0-0"
+      },
+      "away" : {
+        "wins" : 0,
+        "losses" : 1,
+        "ties" : 0,
+        "summary" : "0-1"
+      },
+      "division" : {
+        "wins" : 0,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "0-0"
+      },
+      "conference" : {
+        "wins" : 0,
+        "losses" : 1,
+        "ties" : 0,
+        "summary" : "0-1"
+      },
+      "eliminated" : false,
+      "tiebreaker" : "POINT_DIFFERENTIAL",
+      "userClub" : false
+    }, {
+      "rank" : 10,
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000032",
+        "name" : "Albatrozes de São Lucário",
+        "shortName" : "SLU",
+        "city" : "São Lucário",
+        "primaryColor" : "#01579B",
+        "secondaryColor" : "#FFFFFF",
+        "conference" : "CPA",
+        "division" : "Pacífica Leste"
+      },
+      "record" : {
+        "wins" : 0,
+        "losses" : 1,
+        "ties" : 0,
+        "summary" : "0-1"
+      },
+      "winPct" : 0.0,
+      "pointsFor" : 18,
+      "pointsAgainst" : 21,
+      "pointDiff" : -3,
+      "streak" : "L1",
+      "lastFive" : [ "L" ],
+      "home" : {
+        "wins" : 0,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "0-0"
+      },
+      "away" : {
+        "wins" : 0,
+        "losses" : 1,
+        "ties" : 0,
+        "summary" : "0-1"
+      },
+      "division" : {
+        "wins" : 0,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "0-0"
+      },
+      "conference" : {
+        "wins" : 0,
+        "losses" : 1,
+        "ties" : 0,
+        "summary" : "0-1"
+      },
+      "eliminated" : false,
+      "tiebreaker" : "POINT_DIFFERENTIAL",
+      "userClub" : false
+    }, {
+      "rank" : 11,
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000042",
+        "name" : "Rinocerontes de Morro Carmim",
+        "shortName" : "MCA",
+        "city" : "Morro Carmim",
+        "primaryColor" : "#8E0000",
+        "secondaryColor" : "#9E9E9E",
+        "conference" : "CPA",
+        "division" : "Pacífica Oeste"
+      },
+      "record" : {
+        "wins" : 0,
+        "losses" : 1,
+        "ties" : 0,
+        "summary" : "0-1"
+      },
+      "winPct" : 0.0,
+      "pointsFor" : 16,
+      "pointsAgainst" : 21,
+      "pointDiff" : -5,
+      "streak" : "L1",
+      "lastFive" : [ "L" ],
+      "home" : {
+        "wins" : 0,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "0-0"
+      },
+      "away" : {
+        "wins" : 0,
+        "losses" : 1,
+        "ties" : 0,
+        "summary" : "0-1"
+      },
+      "division" : {
+        "wins" : 0,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "0-0"
+      },
+      "conference" : {
+        "wins" : 0,
+        "losses" : 1,
+        "ties" : 0,
+        "summary" : "0-1"
+      },
+      "eliminated" : false,
+      "tiebreaker" : "POINT_DIFFERENTIAL",
+      "userClub" : false
+    }, {
+      "rank" : 12,
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000038",
+        "name" : "Pioneiros de Terra Ventura",
+        "shortName" : "TVE",
+        "city" : "Terra Ventura",
+        "primaryColor" : "#827717",
+        "secondaryColor" : "#FFFFFF",
+        "conference" : "CPA",
+        "division" : "Pacífica Sul"
+      },
+      "record" : {
+        "wins" : 0,
+        "losses" : 1,
+        "ties" : 0,
+        "summary" : "0-1"
+      },
+      "winPct" : 0.0,
+      "pointsFor" : 13,
+      "pointsAgainst" : 20,
+      "pointDiff" : -7,
+      "streak" : "L1",
+      "lastFive" : [ "L" ],
+      "home" : {
+        "wins" : 0,
+        "losses" : 1,
+        "ties" : 0,
+        "summary" : "0-1"
+      },
+      "away" : {
+        "wins" : 0,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "0-0"
+      },
+      "division" : {
+        "wins" : 0,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "0-0"
+      },
+      "conference" : {
+        "wins" : 0,
+        "losses" : 1,
+        "ties" : 0,
+        "summary" : "0-1"
+      },
+      "eliminated" : false,
+      "tiebreaker" : "POINT_DIFFERENTIAL",
+      "userClub" : false
+    }, {
+      "rank" : 13,
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000033",
+        "name" : "Vulcões de Santa Bruma",
+        "shortName" : "SBR",
+        "city" : "Santa Bruma",
+        "primaryColor" : "#BF360C",
+        "secondaryColor" : "#212121",
+        "conference" : "CPA",
+        "division" : "Pacífica Leste"
+      },
+      "record" : {
+        "wins" : 0,
+        "losses" : 1,
+        "ties" : 0,
+        "summary" : "0-1"
+      },
+      "winPct" : 0.0,
+      "pointsFor" : 17,
+      "pointsAgainst" : 26,
+      "pointDiff" : -9,
+      "streak" : "L1",
+      "lastFive" : [ "L" ],
+      "home" : {
+        "wins" : 0,
+        "losses" : 1,
+        "ties" : 0,
+        "summary" : "0-1"
+      },
+      "away" : {
+        "wins" : 0,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "0-0"
+      },
+      "division" : {
+        "wins" : 0,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "0-0"
+      },
+      "conference" : {
+        "wins" : 0,
+        "losses" : 1,
+        "ties" : 0,
+        "summary" : "0-1"
+      },
+      "eliminated" : false,
+      "tiebreaker" : "POINT_DIFFERENTIAL",
+      "userClub" : false
+    }, {
+      "rank" : 14,
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000027",
+        "name" : "Javalis de Nova Esmeralda",
+        "shortName" : "NES",
+        "city" : "Nova Esmeralda",
+        "primaryColor" : "#004D40",
+        "secondaryColor" : "#FFFFFF",
+        "conference" : "CPA",
+        "division" : "Pacífica Norte"
+      },
+      "record" : {
+        "wins" : 0,
+        "losses" : 1,
+        "ties" : 0,
+        "summary" : "0-1"
+      },
+      "winPct" : 0.0,
+      "pointsFor" : 22,
+      "pointsAgainst" : 33,
+      "pointDiff" : -11,
+      "streak" : "L1",
+      "lastFive" : [ "L" ],
+      "home" : {
+        "wins" : 0,
+        "losses" : 1,
+        "ties" : 0,
+        "summary" : "0-1"
+      },
+      "away" : {
+        "wins" : 0,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "0-0"
+      },
+      "division" : {
+        "wins" : 0,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "0-0"
+      },
+      "conference" : {
+        "wins" : 0,
+        "losses" : 1,
+        "ties" : 0,
+        "summary" : "0-1"
+      },
+      "eliminated" : false,
+      "tiebreaker" : "POINT_DIFFERENTIAL",
+      "userClub" : false
+    }, {
+      "rank" : 15,
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000028",
+        "name" : "Sucuris de Ponta Granito",
+        "shortName" : "PGR",
+        "city" : "Ponta Granito",
+        "primaryColor" : "#33691E",
+        "secondaryColor" : "#CDDC39",
+        "conference" : "CPA",
+        "division" : "Pacífica Norte"
+      },
+      "record" : {
+        "wins" : 0,
+        "losses" : 1,
+        "ties" : 0,
+        "summary" : "0-1"
+      },
+      "winPct" : 0.0,
+      "pointsFor" : 7,
+      "pointsAgainst" : 23,
+      "pointDiff" : -16,
+      "streak" : "L1",
+      "lastFive" : [ "L" ],
+      "home" : {
+        "wins" : 0,
+        "losses" : 1,
+        "ties" : 0,
+        "summary" : "0-1"
+      },
+      "away" : {
+        "wins" : 0,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "0-0"
+      },
+      "division" : {
+        "wins" : 0,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "0-0"
+      },
+      "conference" : {
+        "wins" : 0,
+        "losses" : 1,
+        "ties" : 0,
+        "summary" : "0-1"
+      },
+      "eliminated" : false,
+      "tiebreaker" : "DRAW",
+      "userClub" : false
+    }, {
+      "rank" : 16,
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000043",
+        "name" : "Tatus-Canastra de Vila Topázio",
+        "shortName" : "VTO",
+        "city" : "Vila Topázio",
+        "primaryColor" : "#F57F17",
+        "secondaryColor" : "#3E2723",
+        "conference" : "CPA",
+        "division" : "Pacífica Oeste"
+      },
+      "record" : {
+        "wins" : 0,
+        "losses" : 1,
+        "ties" : 0,
+        "summary" : "0-1"
+      },
+      "winPct" : 0.0,
+      "pointsFor" : 21,
+      "pointsAgainst" : 37,
+      "pointDiff" : -16,
+      "streak" : "L1",
+      "lastFive" : [ "L" ],
+      "home" : {
+        "wins" : 0,
+        "losses" : 1,
+        "ties" : 0,
+        "summary" : "0-1"
+      },
+      "away" : {
+        "wins" : 0,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "0-0"
+      },
+      "division" : {
+        "wins" : 0,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "0-0"
+      },
+      "conference" : {
+        "wins" : 0,
+        "losses" : 1,
+        "ties" : 0,
+        "summary" : "0-1"
+      },
+      "eliminated" : false,
+      "userClub" : false
+    } ]
+  } ]
+}

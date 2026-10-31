@@ -3,7 +3,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 import { api } from "@/lib/api";
-import { useT } from "@/i18n/provider";
+import { useT, useTd } from "@/i18n/provider";
 import { cn } from "@/lib/utils/cn";
 import { useCareer } from "@/store/career";
 import { useSession } from "@/store/session";
@@ -46,6 +46,7 @@ export function CareerShell({ careerId, children }: { careerId: string; children
 
 function CareerFrame({ careerId, children }: { careerId: string; children: ReactNode }) {
   const t = useT("nav");
+  const td = useTd();
   const tc = useT("common");
   const pathname = usePathname();
   const router = useRouter();
@@ -86,7 +87,12 @@ function CareerFrame({ careerId, children }: { careerId: string; children: React
     await logout().catch(() => undefined);
     router.replace("/");
   };
-  const status = current ? t("clubStatus", { record: current.record.summary, week: current.currentWeek, total: current.career.regularSeasonWeeks }) : null;
+  // depois da temporada regular (playoffs e entressafra, 6c) o topo mostra a fase em vez de "semana 19 de 18"
+  const status = !current
+    ? null
+    : current.currentWeek > current.career.regularSeasonWeeks && current.career.seasonPhase
+      ? t("clubStatusPhase", { record: current.record.summary, phase: td("enums", `seasonPhase.${current.career.seasonPhase}`) })
+      : t("clubStatus", { record: current.record.summary, week: current.currentWeek, total: current.career.regularSeasonWeeks });
 
   const groups = (onItem?: "dialog") =>
     GROUPS.filter((g) => NAV_SECTIONS.some((s) => s.group === g)).map((g) => (

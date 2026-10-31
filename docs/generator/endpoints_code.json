@@ -168,6 +168,11 @@
   },
   {
    "method": "GET",
+   "path": "/api/v1/careers/{id}/morale",
+   "controller": "CareerController"
+  },
+  {
+   "method": "GET",
    "path": "/api/v1/careers/{id}/depth-chart",
    "controller": "DepthChartController"
   },
@@ -333,6 +338,41 @@
   },
   {
    "method": "GET",
+   "path": "/api/v1/careers/{id}/standings",
+   "controller": "SeasonController"
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/careers/{id}/weeks/{n}/news",
+   "controller": "SeasonController"
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/careers/{id}/playoffs",
+   "controller": "SeasonController"
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/careers/{id}/playoffs/bracket",
+   "controller": "SeasonController"
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/careers/{id}/trophies",
+   "controller": "SeasonController"
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/careers/{id}/season/summary",
+   "controller": "SeasonController"
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/careers/{id}/season/advance",
+   "controller": "SeasonController"
+  },
+  {
+   "method": "GET",
    "path": "/api/v1/careers/{id}/game-plan",
    "controller": "GamePlanController"
   },
@@ -395,6 +435,16 @@
    "method": "GET",
    "path": "/api/v1/matches/{mid}/report",
    "controller": "MatchController"
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/careers/{id}/analysis",
+   "controller": "AnalysisController"
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/careers/{id}/analysis/refresh",
+   "controller": "AnalysisController"
   }
  ]
 }

@@ -35,7 +35,7 @@ package "season" {
     hasBye: boolean (seed 1)
   }
   class PlayoffMatchup {
-    round: PlayoffRound (WILD_CARD|DIVISIONAL|CONFERENCE|FINAL)
+    round: PlayoffRound (PRELIMINARY|WILD_CARD|DIVISIONAL|CONFERENCE|FINAL)
     higherSeed: PlayoffSeed
     lowerSeed: PlayoffSeed
     fixture: Fixture

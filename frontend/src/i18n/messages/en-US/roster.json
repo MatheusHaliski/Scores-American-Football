@@ -125,5 +125,6 @@
   "tab.SPECIAL_TEAMS": "Special teams",
   "tab.WAIVERS": "On waivers",
   "title": "Roster",
-  "waivers.hint": "They left the 53 for the practice squad. They stay on waivers until the week advances: if unclaimed, they join the practice squad on the same contract. The practice squad spot is held and the cap hit stays on the books."
+  "waivers.hint": "They left the 53 for the practice squad. They stay on waivers until the week advances: if unclaimed, they join the practice squad on the same contract. The practice squad spot is held and the cap hit stays on the books.",
+  "tab.MORALE": "Morale"
 }

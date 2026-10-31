@@ -9,6 +9,7 @@ import { attacksUp, canAdvance, clockText, currentDrive, decisionOpen, isBreak, 
 import { useNow } from "@/lib/hooks/useNow";
 import { useT, useTd } from "@/i18n/provider";
 import { useCareer } from "@/store/career";
+import { isPlayoffKind } from "@/lib/season/bracket";
 import { useMatch } from "@/store/match";
 import { PageHeader } from "@/components/shell/PageHeader";
 import { ClubBadge } from "@/components/career/ClubBadge";
@@ -97,6 +98,7 @@ function WeekGames({ board, careerId }: { board: WeekBoard; careerId: string }) 
 function MatchScreen() {
   const t = useT("match");
   const tg = useT("game");
+  const ts = useT("season");
   const td = useTd();
   const { careerId } = useParams<{ careerId: string }>();
   const search = useSearchParams();
@@ -220,7 +222,7 @@ function MatchScreen() {
   return (
     <div className="flex flex-col gap-4">
       <PageHeader
-        eyebrow={t("live.eyebrowWeek", { week: state.week })}
+        eyebrow={board?.week === state.week && isPlayoffKind(board.kind) ? ts("round.label", { round: td("season", `playoffs.round.${board.kind}`), week: state.week }) : t("live.eyebrowWeek", { week: state.week })}
         title={t("live.title", { away: l.away.shortName, home: l.home.shortName })}
         description={t("live.description", { level: td("enums", `playCalling.${state.playCallingLevel}`), weather: td("enums", `weather.${l.weather}`) })}
         actions={finished ? <Button variant="led" size="lg" icon={<IconFlag size={18} />} href={`/c/${careerId}/match/${state.fixtureId}/report`}>{t("live.report")}</Button> : undefined}

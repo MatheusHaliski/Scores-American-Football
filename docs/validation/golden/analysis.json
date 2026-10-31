@@ -1,0 +1,139 @@
+{
+  "id" : "00000000-0000-4000-8000-000000000001",
+  "seasonId" : "00000000-0000-4000-8000-000000000002",
+  "week" : 2,
+  "source" : "RULES",
+  "generatedAt" : "2026-01-01T00:00:00Z",
+  "summaryCode" : "NEXT_GAME_FAVORITE",
+  "summary" : "Favorito contra Centauros de Cerro Ventania (62% de chance): aposte em linha ofensiva e proteja quarterback.",
+  "summaryParams" : {
+    "opponentId" : "00000000-0000-4000-8000-000000000003",
+    "winProbability" : 0.622,
+    "bestUnit" : "OFFENSIVE_LINE",
+    "worstUnit" : "QB"
+  },
+  "strength" : 80,
+  "leagueStrength" : 78,
+  "units" : [ {
+    "unit" : "QB",
+    "rating" : 79,
+    "leagueAverage" : 80,
+    "diff" : -1
+  }, {
+    "unit" : "OFFENSIVE_LINE",
+    "rating" : 85,
+    "leagueAverage" : 80,
+    "diff" : 5
+  }, {
+    "unit" : "RUNNING_BACK",
+    "rating" : 80,
+    "leagueAverage" : 80,
+    "diff" : 0
+  }, {
+    "unit" : "RECEIVERS",
+    "rating" : 78,
+    "leagueAverage" : 76,
+    "diff" : 2
+  }, {
+    "unit" : "DEFENSIVE_LINE",
+    "rating" : 80,
+    "leagueAverage" : 77,
+    "diff" : 3
+  }, {
+    "unit" : "LINEBACKERS",
+    "rating" : 77,
+    "leagueAverage" : 77,
+    "diff" : 0
+  }, {
+    "unit" : "SECONDARY",
+    "rating" : 80,
+    "leagueAverage" : 78,
+    "diff" : 2
+  }, {
+    "unit" : "SPECIAL_TEAMS",
+    "rating" : 81,
+    "leagueAverage" : 80,
+    "diff" : 1
+  } ],
+  "strengths" : [ {
+    "unit" : "OFFENSIVE_LINE",
+    "rating" : 85,
+    "leagueAverage" : 80,
+    "diff" : 5
+  }, {
+    "unit" : "DEFENSIVE_LINE",
+    "rating" : 80,
+    "leagueAverage" : 77,
+    "diff" : 3
+  } ],
+  "weaknesses" : [ ],
+  "upcoming" : [ {
+    "fixtureId" : "00000000-0000-4000-8000-000000000004",
+    "week" : 2,
+    "opponent" : {
+      "id" : "00000000-0000-4000-8000-000000000003",
+      "name" : "Centauros de Cerro Ventania",
+      "shortName" : "CVE",
+      "city" : "Cerro Ventania",
+      "primaryColor" : "#1B5E20",
+      "secondaryColor" : "#FFD54F",
+      "conference" : "CAT",
+      "division" : "Atlântica Sul"
+    },
+    "home" : false,
+    "neutralSite" : false,
+    "strength" : 80,
+    "opponentStrength" : 76,
+    "winProbability" : 0.622,
+    "verdict" : "FAVORITE",
+    "biggestThreat" : "SPECIAL_TEAMS",
+    "matchups" : [ {
+      "key" : "PASS_OFFENSE_VS_SECONDARY",
+      "ours" : 79,
+      "theirs" : 73,
+      "edge" : 6,
+      "advantage" : "OURS"
+    }, {
+      "key" : "RUN_OFFENSE_VS_FRONT",
+      "ours" : 83,
+      "theirs" : 75,
+      "edge" : 8,
+      "advantage" : "OURS"
+    }, {
+      "key" : "OL_VS_DL",
+      "ours" : 85,
+      "theirs" : 75,
+      "edge" : 10,
+      "advantage" : "OURS"
+    }, {
+      "key" : "SECONDARY_VS_PASS_OFFENSE",
+      "ours" : 80,
+      "theirs" : 76,
+      "edge" : 4,
+      "advantage" : "OURS"
+    }, {
+      "key" : "FRONT_VS_RUN_OFFENSE",
+      "ours" : 79,
+      "theirs" : 79,
+      "edge" : 0,
+      "advantage" : "EVEN"
+    } ]
+  } ],
+  "depthChart" : [ ],
+  "gamePlan" : [ {
+    "field" : "passRatio",
+    "current" : "58",
+    "recommended" : "45",
+    "reason" : "RUN_EDGE"
+  }, {
+    "field" : "defensiveFocus",
+    "current" : "BALANCED",
+    "recommended" : "STOP_RUN",
+    "reason" : "RUN_THREAT"
+  }, {
+    "field" : "fourthDownAggression",
+    "current" : "AGGRESSIVE",
+    "recommended" : "NORMAL",
+    "reason" : "WIN_PROBABILITY"
+  } ]
+}

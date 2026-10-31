@@ -7,12 +7,24 @@ import java.util.List;
  * no mesmo PR, senão o ForeignKeyPolicyTest fica vermelho. Bloco 3: as FKs da plataforma (V1__plataforma.sql); a conta é
  * anonimizada e nunca apagada, mas o que é dela cai junto se um dia for (sessões, configurações, preferências, notificações,
  * pedidos de exportação); a prova do consentimento (consent_record) segura a exclusão. Bloco 4: as do catálogo (V2__dominio_af.sql).
- * Bloco 6a: as da carreira (V3__carreira.sql). Bloco 6b: as da partida (V4__partida.sql).
+ * Bloco 6a: as da carreira (V3__carreira.sql). Bloco 6b: as da partida (V4__partida.sql). Bloco 6c: as da temporada (V6__temporada.sql).
  */
 final class ForeignKeyPolicy {
   record Fk(String table, String column, String refTable, String refColumn, String onDelete) {}
 
   static final List<Fk> POLICY = List.of(
+      // V6 — temporada (bloco 6c): a temporada só perde a referência à campeã e à vice (SET NULL); sementes, prêmios e relatórios do
+      // analista são da carreira e caem com ela, com a temporada, a franquia, a conferência ou o jogador do mundo SAVE dela (CASCADE).
+      new Fk("analysis_report", "career_save_id", "career_save", "id", "CASCADE"),
+      new Fk("analysis_report", "season_id", "season", "id", "CASCADE"),
+      new Fk("playoff_seed", "club_id", "club", "id", "CASCADE"),
+      new Fk("playoff_seed", "conference_id", "conference", "id", "CASCADE"),
+      new Fk("playoff_seed", "season_id", "season", "id", "CASCADE"),
+      new Fk("season", "champion_club_id", "club", "id", "SET NULL"),
+      new Fk("season", "runner_up_club_id", "club", "id", "SET NULL"),
+      new Fk("season_award", "club_id", "club", "id", "CASCADE"),
+      new Fk("season_award", "player_id", "player", "id", "CASCADE"),
+      new Fk("season_award", "season_id", "season", "id", "CASCADE"),
       // V4 — partida (bloco 6b): plano de jogo, playbook, partida ao vivo, relatório e box score são da carreira e caem com ela, com
       // o jogo do calendário, a franquia ou o jogador do mundo SAVE dela (CASCADE).
       new Fk("game_plan", "career_save_id", "career_save", "id", "CASCADE"),

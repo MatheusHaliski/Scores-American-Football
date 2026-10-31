@@ -4,7 +4,8 @@
  * kickoff (422 DEPTH_CHART_INVALID), fim da temporada (409 NO_NEXT_GAME), modos de avanço que param na decisão do manager e no fim,
  * prazo de 30 s da chamada de jogada (vencido, a IA chama: 409 DECISION_CLOSED na chamada atrasada), ajustes só antes do kickoff,
  * entre quartos e no intervalo (422 ADJUSTMENT_NOT_ALLOWED), tempo técnico com a bola morta (422 TIMEOUT_NOT_ALLOWED) e relatório só
- * no fim (422 MATCH_NOT_FINISHED).
+ * no fim (422 MATCH_NOT_FINISHED). Bloco 6c: as semanas de playoff (19 a 22) entram como as outras; na semana em que o usuário folga
+ * (semente com bye), ficou fora ou foi eliminado, "jogar" fecha a semana na hora; depois da final, 409 NO_NEXT_GAME.
  *
  * O "motor" daqui é um simulador simples de demonstração (D-71): descidas, corridas, passes, punts, field goals, pontos extras,
  * kickoffs e o relógio, com os mesmos `textKey`/`params` do motor real para o play-by-play. Não reproduz o motor Java: só dá à tela
@@ -65,7 +66,7 @@ const ENGINE_VERSION = 1;
 const RULES_VERSION = 1;
 
 /** Plano padrão por estilo do head coach no mock (o backend tem o seu, D-38). */
-const COACH_PLANS: Record<string, PlanTendencies> = {
+export const COACH_PLANS: Record<string, PlanTendencies> = {
   OFFENSIVE: { passRatio: 58, fourthDownAggression: "AGGRESSIVE", tempo: "NORMAL", defensiveFocus: "BALANCED", blitzFrequency: "NORMAL", baseDefense: "BASE_3_4" },
   DEFENSIVE: { passRatio: 45, fourthDownAggression: "CONSERVATIVE", tempo: "MILK_CLOCK", defensiveFocus: "STOP_RUN", blitzFrequency: "HIGH", baseDefense: "BASE_4_3" },
   DEVELOPER: { passRatio: 50, fourthDownAggression: "NORMAL", tempo: "NORMAL", defensiveFocus: "BALANCED", blitzFrequency: "NORMAL", baseDefense: "BASE_4_3" },
@@ -230,7 +231,7 @@ function lineupFrom(players: MockPlayer[], chart: Record<string, string[]> | nul
   };
 }
 
-function opponentRoster(careerId: string, clubId: string, prestige: number): MockPlayer[] {
+export function opponentRoster(careerId: string, clubId: string, prestige: number): MockPlayer[] {
   return generateRoster(`${careerId}:opp:${clubId}`, (i) => uuidFrom("player", `${careerId}:${clubId}:${i}`), prestige, SEASON_YEAR, SALARY_CAP);
 }
 
@@ -953,11 +954,11 @@ export function mockMatches(user: UserAccount): MockMatches {
     }
   };
 
-  /** Próximo jogo do usuário a partir da semana atual (o primeiro sem placar). */
+  /** Próximo jogo do usuário a partir da semana atual (o primeiro sem placar); nos playoffs, só depois de a rodada existir. */
   const nextFixture = (c: StoredCareer) => {
     const club = acc.club(c);
     const week = c.summary.currentWeek;
-    if (week > REGULAR_WEEKS) throw ApiError.conflict("NO_NEXT_GAME");
+    if (acc.completed(c) || week > acc.lastWeek(c)) throw ApiError.conflict("NO_NEXT_GAME");
     return acc.fixtures(c).find((f) => f.week >= week && (f.homeClubId === club.id || f.awayClubId === club.id) && f.homeScore == null) ?? null;
   };
 
@@ -1019,24 +1020,24 @@ export function mockMatches(user: UserAccount): MockMatches {
   const boardOf = (c: StoredCareer, week: number): WeekBoard => {
     const me = acc.club(c);
     const fx = acc.fixtures(c).filter((f) => f.week === week);
-    const playing = new Set(fx.flatMap((f) => [f.homeClubId, f.awayClubId]));
     const sessions = sessionsOf(c);
     const userFx = fx.find((f) => f.homeClubId === me.id || f.awayClubId === me.id) ?? null;
     const userSession = userFx ? sessions[userFx.id] : undefined;
-    const allClubs = acc.fixtures(c).filter((f) => f.week === 1).flatMap((f) => [f.homeClubId, f.awayClubId]);
+    // folga: na temporada regular, quem não joga; nos playoffs, só a semente que folga (eliminada ou fora não "folga", D-105)
+    const byes = acc.weekByes(c, week);
     return {
       seasonId: acc.seasonId(c),
       week,
       regularSeasonWeeks: REGULAR_WEEKS,
       currentWeek: c.summary.currentWeek,
-      kind: "REGULAR",
+      kind: acc.weekKind(c, week),
       status: week < c.summary.currentWeek ? "COMPLETED" : week === c.summary.currentWeek ? "CURRENT" : "UPCOMING",
       startsOn: fx[0]?.date ?? null,
       completed: fx.length > 0 && fx.every((f) => f.homeScore != null),
-      userBye: !userFx,
+      userBye: !userFx && byes.includes(me.id),
       userFixtureId: userFx?.id ?? null,
       matchId: userSession?.id ?? null,
-      byeClubIds: [...new Set(allClubs)].filter((id) => !playing.has(id)),
+      byeClubIds: byes,
       games: fx.map((f) => {
         const s = sessions[f.id];
         return {
@@ -1152,11 +1153,12 @@ export function mockMatches(user: UserAccount): MockMatches {
     playCurrent(careerId) {
       const c = acc.writable(careerId);
       const week = c.summary.currentWeek;
-      if (week > REGULAR_WEEKS) throw ApiError.conflict("NO_NEXT_GAME");
+      // depois da final não há semana atual (D-97)
+      if (acc.completed(c) || week > acc.lastWeek(c)) throw ApiError.conflict("NO_NEXT_GAME");
       const me = acc.club(c);
-      const f = acc.fixtures(c).find((x) => x.week === week && (x.homeClubId === me.id || x.awayClubId === me.id));
+      const f = acc.fixtures(c).find((x) => x.week === week && (x.homeClubId === me.id || x.awayClubId === me.id) && x.homeScore == null);
       if (!f) {
-        // semana de folga: fecha na hora (D-63)
+        // semana de folga (ou de playoff em que o usuário folga, ficou fora ou foi eliminado): fecha na hora (D-63, D-96)
         acc.closeWeek(c, week, {}, rngFrom(`week:${c.summary.id}:${week}`));
         return boardOf(c, week);
       }
@@ -1172,7 +1174,8 @@ export function mockMatches(user: UserAccount): MockMatches {
     },
     week(careerId, week) {
       const c = acc.find(careerId);
-      if (!Number.isInteger(week) || week < 1 || week > REGULAR_WEEKS) throw ApiError.badRequest("INVALID_WEEK", { 0: week, 1: REGULAR_WEEKS });
+      const last = acc.lastWeek(c);
+      if (!Number.isInteger(week) || week < 1 || week > last) throw ApiError.badRequest("INVALID_WEEK", { 0: week, 1: last });
       return boardOf(c, week);
     },
     get(matchId) {

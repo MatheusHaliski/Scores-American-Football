@@ -49,7 +49,7 @@ database "Redis 7" as s2
 database "Cassandra 4.1" as s3
 c1 --> c5 : usa
 c2 --> c10 : dispara
-c5 --> c9 : GET /careers/{id}/playoffs/seeds (alvo)\nGET /careers/{id}/playoffs/bracket (alvo)\nGET /careers/{id}/playoffs/matchups/{mid} (alvo)
+c5 --> c9 : GET /careers/{id}/playoffs/seeds (alvo)\nGET /careers/{id}/playoffs/bracket\nGET /careers/{id}/playoffs/matchups/{mid} (alvo)
 c9 --> c10
 c10 ..> pkg_app : orquestra
 c10 --> c13 : usa

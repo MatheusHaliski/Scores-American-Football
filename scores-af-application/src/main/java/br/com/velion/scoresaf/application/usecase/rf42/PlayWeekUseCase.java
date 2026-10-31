@@ -11,6 +11,7 @@ import br.com.velion.scoresaf.application.port.out.persistence.FixtureRepository
 import br.com.velion.scoresaf.application.port.out.persistence.MatchSessionRepository;
 import br.com.velion.scoresaf.application.port.out.persistence.PlayerRepository;
 import br.com.velion.scoresaf.application.port.out.persistence.UserSettingsRepository;
+import br.com.velion.scoresaf.application.port.out.persistence.WeekRepository;
 import br.com.velion.scoresaf.application.service.DepthChartService;
 import br.com.velion.scoresaf.application.service.MatchService;
 import br.com.velion.scoresaf.application.service.MatchSetupAssembler;
@@ -39,8 +40,9 @@ import org.springframework.transaction.annotation.Transactional;
  * RF27 / RF7 — jogar a semana atual ({@code /rounds/current/play} do basquete → {@code /weeks/current/play}): confere o depth chart
  * (422 DEPTH_CHART_INVALID com {@code errors[]}), cria a partida ao vivo do usuário (MatchSession com o snapshot inicial do motor,
  * semente do jogo, nível de chamada de jogada da conta congelado) e devolve o painel da semana. Os outros jogos da semana são
- * simulados quando a semana fecha (ao fim da partida do usuário); semana de folga fecha na hora. Idempotente: partida já criada
- * não é recriada. Fim da temporada regular: 409 NO_NEXT_GAME. Dois pedidos juntos da mesma carreira rodam um depois do outro (a
+ * simulados quando a semana fecha (ao fim da partida do usuário); semana de folga fecha na hora, como a semana de playoff em que a
+ * franquia do usuário folga, ficou fora ou foi eliminada (D-96). Idempotente: partida já criada não é recriada. Depois da final: 409
+ * NO_NEXT_GAME. Dois pedidos juntos da mesma carreira rodam um depois do outro (a
  * carreira é travada antes de tudo, D-91): o segundo encontra a partida criada pelo primeiro em vez de criar outra.
  */
 @Service
@@ -48,14 +50,14 @@ public class PlayWeekUseCase {
   private final CareerSupport support; private final MatchSupport matches; private final FixtureRepository fixtures; private final MatchSessionRepository sessions;
   private final PlayerRepository players; private final ClubRepository clubs; private final UserSettingsRepository settings; private final DepthChartService depthCharts;
   private final MatchSetupAssembler assembler; private final MatchService matchService; private final WeekProcessor weekProcessor; private final AuditService audit;
-  private final CareerSaveRepository saves;
+  private final CareerSaveRepository saves; private final WeekRepository weeks;
 
   public PlayWeekUseCase(CareerSupport support, MatchSupport matches, FixtureRepository fixtures, MatchSessionRepository sessions, PlayerRepository players,
                          ClubRepository clubs, UserSettingsRepository settings, DepthChartService depthCharts, MatchSetupAssembler assembler,
-                         MatchService matchService, WeekProcessor weekProcessor, AuditService audit, CareerSaveRepository saves) {
+                         MatchService matchService, WeekProcessor weekProcessor, AuditService audit, CareerSaveRepository saves, WeekRepository weeks) {
     this.support = support; this.matches = matches; this.fixtures = fixtures; this.sessions = sessions; this.players = players; this.clubs = clubs;
     this.settings = settings; this.depthCharts = depthCharts; this.assembler = assembler; this.matchService = matchService; this.weekProcessor = weekProcessor;
-    this.audit = audit; this.saves = saves;
+    this.audit = audit; this.saves = saves; this.weeks = weeks;
   }
 
   @Transactional
@@ -67,7 +69,10 @@ public class PlayWeekUseCase {
     Season season = save.getSeason();
     if (season == null) throw new BusinessRuleException("NO_SEASON", "Carreira sem temporada");
     int week = season.getCurrentWeek();
-    if (week > season.getRegularSeasonWeeks()) throw new ConflictException("NO_NEXT_GAME", "A temporada regular terminou: não há próximo jogo");
+    // a semana atual só existe enquanto houver jogo na temporada (regular e playoffs, D-96); depois da final, a temporada acabou
+    if (season.isCompleted() || weeks.findBySeasonIdAndNumber(season.getId(), week).isEmpty()) {
+      throw new ConflictException("NO_NEXT_GAME", "A temporada terminou: não há próximo jogo");
+    }
     Fixture mine = fixtures.findBySeasonIdAndWeekNumber(season.getId(), week).stream().filter(f -> f.involves(club.getId())).findFirst().orElse(null);
     if (mine != null && !mine.isFinished()) {
       if (sessions.findByFixtureId(mine.getId()).isEmpty()) start(save, club, mine, userId);

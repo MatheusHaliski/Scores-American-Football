@@ -136,7 +136,7 @@ package "season" {
   }
   class Week {
     number: int
-    kind: WeekKind (PRESEASON|REGULAR|WILD_CARD|DIVISIONAL|CONFERENCE|FINAL)
+    kind: WeekKind (PRESEASON|REGULAR|PRELIMINARY|WILD_CARD|DIVISIONAL|CONFERENCE|FINAL)
     startsOn: LocalDate
     status: WeekStatus
     byeClubs: List<Club>

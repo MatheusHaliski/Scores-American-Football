@@ -44,13 +44,13 @@ Fonte: [`RF35-stm.puml`](RF35-stm.puml)
 
 | Estado | Método | Rota | Caso de uso | Autorização | Descrição |
 |---|---|---|---|---|---|
-| ⛔ alvo | `GET` | `/api/v1/careers/{id}/season/summary` | `GetSeasonSummaryUseCase` | JWT · dono do save | Campeão (troféu 3D), classificação final por divisão e conferência, rankings, prêmios, narrativa, fase da entressafra e pendências |
-| ⛔ alvo | `GET` | `/api/v1/careers/{id}/playoffs` | `GetPlayoffBracketUseCase` | JWT · dono do save | Chave final: 7 por conferência, folga do 1º, final neutra (RF66) |
+| ✅ | `GET` | `/api/v1/careers/{id}/season/summary` | `GetSeasonSummaryUseCase` | JWT · dono do save | Campeão (troféu 3D), classificação final por divisão e conferência, rankings, prêmios, narrativa, fase da entressafra e pendências |
+| ✅ | `GET` | `/api/v1/careers/{id}/playoffs` | `GetPlayoffBracketUseCase` | JWT · dono do save | Chave final: 7 por conferência, folga do 1º, final neutra (RF66) |
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/awards` | `GetSeasonAwardsUseCase` | JWT · dono do save | MVP, OPOY, DPOY, OROY, DROY, COACH |
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/contracts/expiring` | `ListExpiringContractsUseCase` | JWT · dono do save | Contratos que vencem: renovar, aplicar franchise tag ou deixar ir (RF49) |
 | ⛔ alvo | `GET` | `/api/v1/careers/{id}/job-offers` | `ListJobOffersUseCase` | JWT · dono do save | Propostas de head coach da janela pós-temporada (RF37) |
 | ⛔ alvo | `POST` | `/api/v1/careers/{id}/job-offers/{jid}/respond` | `RespondJobOfferUseCase` | JWT · dono do save | Aceitar ou recusar proposta |
-| ⛔ alvo | `POST` | `/api/v1/careers/{id}/season/advance` | `AdvanceOffseasonPhaseUseCase` | JWT · dono do save | Avança a fase: OFFSEASON → FREE_AGENCY → DRAFT → PRESEASON n+1 · idempotente por (seasonId, fase) |
+| ✅ | `POST` | `/api/v1/careers/{id}/season/advance` | `AdvanceOffseasonPhaseUseCase` | JWT · dono do save | Avança a fase: OFFSEASON → FREE_AGENCY → DRAFT → PRESEASON n+1 · idempotente por (seasonId, fase) |
 
 ## Pontos de decisão
 

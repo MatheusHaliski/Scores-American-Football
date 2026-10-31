@@ -38,7 +38,8 @@ import org.springframework.transaction.annotation.Transactional;
  * Cria a temporada da carreira com o calendário da temporada regular (RF34, RF21): monta as franquias da liga por conferência,
  * divisão e colocação (prestígio, depois nome — nunca o id, para o mundo clonado dar o mesmo calendário), chama o
  * {@link ScheduleGenerator} com a semente derivada da carreira e grava {@link Season}, {@link Week} e {@link Fixture}. A semana 1
- * começa na quinta-feira depois da primeira segunda-feira de setembro, como na liga profissional (quinta depois do Labor Day).
+ * começa na quinta-feira depois da primeira segunda-feira de setembro, como na liga profissional (quinta depois do Labor Day). Desde o
+ * bloco 6c também cria as temporadas seguintes, com a colocação final da anterior (D-99).
  */
 @Service
 public class SeasonScheduler {
@@ -51,11 +52,20 @@ public class SeasonScheduler {
   }
 
   @Transactional
-  public Season createFirstSeason(CareerSave save, League league, int year) {
+  public Season createFirstSeason(CareerSave save, League league, int year) { return createSeason(save, league, 1, year, null); }
+
+  /**
+   * Cria a temporada {@code number} (RF35: a seguinte nasce no avanço da temporada, D-99). {@code place}: colocação de cada franquia
+   * na divisão (0 = primeira) na classificação final da temporada anterior, que decide os confrontos por colocação da fórmula da liga;
+   * {@code null} na primeira temporada (prestígio, depois nome). Calendário e jogos com sementes derivadas da carreira e do número da
+   * temporada (a temporada 1 continua com as mesmas sementes de antes).
+   */
+  @Transactional
+  public Season createSeason(CareerSave save, League league, int number, int year, Map<UUID, Integer> place) {
     LeagueRules rules = league.getRules() == null ? LeagueRules.defaults(league.getRuleset()) : league.getRules();
     Map<String, Club> byKey = new HashMap<>();
-    List<ScheduleGenerator.Team> teams = teams(league, byKey);
-    long scheduleSeed = SeedPolicy.derive(save.getSeed(), "calendar", 1);
+    List<ScheduleGenerator.Team> teams = teams(league, byKey, place);
+    long scheduleSeed = SeedPolicy.derive(save.getSeed(), "calendar", number);
     ScheduleGenerator.Schedule schedule;
     try {
       schedule = ScheduleGenerator.regularSeason(teams, rules.getRegularSeasonWeeks(), rules.getGamesPerTeam(), scheduleSeed);
@@ -63,7 +73,7 @@ public class SeasonScheduler {
       throw new BusinessRuleException("LEAGUE_STRUCTURE_INVALID", "A liga não tem um formato de temporada válido: " + e.getMessage());
     }
     Season season = new Season();
-    season.setCareer(save); season.setLeague(league); season.setNumber(1); season.setYear(year); season.setPhase(SeasonPhase.REGULAR);
+    season.setCareer(save); season.setLeague(league); season.setNumber(number); season.setYear(year); season.setPhase(SeasonPhase.REGULAR);
     season.setCurrentWeek(1); season.setRegularSeasonWeeks(schedule.weeks()); season.setGamesPerTeam(schedule.gamesPerTeam());
     season.setScheduleSeed(scheduleSeed);
     seasons.save(season);
@@ -86,7 +96,7 @@ public class SeasonScheduler {
       f.setKickoffDate(week.getStartsOn().plusDays(dayOffset(g.slot())));
       f.setHomeClub(byKey.get(g.homeKey())); f.setAwayClub(byKey.get(g.awayKey()));
       f.setDivisional(g.divisional()); f.setConferenceGame(g.conference()); f.setNeutralSite(false);
-      f.setSeed(SeedPolicy.derive(save.getSeed(), "fixture", 1, index++));
+      f.setSeed(SeedPolicy.derive(save.getSeed(), "fixture", number, index++));
       fs.add(f);
     }
     fixtures.saveAll(fs);
@@ -94,7 +104,9 @@ public class SeasonScheduler {
   }
 
   /** Franquias da liga no formato do gerador; liga sem estrutura completa (franquia fora de divisão, menos de 8) é recusada. */
-  List<ScheduleGenerator.Team> teams(League league, Map<String, Club> byKey) {
+  List<ScheduleGenerator.Team> teams(League league, Map<String, Club> byKey) { return teams(league, byKey, null); }
+
+  List<ScheduleGenerator.Team> teams(League league, Map<String, Club> byKey, Map<UUID, Integer> place) {
     List<Club> leagueClubs = clubs.findByLeagueIdOrderByNameAsc(league.getId());
     if (leagueClubs.size() < League.MIN_TEAMS || leagueClubs.size() > League.MAX_TEAMS) {
       throw new BusinessRuleException("LEAGUE_STRUCTURE_INVALID", "A liga precisa ter de 8 a 32 franquias em divisões");
@@ -116,7 +128,8 @@ public class SeasonScheduler {
     List<ScheduleGenerator.Team> out = new ArrayList<>();
     for (Division d : divs) {
       List<Club> members = new ArrayList<>(byDivision.getOrDefault(d.getId(), List.of()));
-      members.sort(Comparator.comparingInt(Club::getPrestige).reversed().thenComparing(Club::getName).thenComparing(Club::getShortName));
+      Comparator<Club> projection = Comparator.comparingInt(Club::getPrestige).reversed().thenComparing(Club::getName).thenComparing(Club::getShortName);
+      members.sort(place == null ? projection : Comparator.comparingInt((Club c) -> place.getOrDefault(c.getId(), Integer.MAX_VALUE)).thenComparing(projection));
       for (int p = 0; p < members.size(); p++) {
         Club c = members.get(p);
         String key = c.getId().toString();
@@ -132,7 +145,7 @@ public class SeasonScheduler {
     return LocalDate.of(year, 9, 1).with(TemporalAdjusters.firstInMonth(DayOfWeek.MONDAY)).plusDays(3);
   }
 
-  static long dayOffset(KickoffSlot slot) {
+  public static long dayOffset(KickoffSlot slot) {
     return switch (slot) {
       case THU_NIGHT -> 0;
       case SUN_EARLY, SUN_LATE, SUN_NIGHT -> 3;

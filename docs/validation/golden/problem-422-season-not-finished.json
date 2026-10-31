@@ -1,0 +1,16 @@
+{
+  "detail" : "A temporada só avança depois da final dos playoffs (fase atual: PLAYOFFS).",
+  "instance" : "/api/v1/careers/00000000-0000-4000-8000-000000000001/season/advance",
+  "status" : 422,
+  "title" : "Regra de negócio",
+  "code" : "SEASON_NOT_FINISHED",
+  "message" : "A temporada só avança depois da final dos playoffs (fase atual: PLAYOFFS).",
+  "details" : {
+    "phase" : "PLAYOFFS",
+    "currentWeek" : 3
+  },
+  "correlationId" : "golden-422-season",
+  "locale" : "pt-BR",
+  "phase" : "PLAYOFFS",
+  "currentWeek" : 3
+}

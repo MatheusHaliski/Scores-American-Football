@@ -124,5 +124,9 @@
   "TIMEOUT_NOT_ALLOWED": "Tiempo muerto no disponible ahora: solo con el balón muerto antes de un snap y con tiempos restantes.",
   "INVALID_ADJUSTMENT": "Ajuste no válido: {0}. Usa GAME_PLAN, PLAYBOOK o TIMEOUT con los datos del ajuste.",
   "notFound.match": "Partido no encontrado.",
-  "CAP_EXCEEDED": "La baja supera el tope salarial de la temporada en S$ {0} (tope de S$ {1}; comprometido tras la baja: S$ {2})."
+  "CAP_EXCEEDED": "La baja supera el tope salarial de la temporada en S$ {0} (tope de S$ {1}; comprometido tras la baja: S$ {2}).",
+  "SEASON_NOT_FINISHED": "La temporada solo avanza después de la final de los playoffs (fase actual: {0}).",
+  "SEASON_ALREADY_ADVANCED": "Esta temporada ya se cerró y la temporada {0} ya empezó.",
+  "ANALYSIS_NOT_FOUND": "El analista todavía no ha hecho ningún informe. Pide una actualización.",
+  "notFound.season": "Temporada no encontrada en esta carrera."
 }

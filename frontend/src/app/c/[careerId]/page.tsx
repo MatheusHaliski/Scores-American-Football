@@ -6,6 +6,7 @@ import { api } from "@/lib/api";
 import { describeError } from "@/lib/api/errors";
 import type { CareerDashboard, ClubRef, Fixture } from "@/lib/api/types";
 import { useQuery } from "@/lib/hooks/useQuery";
+import { weekSituation } from "@/lib/season/week";
 import { fromCents, orDash } from "@/lib/career/format";
 import { useT, useTd } from "@/i18n/provider";
 import { useFormat } from "@/i18n/format";
@@ -18,8 +19,11 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { ProgressBar, Stat } from "@/components/ui/Stat";
 import { EmptyState, ErrorState, PageSkeleton } from "@/components/ui/States";
-import { IconAlert, IconBall, IconCalendar, IconCheck, IconChevronRight, IconLed, IconPill, IconTarget, IconUsers, IconWhistle } from "@/components/ui/icons";
+import { IconAlert, IconBall, IconCalendar, IconCheck, IconChevronRight, IconForward, IconLed, IconPill, IconTable, IconTarget, IconTrophy, IconUsers, IconWhistle } from "@/components/ui/icons";
 import { PrepareTeamModal } from "@/components/game-plan/PrepareTeamModal";
+import { AnalystCard } from "@/components/season/AnalystPanel";
+import { MoraleCard } from "@/components/season/Morale";
+import { NewsFeed } from "@/components/season/NewsFeed";
 import { toast } from "@/components/ui/Toast";
 
 /** Partida ao vivo em andamento (`dashboard.live`, bloco 6b): placar e "continuar partida". */
@@ -55,16 +59,40 @@ function LiveMatchCard({ d, careerId }: { d: CareerDashboard; careerId: string }
   );
 }
 
-function NextGameCard({ d, careerId, onPrepare, onBye, byeBusy }: { d: CareerDashboard; careerId: string; onPrepare: () => void; onBye: () => void; byeBusy: boolean }) {
+function NextGameCard({ d, careerId, onPrepare, onBye, byeBusy }: { d: CareerDashboard; careerId: string; onPrepare: () => void; onBye: (mode: "regular" | "playoffBye" | "playoffOut") => void; byeBusy: boolean }) {
   const t = useT("career");
+  const ts = useT("season");
   const tc = useT("common");
   const td = useTd();
   const f = useFormat();
   const next = d.nextGame;
   const me = d.club;
-  const title = d.byeWeek ? t("hub.next.bye") : next ? tc("week.n", { n: next.fixture.week }) : t("hub.next.none");
+  const situation = weekSituation(d);
+  const round = d.playoffs?.round ? td("season", `playoffs.round.${d.playoffs.round}`) : null;
+  const roundTitle = (week: number) => (round ? ts("round.label", { round, week }) : tc("week.n", { n: week }));
+  if (situation === "seasonOver") {
+    return (
+      <Card eyebrow={t("hub.next.title")} title={ts("hub.seasonOver.title")} tone="orange" className="lg:col-span-2">
+        <EmptyState compact icon={<IconTrophy size={22} />} title={ts("hub.seasonOver.title")} body={ts("hub.seasonOver.body")} action={<Button variant="led" href={`/c/${careerId}/season`} icon={<IconTrophy size={18} />}>{ts("hub.seasonOver.action")}</Button>} />
+      </Card>
+    );
+  }
+  if (situation === "playoffOut" || situation === "playoffBye") {
+    return (
+      <Card eyebrow={t("hub.next.title")} title={roundTitle(d.currentWeek)} tone="orange" className="lg:col-span-2">
+        <p className="mb-3 text-[0.9rem] text-text-muted">{situation === "playoffBye" ? ts("hub.round.byeBody") : ts("hub.round.outBody")}</p>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button variant="led" onClick={() => onBye(situation)} loading={byeBusy} icon={<IconForward size={18} />} className="w-full sm:w-auto">
+            {situation === "playoffBye" ? ts("hub.round.closeBye") : ts("hub.round.closeOut")}
+          </Button>
+          <Button variant="outline" size="sm" href={`/c/${careerId}/playoffs`} icon={<IconTrophy size={16} />}>{ts("hub.playoffs.bracket")}</Button>
+        </div>
+      </Card>
+    );
+  }
+  const title = d.byeWeek ? t("hub.next.bye") : next ? (situation === "playoffGame" ? roundTitle(next.fixture.week) : tc("week.n", { n: next.fixture.week })) : t("hub.next.none");
   return (
-    <Card eyebrow={t("hub.next.title")} title={title} tone="orange" className="lg:col-span-2" action={next ? <div className="flex flex-wrap justify-end gap-1">{next.fixture.divisional && <Badge tone="led" size="xs">{t("hub.next.divisional")}</Badge>}{next.fixture.conferenceGame && !next.fixture.divisional && <Badge size="xs">{t("hub.next.conference")}</Badge>}</div> : undefined}>
+    <Card eyebrow={t("hub.next.title")} title={title} tone="orange" className="lg:col-span-2" action={next ? <div className="flex flex-wrap justify-end gap-1">{situation === "playoffGame" && <Badge tone="led" size="xs">{td("enums", "seasonPhase.PLAYOFFS")}</Badge>}{next.fixture.divisional && <Badge tone="led" size="xs">{t("hub.next.divisional")}</Badge>}{next.fixture.conferenceGame && !next.fixture.divisional && <Badge size="xs">{t("hub.next.conference")}</Badge>}</div> : undefined}>
       {d.byeWeek && <p className="mb-3 text-[0.9rem] text-text-muted">{t("hub.next.byeBody")}</p>}
       {next && me ? (
         <div className="flex flex-col gap-4">
@@ -91,7 +119,7 @@ function NextGameCard({ d, careerId, onPrepare, onBye, byeBusy }: { d: CareerDas
           </div>
           <div className="flex flex-wrap items-center gap-2">
             {d.byeWeek ? (
-              <Button variant="led" onClick={onBye} loading={byeBusy} icon={<IconCalendar size={18} />} className="w-full sm:w-auto">
+              <Button variant="led" onClick={() => onBye("regular")} loading={byeBusy} icon={<IconCalendar size={18} />} className="w-full sm:w-auto">
                 {t("hub.next.playBye")}
               </Button>
             ) : d.live ? (
@@ -183,8 +211,36 @@ function DivisionCard({ d }: { d: CareerDashboard }) {
   );
 }
 
+/** Corrida pelos playoffs na central (D-106): semente e situação do usuário, o próximo jogo de playoff e os atalhos. */
+function PlayoffsCard({ d, careerId }: { d: CareerDashboard; careerId: string }) {
+  const ts = useT("season");
+  const td = useTd();
+  const p = d.playoffs;
+  return (
+    <Card title={ts("hub.playoffs.title")} action={<IconTrophy size={18} className="text-text-dim" />}>
+      {p ? (
+        <div className="grid gap-2">
+          <div className="flex flex-wrap items-center gap-1.5">
+            <Badge tone={p.status === "ELIMINATED" || p.status === "MISSED" || p.status === "PROJECTED_OUT" ? "bad" : p.status === "CHAMPION" ? "led" : "good"}>{td("season", `playoffs.user.${p.status}`)}</Badge>
+            {p.seed != null && <Badge>{ts("hub.playoffs.seed", { seed: p.seed })}</Badge>}
+            {p.round && <Badge tone="led">{td("season", `playoffs.round.${p.round}`)}</Badge>}
+          </div>
+          {p.nextGame && <p className="text-[0.85rem] text-text-muted">{ts("hub.playoffs.next", { week: p.nextGame.week })}</p>}
+        </div>
+      ) : (
+        <p className="text-sm text-text-muted">—</p>
+      )}
+      <div className="mt-3 flex flex-wrap gap-2">
+        <Button variant="outline" size="sm" href={`/c/${careerId}/standings`} icon={<IconTable size={16} />}>{ts("hub.playoffs.standings")}</Button>
+        <Button variant="ghost" size="sm" href={`/c/${careerId}/playoffs`} iconRight={<IconChevronRight size={16} />}>{ts("hub.playoffs.bracket")}</Button>
+      </div>
+    </Card>
+  );
+}
+
 export default function FranchiseHubPage() {
   const t = useT("career");
+  const ts = useT("season");
   const tc = useT("common");
   const td = useTd();
   const f = useFormat();
@@ -198,11 +254,11 @@ export default function FranchiseHubPage() {
   const [prepare, setPrepare] = useState(false);
   const [byeBusy, setByeBusy] = useState(false);
   // semana de folga: "jogar" fecha a semana na hora (D-63) e a central passa para a próxima
-  const playBye = async () => {
+  const playBye = async (mode: "regular" | "playoffBye" | "playoffOut") => {
     setByeBusy(true);
     try {
       await api.weeks.playCurrent(careerId);
-      toast(t("hub.next.byeDone"), "good");
+      toast(mode === "regular" ? t("hub.next.byeDone") : mode === "playoffBye" ? ts("hub.round.byeDone") : ts("hub.round.outDone"), "good");
       await q.refetch();
     } catch (e) {
       toast(describeError(e), "bad");
@@ -240,7 +296,7 @@ export default function FranchiseHubPage() {
         </div>
         <div className="mt-3 flex flex-wrap items-center gap-1.5">
           {d.career.seasonYear != null && <Badge tone="wood">{tc("season.n", { n: d.career.seasonYear })}</Badge>}
-          <Badge>{t("hub.week", { week: d.currentWeek, total: d.career.regularSeasonWeeks })}</Badge>
+          {d.currentWeek <= d.career.regularSeasonWeeks && <Badge>{t("hub.week", { week: d.currentWeek, total: d.career.regularSeasonWeeks })}</Badge>}
           {d.career.seasonPhase && <Badge>{td("enums", `seasonPhase.${d.career.seasonPhase}`)}</Badge>}
         </div>
         {d.coach && <p className="mt-2 text-[0.85rem] text-text-soft">{t("hub.coach", { name: d.coach.name, style: d.coach.style ? td("enums", `coachStyle.${d.coach.style}`) : "—" })}</p>}
@@ -249,8 +305,16 @@ export default function FranchiseHubPage() {
       <LiveMatchCard d={d} careerId={careerId} />
 
       <div className="grid gap-4 sm:gap-5 lg:grid-cols-3 [&>*]:min-w-0">
-        <NextGameCard d={d} careerId={careerId} onPrepare={() => setPrepare(true)} onBye={() => void playBye()} byeBusy={byeBusy} />
+        <NextGameCard d={d} careerId={careerId} onPrepare={() => setPrepare(true)} onBye={(mode) => void playBye(mode)} byeBusy={byeBusy} />
         <DivisionCard d={d} />
+
+        <Card title={ts("hub.news.title")} eyebrow={d.news[0] ? ts("hub.news.week", { week: d.news[0].week }) : undefined} className="lg:col-span-2" action={<Link href={`/c/${careerId}/calendar`} aria-label={ts("hub.news.all")} className="touch inline-flex items-center justify-center gap-1 rounded-md px-2 font-heading text-[0.78rem] font-semibold uppercase tracking-[0.08em] text-text-soft hover:bg-arena-3 hover:text-text"><span className="hidden sm:inline">{ts("hub.news.all")}</span><IconChevronRight size={16} /></Link>}>
+          {d.news.length ? <NewsFeed items={d.news} careerId={careerId} compact /> : <p className="text-sm text-text-muted">{ts("hub.news.empty")}</p>}
+        </Card>
+        <PlayoffsCard d={d} careerId={careerId} />
+
+        <MoraleCard m={d.morale} careerId={careerId} />
+        <AnalystCard careerId={careerId} summary={d.analysis} className="lg:col-span-2" />
 
         <Card title={t("hub.highlights.title")} action={<Button variant="ghost" size="sm" href={`/c/${careerId}/roster`} iconRight={<IconChevronRight size={16} />}>{t("hub.highlights.all")}</Button>}>
           {d.rosterHighlights.length ? (
@@ -331,12 +395,10 @@ export default function FranchiseHubPage() {
         </Card>
 
         <Card title={t("hub.coming.title")} tone="sunken" className="lg:col-span-3">
-          <dl className="grid grid-cols-2 gap-3 text-[0.85rem] sm:grid-cols-4">
+          <dl className="grid grid-cols-2 gap-3 text-[0.85rem]">
             {([
-              ["morale", d.morale],
               ["inbox", d.unreadInbox],
               ["scoresPoints", d.scoresPoints],
-              ["analysis", d.analysis],
             ] as const).map(([k, v]) => (
               <div key={k} className="min-w-0">
                 <dt className="font-heading text-[0.68rem] uppercase tracking-[0.12em] text-text-dim">{t(`hub.coming.${k}`)}</dt>

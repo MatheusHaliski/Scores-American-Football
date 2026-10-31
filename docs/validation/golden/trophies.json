@@ -1,0 +1,264 @@
+{
+  "userClubId" : "00000000-0000-4000-8000-000000000001",
+  "championships" : 0,
+  "conferenceTitles" : 0,
+  "divisionTitles" : 1,
+  "playoffAppearances" : 1,
+  "trophies" : [ {
+    "seasonId" : "00000000-0000-4000-8000-000000000002",
+    "seasonNumber" : 1,
+    "seasonYear" : 2026,
+    "kind" : "CHAMPIONSHIP",
+    "club" : {
+      "id" : "00000000-0000-4000-8000-000000000003",
+      "name" : "Harpias de Rio Ametista",
+      "shortName" : "RAM",
+      "city" : "Rio Ametista",
+      "primaryColor" : "#5E2B97",
+      "secondaryColor" : "#C0C0C0",
+      "conference" : "CAT",
+      "division" : "Atlântica Leste"
+    },
+    "conference" : "CAT",
+    "division" : "Atlântica Leste",
+    "userClub" : false
+  }, {
+    "seasonId" : "00000000-0000-4000-8000-000000000002",
+    "seasonNumber" : 1,
+    "seasonYear" : 2026,
+    "kind" : "CONFERENCE",
+    "club" : {
+      "id" : "00000000-0000-4000-8000-000000000003",
+      "name" : "Harpias de Rio Ametista",
+      "shortName" : "RAM",
+      "city" : "Rio Ametista",
+      "primaryColor" : "#5E2B97",
+      "secondaryColor" : "#C0C0C0",
+      "conference" : "CAT",
+      "division" : "Atlântica Leste"
+    },
+    "conference" : "CAT",
+    "division" : "Atlântica Leste",
+    "userClub" : false
+  }, {
+    "seasonId" : "00000000-0000-4000-8000-000000000002",
+    "seasonNumber" : 1,
+    "seasonYear" : 2026,
+    "kind" : "CONFERENCE",
+    "club" : {
+      "id" : "00000000-0000-4000-8000-000000000004",
+      "name" : "Arraias de Lagoa Funda",
+      "shortName" : "LFU",
+      "city" : "Lagoa Funda",
+      "primaryColor" : "#0277BD",
+      "secondaryColor" : "#B3E5FC",
+      "conference" : "CPA",
+      "division" : "Pacífica Oeste"
+    },
+    "conference" : "CPA",
+    "division" : "Pacífica Oeste",
+    "userClub" : false
+  }, {
+    "seasonId" : "00000000-0000-4000-8000-000000000002",
+    "seasonNumber" : 1,
+    "seasonYear" : 2026,
+    "kind" : "DIVISION",
+    "club" : {
+      "id" : "00000000-0000-4000-8000-000000000001",
+      "name" : "Trovões de Porto Alvorada",
+      "shortName" : "PAV",
+      "city" : "Porto Alvorada",
+      "primaryColor" : "#1B2A4A",
+      "secondaryColor" : "#F2B705",
+      "conference" : "CAT",
+      "division" : "Atlântica Norte"
+    },
+    "conference" : "CAT",
+    "division" : "Atlântica Norte",
+    "userClub" : true
+  }, {
+    "seasonId" : "00000000-0000-4000-8000-000000000002",
+    "seasonNumber" : 1,
+    "seasonYear" : 2026,
+    "kind" : "DIVISION",
+    "club" : {
+      "id" : "00000000-0000-4000-8000-000000000003",
+      "name" : "Harpias de Rio Ametista",
+      "shortName" : "RAM",
+      "city" : "Rio Ametista",
+      "primaryColor" : "#5E2B97",
+      "secondaryColor" : "#C0C0C0",
+      "conference" : "CAT",
+      "division" : "Atlântica Leste"
+    },
+    "conference" : "CAT",
+    "division" : "Atlântica Leste",
+    "userClub" : false
+  }, {
+    "seasonId" : "00000000-0000-4000-8000-000000000002",
+    "seasonNumber" : 1,
+    "seasonYear" : 2026,
+    "kind" : "DIVISION",
+    "club" : {
+      "id" : "00000000-0000-4000-8000-000000000005",
+      "name" : "Tempestades de Monte Azulão",
+      "shortName" : "MAZ",
+      "city" : "Monte Azulão",
+      "primaryColor" : "#263238",
+      "secondaryColor" : "#4FC3F7",
+      "conference" : "CAT",
+      "division" : "Atlântica Sul"
+    },
+    "conference" : "CAT",
+    "division" : "Atlântica Sul",
+    "userClub" : false
+  }, {
+    "seasonId" : "00000000-0000-4000-8000-000000000002",
+    "seasonNumber" : 1,
+    "seasonYear" : 2026,
+    "kind" : "DIVISION",
+    "club" : {
+      "id" : "00000000-0000-4000-8000-000000000006",
+      "name" : "Escorpiões de Serra Cobalto",
+      "shortName" : "SCO",
+      "city" : "Serra Cobalto",
+      "primaryColor" : "#1A237E",
+      "secondaryColor" : "#B0BEC5",
+      "conference" : "CAT",
+      "division" : "Atlântica Oeste"
+    },
+    "conference" : "CAT",
+    "division" : "Atlântica Oeste",
+    "userClub" : false
+  }, {
+    "seasonId" : "00000000-0000-4000-8000-000000000002",
+    "seasonNumber" : 1,
+    "seasonYear" : 2026,
+    "kind" : "DIVISION",
+    "club" : {
+      "id" : "00000000-0000-4000-8000-000000000007",
+      "name" : "Sucuris de Ponta Granito",
+      "shortName" : "PGR",
+      "city" : "Ponta Granito",
+      "primaryColor" : "#33691E",
+      "secondaryColor" : "#CDDC39",
+      "conference" : "CPA",
+      "division" : "Pacífica Norte"
+    },
+    "conference" : "CPA",
+    "division" : "Pacífica Norte",
+    "userClub" : false
+  }, {
+    "seasonId" : "00000000-0000-4000-8000-000000000002",
+    "seasonNumber" : 1,
+    "seasonYear" : 2026,
+    "kind" : "DIVISION",
+    "club" : {
+      "id" : "00000000-0000-4000-8000-000000000008",
+      "name" : "Faróis de Ribeira Turquesa",
+      "shortName" : "RTU",
+      "city" : "Ribeira Turquesa",
+      "primaryColor" : "#006064",
+      "secondaryColor" : "#FFD600",
+      "conference" : "CPA",
+      "division" : "Pacífica Leste"
+    },
+    "conference" : "CPA",
+    "division" : "Pacífica Leste",
+    "userClub" : false
+  }, {
+    "seasonId" : "00000000-0000-4000-8000-000000000002",
+    "seasonNumber" : 1,
+    "seasonYear" : 2026,
+    "kind" : "DIVISION",
+    "club" : {
+      "id" : "00000000-0000-4000-8000-000000000009",
+      "name" : "Marujos de Costa Safira",
+      "shortName" : "CSA",
+      "city" : "Costa Safira",
+      "primaryColor" : "#0D47A1",
+      "secondaryColor" : "#FFFFFF",
+      "conference" : "CPA",
+      "division" : "Pacífica Sul"
+    },
+    "conference" : "CPA",
+    "division" : "Pacífica Sul",
+    "userClub" : false
+  }, {
+    "seasonId" : "00000000-0000-4000-8000-000000000002",
+    "seasonNumber" : 1,
+    "seasonYear" : 2026,
+    "kind" : "DIVISION",
+    "club" : {
+      "id" : "00000000-0000-4000-8000-000000000004",
+      "name" : "Arraias de Lagoa Funda",
+      "shortName" : "LFU",
+      "city" : "Lagoa Funda",
+      "primaryColor" : "#0277BD",
+      "secondaryColor" : "#B3E5FC",
+      "conference" : "CPA",
+      "division" : "Pacífica Oeste"
+    },
+    "conference" : "CPA",
+    "division" : "Pacífica Oeste",
+    "userClub" : false
+  } ],
+  "seasons" : [ {
+    "seasonId" : "00000000-0000-4000-8000-000000000002",
+    "number" : 1,
+    "year" : 2026,
+    "completed" : true,
+    "champion" : {
+      "id" : "00000000-0000-4000-8000-000000000003",
+      "name" : "Harpias de Rio Ametista",
+      "shortName" : "RAM",
+      "city" : "Rio Ametista",
+      "primaryColor" : "#5E2B97",
+      "secondaryColor" : "#C0C0C0",
+      "conference" : "CAT",
+      "division" : "Atlântica Leste"
+    },
+    "runnerUp" : {
+      "id" : "00000000-0000-4000-8000-000000000004",
+      "name" : "Arraias de Lagoa Funda",
+      "shortName" : "LFU",
+      "city" : "Lagoa Funda",
+      "primaryColor" : "#0277BD",
+      "secondaryColor" : "#B3E5FC",
+      "conference" : "CPA",
+      "division" : "Pacífica Oeste"
+    },
+    "mvp" : {
+      "type" : "MVP",
+      "playerId" : "00000000-0000-4000-8000-000000000010",
+      "name" : "Lucas Torales",
+      "position" : "RB",
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000003",
+        "name" : "Harpias de Rio Ametista",
+        "shortName" : "RAM",
+        "city" : "Rio Ametista",
+        "primaryColor" : "#5E2B97",
+        "secondaryColor" : "#C0C0C0",
+        "conference" : "CAT",
+        "division" : "Atlântica Leste"
+      },
+      "score" : 81.6,
+      "statLine" : {
+        "games" : 2,
+        "rushYards" : 279,
+        "rushTouchdowns" : 1,
+        "receptions" : 5,
+        "receivingYards" : 51,
+        "receivingTouchdowns" : 2
+      }
+    },
+    "userRecord" : {
+      "wins" : 2,
+      "losses" : 0,
+      "ties" : 0,
+      "summary" : "2-0"
+    },
+    "userResult" : "CONFERENCE"
+  } ]
+}

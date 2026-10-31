@@ -60,5 +60,16 @@ public final class AuditActions {
   public static final String MATCH_ADJUSTED = "MATCH_ADJUSTED";
   public static final String PLAY_CALLED = "PLAY_CALLED";
   public static final String WEEK_COMPLETED = "WEEK_COMPLETED";
+  // RF16/RF66/RF35/RF41 — temporada (bloco 6c). Recurso: Season, Player, AnalysisReport.
+  /** Fim da temporada regular: sementes congeladas e a primeira rodada dos playoffs criada. */
+  public static final String PLAYOFFS_STARTED = "PLAYOFFS_STARTED";
+  /** Final disputada: campeã, vice e prêmios gravados. */
+  public static final String SEASON_COMPLETED = "SEASON_COMPLETED";
+  /** Temporada fechada e a seguinte aberta (envelhecimento, contratos, calendário novo). */
+  public static final String SEASON_ADVANCED = "SEASON_ADVANCED";
+  /** Contrato terminou no avanço da temporada: o jogador virou agente livre (pendência do bloco 7). */
+  public static final String CONTRACT_EXPIRED = "CONTRACT_EXPIRED";
+  /** Relatório do analista do sistema gerado (por regras, sem IA externa). */
+  public static final String ANALYSIS_GENERATED = "ANALYSIS_GENERATED";
   // As demais ações do jogo (mercado, carreira, loja, Meu jogador) entram com os blocos que as usam (docs/01 §5).
 }

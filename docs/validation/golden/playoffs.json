@@ -1,0 +1,341 @@
+{
+  "seasonId" : "00000000-0000-4000-8000-000000000001",
+  "status" : "IN_PROGRESS",
+  "projection" : false,
+  "currentRound" : "WILD_CARD",
+  "seedsPerConference" : 7,
+  "byeSeeds" : 1,
+  "neutralSiteFinal" : true,
+  "rounds" : [ "WILD_CARD", "DIVISIONAL", "CONFERENCE", "FINAL" ],
+  "conferences" : [ {
+    "id" : "00000000-0000-4000-8000-000000000002",
+    "name" : "Conferência Atlântica",
+    "shortName" : "CAT",
+    "seeds" : [ {
+      "seed" : 1,
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000003",
+        "name" : "Harpias de Rio Ametista",
+        "shortName" : "RAM",
+        "city" : "Rio Ametista",
+        "primaryColor" : "#5E2B97",
+        "secondaryColor" : "#C0C0C0",
+        "conference" : "CAT",
+        "division" : "Atlântica Leste"
+      },
+      "record" : {
+        "wins" : 2,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "2-0"
+      },
+      "divisionChampion" : true,
+      "bye" : true,
+      "status" : "ALIVE",
+      "tiebreaker" : "STRENGTH_OF_VICTORY"
+    }, {
+      "seed" : 2,
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000004",
+        "name" : "Trovões de Porto Alvorada",
+        "shortName" : "PAV",
+        "city" : "Porto Alvorada",
+        "primaryColor" : "#1B2A4A",
+        "secondaryColor" : "#F2B705",
+        "conference" : "CAT",
+        "division" : "Atlântica Norte"
+      },
+      "record" : {
+        "wins" : 2,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "2-0"
+      },
+      "divisionChampion" : true,
+      "bye" : false,
+      "status" : "ALIVE"
+    }, {
+      "seed" : 3,
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000005",
+        "name" : "Escorpiões de Serra Cobalto",
+        "shortName" : "SCO",
+        "city" : "Serra Cobalto",
+        "primaryColor" : "#1A237E",
+        "secondaryColor" : "#B0BEC5",
+        "conference" : "CAT",
+        "division" : "Atlântica Oeste"
+      },
+      "record" : {
+        "wins" : 1,
+        "losses" : 1,
+        "ties" : 0,
+        "summary" : "1-1"
+      },
+      "divisionChampion" : true,
+      "bye" : false,
+      "status" : "ALIVE",
+      "tiebreaker" : "STRENGTH_OF_SCHEDULE"
+    }, {
+      "seed" : 4,
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000006",
+        "name" : "Tempestades de Monte Azulão",
+        "shortName" : "MAZ",
+        "city" : "Monte Azulão",
+        "primaryColor" : "#263238",
+        "secondaryColor" : "#4FC3F7",
+        "conference" : "CAT",
+        "division" : "Atlântica Sul"
+      },
+      "record" : {
+        "wins" : 1,
+        "losses" : 1,
+        "ties" : 0,
+        "summary" : "1-1"
+      },
+      "divisionChampion" : true,
+      "bye" : false,
+      "status" : "ALIVE"
+    }, {
+      "seed" : 5,
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000007",
+        "name" : "Tubarões-Martelo de Pedra Lume",
+        "shortName" : "PLU",
+        "city" : "Pedra Lume",
+        "primaryColor" : "#0E3B43",
+        "secondaryColor" : "#57C4AD",
+        "conference" : "CAT",
+        "division" : "Atlântica Leste"
+      },
+      "record" : {
+        "wins" : 2,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "2-0"
+      },
+      "divisionChampion" : false,
+      "bye" : false,
+      "status" : "ALIVE"
+    }, {
+      "seed" : 6,
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000008",
+        "name" : "Arpões de Baía Serena",
+        "shortName" : "BSE",
+        "city" : "Baía Serena",
+        "primaryColor" : "#005B7F",
+        "secondaryColor" : "#9AD1D4",
+        "conference" : "CAT",
+        "division" : "Atlântica Norte"
+      },
+      "record" : {
+        "wins" : 1,
+        "losses" : 1,
+        "ties" : 0,
+        "summary" : "1-1"
+      },
+      "divisionChampion" : false,
+      "bye" : false,
+      "status" : "ALIVE",
+      "tiebreaker" : "STRENGTH_OF_SCHEDULE"
+    }, {
+      "seed" : 7,
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000009",
+        "name" : "Ciclones de Baía Coral",
+        "shortName" : "BCO",
+        "city" : "Baía Coral",
+        "primaryColor" : "#E65100",
+        "secondaryColor" : "#263238",
+        "conference" : "CAT",
+        "division" : "Atlântica Oeste"
+      },
+      "record" : {
+        "wins" : 1,
+        "losses" : 1,
+        "ties" : 0,
+        "summary" : "1-1"
+      },
+      "divisionChampion" : false,
+      "bye" : false,
+      "status" : "ALIVE",
+      "tiebreaker" : "POINT_DIFFERENTIAL"
+    } ]
+  }, {
+    "id" : "00000000-0000-4000-8000-000000000010",
+    "name" : "Conferência Pacífica",
+    "shortName" : "CPA",
+    "seeds" : [ {
+      "seed" : 1,
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000011",
+        "name" : "Marujos de Costa Safira",
+        "shortName" : "CSA",
+        "city" : "Costa Safira",
+        "primaryColor" : "#0D47A1",
+        "secondaryColor" : "#FFFFFF",
+        "conference" : "CPA",
+        "division" : "Pacífica Sul"
+      },
+      "record" : {
+        "wins" : 2,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "2-0"
+      },
+      "divisionChampion" : true,
+      "bye" : true,
+      "status" : "ALIVE",
+      "tiebreaker" : "STRENGTH_OF_VICTORY"
+    }, {
+      "seed" : 2,
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000012",
+        "name" : "Arraias de Lagoa Funda",
+        "shortName" : "LFU",
+        "city" : "Lagoa Funda",
+        "primaryColor" : "#0277BD",
+        "secondaryColor" : "#B3E5FC",
+        "conference" : "CPA",
+        "division" : "Pacífica Oeste"
+      },
+      "record" : {
+        "wins" : 2,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "2-0"
+      },
+      "divisionChampion" : true,
+      "bye" : false,
+      "status" : "ALIVE"
+    }, {
+      "seed" : 3,
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000013",
+        "name" : "Faróis de Ribeira Turquesa",
+        "shortName" : "RTU",
+        "city" : "Ribeira Turquesa",
+        "primaryColor" : "#006064",
+        "secondaryColor" : "#FFD600",
+        "conference" : "CPA",
+        "division" : "Pacífica Leste"
+      },
+      "record" : {
+        "wins" : 1,
+        "losses" : 1,
+        "ties" : 0,
+        "summary" : "1-1"
+      },
+      "divisionChampion" : true,
+      "bye" : false,
+      "status" : "ALIVE",
+      "tiebreaker" : "POINT_DIFFERENTIAL"
+    }, {
+      "seed" : 4,
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000014",
+        "name" : "Sucuris de Ponta Granito",
+        "shortName" : "PGR",
+        "city" : "Ponta Granito",
+        "primaryColor" : "#33691E",
+        "secondaryColor" : "#CDDC39",
+        "conference" : "CPA",
+        "division" : "Pacífica Norte"
+      },
+      "record" : {
+        "wins" : 1,
+        "losses" : 1,
+        "ties" : 0,
+        "summary" : "1-1"
+      },
+      "divisionChampion" : true,
+      "bye" : false,
+      "status" : "ALIVE"
+    }, {
+      "seed" : 5,
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000015",
+        "name" : "Meteoros de Porto Quartzo",
+        "shortName" : "PQU",
+        "city" : "Porto Quartzo",
+        "primaryColor" : "#311B92",
+        "secondaryColor" : "#00E5FF",
+        "conference" : "CPA",
+        "division" : "Pacífica Sul"
+      },
+      "record" : {
+        "wins" : 2,
+        "losses" : 0,
+        "ties" : 0,
+        "summary" : "2-0"
+      },
+      "divisionChampion" : false,
+      "bye" : false,
+      "status" : "ALIVE"
+    }, {
+      "seed" : 6,
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000016",
+        "name" : "Tamanduás de Campos Rubi",
+        "shortName" : "CRU",
+        "city" : "Campos Rubi",
+        "primaryColor" : "#880E4F",
+        "secondaryColor" : "#F8BBD0",
+        "conference" : "CPA",
+        "division" : "Pacífica Norte"
+      },
+      "record" : {
+        "wins" : 1,
+        "losses" : 1,
+        "ties" : 0,
+        "summary" : "1-1"
+      },
+      "divisionChampion" : false,
+      "bye" : false,
+      "status" : "ALIVE",
+      "tiebreaker" : "STRENGTH_OF_SCHEDULE"
+    }, {
+      "seed" : 7,
+      "club" : {
+        "id" : "00000000-0000-4000-8000-000000000017",
+        "name" : "Sentinelas de Cedro Alto",
+        "shortName" : "CAL",
+        "city" : "Cedro Alto",
+        "primaryColor" : "#3E2723",
+        "secondaryColor" : "#8BC34A",
+        "conference" : "CPA",
+        "division" : "Pacífica Sul"
+      },
+      "record" : {
+        "wins" : 1,
+        "losses" : 1,
+        "ties" : 0,
+        "summary" : "1-1"
+      },
+      "divisionChampion" : false,
+      "bye" : false,
+      "status" : "ALIVE",
+      "tiebreaker" : "HEAD_TO_HEAD"
+    } ]
+  } ],
+  "user" : {
+    "clubId" : "00000000-0000-4000-8000-000000000004",
+    "seed" : 2,
+    "status" : "ALIVE",
+    "round" : "WILD_CARD",
+    "nextGame" : {
+      "id" : "00000000-0000-4000-8000-000000000018",
+      "week" : 3,
+      "date" : "2026-09-27",
+      "kickoffSlot" : "SUN_EARLY",
+      "status" : "SCHEDULED",
+      "homeClubId" : "00000000-0000-4000-8000-000000000004",
+      "awayClubId" : "00000000-0000-4000-8000-000000000009",
+      "divisional" : false,
+      "conferenceGame" : true,
+      "userGame" : true
+    }
+  }
+}

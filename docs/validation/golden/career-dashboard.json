@@ -274,8 +274,20 @@
     "codes" : [ ]
   },
   "live" : null,
-  "morale" : null,
+  "morale" : {
+    "average" : 63,
+    "label" : "GOOD",
+    "trend" : "STABLE",
+    "low" : 0,
+    "tradeRequests" : 0
+  },
   "analysis" : null,
+  "news" : [ ],
+  "playoffs" : {
+    "clubId" : "00000000-0000-4000-8000-000000000005",
+    "seed" : 2,
+    "status" : "PROJECTED_IN"
+  },
   "inbox" : null,
   "unreadInbox" : null,
   "scoresPoints" : null

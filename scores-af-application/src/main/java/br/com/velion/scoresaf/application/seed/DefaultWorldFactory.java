@@ -488,14 +488,28 @@ public final class DefaultWorldFactory {
     throw new IllegalStateException("sem número de camisa livre");
   }
 
+  /**
+   * Salário de um ano em S$ (sem centavos) pela fórmula do mundo semente: mínimo + curva cúbica do overall (de 55 a 95) até o teto de
+   * referência do grupo de posição. Também é o valor da renovação automática da IA no avanço da temporada (D-121).
+   */
+  public static long yearOneSalary(Position pos, int overall) {
+    double x = Math.max(0, (overall - 55) / 40.0);
+    long top = TOP_SALARY.get(pos.group());
+    return MIN_SALARY + Math.round((top - MIN_SALARY) * x * x * x);
+  }
+
+  /** Salário do practice squad em S$ (sem centavos). */
+  public static long practiceSalary() { return PRACTICE_SALARY; }
+
+  /** Contrato de mais de um ano é "mínimo" até 10 % acima do salário mínimo (S$). */
+  public static boolean minimumSalary(long yearOne) { return yearOne <= MIN_SALARY * 11 / 10; }
+
   /** Salário por ano em centavos: mínimo + curva cúbica do overall até o teto de referência do grupo, com aumento anual. */
   private PlayerContract contract(Position pos, int overall, int age, RosterStatus status) {
     if (status == RosterStatus.PRACTICE_SQUAD) {
       return PlayerContract.builder().startSeason(BASE_YEAR).baseSalaryByYear(List.of(PRACTICE_SALARY * 100L)).type(ContractType.PRACTICE).build();
     }
-    double x = Math.max(0, (overall - 55) / 40.0);
-    long top = TOP_SALARY.get(pos.group());
-    long yearOne = MIN_SALARY + Math.round((top - MIN_SALARY) * x * x * x);
+    long yearOne = yearOneSalary(pos, overall);
     boolean rookie = age <= 24;
     int years = rookie ? 4 : 1 + rng.nextInt(0, age >= 31 ? 2 : 5);
     List<Long> salaries = new ArrayList<>();
@@ -503,7 +517,7 @@ public final class DefaultWorldFactory {
     long total = salaries.stream().mapToLong(Long::longValue).sum();
     long bonus = overall >= 75 ? Math.round(total * 0.25 / 100.0) * 100L : overall >= 65 ? Math.round(total * 0.08 / 100.0) * 100L : 0L;
     long guaranteed = overall >= 80 ? salaries.get(0) : 0L;
-    ContractType type = rookie ? ContractType.ROOKIE : yearOne <= MIN_SALARY * 11 / 10 ? ContractType.MINIMUM : ContractType.VETERAN;
+    ContractType type = rookie ? ContractType.ROOKIE : minimumSalary(yearOne) ? ContractType.MINIMUM : ContractType.VETERAN;
     return PlayerContract.builder().startSeason(BASE_YEAR).baseSalaryByYear(salaries).signingBonus(bonus).guaranteed(guaranteed).type(type).build();
   }
 

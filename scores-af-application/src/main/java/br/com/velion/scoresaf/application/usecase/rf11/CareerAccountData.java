@@ -1,6 +1,13 @@
 package br.com.velion.scoresaf.application.usecase.rf11;
 
+import br.com.velion.scoresaf.application.port.out.persistence.AnalysisReportRepository;
 import br.com.velion.scoresaf.application.port.out.persistence.CareerSaveRepository;
+import br.com.velion.scoresaf.application.port.out.persistence.PlayoffSeedRepository;
+import br.com.velion.scoresaf.application.port.out.persistence.SeasonAwardRepository;
+import br.com.velion.scoresaf.application.port.out.persistence.SeasonRepository;
+import br.com.velion.scoresaf.domain.analysis.AnalysisReport;
+import br.com.velion.scoresaf.domain.season.PlayoffSeed;
+import br.com.velion.scoresaf.domain.season.Season;
 import br.com.velion.scoresaf.application.port.out.persistence.GamePlanSetupRepository;
 import br.com.velion.scoresaf.application.port.out.persistence.MatchSessionRepository;
 import br.com.velion.scoresaf.application.port.out.persistence.PlaybookSetupRepository;
@@ -30,7 +37,9 @@ import org.springframework.transaction.annotation.Transactional;
  * {@code careers} (uma linha por carreira: nome, slot, situação, head coach, franquia, liga, temporada, semente, datas) e a seção
  * {@code careerRosterMoves} (os movimentos do elenco que o titular fez); desde o bloco 6b, {@code careerMatches} (as partidas que ele
  * jogou: placar, semente, nível de chamada, quantas jogadas chamou e quantos ajustes fez no intervalo) e {@code careerGamePlans} (o plano
- * de jogo e o playbook gravados); a eliminação apaga cada carreira inteira, com o mundo SAVE ({@link CareerDeletion}).
+ * de jogo e o playbook gravados); desde o bloco 6c, {@code careerSeasons} (cada temporada: número, ano, fase, campeã, vice, a semente e
+ * o resultado da franquia dele e os prêmios) e {@code careerAnalyses} (os relatórios do analista que ele pediu: semana, data e o
+ * resumo). A eliminação apaga cada carreira inteira, com o mundo SAVE ({@link CareerDeletion}).
  */
 @Component
 public class CareerAccountData implements AccountDataContributor, AccountErasureHandler {
@@ -41,11 +50,16 @@ public class CareerAccountData implements AccountDataContributor, AccountErasure
   private final GamePlanSetupRepository plans;
   private final PlaybookSetupRepository playbooks;
   private final GamePlanService planService;
+  private final SeasonRepository seasons;
+  private final PlayoffSeedRepository seeds;
+  private final SeasonAwardRepository awards;
+  private final AnalysisReportRepository analyses;
 
   public CareerAccountData(CareerSaveRepository saves, RosterMoveRepository moves, CareerDeletion deletion, MatchSessionRepository sessions,
-                           GamePlanSetupRepository plans, PlaybookSetupRepository playbooks, GamePlanService planService) {
+                           GamePlanSetupRepository plans, PlaybookSetupRepository playbooks, GamePlanService planService, SeasonRepository seasons,
+                           PlayoffSeedRepository seeds, SeasonAwardRepository awards, AnalysisReportRepository analyses) {
     this.saves = saves; this.moves = moves; this.deletion = deletion; this.sessions = sessions; this.plans = plans; this.playbooks = playbooks;
-    this.planService = planService;
+    this.planService = planService; this.seasons = seasons; this.seeds = seeds; this.awards = awards; this.analyses = analyses;
   }
 
   @Override
@@ -55,7 +69,23 @@ public class CareerAccountData implements AccountDataContributor, AccountErasure
     List<Map<String, Object>> rosterMoves = new ArrayList<>();
     List<Map<String, Object>> matches = new ArrayList<>();
     List<Map<String, Object>> gamePlans = new ArrayList<>();
+    List<Map<String, Object>> seasonRows = new ArrayList<>();
+    List<Map<String, Object>> analysisRows = new ArrayList<>();
     for (CareerSave s : saves.findByUserIdOrderByCreatedAtAsc(userId)) {
+      java.util.UUID club = s.getClub() == null ? null : s.getClub().getId();
+      for (Season se : seasons.findByCareerIdOrderByNumberAsc(s.getId())) {
+        Integer seed = club == null ? null : seeds.findBySeasonIdOrderBySeedAsc(se.getId()).stream().filter(x -> x.getClub().getId().equals(club))
+            .map(PlayoffSeed::getSeed).findFirst().orElse(null);
+        List<String> seasonAwards = awards.findBySeasonId(se.getId()).stream().map(a -> a.getType().name() + ": " + a.getWinnerName()).sorted().toList();
+        seasonRows.add(AccountDataCollector.row("careerId", String.valueOf(s.getId()), "number", se.getNumber(), "year", se.getYear(),
+            "phase", se.getPhase().name(), "champion", se.getChampionClub() == null ? null : se.getChampionClub().getName(),
+            "runnerUp", se.getRunnerUpClub() == null ? null : se.getRunnerUpClub().getName(), "userSeed", seed, "awards", seasonAwards,
+            "completedAt", se.getCompletedAt() == null ? null : String.valueOf(se.getCompletedAt())));
+      }
+      for (AnalysisReport a : analyses.findByCareerIdOrderByCreatedAtAsc(s.getId())) {
+        analysisRows.add(AccountDataCollector.row("careerId", String.valueOf(s.getId()), "seasonId", String.valueOf(a.getSeason().getId()), "week", a.getWeek(),
+            "source", a.getSource(), "generatedAt", String.valueOf(a.getCreatedAt()), "report", a.getReportJson()));
+      }
       careers.add(AccountDataCollector.row("id", String.valueOf(s.getId()), "name", s.getName(), "slot", s.getSlot(), "status", s.getStatus().name(),
           "difficulty", s.getDifficulty().name(), "coachName", s.getManager().getName(), "coachNationality", s.getManager().getNationality(),
           "coachStyle", s.getManager().getCoachStyle().name(), "club", s.getClub() == null ? null : s.getClub().getName(),
@@ -90,6 +120,8 @@ public class CareerAccountData implements AccountDataContributor, AccountErasure
     export.put("careerRosterMoves", rosterMoves);
     export.put("careerMatches", matches);
     export.put("careerGamePlans", gamePlans);
+    export.put("careerSeasons", seasonRows);
+    export.put("careerAnalyses", analysisRows);
   }
 
   @Override

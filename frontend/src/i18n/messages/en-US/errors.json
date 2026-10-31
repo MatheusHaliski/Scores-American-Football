@@ -124,5 +124,9 @@
   "TIMEOUT_NOT_ALLOWED": "Timeout not available now: only with a dead ball before a snap and with timeouts left.",
   "INVALID_ADJUSTMENT": "Invalid adjustment: {0}. Use GAME_PLAN, PLAYBOOK or TIMEOUT with the adjustment data.",
   "notFound.match": "Game not found.",
-  "CAP_EXCEEDED": "This release puts the season over the salary cap by S$ {0} (cap of S$ {1}; committed after the release: S$ {2})."
+  "CAP_EXCEEDED": "This release puts the season over the salary cap by S$ {0} (cap of S$ {1}; committed after the release: S$ {2}).",
+  "SEASON_NOT_FINISHED": "The season only advances after the playoff final (current phase: {0}).",
+  "SEASON_ALREADY_ADVANCED": "This season is already closed and season {0} has started.",
+  "ANALYSIS_NOT_FOUND": "The analyst hasn't written a report yet. Ask for a refresh.",
+  "notFound.season": "Season not found in this career."
 }

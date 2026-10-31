@@ -65,7 +65,7 @@ database "Redis 7" as s3
 database "Anthropic Claude" as s4
 c1 --> c5 : usa
 c4 --> c18 : dispara
-c5 --> c15 : GET /careers/{id}/standings (alvo)\nGET /careers/{id}/weeks/{n}\nGET /careers/{id}/weeks/{n}/news (alvo)\n…
+c5 --> c15 : GET /careers/{id}/standings\nGET /careers/{id}/weeks/{n}\nGET /careers/{id}/weeks/{n}/news\n…
 c5 --> c16
 c5 --> c17
 c15 --> c18

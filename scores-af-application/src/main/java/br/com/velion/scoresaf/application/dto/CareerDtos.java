@@ -37,9 +37,18 @@ public final class CareerDtos {
 
   public record WeekDto(int number, String kind, LocalDate startsOn, String status, boolean userBye, List<UUID> byeClubIds, List<FixtureDto> fixtures) {}
 
-  /** Calendário da temporada (RF21): franquias uma vez só ({@code clubs}) e as semanas com os jogos, as folgas e a do usuário. */
+  /**
+   * Rodada de playoff planejada (RF21/RF66): número da semana, tipo (PRELIMINARY só nas chaves de 5 rodadas, WILD_CARD, DIVISIONAL, CONFERENCE, FINAL), quinta-feira prevista e
+   * situação (PENDING antes de a semana existir; depois, a da semana).
+   */
+  public record PlayoffWeekDto(int number, String kind, LocalDate startsOn, String status) {}
+
+  /**
+   * Calendário da temporada (RF21): franquias uma vez só ({@code clubs}), as semanas com os jogos, as folgas e a do usuário (as de
+   * playoff entram quando a rodada é criada, com os placares) e as rodadas de playoff planejadas ({@code playoffWeeks}, D-105).
+   */
   public record CalendarDto(UUID seasonId, int seasonYear, String phase, int currentWeek, int regularSeasonWeeks, int gamesPerTeam, UUID userClubId,
-                            List<ClubRefDto> clubs, List<WeekDto> weeks) {}
+                            List<ClubRefDto> clubs, List<WeekDto> weeks, List<PlayoffWeekDto> playoffWeeks) {}
 
   public record CoachDto(UUID id, String name, String nationality, String style, int overall, int reputationLeague, int careerGames, int careerWins,
                          int careerTitles) {}
@@ -64,13 +73,17 @@ public final class CareerDtos {
   public record LiveMatchRefDto(UUID matchId, UUID fixtureId, int week, String status, int homeScore, int awayScore) {}
 
   /**
-   * Central da franquia (RF40). O que ainda não existe vem como {@code null} explícito (o front mostra "—"): moral (RF41), análise do
-   * analista (6c), inbox (bloco 7) e Scores Points (bloco 10). {@code live} é a partida ao vivo em andamento ({@link LiveMatchRefDto},
-   * bloco 6b) ou {@code null}.
+   * Central da franquia (RF40). O que ainda não existe vem como {@code null} explícito (o front mostra "—"): inbox (bloco 7) e Scores
+   * Points (bloco 10). {@code live} é a partida ao vivo em andamento ({@link LiveMatchRefDto}, bloco 6b) ou {@code null}. Bloco 6c
+   * (D-106): {@code morale} (resumo da moral do elenco, {@code MoraleDtos.MoraleSummaryDto}), {@code analysis} (o último relatório do
+   * analista, {@code AnalysisDtos.AnalysisSummaryDto}, ou {@code null} antes do primeiro), {@code news} (até 3 notícias da última semana
+   * encerrada, {@code SeasonDtos.NewsDto}) e {@code playoffs} (o usuário nos playoffs, {@code SeasonDtos.UserPlayoffDto}); a tabela da
+   * divisão usa a cadeia de desempate do RF16 (D-95).
    */
   @JsonInclude(JsonInclude.Include.ALWAYS)
   public record DashboardDto(CareerDto career, ClubRefDto club, CoachDto coach, int currentWeek, NextGameDto nextGame, boolean byeWeek, RecordDto record,
                              Integer divisionRank, List<StandingRowDto> division, List<FixtureDto> upcomingDivisionGames,
                              List<PlayerHighlightDto> rosterHighlights, List<InjuryDto> injuries, CapDto cap, DepthChartAlertDto depthChart,
-                             Object live, Object morale, Object analysis, List<Object> inbox, Integer unreadInbox, Integer scoresPoints) {}
+                             Object live, Object morale, Object analysis, List<Object> news, Object playoffs, List<Object> inbox, Integer unreadInbox,
+                             Integer scoresPoints) {}
 }

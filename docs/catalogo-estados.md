@@ -93,7 +93,7 @@
 | RF64 | InjuryReport.status | SAUDAVEL, QUESTIONABLE, DOUBTFUL, OUT, IR | 9 |
 | RF65 | WaiverClaim.status | PENDING, AWARDED, LOST | 2 |
 | RF65 | FreeAgentOffer.status | PENDING, ACCEPTED, REJECTED, EXPIRED, WITHDRAWN | 4 |
-| RF66 | Chave de playoffs (rodada) | PROJECAO, WILD_CARD, DIVISIONAL, CONFERENCE, FINAL, CAMPEAO | 6 |
+| RF66 | Chave de playoffs (rodada) | PROJECAO, PRELIMINARY, WILD_CARD, DIVISIONAL, CONFERENCE, FINAL, CAMPEAO | 8 |
 | RF66 | PlayoffMatchup (confronto) | AGUARDANDO, AGENDADO, EM_JOGO, PRORROGACAO, DECIDIDO | 5 |
 | RNF1 | Dados de uma carreira (mundo SAVE) | Copiando, Descartada, Salva, Gravando, Projetando | 7 |
 | RNF2 | Reprodução da partida (orçamento de tempo) | Planejada, Simulando quarto, Reproduzindo, Decidindo jogada, Acelerando, Instantânea, Concluída | 10 |

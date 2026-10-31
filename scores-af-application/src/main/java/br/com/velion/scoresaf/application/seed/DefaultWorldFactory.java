@@ -501,6 +501,20 @@ public final class DefaultWorldFactory {
   /** Salário do practice squad em S$ (sem centavos). */
   public static long practiceSalary() { return PRACTICE_SALARY; }
 
+  /** Salário mínimo em S$ (sem centavos); o mercado usa o mesmo ({@code MarketRules.MIN_SALARY}, em centavos). */
+  public static long minSalary() { return MIN_SALARY; }
+
+  /** Composição de referência do elenco (53) e do practice squad (16) por posição, a "necessidade" da IA no mercado (bloco 7a). */
+  public static Map<Position, Integer> rosterTemplate() { return count(ROSTER); }
+
+  public static Map<Position, Integer> practiceSquadTemplate() { return count(PRACTICE_SQUAD); }
+
+  private static Map<Position, Integer> count(List<Position> list) {
+    Map<Position, Integer> out = new EnumMap<>(Position.class);
+    for (Position p : list) out.merge(p, 1, Integer::sum);
+    return out;
+  }
+
   /** Contrato de mais de um ano é "mínimo" até 10 % acima do salário mínimo (S$). */
   public static boolean minimumSalary(long yearOne) { return yearOne <= MIN_SALARY * 11 / 10; }
 

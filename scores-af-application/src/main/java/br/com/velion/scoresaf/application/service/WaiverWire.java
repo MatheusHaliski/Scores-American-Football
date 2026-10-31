@@ -7,18 +7,22 @@ import br.com.velion.scoresaf.application.port.out.persistence.RosterMoveReposit
 import br.com.velion.scoresaf.domain.career.CareerSave;
 import br.com.velion.scoresaf.domain.career.RosterMove;
 import br.com.velion.scoresaf.domain.career.RosterMoveKind;
+import br.com.velion.scoresaf.domain.catalog.Club;
 import br.com.velion.scoresaf.domain.catalog.Player;
 import br.com.velion.scoresaf.domain.season.Season;
 import br.com.velion.scoresaf.domain.shared.RosterStatus;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 /**
- * Fim do período de waivers no avanço da semana (Q-23, D-78), chamado pelo {@link WeekProcessor} quando a semana fecha: cada jogador
- * do mundo da carreira em {@link RosterStatus#PRACTICE_SQUAD_WAIVERS} passa pelo {@link WaiverClaimPolicy} (o gancho do bloco 7); sem
- * reivindicação, entra no practice squad da franquia que o expôs, com o contrato mantido, e o movimento {@code WAIVER_CLEARED} vai ao
- * histórico (com a franquia, na semana que fechou). A vaga do practice squad ficou reservada desde o movimento ({@code RosterRules}).
+ * Fim do período de waivers (Q-23, D-78; bloco 7a, D-137), chamado quando a semana fecha ({@link WeekProcessor}), em cada dia da free
+ * agency e no avanço da temporada: todos os expostos do mundo da carreira passam pela fila ({@link WaiverClaimPolicy}); sem
+ * reivindicação, quem saiu dos 53 rumo ao practice squad entra nele, com o contrato mantido (movimento {@code WAIVER_CLEARED}), e quem foi
+ * dispensado vira agente livre (movimento {@code WAIVER_UNCLAIMED}, com a franquia que dispensou; o dead money dela não muda).
  */
 @Service
 public class WaiverWire {
@@ -28,22 +32,41 @@ public class WaiverWire {
     this.players = players; this.moves = moves; this.claims = claims; this.audit = audit;
   }
 
-  /** Resolve os expostos a waivers ao fim da semana {@code week}; devolve quantos entraram no practice squad. */
+  /** Resolve os expostos a waivers ao fim do período; devolve quantos entraram no practice squad da franquia que os expôs. */
   public int resolve(CareerSave save, Season season, int week) {
-    List<Player> exposed = players.findByWorldIdAndRosterStatus(save.getWorld().getId(), RosterStatus.PRACTICE_SQUAD_WAIVERS).stream()
-        .sorted(Comparator.comparing(Player::getId)).toList();
+    List<Player> exposed = new ArrayList<>(players.findByWorldIdAndRosterStatus(save.getWorld().getId(), RosterStatus.PRACTICE_SQUAD_WAIVERS));
+    exposed.addAll(players.findByWorldIdAndRosterStatus(save.getWorld().getId(), RosterStatus.WAIVED));
+    exposed.sort(Comparator.comparing(Player::getName).thenComparing(p -> p.getId().toString()));
+    if (exposed.isEmpty()) return 0;
+    Set<UUID> claimed = claims.claim(save, season, week, exposed);
     int cleared = 0;
     for (Player p : exposed) {
-      if (claims.tryClaim(save, p)) continue;
-      p.setRosterStatus(RosterStatus.PRACTICE_SQUAD);
+      if (claimed.contains(p.getId())) continue;
+      RosterStatus from = p.getRosterStatus();
+      Club club = p.getClub();
+      if (from == RosterStatus.PRACTICE_SQUAD_WAIVERS) {
+        p.setRosterStatus(RosterStatus.PRACTICE_SQUAD);
+        cleared++;
+      } else {
+        p.setRosterStatus(RosterStatus.FREE_AGENT);
+        club = releasingClub(save, p);
+      }
       players.save(p);
       RosterMove m = new RosterMove();
-      m.setCareer(save); m.setSeason(season); m.setPlayer(p); m.setClub(p.getClub()); m.setWeek(week); m.setKind(RosterMoveKind.WAIVER_CLEARED);
-      m.setFromStatus(RosterStatus.PRACTICE_SQUAD_WAIVERS); m.setToStatus(RosterStatus.PRACTICE_SQUAD);
+      m.setCareer(save); m.setSeason(season); m.setPlayer(p); m.setClub(club); m.setWeek(week);
+      m.setKind(from == RosterStatus.PRACTICE_SQUAD_WAIVERS ? RosterMoveKind.WAIVER_CLEARED : RosterMoveKind.WAIVER_UNCLAIMED);
+      m.setFromStatus(from); m.setToStatus(p.getRosterStatus());
       moves.save(m);
-      audit.ok(AuditActions.WAIVER_CLEARED, "Player", p.getId(), "sem reivindicação: practice squad (semana " + week + ")");
-      cleared++;
+      audit.ok(AuditActions.WAIVER_CLEARED, "Player", p.getId(), from == RosterStatus.PRACTICE_SQUAD_WAIVERS
+          ? "sem reivindicação: practice squad (semana " + week + ")" : "sem reivindicação: agente livre (semana " + week + ")");
     }
     return cleared;
+  }
+
+  /** Franquia que dispensou (o último RELEASE do jogador na carreira). */
+  private Club releasingClub(CareerSave save, Player p) {
+    Club out = null;
+    for (RosterMove m : moves.findByCareerIdAndPlayerIdOrderByCreatedAtAsc(save.getId(), p.getId())) if (m.getKind() == RosterMoveKind.RELEASE) out = m.getClub();
+    return out;
   }
 }

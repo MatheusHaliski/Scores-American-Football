@@ -32,7 +32,7 @@ import org.springframework.test.context.ActiveProfiles;
     "spring.jpa.hibernate.ddl-auto=validate",
     "spring.jpa.properties.hibernate.dialect=br.com.velion.scoresaf.infra.mysql.TestH2Dialect"})
 @ActiveProfiles("test")
-@Import({CatalogGraph.class, CareerGraph.class, MatchGraph.class, SeasonGraph.class})
+@Import({CatalogGraph.class, CareerGraph.class, MatchGraph.class, SeasonGraph.class, MarketGraph.class})
 class FlywayBaselineValidationTest {
 
   @Autowired UserAccountJpaRepository users;
@@ -41,6 +41,7 @@ class FlywayBaselineValidationTest {
   @Autowired CareerGraph career;
   @Autowired MatchGraph match;
   @Autowired SeasonGraph season;
+  @Autowired MarketGraph market;
 
   @Test
   void deve_validar_entidades_contra_schema_do_flyway_e_gravar_pela_v1() {
@@ -165,5 +166,57 @@ class FlywayBaselineValidationTest {
     career.weeks.saveAndFlush(wk);
     assertThat(career.weeks.findById(wk.getId())).get()
         .satisfies(x -> assertThat(x.getKind()).isEqualTo(br.com.velion.scoresaf.domain.shared.WeekKind.PRELIMINARY));
+  }
+
+  /**
+   * A V8 (mercado, bloco 7a) aceita as parcelas explícitas do bônus e o trade block do jogador, a transação de contrato, a janela de free
+   * agency, a reivindicação em waivers e os movimentos novos, e recusa a segunda franchise tag da temporada e a reivindicação repetida
+   * (chaves únicas: a API responde 409).
+   */
+  @Test
+  void mercado_grava_pela_v8_e_rele() {
+    DefaultWorld w = new DefaultWorldFactory().build(DefaultWorldFactory.DEFAULT_SEED + 7);
+    catalog.persist(w);
+    CareerGraph.Saved saved = career.persist(w, "v8-" + java.util.UUID.randomUUID() + "@example.com");
+    Player p = saved.slot().getPlayer();
+    p.setTradeBlock(true);
+    p.setContract(p.getContract().toBuilder().prorationByYear(new java.util.ArrayList<>(java.util.List.of(5_000_00L, 1_000_00L))).build());
+    catalog.players.saveAndFlush(p);
+    assertThat(catalog.players.findById(p.getId())).get().satisfies(x -> {
+      assertThat(x.isTradeBlock()).isTrue();
+      assertThat(x.getContract().getProrationByYear()).containsExactly(5_000_00L, 1_000_00L);
+    });
+    var club = saved.fixture().getHomeClub();
+    var tag = event(saved, club, p, br.com.velion.scoresaf.domain.market.ContractEvent.Kind.FRANCHISE_TAG, 1);
+    market.events.saveAndFlush(tag);
+    market.events.saveAndFlush(event(saved, club, p, br.com.velion.scoresaf.domain.market.ContractEvent.Kind.RENEWAL, null));
+    market.events.saveAndFlush(event(saved, club, p, br.com.velion.scoresaf.domain.market.ContractEvent.Kind.SIGNING, null));
+    org.assertj.core.api.Assertions.assertThatThrownBy(() -> market.events.saveAndFlush(
+        event(saved, club, p, br.com.velion.scoresaf.domain.market.ContractEvent.Kind.FRANCHISE_TAG, 1)))
+        .as("segunda franchise tag da temporada").isInstanceOf(org.springframework.dao.DataIntegrityViolationException.class);
+    var fa = new br.com.velion.scoresaf.domain.market.FreeAgencyWindow();
+    fa.setCareer(saved.career()); fa.setSeason(saved.season()); fa.setDay(2);
+    market.windows.saveAndFlush(fa);
+    assertThat(market.windows.findBySeasonId(saved.season().getId())).get().satisfies(x -> assertThat(x.getDay()).isEqualTo(2));
+    var claim = new br.com.velion.scoresaf.domain.market.WaiverClaim();
+    claim.setCareer(saved.career()); claim.setPlayer(p); claim.setClub(club);
+    market.claims.saveAndFlush(claim);
+    var again = new br.com.velion.scoresaf.domain.market.WaiverClaim();
+    again.setCareer(saved.career()); again.setPlayer(p); again.setClub(club);
+    org.assertj.core.api.Assertions.assertThatThrownBy(() -> market.claims.saveAndFlush(again)).as("reivindicação repetida")
+        .isInstanceOf(org.springframework.dao.DataIntegrityViolationException.class);
+    RosterMove m = new RosterMove();
+    m.setCareer(saved.career()); m.setSeason(saved.season()); m.setPlayer(p); m.setClub(club); m.setWeek(1); m.setKind(RosterMoveKind.WAIVER_CLAIM);
+    m.setFromStatus(RosterStatus.WAIVED); m.setToStatus(RosterStatus.ACTIVE);
+    career.moves.saveAndFlush(m);
+    assertThat(career.moves.findById(m.getId())).get().satisfies(x -> assertThat(x.getKind()).isEqualTo(RosterMoveKind.WAIVER_CLAIM));
+  }
+
+  private static br.com.velion.scoresaf.domain.market.ContractEvent event(CareerGraph.Saved saved, br.com.velion.scoresaf.domain.catalog.Club club, Player p,
+                                                                           br.com.velion.scoresaf.domain.market.ContractEvent.Kind kind, Integer tagSlot) {
+    var e = new br.com.velion.scoresaf.domain.market.ContractEvent();
+    e.setCareer(saved.career()); e.setSeason(saved.season()); e.setClub(club); e.setPlayer(p); e.setKind(kind); e.setYears(2); e.setTotalValue(10_000_000_00L);
+    e.setAmount(5_000_000_00L); e.setTagSlot(tagSlot);
+    return e;
   }
 }

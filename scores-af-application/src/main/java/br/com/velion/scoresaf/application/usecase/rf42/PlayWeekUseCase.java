@@ -68,6 +68,10 @@ public class PlayWeekUseCase {
     Club club = support.userClub(save);
     Season season = save.getSeason();
     if (season == null) throw new BusinessRuleException("NO_SEASON", "Carreira sem temporada");
+    // a semana 1 só joga depois de fechar a free agency (bloco 7a, D-136)
+    if (season.getPhase() == br.com.velion.scoresaf.domain.shared.SeasonPhase.FREE_AGENCY) {
+      throw new ConflictException("FREE_AGENCY_OPEN", "A free agency está aberta: feche-a antes de jogar a semana 1");
+    }
     int week = season.getCurrentWeek();
     // a semana atual só existe enquanto houver jogo na temporada (regular e playoffs, D-96); depois da final, a temporada acabou
     if (season.isCompleted() || weeks.findBySeasonIdAndNumber(season.getId(), week).isEmpty()) {

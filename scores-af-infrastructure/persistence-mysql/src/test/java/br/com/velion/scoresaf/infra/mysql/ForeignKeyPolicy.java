@@ -8,11 +8,23 @@ import java.util.List;
  * anonimizada e nunca apagada, mas o que é dela cai junto se um dia for (sessões, configurações, preferências, notificações,
  * pedidos de exportação); a prova do consentimento (consent_record) segura a exclusão. Bloco 4: as do catálogo (V2__dominio_af.sql).
  * Bloco 6a: as da carreira (V3__carreira.sql). Bloco 6b: as da partida (V4__partida.sql). Bloco 6c: as da temporada (V6__temporada.sql).
+ * Bloco 7a: as do mercado (V8__mercado.sql).
  */
 final class ForeignKeyPolicy {
   record Fk(String table, String column, String refTable, String refColumn, String onDelete) {}
 
   static final List<Fk> POLICY = List.of(
+      // V8 — mercado (bloco 7a): transações de contrato, janelas de free agency e reivindicações em waivers são da carreira e caem com
+      // ela, com a temporada, a franquia ou o jogador do mundo SAVE dela (CASCADE).
+      new Fk("contract_event", "career_save_id", "career_save", "id", "CASCADE"),
+      new Fk("contract_event", "club_id", "club", "id", "CASCADE"),
+      new Fk("contract_event", "player_id", "player", "id", "CASCADE"),
+      new Fk("contract_event", "season_id", "season", "id", "CASCADE"),
+      new Fk("free_agency", "career_save_id", "career_save", "id", "CASCADE"),
+      new Fk("free_agency", "season_id", "season", "id", "CASCADE"),
+      new Fk("waiver_claim", "career_save_id", "career_save", "id", "CASCADE"),
+      new Fk("waiver_claim", "club_id", "club", "id", "CASCADE"),
+      new Fk("waiver_claim", "player_id", "player", "id", "CASCADE"),
       // V6 — temporada (bloco 6c): a temporada só perde a referência à campeã e à vice (SET NULL); sementes, prêmios e relatórios do
       // analista são da carreira e caem com ela, com a temporada, a franquia, a conferência ou o jogador do mundo SAVE dela (CASCADE).
       new Fk("analysis_report", "career_save_id", "career_save", "id", "CASCADE"),

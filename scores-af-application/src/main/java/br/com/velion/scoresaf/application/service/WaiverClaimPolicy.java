@@ -2,15 +2,19 @@ package br.com.velion.scoresaf.application.service;
 
 import br.com.velion.scoresaf.domain.career.CareerSave;
 import br.com.velion.scoresaf.domain.catalog.Player;
+import br.com.velion.scoresaf.domain.season.Season;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 /**
- * Gancho da reivindicação de waivers (Q-23, D-78) para o bloco 7. No avanço da semana, o {@link WaiverWire} pergunta, jogador a
- * jogador exposto a waivers rumo ao practice squad, se alguma franquia da IA o reivindica. O bloco 7 troca o {@link NoWaiverClaims}
- * por uma implementação que escolhe a franquia (prioridade de waivers, necessidade, teto), acha a vaga e o número da camisa, move o
- * jogador para ela com o contrato e grava o movimento e a auditoria; devolve {@code true} quando reivindicou. Devolvendo
- * {@code false}, o jogador entra no practice squad da franquia que o expôs, com o contrato mantido.
+ * Fila de waivers (Q-23, D-78; bloco 7a, D-137: {@code service.market.WaiverQueue}, que substitui o {@code NoWaiverClaims} provisório).
+ * No fim do período (fechamento da semana, dia da free agency ou avanço da temporada), o {@link WaiverWire} entrega todos os expostos
+ * — dispensados (WAIVED) e os que saíram dos 53 rumo ao practice squad (PRACTICE_SQUAD_WAIVERS) — e a fila decide, na ordem inversa da
+ * classificação, quem leva cada um (as reivindicações do usuário e a necessidade e o teto das franquias da IA), move o jogador com o
+ * contrato e grava o movimento, a transação e a auditoria. Quem não for reivindicado volta ao {@link WaiverWire}.
  */
 public interface WaiverClaimPolicy {
-  /** {@code true} se o jogador foi reivindicado (e já movido para a franquia que o reivindicou). */
-  boolean tryClaim(CareerSave save, Player exposed);
+  /** Ids dos expostos reivindicados (já movidos para a franquia que os levou). */
+  Set<UUID> claim(CareerSave save, Season season, int week, List<Player> exposed);
 }

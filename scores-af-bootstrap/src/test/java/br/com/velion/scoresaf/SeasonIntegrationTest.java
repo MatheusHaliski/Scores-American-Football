@@ -217,13 +217,13 @@ class SeasonIntegrationTest {
 
     Map<String, Object> adv = ok(call(mvc, post(c.base() + "/season/advance"), c.auth(), Map.of("seasonId", seasonId)));
     assertThat(adv).containsEntry("previousSeasonId", seasonId).containsEntry("seasonNumber", 2).containsEntry("seasonYear", 2027)
-        .containsEntry("phase", "REGULAR").containsEntry("currentWeek", 1);
+        .containsEntry("phase", "FREE_AGENCY").containsEntry("currentWeek", 1);
     assertThat(((Number) adv.get("deadMoneyCarried")).longValue()).isEqualTo(nextSeason);
     assertThat(n(adv.get("expiredContracts"))).isPositive();
-    assertThat(n(adv.get("aiRenewals"))).as("as franquias da IA renovam sozinhas (Q-42, D-120)").isPositive();
+    assertThat(n(adv.get("aiRenewals"))).as("as franquias da IA renovam antes da free agency, dentro do teto (D-138)").isPositive();
     assertThat(l(adv.get("userExpiredContracts"))).anySatisfy(e -> assertThat(e).containsEntry("playerId", pick.expiring().toString()));
     assertThat(l(adv.get("steps"))).extracting(s -> s.get("phase") + ":" + s.get("status") + ":" + s.get("handledBy"))
-        .containsExactly("RENEWALS:DONE:SEASON_ADVANCE", "FREE_AGENCY:SKIPPED:BLOCK_7", "DRAFT:SKIPPED:BLOCK_7", "PRESEASON:DONE:SEASON_ADVANCE");
+        .containsExactly("RENEWALS:DONE:SEASON_ADVANCE", "FREE_AGENCY:OPEN:FREE_AGENCY", "DRAFT:SKIPPED:BLOCK_7", "PRESEASON:DONE:SEASON_ADVANCE");
     // idempotência: a mesma temporada não avança de novo (409) e a nova ainda não terminou (422)
     assertProblem(call(mvc, post(c.base() + "/season/advance"), c.auth(), Map.of("seasonId", seasonId)), 409, "SEASON_ALREADY_ADVANCED");
     assertProblem(call(mvc, post(c.base() + "/season/advance"), c.auth(), null), 422, "SEASON_NOT_FINISHED");
@@ -253,6 +253,17 @@ class SeasonIntegrationTest {
       assertThat(old.getAttributes().get(AttributeKey.SPEED)).isLessThan(pick.oldSpeed());
       assertAiRenewals(save, careerId, n(adv.get("aiRenewals")), n(adv.get("expiredContracts")));
     });
+    assertThat(read(c, "/calendar")).containsEntry("phase", "FREE_AGENCY");
+    // a free agency fecha (bloco 7a): a temporada passa à regular e a IA fecha os 53
+    ok(call(mvc, post(c.base() + "/free-agency/advance"), c.auth(), Map.of("mode", "CLOSE")));
+    tx.executeWithoutResult(st -> {
+      CareerSave save = saves.findById(careerId).orElseThrow();
+      for (Club club : clubs.findByWorldId(save.getWorld().getId())) {
+        if (club.getId().equals(save.getClub().getId())) continue;
+        assertThat(players.findByClubIdOrderByOverallDesc(club.getId()).stream().filter(p -> p.getRosterStatus().countsTowardRoster()).count())
+            .as("53 de %s depois da free agency", club.getShortName()).isEqualTo(53);
+      }
+    });
     Map<String, Object> calendar = read(c, "/calendar");
     assertThat(calendar).containsEntry("seasonYear", 2027).containsEntry("currentWeek", 1).containsEntry("phase", "REGULAR");
     assertThat(l(read(c, "/trophies").get("seasons"))).hasSize(2);
@@ -260,9 +271,9 @@ class SeasonIntegrationTest {
   }
 
   /**
-   * Q-42/D-120: cada franquia da IA volta aos 53 + practice squad cheio com os próprios contratos vencidos (ou fica abaixo só se não
-   * sobrou ninguém dela que pudesse entrar); a do usuário não renova nada sozinha. Os contratos renovados são os de 1 ano a partir de
-   * 2027 (D-121), e os números da resposta batem com o banco.
+   * Q-42/D-120, bloco 7a (D-138): cada franquia da IA renova, entre os próprios contratos vencidos, o que cabe no teto da temporada nova
+   * deixando a reserva das vagas que faltam; quem não renova vai para a free agency. Os contratos renovados começam em 2027 (o pedido do
+   * jogador: anos pela idade, luvas pelo overall), os números da resposta batem com o banco e a franquia do usuário não renova sozinha.
    */
   private void assertAiRenewals(CareerSave save, UUID careerId, int aiRenewals, int expiredContracts) {
     UUID userClub = save.getClub().getId();
@@ -273,37 +284,24 @@ class SeasonIntegrationTest {
         .collect(Collectors.groupingBy(mv -> mv.getClub().getId(), Collectors.mapping(RosterMove::getPlayer, Collectors.toList())));
     List<Club> aiClubs = clubs.findByWorldId(save.getWorld().getId()).stream().filter(cl -> !cl.getId().equals(userClub)).toList();
     assertThat(aiClubs).hasSize(31);
-    int renewedInDb = 0, full53 = 0, full = 0;
+    long salaryCap = save.getLeague().getSalaryCap();
+    int renewedInDb = 0;
     for (Club club : aiClubs) {
       List<Player> roster = players.findByClubIdOrderByOverallDesc(club.getId());
       long counted = roster.stream().filter(p -> p.getRosterStatus().countsTowardRoster()).count();
       long ps = roster.stream().filter(p -> p.getRosterStatus() == RosterStatus.PRACTICE_SQUAD).count();
-      List<Player> left = leftovers.getOrDefault(club.getId(), List.of());
       assertThat(counted).as("53 de %s", club.getShortName()).isLessThanOrEqualTo(53);
       assertThat(ps).as("practice squad de %s", club.getShortName()).isLessThanOrEqualTo(16);
-      if (counted < 53) assertThat(left).as("%s ficou com %d nos 53 e deixou contratos vencidos sem renovar", club.getShortName(), counted).isEmpty();
-      // abaixo de 16 no practice squad só quando quem sobrou é veterano e as vagas de veterano já estão ocupadas (RosterRules)
       long veterans = roster.stream().filter(p -> p.getRosterStatus() == RosterStatus.PRACTICE_SQUAD)
           .filter(p -> p.getExperienceYears() > RosterRules.PRACTICE_SQUAD_MAX_EXPERIENCE).count();
       assertThat(veterans).isLessThanOrEqualTo(RosterRules.PRACTICE_SQUAD_VETERAN_SLOTS);
-      if (ps < 16) {
-        assertThat(left).as("%s ficou com %d no practice squad e deixou elegíveis sem renovar", club.getShortName(), ps)
-            .noneMatch(p -> p.getExperienceYears() <= RosterRules.PRACTICE_SQUAD_MAX_EXPERIENCE);
-        if (!left.isEmpty()) assertThat(veterans).as("vagas de veterano de %s", club.getShortName()).isEqualTo(RosterRules.PRACTICE_SQUAD_VETERAN_SLOTS);
-      }
-      if (counted == 53) full53++;
-      if (counted == 53 && ps == 16) full++;
-      renewedInDb += (int) roster.stream().filter(p -> p.getContract().getStartSeason() == 2027).peek(p -> {
-        assertThat(p.getContract().years()).isEqualTo(1);
-        assertThat(p.getContract().getSigningBonus()).isZero();
-      }).count();
+      long committed = roster.stream().filter(p -> p.getRosterStatus().requiresClub()).mapToLong(p -> p.getContract().capHit(p.getContract().yearIndexOf(2027), 5)).sum();
+      assertThat(committed).as("comprometido de %s dentro do teto", club.getShortName()).isLessThanOrEqualTo(salaryCap);
+      renewedInDb += (int) roster.stream().filter(p -> p.getContract().getStartSeason() == 2027).count();
+      assertThat(leftovers.getOrDefault(club.getId(), List.of())).allSatisfy(p -> assertThat(p.getRosterStatus()).isEqualTo(RosterStatus.FREE_AGENT));
     }
-    // no mundo padrão todas as franquias da IA fecham os 53; o practice squad fecha nas que têm elegíveis suficientes (a maioria; nas outras
-    // sobram só veteranos, que a experiência +1 do avanço tirou da faixa dos 3 anos)
-    assertThat(full53).as("franquias da IA com 53").isEqualTo(aiClubs.size());
-    assertThat(full).as("franquias da IA com 53 + 16").isGreaterThan(aiClubs.size() / 2);
     assertThat(renewedInDb).isEqualTo(aiRenewals);
-    // a franquia do usuário não renova sozinha: nenhum contrato novo e os vencidos dela viram agentes livres pendentes
+    // a franquia do usuário não renova sozinha: nenhum contrato novo e os vencidos dela viram agentes livres
     assertThat(players.findByClubIdOrderByOverallDesc(userClub)).noneMatch(p -> p.getContract().getStartSeason() == 2027);
     assertThat(leftovers.get(userClub)).isNotEmpty();
   }

@@ -58,7 +58,9 @@ import org.springframework.transaction.annotation.Transactional;
  *   ({@link AiContractRenewal}, Q-42, D-120); a do usuário não renova sozinha. Quem não renova vira agente livre ({@code FREE_AGENT},
  *   sem franquia) com o movimento {@code CONTRACT_EXPIRED} (a franquia de origem fica no movimento: é a pendência de renovação do bloco
  *   7, D-100). Os demais contratos seguem: o ano do contrato é o da temporada, então os anos restantes caem 1 sozinhos.</li>
- *   <li>Free agency e draft: ganchos do bloco 7 ({@link OffseasonPhase}), hoje pulados.</li>
+ *   <li>Free agency (bloco 7a, D-136): depois do calendário novo, a janela abre na temporada nova (fase FREE_AGENCY, dia 0; a IA
+ *   contrata e a janela fecha pelos dias de {@code POST /free-agency/advance}). Draft: gancho do bloco 7b ({@link OffseasonPhase}),
+ *   hoje pulado.</li>
  *   <li>Pré-temporada: envelhecimento e progressão pelos atributos, sem sorteio ({@link PlayerProgression}, D-101), experiência +1 para
  *   quem estava numa franquia, lesões e suspensões zeradas; calendário novo pelo {@link SeasonScheduler} com a colocação final das
  *   divisões; o depth chart do usuário perde quem saiu (e volta ao padrão se ficar inválido). O dead money que a regra do 1º de junho
@@ -75,14 +77,15 @@ public class SeasonUseCases {
   private final CareerSupport support; private final SeasonRepository seasons; private final CareerSaveRepository saves; private final PlayerRepository players;
   private final RosterMoveRepository moves; private final SeasonResults results; private final SeasonStatsService stats; private final SeasonScheduler scheduler;
   private final WaiverWire waivers; private final MoraleService morale; private final DepthChartService depthCharts; private final List<OffseasonPhase> phases;
-  private final AuditService audit; private final AiContractRenewal aiRenewal;
+  private final AuditService audit; private final AiContractRenewal aiRenewal; private final CapSheet cap;
 
   public SeasonUseCases(CareerSupport support, SeasonRepository seasons, CareerSaveRepository saves, PlayerRepository players, RosterMoveRepository moves,
                         SeasonResults results, SeasonStatsService stats, SeasonScheduler scheduler, WaiverWire waivers, MoraleService morale,
-                        DepthChartService depthCharts, List<OffseasonPhase> phases, AuditService audit, AiContractRenewal aiRenewal) {
+                        DepthChartService depthCharts, List<OffseasonPhase> phases, AuditService audit, AiContractRenewal aiRenewal,
+                        CapSheet cap) {
     this.support = support; this.seasons = seasons; this.saves = saves; this.players = players; this.moves = moves; this.results = results;
     this.stats = stats; this.scheduler = scheduler; this.waivers = waivers; this.morale = morale; this.depthCharts = depthCharts; this.phases = phases;
-    this.audit = audit; this.aiRenewal = aiRenewal;
+    this.audit = audit; this.aiRenewal = aiRenewal; this.cap = cap;
   }
 
   // ================================================================ resumo
@@ -130,7 +133,7 @@ public class SeasonUseCases {
 
   private static List<SeasonDtos.OffseasonStepDto> steps(String ownStatus, String hookStatus) {
     return List.of(new SeasonDtos.OffseasonStepDto("RENEWALS", ownStatus, "SEASON_ADVANCE"),
-        new SeasonDtos.OffseasonStepDto(SeasonPhase.FREE_AGENCY.name(), hookStatus, "BLOCK_7"),
+        new SeasonDtos.OffseasonStepDto(SeasonPhase.FREE_AGENCY.name(), ownStatus, "FREE_AGENCY"),
         new SeasonDtos.OffseasonStepDto(SeasonPhase.DRAFT.name(), hookStatus, "BLOCK_7"),
         new SeasonDtos.OffseasonStepDto(SeasonPhase.PRESEASON.name(), ownStatus, "SEASON_ADVANCE"));
   }
@@ -218,7 +221,8 @@ public class SeasonUseCases {
     for (Map.Entry<UUID, List<AiContractRenewal.Expired>> e : expiredByClub.entrySet()) {
       boolean user = e.getKey().equals(userClubId);
       java.util.Set<UUID> renewed = user ? java.util.Set.of()
-          : new java.util.HashSet<>(aiRenewal.renew(e.getKey(), stayingByClub.getOrDefault(e.getKey(), List.of()), e.getValue(), newYear, rules));
+          : new java.util.HashSet<>(aiRenewal.renew(e.getKey(), stayingByClub.getOrDefault(e.getKey(), List.of()), e.getValue(), newYear, rules,
+              CapSheet.salaryCap(save), cap.deadMoney(save, e.getKey(), newYear)));
       aiRenewals += renewed.size();
       for (AiContractRenewal.Expired x : e.getValue()) {
         Player p = x.player();
@@ -236,9 +240,6 @@ public class SeasonUseCases {
     players.saveAll(world);
     moves.saveAll(expiredMoves);
 
-    // 5. free agency e draft (ganchos do bloco 7)
-    Map<SeasonPhase, String> hookStatus = new LinkedHashMap<>();
-    for (OffseasonPhase ph : phases.stream().sorted(Comparator.comparingInt(x -> x.phase().ordinal())).toList()) hookStatus.put(ph.phase(), ph.run(save, old));
     long carried = moves.findByCareerIdAndSeasonIdOrderByCreatedAtAsc(save.getId(), old.getId()).stream()
         .filter(m -> m.getKind() == RosterMoveKind.RELEASE).mapToLong(RosterMove::getDeadMoneyNextSeason).sum();
 
@@ -248,11 +249,16 @@ public class SeasonUseCases {
     save.setCurrentWeek(1);
     save.setLastPlayedAt(Instant.now());
     saves.save(save);
+    // 5. free agency (bloco 7a: abre a janela na temporada nova, D-136) e draft (gancho do bloco 7b), na ordem da D-10
+    Map<SeasonPhase, String> hookStatus = new LinkedHashMap<>();
+    for (OffseasonPhase ph : phases.stream().sorted(Comparator.comparingInt((OffseasonPhase x) -> x.phase() == SeasonPhase.FREE_AGENCY ? 0 : 1)).toList()) {
+      hookStatus.put(ph.phase(), ph.run(save, old));
+    }
     if (userClub != null) depthCharts.refreshAfterRosterChange(save, userClub, rules.getGameDayActives());
     audit.ok(AuditActions.SEASON_ADVANCED, "Season", next.getId(), "temporada " + old.getNumber() + " → " + next.getNumber() + "; agentes livres: "
         + expired + "; renovações da IA: " + aiRenewals + "; free agency " + hookStatus.getOrDefault(SeasonPhase.FREE_AGENCY, "SKIPPED") + "; draft " + hookStatus.getOrDefault(SeasonPhase.DRAFT, "SKIPPED"));
     List<SeasonDtos.OffseasonStepDto> done = List.of(new SeasonDtos.OffseasonStepDto("RENEWALS", "DONE", "SEASON_ADVANCE"),
-        new SeasonDtos.OffseasonStepDto(SeasonPhase.FREE_AGENCY.name(), hookStatus.getOrDefault(SeasonPhase.FREE_AGENCY, "SKIPPED"), "BLOCK_7"),
+        new SeasonDtos.OffseasonStepDto(SeasonPhase.FREE_AGENCY.name(), hookStatus.getOrDefault(SeasonPhase.FREE_AGENCY, "SKIPPED"), "FREE_AGENCY"),
         new SeasonDtos.OffseasonStepDto(SeasonPhase.DRAFT.name(), hookStatus.getOrDefault(SeasonPhase.DRAFT, "SKIPPED"), "BLOCK_7"),
         new SeasonDtos.OffseasonStepDto(SeasonPhase.PRESEASON.name(), "DONE", "SEASON_ADVANCE"));
     CareerDtos.CareerDto career = CareerAssembler.career(save, CareerDtos.RecordDto.of(0, 0, 0));

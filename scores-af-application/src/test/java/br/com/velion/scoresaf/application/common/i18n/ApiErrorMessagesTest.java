@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 
 /**
  * Mensagens de erro da API (RF46 CA05, RNF13): os 3 idiomas têm as mesmas chaves, inclusive os códigos da plataforma (bloco 3) e os
- * do editor de mundos (bloco 4), os da carreira, do elenco e do depth chart (bloco 6a), os da partida (bloco 6b) e os da temporada (bloco 6c).
+ * do editor de mundos (bloco 4), os da carreira, do elenco e do depth chart (bloco 6a), os da partida (bloco 6b), os da temporada (bloco 6c) e os do mercado (bloco 7a).
  * No basquete a lista conferida era a do Digital Double (RF44), que entra aqui no bloco 9.
  */
 class ApiErrorMessagesTest {
@@ -40,6 +40,10 @@ class ApiErrorMessagesTest {
       "TIMEOUT_NOT_ALLOWED", "INVALID_ADJUSTMENT");
   /** Bloco 6c — temporada (RF35 avanço e analista). */
   private static final List<String> SEASON = List.of("SEASON_NOT_FINISHED", "SEASON_ALREADY_ADVANCED", "ANALYSIS_NOT_FOUND");
+  /** Bloco 7a — mercado (RF49 teto e contratos, RF65 free agency e waivers). */
+  private static final List<String> MARKET = List.of("FREE_AGENCY_OPEN", "FREE_AGENCY_CLOSED", "RENEWAL_NOT_ALLOWED", "OFFER_INVALID", "OFFER_REFUSED",
+      "RESTRUCTURE_NOT_ALLOWED", "RESTRUCTURE_INVALID", "FRANCHISE_TAG_USED", "FRANCHISE_TAG_NOT_ALLOWED", "NOT_A_FREE_AGENT", "NOT_ON_WAIVERS",
+      "WAIVER_CLAIM_EXISTS", "WAIVER_OWN_PLAYER", "CAP_EXCEEDED");
 
   private static Set<String> keys(String path) throws Exception {
     Properties p = new Properties();
@@ -59,5 +63,6 @@ class ApiErrorMessagesTest {
     for (String code : CAREER) assertThat(pt).as("código " + code).contains("error." + code);
     for (String code : MATCH) assertThat(pt).as("código " + code).contains("error." + code);
     for (String code : SEASON) assertThat(pt).as("código " + code).contains("error." + code);
+    for (String code : MARKET) assertThat(pt).as("código " + code).contains("error." + code);
   }
 }

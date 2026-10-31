@@ -71,5 +71,22 @@ public final class AuditActions {
   public static final String CONTRACT_EXPIRED = "CONTRACT_EXPIRED";
   /** Relatório do analista do sistema gerado (por regras, sem IA externa). */
   public static final String ANALYSIS_GENERATED = "ANALYSIS_GENERATED";
-  // As demais ações do jogo (mercado, carreira, loja, Meu jogador) entram com os blocos que as usam (docs/01 §5).
+  // RF49/RF65 — mercado (bloco 7a). Recurso: Player, Season.
+  /** Contrato renovado pelo usuário (proposta aceita). */
+  public static final String CONTRACT_RENEWED = "CONTRACT_RENEWED";
+  /** Proposta recusada pelo jogador (renovação ou agente livre), com o valor oferecido e o pedido. */
+  public static final String OFFER_REFUSED = "OFFER_REFUSED";
+  /** Salário convertido em luvas (reestruturação). */
+  public static final String CONTRACT_RESTRUCTURED = "CONTRACT_RESTRUCTURED";
+  /** Franchise tag aplicada. */
+  public static final String FRANCHISE_TAG = "FRANCHISE_TAG";
+  /** Jogador posto no trade block ou tirado dele. */
+  public static final String TRADE_BLOCK = "TRADE_BLOCK";
+  /** Agente livre contratado pelo usuário. */
+  public static final String FREE_AGENT_SIGNED = "FREE_AGENT_SIGNED";
+  /** Reivindicação em waivers pedida, cancelada ou resolvida (com quem levou). */
+  public static final String WAIVER_CLAIM = "WAIVER_CLAIM";
+  /** Free agency aberta, um dia passado ou fechada. */
+  public static final String FREE_AGENCY = "FREE_AGENCY";
+  // As demais ações do jogo (trocas, draft, carreira, loja, Meu jogador) entram com os blocos que as usam (docs/01 §5).
 }

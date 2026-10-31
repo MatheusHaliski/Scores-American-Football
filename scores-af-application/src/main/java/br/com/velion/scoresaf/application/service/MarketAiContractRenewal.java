@@ -1,12 +1,15 @@
 package br.com.velion.scoresaf.application.service;
 
-import br.com.velion.scoresaf.application.seed.DefaultWorldFactory;
+import br.com.velion.scoresaf.application.service.market.MarketService;
+import br.com.velion.scoresaf.domain.market.ContractDemand;
+import br.com.velion.scoresaf.domain.market.ContractMath;
+import br.com.velion.scoresaf.domain.market.ContractOffer;
+import br.com.velion.scoresaf.domain.market.MarketRules;
 import br.com.velion.scoresaf.domain.career.RosterRules;
 import br.com.velion.scoresaf.domain.catalog.LeagueRules;
 import br.com.velion.scoresaf.domain.catalog.Player;
 import br.com.velion.scoresaf.domain.catalog.PlayerContract;
 import br.com.velion.scoresaf.domain.match.ChartSlot;
-import br.com.velion.scoresaf.domain.shared.ContractType;
 import br.com.velion.scoresaf.domain.shared.Position;
 import br.com.velion.scoresaf.domain.shared.RosterStatus;
 import java.util.ArrayList;
@@ -20,50 +23,69 @@ import java.util.UUID;
 import org.springframework.stereotype.Component;
 
 /**
- * Renovação automática da IA até o bloco 7 (Q-42, D-120/D-121): a franquia renova só o necessário para voltar aos limites de
- * {@code LeagueRules} — {@code rosterMax} (53) no elenco principal e {@code practiceSquadMax} (16) no practice squad —, escolhendo entre
- * os próprios contratos que terminaram, por regra determinística (sem sorteio; a ordem da entrada não importa):
+ * Renovação da IA no avanço da temporada, antes da free agency abrir (bloco 7a; substitui a renovação automática provisória da Q-42,
+ * D-120 a D-122; D-138). A franquia escolhe quem renovar entre os próprios contratos que terminaram, na ordem da necessidade
+ * ({@link #choose}, determinística, sem sorteio):
  *
  * <ol>
  *   <li><b>53, necessidade do depth chart</b>: posição por posição, até o mínimo de titulares que o depth chart exige
  *   ({@link ChartSlot#minStarters()}: 1 QB, 3 WR, 2 DE, 2 DT, 2 OLB, 2 CB, K, P, LS…).</li>
  *   <li><b>53, composição de antes</b>: posição por posição, até o número que a franquia tinha nos 53 antes dos contratos acabarem.</li>
  *   <li><b>53, o resto</b>: as vagas que sobrarem, pelo melhor jogador.</li>
- *   <li><b>Practice squad</b>: quem estava no practice squad primeiro, respeitando a elegibilidade ({@link RosterRules}: até 3 anos de
- *   experiência, mais 6 vagas de veterano).</li>
+ *   <li><b>Practice squad</b>: quem estava no practice squad primeiro, respeitando a elegibilidade ({@link RosterRules}).</li>
  * </ol>
- * Em cada passo, o melhor é o de maior overall, depois o mais novo, depois o nome e o id. Contrato novo: 1 ano a partir da nova
- * temporada; nos 53, o salário da fórmula do mundo semente pelo overall de agora ({@link DefaultWorldFactory#yearOneSalary}), sem
- * bônus nem garantia; no practice squad, o salário do practice squad. O teto salarial não bloqueia a renovação (como o resto do teto,
- * fica para o bloco 7).
+ * Em cada passo, o melhor é o de maior overall, depois o mais novo, depois o nome e o id. O contrato é o que o jogador pede
+ * ({@link ContractDemand}, com a moral dele e sem desconto: anos pela idade, luvas e garantias pelo overall); no practice squad, 1 ano
+ * pelo salário do practice squad. <b>Teto rígido</b>: a franquia só renova quem cabe no teto da temporada nova deixando a reserva das
+ * vagas que ainda faltam (cada uma pelo mínimo); quem não cabe vai para a free agency, onde a IA completa o elenco.
  */
 @Component
-public class AutoAiContractRenewal implements AiContractRenewal {
+public class MarketAiContractRenewal implements AiContractRenewal {
 
   /** Escolha da renovação: quem volta aos 53 e quem volta ao practice squad, na ordem da escolha. */
   public record Choice(List<Player> roster, List<Player> practiceSquad) {}
 
-  static final Comparator<Player> BEST = Comparator.comparingInt((Player p) -> -p.getOverall()).thenComparingInt(Player::getAge)
-      .thenComparing(Player::getName).thenComparing(p -> p.getId().toString());
+  static final Comparator<Player> BEST = MarketService.BEST;
 
   @Override
-  public List<UUID> renew(UUID clubId, List<Player> staying, List<Expired> expired, int newSeason, LeagueRules rules) {
+  public List<UUID> renew(UUID clubId, List<Player> staying, List<Expired> expired, int newSeason, LeagueRules rules, long salaryCap, long deadMoney) {
     Choice c = choose(staying, expired, rules);
+    int prorate = rules.getBonusProrationMaxYears();
+    long committed = deadMoney;
+    int roster = 0, practice = 0;
+    for (Player p : staying) {
+      committed += CapSheet.capHit(p, newSeason, rules);
+      if (p.getRosterStatus().countsTowardRoster()) roster++;
+      if (p.getRosterStatus() == RosterStatus.PRACTICE_SQUAD) practice++;
+    }
     List<UUID> out = new ArrayList<>();
     for (Player p : c.roster()) {
-      long salary = DefaultWorldFactory.yearOneSalary(p.getPosition(), p.getOverall());
-      p.setContract(PlayerContract.builder().startSeason(newSeason).baseSalaryByYear(List.of(salary * 100L))
-          .type(DefaultWorldFactory.minimumSalary(salary) ? ContractType.MINIMUM : ContractType.VETERAN).build());
+      ContractOffer ask = ContractDemand.ask(MarketService.profile(p, p.getMorale(), null), 0);
+      PlayerContract contract = ContractMath.sign(newSeason, ask);
+      long hit = contract.capHit(0, prorate);
+      if (rules.isHardCap() && committed + hit + reserve(rules, roster + 1, practice) > salaryCap) continue;
+      p.setContract(contract);
       p.setRosterStatus(RosterStatus.ACTIVE);
+      committed += hit;
+      roster++;
       out.add(p.getId());
     }
     for (Player p : c.practiceSquad()) {
-      p.setContract(PlayerContract.builder().startSeason(newSeason).baseSalaryByYear(List.of(DefaultWorldFactory.practiceSalary() * 100L))
-          .type(ContractType.PRACTICE).build());
+      PlayerContract contract = ContractMath.practice(newSeason);
+      long hit = contract.capHit(0, prorate);
+      if (rules.isHardCap() && committed + hit + reserve(rules, roster, practice + 1) > salaryCap) continue;
+      p.setContract(contract);
       p.setRosterStatus(RosterStatus.PRACTICE_SQUAD);
+      committed += hit;
+      practice++;
       out.add(p.getId());
     }
     return out;
+  }
+
+  /** Reserva das vagas que faltam (pelo mínimo dos 53 e pelo salário do practice squad). */
+  static long reserve(LeagueRules rules, int roster, int practice) {
+    return Math.max(0, rules.getRosterMax() - roster) * MarketRules.MIN_SALARY + Math.max(0, rules.getPracticeSquadMax() - practice) * MarketRules.PRACTICE_SALARY;
   }
 
   /** A escolha (pura, sem mexer nos jogadores). */

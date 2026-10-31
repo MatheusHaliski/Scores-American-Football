@@ -104,6 +104,12 @@ public class Player extends AuditableEntity {
   @Column(nullable = false) private int jerseyNumber;
   @Column(nullable = false) private boolean legendary;
 
+  /**
+   * Na lista de trocas da franquia do usuário (trade block, bloco 7a): por enquanto só é gravado e mostrado; as trocas (RF50) usam
+   * no bloco 7b. A cópia do mundo (nova carreira, clone como modelo) não leva a marca.
+   */
+  @Column(name = "trade_block", nullable = false) private boolean tradeBlock;
+
   @Column(length = 512) private String photoUrl;
   @Column(length = 512) private String model3dUrl;
 

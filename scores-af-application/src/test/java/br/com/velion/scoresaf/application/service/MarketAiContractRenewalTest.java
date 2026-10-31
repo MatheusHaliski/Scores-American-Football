@@ -15,11 +15,12 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 /**
- * Renovação automática da IA (Q-42, D-120/D-121): renova só o que falta para os limites de {@code LeagueRules}, primeiro o mínimo de
- * titulares do depth chart (mesmo com overall baixo), depois a composição de antes e o melhor jogador; o practice squad com quem estava
- * nele e respeitando as vagas de veterano; a escolha não depende da ordem da entrada; o contrato novo é de 1 ano.
+ * Renovação da IA (Q-42, D-120/D-121; bloco 7a, D-138): renova só o que falta para os limites de {@code LeagueRules}, primeiro o mínimo
+ * de titulares do depth chart (mesmo com overall baixo), depois a composição de antes e o melhor jogador; o practice squad com quem
+ * estava nele e respeitando as vagas de veterano; a escolha não depende da ordem da entrada; o contrato novo é o que o jogador pede e
+ * só entra quem cabe no teto com a reserva das vagas que faltam.
  */
-class AutoAiContractRenewalTest {
+class MarketAiContractRenewalTest {
   private static final LeagueRules RULES = LeagueRules.pro().toBuilder().rosterMax(27).practiceSquadMax(3).build();
 
   private static Player p(String name, Position pos, int overall, int age, int experience, RosterStatus status) {
@@ -52,7 +53,7 @@ class AutoAiContractRenewalTest {
 
   @Test
   void renova_so_o_necessario_pela_necessidade_do_depth_chart_depois_composicao_e_melhor() {
-    AutoAiContractRenewal.Choice c = AutoAiContractRenewal.choose(staying(), expired(), RULES);
+    MarketAiContractRenewal.Choice c = MarketAiContractRenewal.choose(staying(), expired(), RULES);
     // 4 vagas nos 53: primeiro os mínimos do depth chart na ordem das posições do chart (o melhor WR, que completa os 3, e o K, apesar
     // do overall); depois a composição de antes, na ordem das posições (o QB, depois o outro WR); o MLB de overall 85 sobra porque a
     // franquia já tinha o MLB que precisava e as vagas acabaram
@@ -64,7 +65,7 @@ class AutoAiContractRenewalTest {
   void vaga_que_a_composicao_de_antes_nao_preenche_vai_para_o_melhor_que_sobrou() {
     // a franquia estava abaixo do limite antes do fim dos contratos (28 nos 53, com o limite em 29): depois do mínimo do depth chart e
     // da composição de antes (o QB, o outro WR e o MLB), a vaga que sobra vai para o melhor dos que restam, mesmo vindo do practice squad
-    AutoAiContractRenewal.Choice c = AutoAiContractRenewal.choose(staying(), expired(), RULES.toBuilder().rosterMax(29).build());
+    MarketAiContractRenewal.Choice c = MarketAiContractRenewal.choose(staying(), expired(), RULES.toBuilder().rosterMax(29).build());
     assertThat(names(c.roster())).containsExactly("Recebedor Bom", "Chutador", "Quarterback Reserva", "Recebedor Médio", "Linebacker Sobra", "Corredor Treino");
     assertThat(names(c.practiceSquad())).containsExactly("Corner Veterano");
   }
@@ -75,7 +76,7 @@ class AutoAiContractRenewalTest {
     for (int i = 0; i < 4; i++) full.add(p("Extra " + i, Position.TE, 60, 27, 5, RosterStatus.ACTIVE));
     for (int i = 0; i < 6; i++) full.add(p("Veterano treino " + i, Position.TE, 50, 28, 6, RosterStatus.PRACTICE_SQUAD));
     LeagueRules bigPractice = RULES.toBuilder().practiceSquadMax(10).build();
-    AutoAiContractRenewal.Choice c = AutoAiContractRenewal.choose(full, expired(), bigPractice);
+    MarketAiContractRenewal.Choice c = MarketAiContractRenewal.choose(full, expired(), bigPractice);
     assertThat(c.roster()).isEmpty();
     // 6 veteranos já ocupam as vagas de veterano: só entram os de até 3 anos de experiência
     assertThat(c.practiceSquad()).extracting(Player::getName).containsExactly("Corredor Treino", "Linebacker Sobra");
@@ -85,30 +86,57 @@ class AutoAiContractRenewalTest {
   void a_escolha_nao_depende_da_ordem_da_entrada() {
     List<Player> s = staying();
     List<AiContractRenewal.Expired> e = expired();
-    AutoAiContractRenewal.Choice first = AutoAiContractRenewal.choose(s, e, RULES);
+    MarketAiContractRenewal.Choice first = MarketAiContractRenewal.choose(s, e, RULES);
     Random shuffle = new Random(7);
     for (int i = 0; i < 20; i++) {
       List<Player> s2 = new ArrayList<>(s);
       List<AiContractRenewal.Expired> e2 = new ArrayList<>(e);
       Collections.shuffle(s2, shuffle);
       Collections.shuffle(e2, shuffle);
-      AutoAiContractRenewal.Choice again = AutoAiContractRenewal.choose(s2, e2, RULES);
+      MarketAiContractRenewal.Choice again = MarketAiContractRenewal.choose(s2, e2, RULES);
       assertThat(again.roster()).isEqualTo(first.roster());
       assertThat(again.practiceSquad()).isEqualTo(first.practiceSquad());
     }
   }
 
+  private static final long CAP = 255_000_000_00L;
+
   @Test
-  void contrato_novo_de_1_ano_pela_formula_salarial_e_situacao_de_volta() {
+  void contrato_novo_e_o_pedido_do_jogador_e_situacao_de_volta() {
     List<AiContractRenewal.Expired> e = expired();
-    List<UUID> renewed = new AutoAiContractRenewal().renew(UUID.randomUUID(), staying(), e, 2027, RULES);
+    List<UUID> renewed = new MarketAiContractRenewal().renew(UUID.randomUUID(), staying(), e, 2027, RULES, CAP, 0);
     assertThat(renewed).hasSize(7);
-    Player qb = e.get(3).player(), rb = e.get(5).player();
+    Player qb = e.get(3).player(), rb = e.get(5).player(), wr = e.get(1).player();
     assertThat(qb.getRosterStatus()).isEqualTo(RosterStatus.ACTIVE);
     assertThat(qb.getContract().getStartSeason()).isEqualTo(2027);
+    // 33 anos: 1 ano; o pedido é o valor da posição pelo overall × 70 % (idade) × moral (60: 97 %)
     assertThat(qb.getContract().years()).isEqualTo(1);
-    assertThat(qb.getContract().getBaseSalaryByYear()).containsExactly(br.com.velion.scoresaf.application.seed.DefaultWorldFactory.yearOneSalary(Position.QB, 80) * 100L);
+    var ask = br.com.velion.scoresaf.domain.market.ContractDemand.ask(br.com.velion.scoresaf.application.service.market.MarketService.profile(qb, 60, null), 0);
+    assertThat(qb.getContract().totalValue()).isEqualTo(ask.totalValue());
+    assertThat(wr.getContract().years()).as("26 anos: 4 anos").isEqualTo(4);
     assertThat(rb.getRosterStatus()).isEqualTo(RosterStatus.PRACTICE_SQUAD);
     assertThat(rb.getContract().getType()).isEqualTo(ContractType.PRACTICE);
+  }
+
+  /** Teto rígido: só renova quem cabe deixando a reserva (pelo mínimo) das vagas que ainda faltam; o resto vai à free agency. */
+  @Test
+  void ia_respeita_o_teto_e_guarda_a_reserva_das_vagas() {
+    List<Player> s = staying();
+    long committed = s.stream().mapToLong(p -> 0L).sum();
+    // teto que cabe só o mínimo das 4 vagas + 3 do practice squad e um pouco mais: o QB de overall 80 (o pedido mais caro) não cabe
+    long reserve = MarketAiContractRenewal.reserve(RULES, 23, 0);
+    List<AiContractRenewal.Expired> e = expired();
+    long cap = committed + reserve + 3_000_000_00L;
+    List<UUID> renewed = new MarketAiContractRenewal().renew(UUID.randomUUID(), s, e, 2027, RULES, cap, 0);
+    Player qb = e.get(3).player();
+    assertThat(renewed).doesNotContain(qb.getId());
+    assertThat(qb.getRosterStatus()).as("fica como estava: vira agente livre no avanço").isEqualTo(RosterStatus.ACTIVE);
+    assertThat(qb.getContract()).isNull();
+    long total = e.stream().map(AiContractRenewal.Expired::player).filter(p -> renewed.contains(p.getId()))
+        .mapToLong(p -> p.getContract().capHit(0, 5)).sum();
+    assertThat(total).as("o que renovou cabe no teto").isLessThanOrEqualTo(cap);
+    // com o teto flexível (COLLEGE), renova o mesmo que sem teto
+    List<AiContractRenewal.Expired> e2 = expired();
+    assertThat(new MarketAiContractRenewal().renew(UUID.randomUUID(), staying(), e2, 2027, RULES.toBuilder().hardCap(false).build(), cap, 0)).hasSize(7);
   }
 }

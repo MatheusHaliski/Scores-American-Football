@@ -726,7 +726,10 @@ public class WorldEditorUseCases {
     }
     int start = c.contractStartSeason() == null ? cur.getStartSeason() : CatalogInput.range("contractStartSeason", c.contractStartSeason(), w.getBaseYear() - 6, w.getBaseYear() + 1);
     ContractType type = c.contractType() == null ? cur.getType() : CatalogInput.enumValue(ContractType.class, c.contractType(), "INVALID_CONTRACT");
-    p.setContract(cur.toBuilder().baseSalaryByYear(salaries).signingBonus(bonus).guaranteed(guaranteed).startSeason(start).type(type).build());
+    // bônus ou salários editados voltam ao rateio igual do bônus (as parcelas explícitas da renovação/reestruturação deixam de valer, D-131)
+    List<Long> prorations = c.baseSalaryByYear() == null && c.signingBonus() == null ? new ArrayList<>(cur.getProrationByYear()) : new ArrayList<>();
+    p.setContract(cur.toBuilder().baseSalaryByYear(salaries).signingBonus(bonus).guaranteed(guaranteed).startSeason(start).type(type)
+        .prorationByYear(prorations).build());
   }
 
   // ---------------------------------------------------------------- apoio

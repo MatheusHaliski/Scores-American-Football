@@ -25,6 +25,9 @@ import lombok.Setter;
  *   <li>{@code guaranteed}: parte garantida dos salários-base, consumida do primeiro ano em diante.</li>
  *   <li>cap hit do ano = salário-base + parcela do bônus; dead money se cortado antes do ano {@code y} = parcelas do bônus ainda não
  *   lançadas + garantia ainda não paga.</li>
+ *   <li>{@code prorationByYear} (bloco 7a, D-131): parcelas do bônus explícitas por ano. Vazia, vale o rateio igual de
+ *   {@code signingBonus}; preenchida (renovação, reestruturação e franchise tag, que somam bônus novos ao que já estava rateado), é ela
+ *   que vale, e {@code signingBonus} guarda a soma.</li>
  * </ul>
  */
 @Embeddable
@@ -43,6 +46,11 @@ public class PlayerContract {
   @Column(name = "contract_base_salary_by_year", length = 255)
   @Builder.Default private List<Long> baseSalaryByYear = new ArrayList<>();
 
+  /** Parcelas do bônus por ano, explícitas (vazia = rateio igual de {@link #signingBonus}; D-131). */
+  @Convert(converter = LongListConverter.class)
+  @Column(name = "contract_proration_by_year", length = 255)
+  @Builder.Default private List<Long> prorationByYear = new ArrayList<>();
+
   @Column(name = "contract_signing_bonus") private long signingBonus;
   @Column(name = "contract_guaranteed") private long guaranteed;
   @Column(name = "contract_franchise_tag") private boolean franchiseTag;
@@ -60,6 +68,9 @@ public class PlayerContract {
 
   /** Parcela do bônus lançada no teto no ano {@code yearIndex} (0 = primeiro ano). */
   public long prorationFor(int yearIndex, int prorationMaxYears) {
+    if (prorationByYear != null && !prorationByYear.isEmpty()) {
+      return yearIndex < 0 || yearIndex >= prorationByYear.size() || yearIndex >= years() ? 0 : prorationByYear.get(yearIndex);
+    }
     int spread = Math.min(years(), Math.max(1, prorationMaxYears));
     if (years() == 0 || yearIndex < 0 || yearIndex >= spread) return 0;
     long part = signingBonus / spread;
@@ -120,6 +131,13 @@ public class PlayerContract {
   public record DeadMoney(long currentSeason, long nextSeason) {
     public static final DeadMoney NONE = new DeadMoney(0, 0);
     public long total() { return currentSeason + nextSeason; }
+  }
+
+  /** Parcelas do bônus de todos os anos (a lista explícita ou o rateio igual), para somar bônus novos (D-131). */
+  public List<Long> prorations(int prorationMaxYears) {
+    List<Long> out = new ArrayList<>();
+    for (int y = 0; y < years(); y++) out.add(prorationFor(y, prorationMaxYears));
+    return out;
   }
 
   /** Valor total (salários + bônus). */

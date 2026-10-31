@@ -103,4 +103,21 @@ public final class RosterRules {
       default -> { return Violation.of("ROSTER_MOVE_NOT_ALLOWED", from.name(), to.name()); }
     }
   }
+
+  /**
+   * Confere a entrada de um jogador de fora (agente livre contratado ou reivindicado em waivers, bloco 7a) em {@code to}; {@code null} =
+   * permitido. Nos 53 (ACTIVE): vaga em {@code rosterMax}. No practice squad: vaga (contando as reservadas) e a elegibilidade (até 3
+   * anos de experiência ou uma das 6 vagas de veterano).
+   */
+  public static Violation checkSigning(Player p, RosterStatus to, Counts c, LeagueRules rules) {
+    if (to == RosterStatus.ACTIVE) return c.roster() >= rules.getRosterMax() ? Violation.of("ROSTER_FULL", rules.getRosterMax()) : null;
+    if (to == RosterStatus.PRACTICE_SQUAD) {
+      if (c.practiceSquadReserved() >= rules.getPracticeSquadMax()) return Violation.of("PRACTICE_SQUAD_FULL", rules.getPracticeSquadMax());
+      if (p.getExperienceYears() > PRACTICE_SQUAD_MAX_EXPERIENCE && c.veteransReserved() >= PRACTICE_SQUAD_VETERAN_SLOTS) {
+        return Violation.of("PRACTICE_SQUAD_INELIGIBLE", PRACTICE_SQUAD_MAX_EXPERIENCE, PRACTICE_SQUAD_VETERAN_SLOTS);
+      }
+      return null;
+    }
+    return Violation.of("ROSTER_MOVE_NOT_ALLOWED", String.valueOf(p.getRosterStatus()), String.valueOf(to));
+  }
 }

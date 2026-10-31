@@ -9,6 +9,8 @@ import br.com.velion.scoresaf.application.port.out.persistence.PlayerRepository;
 import br.com.velion.scoresaf.application.port.out.persistence.RosterMoveRepository;
 import br.com.velion.scoresaf.application.service.CapSheet;
 import br.com.velion.scoresaf.application.service.DepthChartService;
+import br.com.velion.scoresaf.application.service.market.ContractActions;
+import br.com.velion.scoresaf.application.service.market.MarketService;
 import br.com.velion.scoresaf.application.usecase.rf05.EditorAssembler;
 import br.com.velion.scoresaf.application.usecase.support.CareerSupport;
 import br.com.velion.scoresaf.domain.career.CareerSave;
@@ -49,10 +51,12 @@ import org.springframework.transaction.annotation.Transactional;
 public class RosterUseCases {
   private final CareerSupport support; private final PlayerRepository players; private final RosterMoveRepository moves;
   private final DepthChartService depthCharts; private final CapSheet cap; private final AuditService audit;
+  private final ContractActions contractActions; private final MarketService market;
 
   public RosterUseCases(CareerSupport support, PlayerRepository players, RosterMoveRepository moves, DepthChartService depthCharts, CapSheet cap,
-                        AuditService audit) {
+                        AuditService audit, ContractActions contractActions, MarketService market) {
     this.support = support; this.players = players; this.moves = moves; this.depthCharts = depthCharts; this.cap = cap; this.audit = audit;
+    this.contractActions = contractActions; this.market = market;
   }
 
   private static final Comparator<Player> ORDER = Comparator.comparingInt((Player p) -> p.getPosition().ordinal())
@@ -97,7 +101,7 @@ public class RosterUseCases {
     return new RosterDtos.PlayerDetailDto(card(p, year, rules, labels), p.getClub() == null ? null : p.getClub().getId(),
         p.getClub() == null ? null : p.getClub().getName(), own, p.getNationality(), p.getCollege(), br.com.velion.scoresaf.application.common.text.IsoDates.of(p.getBirthDate()), p.getPotential(),
         p.getAttributes().asGroupedMap(), byPosition, EditorAssembler.contract(p.getContract(), rules), dead.currentSeason(), dead.nextSeason(),
-        irWeek, irReturn, history.stream().map(RosterUseCases::move).toList());
+        irWeek, irReturn, history.stream().map(RosterUseCases::move).toList(), contractActions.playerMarket(save, p, market.discountPct(save)));
   }
 
   /**
@@ -147,7 +151,7 @@ public class RosterUseCases {
     int year = CareerSupport.seasonYear(save);
     PlayerContract.DeadMoney dead = CapSheet.deadMoneyIfCut(p, year, cap.gameDate(save), rules);
     long hit = CapSheet.capHit(p, year, rules);
-    CapSheet.requireRoomForRelease(cap.of(save, players.findByClubIdOrderByOverallDesc(club.getId())), hit, dead.currentSeason());
+    CapSheet.requireRoomForRelease(cap.of(save, players.findByClubIdOrderByOverallDesc(club.getId())), hit, dead.currentSeason(), year, rules.isHardCap());
     RosterStatus from = p.getRosterStatus();
     p.setRosterStatus(RosterStatus.WAIVED);
     p.setClub(null);
@@ -187,7 +191,8 @@ public class RosterUseCases {
     }
   }
 
-  private RosterDtos.CountsDto counts(CareerSave save, List<Player> roster) {
+  /** Contadores do elenco da franquia do usuário (com os retornos da IR usados na temporada). */
+  public RosterDtos.CountsDto counts(CareerSave save, List<Player> roster) {
     RosterRules.Counts c = RosterRules.Counts.of(roster);
     int irReturns = (int) seasonMoves(save).stream().filter(m -> m.getFromStatus() == RosterStatus.IR && m.getToStatus().countsTowardRoster()).count();
     return new RosterDtos.CountsDto(c.roster(), c.active(), c.inactive(), c.practiceSquad(), c.injuredReserve(), irReturns, c.waivers());
@@ -208,14 +213,14 @@ public class RosterUseCases {
     return out;
   }
 
-  static RosterDtos.PlayerCardDto card(Player p, int year, LeagueRules rules, List<String> chart) {
+  public static RosterDtos.PlayerCardDto card(Player p, int year, LeagueRules rules, List<String> chart) {
     PositionRating r = p.ratingAt(p.getPosition());
     return new RosterDtos.PlayerCardDto(p.getId(), p.getName(), p.getJerseyNumber(), p.getPosition().name(),
         p.getSecondaryPosition() == null ? null : p.getSecondaryPosition().name(), p.getUnit().name(), p.getAge(), p.getHeightCm(), p.getWeightKg(),
         r.overall(), r.tier().name(), r.position().family().name(), r.macros().values(), p.getRosterStatus().name(), p.getCondition(), p.getMorale(),
         p.getExperienceYears(), p.getInjuryWeeksOut(), p.getSuspensionWeeks(), CapSheet.capHit(p, year, rules),
         p.getContract() == null ? null : p.getContract().endSeason(), p.getContract() == null || p.getContract().getType() == null ? null : p.getContract().getType().name(),
-        List.copyOf(chart));
+        List.copyOf(chart), p.isTradeBlock(), p.getContract() != null && p.getContract().isFranchiseTag());
   }
 
   static RosterDtos.RosterMoveDto move(RosterMove m) {

@@ -19,12 +19,12 @@ public final class RosterDtos {
 
   /**
    * Card compacto: posição, overall na posição natural (OVR v1), nível, macros da família (ordem do card), situação, contrato da
-   * temporada e as vagas do depth chart ({@code "QB1"}, {@code "KR2"}).
+   * temporada, as vagas do depth chart ({@code "QB1"}, {@code "KR2"}) e, desde o bloco 7a, a marca do trade block e da franchise tag.
    */
   public record PlayerCardDto(UUID id, String name, int jerseyNumber, String position, String secondaryPosition, String unit, int age, int heightCm,
                               int weightKg, int overall, String tier, String family, Map<String, Integer> macros, String rosterStatus, int condition,
                               int morale, int experienceYears, int injuryWeeksOut, int suspensionWeeks, long capHit, Integer contractEndSeason,
-                              String contractType, List<String> depthChart) {}
+                              String contractType, List<String> depthChart, boolean tradeBlock, boolean franchiseTag) {}
 
   /**
    * Elenco da franquia: 53 por unidade (OFFENSE, DEFENSE, SPECIAL_TEAMS; ativos e inativos), practice squad, IR e os expostos a
@@ -38,12 +38,13 @@ public final class RosterDtos {
 
   /**
    * Jogador da carreira: card, subatributos agrupados, overall em cada posição, contrato, dead money se dispensado agora (na
-   * temporada atual e o que iria para a seguinte pela regra do 1º de junho, Q-24) e histórico.
+   * temporada atual e o que iria para a seguinte pela regra do 1º de junho, Q-24), histórico e, desde o bloco 7a, o mercado (valor de
+   * mercado, o pedido de agora e as ações de contrato possíveis).
    */
   public record PlayerDetailDto(PlayerCardDto card, UUID clubId, String clubName, boolean ownPlayer, String nationality, String college, String birthDate,
                                 int potential, Map<String, Map<String, Integer>> attributes, Map<String, Integer> overallByPosition,
                                 EditorDtos.ContractDto contract, long deadMoneyIfReleased, long deadMoneyNextSeasonIfReleased, Integer irPlacedWeek,
-                                Integer irEarliestReturnWeek, List<RosterMoveDto> history) {}
+                                Integer irEarliestReturnWeek, List<RosterMoveDto> history, MarketDtos.PlayerMarketDto market) {}
 
   /** Resultado de um movimento (53 ↔ practice squad ↔ IR); dos 53 para o practice squad, o jogador volta em PRACTICE_SQUAD_WAIVERS. */
   public record RosterChangeDto(PlayerCardDto player, CountsDto counts, CareerDtos.CapDto cap) {}

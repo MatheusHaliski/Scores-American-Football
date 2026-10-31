@@ -234,7 +234,8 @@ public class WorldGraphStore {
       n.setRosterStatus(kind == WorldKind.TEMPLATE && o.getRosterStatus() == RosterStatus.PRACTICE_SQUAD_WAIVERS ? RosterStatus.PRACTICE_SQUAD
           : o.getRosterStatus());
       n.setCondition(o.getCondition()); n.setMorale(o.getMorale()); n.setSuspensionWeeks(o.getSuspensionWeeks());
-      n.setContract(o.getContract() == null ? null : o.getContract().toBuilder().baseSalaryByYear(new ArrayList<>(o.getContract().getBaseSalaryByYear())).build());
+      n.setContract(o.getContract() == null ? null : o.getContract().toBuilder().baseSalaryByYear(new ArrayList<>(o.getContract().getBaseSalaryByYear()))
+          .prorationByYear(new ArrayList<>(o.getContract().getProrationByYear())).build());
       n.setJerseyNumber(o.getJerseyNumber()); n.setLegendary(o.isLegendary()); n.setPhotoUrl(o.getPhotoUrl()); n.setModel3dUrl(o.getModel3dUrl());
       n.setInjuryWeeksOut(o.getInjuryWeeksOut());
       ps.add(n); ids.put(o.getId(), n.getId());
